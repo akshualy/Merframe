@@ -41,7 +41,7 @@ export function FavouriteStar({
       aria-pressed={favourite}
       title={favourite ? "Unfavourite" : "Favourite"}
       className={cn(
-        "shrink-0",
+        "shrink-0 hover:bg-transparent dark:hover:bg-transparent",
         size === "small" ? "size-6" : "size-7",
         favourite
           ? "text-accent hover:text-accent"
