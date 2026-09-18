@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use wf_core::Catalog;
 use wf_data::store_item_to_type;
+use wf_inventory::Inventory;
 use wf_worldstate::{
     ArchonHunt, BaroStatus, Circuit, DailyDeal, Fissure, NightwaveSeason, Sortie, Timer, Varzia,
     WorldState,
@@ -33,6 +34,7 @@ pub struct BaroOffer {
     pub name: String,
     pub ducats: Option<u32>,
     pub credits: Option<u32>,
+    pub owned: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -118,7 +120,11 @@ fn baro_offer_name(catalog: &Catalog, item_type: &str) -> String {
     "Other".to_owned()
 }
 
-fn baro_manifest(catalog: &Catalog, baro: Option<&BaroStatus>) -> Vec<BaroGroup> {
+fn baro_manifest(
+    catalog: &Catalog,
+    inventory: Option<&Inventory>,
+    baro: Option<&BaroStatus>,
+) -> Vec<BaroGroup> {
     let Some(BaroStatus::Present { items, .. }) = baro else {
         return Vec::new();
     };
@@ -145,6 +151,7 @@ fn baro_manifest(catalog: &Catalog, baro: Option<&BaroStatus>) -> Vec<BaroGroup>
                 name,
                 ducats: offer.ducats,
                 credits: offer.credits,
+                owned: inventory.map(|inventory| inventory.owns(&item_type)),
             });
         }
     }
@@ -202,6 +209,7 @@ impl WorldStateView {
     pub fn build(
         world: Option<&WorldState>,
         catalog: &Catalog,
+        inventory: Option<&Inventory>,
         now: DateTime<Utc>,
         fetched_at: Option<DateTime<Utc>>,
     ) -> Self {
@@ -223,7 +231,7 @@ impl WorldStateView {
         let baro = world.baro(now);
         Self {
             fissures: world.fissures(now),
-            baro_manifest: baro_manifest(catalog, baro.as_ref()),
+            baro_manifest: baro_manifest(catalog, inventory, baro.as_ref()),
             baro,
             sortie: world.sortie(now),
             archon_hunt: world.archon_hunt(now),
@@ -250,6 +258,7 @@ pub async fn worldstate(state: Shared<'_>) -> CommandResult<WorldStateView> {
     Ok(WorldStateView::build(
         world.as_ref(),
         core.catalog(),
+        core.inventory(),
         Utc::now(),
         fetched_at,
     ))
@@ -264,6 +273,7 @@ mod tests {
     use super::*;
 
     const FIXTURE: &str = include_str!("../../../../fixtures/worldState.json");
+    const INVENTORY: &str = include_str!("../../../../fixtures/inventory.json");
     const FIXTURE_NOW_MS: i64 = 1_788_807_069_000;
     const ITEMS: &str = r#"[{
         "uniqueName": "/Lotus/Types/Items/Research/BioComponent",
@@ -277,7 +287,7 @@ mod tests {
         let world = WorldState::parse(FIXTURE).unwrap();
         let catalog = Catalog::from_json(ITEMS, "[]").unwrap();
         let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
-        WorldStateView::build(Some(&world), &catalog, now, Some(now))
+        WorldStateView::build(Some(&world), &catalog, None, now, Some(now))
     }
 
     #[test]
@@ -356,7 +366,7 @@ mod tests {
         let world = WorldState::parse(PRESENT).expect("world state");
         let catalog = Catalog::from_json(CATALOG, RELICS).unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
-        let view = WorldStateView::build(Some(&world), &catalog, now, Some(now));
+        let view = WorldStateView::build(Some(&world), &catalog, None, now, Some(now));
         let groups: Vec<(&str, Vec<&str>)> = view
             .baro_manifest
             .iter()
@@ -390,6 +400,32 @@ mod tests {
         );
         assert_eq!(view.baro_manifest[1].items[0].ducats, Some(550));
         assert_eq!(view.baro_manifest[1].items[0].credits, Some(250_000));
+        assert_eq!(view.baro_manifest[1].items[0].owned, None);
+    }
+
+    #[test]
+    fn baro_offers_owned() {
+        const PRESENT: &str = r#"{"VoidTraders":[{
+            "Activation":{"$date":{"$numberLong":"1788800000000"}},
+            "Expiry":{"$date":{"$numberLong":"1788900000000"}},
+            "Character":"Baro'Ki Teel",
+            "Node":"TradeHUB1",
+            "Manifest":[
+              {"ItemType":"/Lotus/StoreItems/Upgrades/Skins/Sigils/BossSigilJackal","PrimePrice":50,"RegularPrice":50000},
+              {"ItemType":"/Lotus/StoreItems/Upgrades/Skins/Sigils/PrismaSigil","PrimePrice":200,"RegularPrice":100000}
+            ]}]}"#;
+
+        let world = WorldState::parse(PRESENT).unwrap();
+        let catalog = Catalog::from_json("[]", "[]").unwrap();
+        let inventory = Inventory::parse(INVENTORY).unwrap();
+        let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
+        let view = WorldStateView::build(Some(&world), &catalog, Some(&inventory), now, None);
+        let owned: Vec<Option<bool>> = view.baro_manifest[0]
+            .items
+            .iter()
+            .map(|offer| offer.owned)
+            .collect();
+        assert_eq!(owned, vec![Some(true), Some(false)]);
     }
 
     #[test]
@@ -409,7 +445,7 @@ mod tests {
     fn empty_view_before_fetch() {
         let catalog = Catalog::from_json(ITEMS, "[]").unwrap();
         let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
-        let view = WorldStateView::build(None, &catalog, now, None);
+        let view = WorldStateView::build(None, &catalog, None, now, None);
         assert!(view.fissures.is_empty());
         assert!(view.timers.is_empty());
         assert!(view.daily_deals.is_empty());

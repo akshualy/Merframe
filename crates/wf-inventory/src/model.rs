@@ -267,6 +267,8 @@ pub struct Inventory {
     #[serde(default)]
     pub fusion_treasures: Vec<CountedItem>,
     #[serde(default)]
+    pub ship_decorations: Vec<CountedItem>,
+    #[serde(default)]
     pub weapon_skins: Vec<CosmeticItem>,
     #[serde(default)]
     pub flavour_items: Vec<CosmeticItem>,

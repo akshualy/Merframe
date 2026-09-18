@@ -48,6 +48,18 @@ impl Inventory {
             .collect()
     }
 
+    pub fn owns(&self, item_type: &str) -> bool {
+        let cosmetics = self.weapon_skins.iter().chain(&self.flavour_items);
+        self.counted(item_type) > 0
+            || self
+                .equipment()
+                .map(|item| &item.item_type)
+                .chain(cosmetics.map(|item| &item.item_type))
+                .chain(self.upgrades.iter().map(|upgrade| &upgrade.item_type))
+                .chain(self.ship_decorations.iter().map(|item| &item.item_type))
+                .any(|owned| owned == item_type)
+    }
+
     pub fn is_founder(&self) -> bool {
         self.accolades.is_founder()
     }
@@ -275,6 +287,29 @@ mod tests {
         assert!(owned.contains("/Lotus/Types/Vehicles/Hoverboard/HoverboardSuit"));
         assert!(!owned.contains("/Lotus/Types/Items/MiscItems/Ferrite"));
         assert!(owned.len() <= inv.equipment().count());
+    }
+
+    #[test]
+    fn owns_across_collections() {
+        let inv = fixture();
+        assert!(inv.owns("/Lotus/Powersuits/Trinity/TrinityPrime"));
+        assert!(inv.owns("/Lotus/Types/Items/MiscItems/Ferrite"));
+        assert!(inv.owns("/Lotus/Upgrades/Skins/Sigils/BossSigilJackal"));
+        assert!(inv.owns("/Lotus/Types/StoreItems/AvatarImages/AvatarImageItem1"));
+        assert!(inv.owns("/Lotus/Upgrades/Mods/Warframe/AvatarShieldMaxMod"));
+        assert!(!inv.owns("/Lotus/Weapons/Corpus/LongGuns/Prisma/PrismaGrakata"));
+    }
+
+    #[test]
+    fn owns_ship_decorations() {
+        const BOBBLE_HEAD: &str = "/Lotus/Types/Items/ShipDecos/TeshinBobbleHead";
+        let decorated = FIXTURE.replacen(
+            '{',
+            &format!(r#"{{"ShipDecorations":[{{"ItemType":"{BOBBLE_HEAD}","ItemCount":1}}],"#),
+            1,
+        );
+        assert!(Inventory::parse(&decorated).unwrap().owns(BOBBLE_HEAD));
+        assert!(!fixture().owns(BOBBLE_HEAD));
     }
 
     #[test]

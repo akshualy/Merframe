@@ -2307,6 +2307,7 @@ dependencies = [
  "tracing-subscriber",
  "wf-core",
  "wf-data",
+ "wf-inventory",
  "wf-log",
  "wf-market",
  "wf-mem",
