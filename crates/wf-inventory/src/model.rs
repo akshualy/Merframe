@@ -41,6 +41,8 @@ pub struct EquipmentItem {
     pub upgrade_ver: Option<u32>,
     pub skill_tree: Option<String>,
     #[serde(default)]
+    pub modular_parts: Vec<String>,
+    #[serde(default)]
     pub configs: Vec<LoadoutConfig>,
     #[serde(default)]
     pub archon_crystal_upgrades: Vec<ArchonCrystalSlot>,
@@ -49,7 +51,22 @@ pub struct EquipmentItem {
 const OROKIN_UPGRADE: u32 = 1;
 const EXILUS_ADAPTER: u32 = 2;
 
+fn names_a_modular_item(part: &str) -> bool {
+    part.contains("/Barrel")
+        || part.contains("/Tip/")
+        || part.ends_with("Deck")
+        || part.contains("PetHead")
+        || part.contains("PetPartHead")
+}
+
 impl EquipmentItem {
+    pub fn identity_type(&self) -> &str {
+        self.modular_parts
+            .iter()
+            .find(|part| names_a_modular_item(part))
+            .unwrap_or(&self.item_type)
+    }
+
     pub fn custom_name(&self) -> Option<&str> {
         self.item_name
             .as_deref()
@@ -345,6 +362,51 @@ mod tests {
         assert_eq!(
             equipment(r#","ItemName":"/Lotus/Language/Weapons/KuvaKohm|TEST NAME""#).custom_name(),
             Some("TEST NAME")
+        );
+    }
+
+    #[test]
+    fn identity_type() {
+        assert_eq!(
+            equipment("").identity_type(),
+            "/Lotus/Weapons/Tenno/Rifle/BratonPrime"
+        );
+        let modular = [
+            (
+                "/Lotus/Weapons/Infested/Pistols/InfKitGun/Barrels/InfBarrelEgg/InfModularBarrelEggPart",
+                "/Lotus/Weapons/SolarisUnited/Secondary/SUModularSecondarySet1/Clip/SUModularCritIICapIClipPart",
+            ),
+            (
+                "/Lotus/Weapons/Ostron/Melee/ModularMelee02/Tip/TipNine",
+                "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Handle/HandleOne",
+            ),
+            (
+                "/Lotus/Weapons/Corpus/OperatorAmplifiers/Set1/Barrel/CorpAmpSet1BarrelPartC",
+                "/Lotus/Weapons/Corpus/OperatorAmplifiers/Set1/Grip/CorpAmpSet1GripPartC",
+            ),
+            (
+                "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusC/HoverboardCorpusCDeck",
+                "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusA/HoverboardCorpusAEngine",
+            ),
+            (
+                "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetHeadMelee",
+                "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetLegD",
+            ),
+            (
+                "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts/ZanukaPetPartHeadA",
+                "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts/ZanukaPetPartBodyA",
+            ),
+        ];
+        for (naming, other) in modular {
+            let item = equipment(&format!(r#","ModularParts":["{other}","{naming}"]"#));
+            assert_eq!(item.identity_type(), naming);
+        }
+        let creature = equipment(
+            r#","ModularParts":["/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterAntigenB"]"#,
+        );
+        assert_eq!(
+            creature.identity_type(),
+            "/Lotus/Weapons/Tenno/Rifle/BratonPrime"
         );
     }
 

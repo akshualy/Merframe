@@ -145,10 +145,11 @@ fn equipped_holders(
     let mut holders: Vec<ModHolder> = configs_by_item
         .into_iter()
         .map(|(item_id, (item, configs))| {
-            let known = catalog.item(&item.item_type);
+            let identity = item.identity_type();
+            let known = catalog.item(identity);
             ModHolder {
                 item_id: item_id.to_owned(),
-                name: display_name(catalog, &item.item_type),
+                name: display_name(catalog, identity),
                 custom_name: item.custom_name().map(str::to_owned),
                 image_name: known.and_then(|known| known.image_name.clone()),
                 rank: known.map(|known| known.mastery_rank_at(item.xp)),
