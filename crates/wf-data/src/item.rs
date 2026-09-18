@@ -107,7 +107,7 @@ impl Item {
     }
 
     pub fn is_skin(&self) -> bool {
-        self.category == "Skins"
+        self.category == "Skins" || self.category == "Sigils"
     }
 
     pub fn is_fish(&self) -> bool {

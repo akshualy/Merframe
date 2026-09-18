@@ -15,6 +15,7 @@ import { useNow } from "@/hooks/use-now";
 import { events } from "@/lib/bridge";
 import { secondsUntil } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
+import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import type { FissurePath } from "@/types";
 import { FissuresByTier } from "./fissures";
@@ -82,6 +83,11 @@ export function WorldPage() {
   }
 
   const sortie = data?.sortie ?? null;
+  const baro = data?.baro ?? null;
+  const baroPresent = baro !== null && "Present" in baro;
+  const baroPanel = (
+    <BaroPanel baro={baro} manifest={data?.baro_manifest ?? []} now={now} />
+  );
 
   return (
     <Page title="World" description={<Quoted quote={quote} />}>
@@ -97,44 +103,48 @@ export function WorldPage() {
         <EmptyNote>The world state has not been fetched yet.</EmptyNote>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_22rem]">
-        <Section
-          title="Void Fissures"
-          description={`${fissures.length} active`}
-          action={
-            <Tabs
-              value={fissurePath}
-              onValueChange={(value) => setFissurePath(value as FissurePath)}
-            >
-              <TabsList>
-                {PATH_FILTERS.map(({ value, label }) => (
-                  <TabsTrigger key={value} value={value}>
-                    {label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          }
-        >
-          <FissuresByTier fissures={fissures} now={now} />
-        </Section>
+      <Section
+        title="Void Fissures"
+        description={`${fissures.length} active`}
+        action={
+          <Tabs
+            value={fissurePath}
+            onValueChange={(value) => setFissurePath(value as FissurePath)}
+          >
+            <TabsList>
+              {PATH_FILTERS.map(({ value, label }) => (
+                <TabsTrigger key={value} value={value}>
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        }
+      >
+        <FissuresByTier fissures={fissures} now={now} />
+      </Section>
 
+      <div
+        className={cn(
+          "grid items-start gap-4 md:grid-cols-2",
+          baroPresent && "xl:grid-cols-3",
+        )}
+      >
+        {baroPresent && baroPanel}
         <div className="flex flex-col gap-4">
-          <BaroPanel
-            baro={data?.baro ?? null}
-            manifest={data?.baro_manifest ?? []}
-            now={now}
-          />
+          {!baroPresent && baroPanel}
+          <ResetsPanel sortie={sortie} now={now} />
+          <DarvoPanel deals={data?.daily_deals ?? []} now={now} />
+          <CircuitPanel circuit={data?.circuit ?? null} now={now} />
+          <SortiePanel sortie={sortie} now={now} />
+          <ArchonPanel hunt={data?.archon_hunt ?? null} now={now} />
+        </div>
+        <div className="flex flex-col gap-4">
           <ResurgencePanel
             resurgence={data?.prime_resurgence ?? null}
             now={now}
           />
-          <DarvoPanel deals={data?.daily_deals ?? []} now={now} />
-          <ResetsPanel sortie={sortie} now={now} />
-          <CircuitPanel circuit={data?.circuit ?? null} now={now} />
           <NightwavePanel nightwave={data?.nightwave ?? null} now={now} />
-          <SortiePanel sortie={sortie} now={now} />
-          <ArchonPanel hunt={data?.archon_hunt ?? null} now={now} />
         </div>
       </div>
     </Page>

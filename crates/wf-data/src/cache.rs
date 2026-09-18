@@ -24,6 +24,7 @@ const ITEM_CATEGORIES: &[&str] = &[
     "Misc",
     "Gear",
     "Skins",
+    "Sigils",
     "Fish",
     "Glyphs",
 ];

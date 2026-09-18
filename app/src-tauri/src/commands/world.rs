@@ -97,12 +97,18 @@ fn baro_group_of(item: Option<&wf_data::Item>) -> &'static str {
             "Warframes" | "Archwing" | "Primary" | "Secondary" | "Melee" | "Arch-Gun"
             | "Arch-Melee",
         ) => "Weapons",
-        Some("Skins") => "Cosmetics",
+        Some("Skins" | "Sigils") => "Cosmetics",
         _ => "Others",
     }
 }
 
-fn baro_offer_name(item_type: &str) -> String {
+fn baro_offer_name(catalog: &Catalog, item_type: &str) -> String {
+    if let Some((relic, _)) = catalog.relic_by_unique_name(item_type) {
+        return format!("{} Relic", relic.name);
+    }
+    if item_type.ends_with("/MummyQuestKeyBlueprint") {
+        return "Sands of Inaros Blueprint".to_owned();
+    }
     if item_type.contains("/AvatarImages/") {
         return "Icon".to_owned();
     }
@@ -124,10 +130,14 @@ fn baro_manifest(catalog: &Catalog, baro: Option<&BaroStatus>) -> Vec<BaroGroup>
         })
         .collect();
     for offer in items {
-        let known = catalog.item(&store_item_to_type(&offer.item_type));
+        let item_type = store_item_to_type(&offer.item_type);
+        if item_type.ends_with("/BaroTreasureBox") {
+            continue;
+        }
+        let known = catalog.item(&item_type);
         let group = baro_group_of(known);
         let name = known.map_or_else(
-            || baro_offer_name(&offer.item_type),
+            || baro_offer_name(catalog, &item_type),
             |item| item.name.clone(),
         );
         if let Some(target) = groups.iter_mut().find(|target| target.name == group) {
@@ -319,6 +329,8 @@ mod tests {
              "category":"Primary","type":"Rifle","tradable":true},
             {"uniqueName":"/Lotus/Upgrades/Skins/Sigils/PrismaSigil","name":"Prisma Sigil",
              "category":"Skins","type":"Sigil","tradable":true},
+            {"uniqueName":"/Lotus/Upgrades/Skins/Sigils/RhinoDeluxeSigil","name":"Rhino Palatine Sigil",
+             "category":"Sigils","type":"Sigil","tradable":false},
             {"uniqueName":"/Lotus/Types/Items/MiscItems/PrimeBucks","name":"Ducats",
              "category":"Misc","type":"Misc","tradable":false}
         ]"#;
@@ -332,11 +344,17 @@ mod tests {
               {"ItemType":"/Lotus/StoreItems/Upgrades/Mods/Rifle/PrimeAmmoMutation","PrimePrice":300,"RegularPrice":150000},
               {"ItemType":"/Lotus/StoreItems/Upgrades/Skins/Sigils/PrismaSigil","PrimePrice":200,"RegularPrice":100000},
               {"ItemType":"/Lotus/StoreItems/Types/Items/MiscItems/PrimeBucks","PrimePrice":1,"RegularPrice":1},
-              {"ItemType":"/Lotus/StoreItems/Types/Boosters/AffinityBooster","PrimePrice":400,"RegularPrice":200000}
+              {"ItemType":"/Lotus/StoreItems/Types/Boosters/AffinityBooster","PrimePrice":400,"RegularPrice":200000},
+              {"ItemType":"/Lotus/StoreItems/Types/Game/Projections/T4VoidProjectionEBronze","PrimePrice":125,"RegularPrice":55000},
+              {"ItemType":"/Lotus/StoreItems/Types/BoosterPacks/BaroTreasureBox","PrimePrice":0,"RegularPrice":50000},
+              {"ItemType":"/Lotus/StoreItems/Types/Keys/MummyQuestKeyBlueprint","PrimePrice":100,"RegularPrice":25000},
+              {"ItemType":"/Lotus/StoreItems/Upgrades/Skins/Sigils/RhinoDeluxeSigil","PrimePrice":45,"RegularPrice":55000}
             ]}]}"#;
+        const RELICS: &str = r#"[{"uniqueName":"/Lotus/Types/Game/Projections/T4VoidProjectionEBronze",
+            "name":"Axi A1 Intact","category":"Relics","type":"Relic","tradable":true,"rewards":[]}]"#;
 
         let world = WorldState::parse(PRESENT).expect("world state");
-        let catalog = Catalog::from_json(CATALOG, "[]").unwrap();
+        let catalog = Catalog::from_json(CATALOG, RELICS).unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
         let view = WorldStateView::build(Some(&world), &catalog, now, Some(now));
         let groups: Vec<(&str, Vec<&str>)> = view
@@ -358,8 +376,16 @@ mod tests {
             vec![
                 ("Mods", vec!["Rifle Ammo Mutation"]),
                 ("Weapons", vec!["Prisma Grakata"]),
-                ("Cosmetics", vec!["Prisma Sigil"]),
-                ("Others", vec!["Booster", "Ducats"]),
+                ("Cosmetics", vec!["Prisma Sigil", "Rhino Palatine Sigil"]),
+                (
+                    "Others",
+                    vec![
+                        "Axi A1 Relic",
+                        "Booster",
+                        "Ducats",
+                        "Sands of Inaros Blueprint"
+                    ]
+                ),
             ]
         );
         assert_eq!(view.baro_manifest[1].items[0].ducats, Some(550));
