@@ -40,6 +40,20 @@ export interface UpgradePrices {
   buy: number | null;
 }
 
+export interface ModHolder {
+  item_id: string;
+  name: string;
+  custom_name: string | null;
+  image_name: string | null;
+  rank: number | null;
+  takes_orokin_reactor: boolean;
+  orokin_upgrade: boolean;
+  exilus_adapter: boolean;
+  configs: number[];
+  forma: number;
+  archon_shards: number;
+}
+
 export interface ModRow {
   name: string;
   unique_name: string;
@@ -51,7 +65,7 @@ export interface ModRow {
   prices: UpgradePrices;
   rarity: ArcaneRarity | null;
   prime: boolean;
-  equipped_in: string[];
+  equipped_in: ModHolder[];
   market_slug: string;
   favourite: boolean;
   order_placed: boolean;

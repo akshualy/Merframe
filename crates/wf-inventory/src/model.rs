@@ -33,6 +33,7 @@ pub struct LoadoutConfig {
 pub struct EquipmentItem {
     pub item_type: String,
     pub item_id: ObjectId,
+    pub item_name: Option<String>,
     #[serde(default, rename = "XP")]
     pub xp: u64,
     pub features: Option<u32>,
@@ -40,12 +41,47 @@ pub struct EquipmentItem {
     pub upgrade_ver: Option<u32>,
     pub skill_tree: Option<String>,
     #[serde(default)]
+    pub modular_parts: Vec<String>,
+    #[serde(default)]
     pub configs: Vec<LoadoutConfig>,
     #[serde(default)]
     pub archon_crystal_upgrades: Vec<ArchonCrystalSlot>,
 }
 
+const OROKIN_UPGRADE: u32 = 1;
+const EXILUS_ADAPTER: u32 = 2;
+
+fn names_a_modular_item(part: &str) -> bool {
+    part.contains("/Barrel")
+        || part.contains("/Tip/")
+        || part.ends_with("Deck")
+        || part.contains("PetHead")
+        || part.contains("PetPartHead")
+}
+
 impl EquipmentItem {
+    pub fn identity_type(&self) -> &str {
+        self.modular_parts
+            .iter()
+            .find(|part| names_a_modular_item(part))
+            .unwrap_or(&self.item_type)
+    }
+
+    pub fn custom_name(&self) -> Option<&str> {
+        self.item_name
+            .as_deref()
+            .and_then(|name| name.rsplit('|').next())
+            .filter(|name| !name.is_empty())
+    }
+
+    pub fn has_orokin_upgrade(&self) -> bool {
+        self.features.unwrap_or_default() & OROKIN_UPGRADE != 0
+    }
+
+    pub fn has_exilus_adapter(&self) -> bool {
+        self.features.unwrap_or_default() & EXILUS_ADAPTER != 0
+    }
+
     pub fn archon_shards(&self) -> u32 {
         self.archon_crystal_upgrades
             .iter()
@@ -303,5 +339,88 @@ pub struct Inventory {
 impl Inventory {
     pub fn parse(json: &str) -> Result<Self> {
         serde_json::from_str(json).map_err(InventoryError::from)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::EquipmentItem;
+
+    fn equipment(fields: &str) -> EquipmentItem {
+        serde_json::from_str(&format!(
+            r#"{{"ItemType":"/Lotus/Weapons/Tenno/Rifle/BratonPrime","ItemId":{{"$oid":"5bf0583058c949d97f403a39"}}{fields}}}"#
+        ))
+        .unwrap()
+    }
+
+    #[test]
+    fn custom_name() {
+        assert_eq!(equipment("").custom_name(), None);
+        assert_eq!(equipment(r#","ItemName":"""#).custom_name(), None);
+        assert_eq!(
+            equipment(r#","ItemName":"Test Rifle""#).custom_name(),
+            Some("Test Rifle")
+        );
+        assert_eq!(
+            equipment(r#","ItemName":"/Lotus/Language/Weapons/KuvaKohm|TEST NAME""#).custom_name(),
+            Some("TEST NAME")
+        );
+    }
+
+    #[test]
+    fn identity_type() {
+        assert_eq!(
+            equipment("").identity_type(),
+            "/Lotus/Weapons/Tenno/Rifle/BratonPrime"
+        );
+        let modular = [
+            (
+                "/Lotus/Weapons/Infested/Pistols/InfKitGun/Barrels/InfBarrelEgg/InfModularBarrelEggPart",
+                "/Lotus/Weapons/SolarisUnited/Secondary/SUModularSecondarySet1/Clip/SUModularCritIICapIClipPart",
+            ),
+            (
+                "/Lotus/Weapons/Ostron/Melee/ModularMelee02/Tip/TipNine",
+                "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Handle/HandleOne",
+            ),
+            (
+                "/Lotus/Weapons/Corpus/OperatorAmplifiers/Set1/Barrel/CorpAmpSet1BarrelPartC",
+                "/Lotus/Weapons/Corpus/OperatorAmplifiers/Set1/Grip/CorpAmpSet1GripPartC",
+            ),
+            (
+                "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusC/HoverboardCorpusCDeck",
+                "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusA/HoverboardCorpusAEngine",
+            ),
+            (
+                "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetHeadMelee",
+                "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetLegD",
+            ),
+            (
+                "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts/ZanukaPetPartHeadA",
+                "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts/ZanukaPetPartBodyA",
+            ),
+        ];
+        for (naming, other) in modular {
+            let item = equipment(&format!(r#","ModularParts":["{other}","{naming}"]"#));
+            assert_eq!(item.identity_type(), naming);
+        }
+        let creature = equipment(
+            r#","ModularParts":["/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterAntigenB"]"#,
+        );
+        assert_eq!(
+            creature.identity_type(),
+            "/Lotus/Weapons/Tenno/Rifle/BratonPrime"
+        );
+    }
+
+    #[test]
+    fn feature_flags() {
+        let bare = equipment("");
+        assert!(!bare.has_orokin_upgrade() && !bare.has_exilus_adapter());
+        let catalyst = equipment(r#","Features":33"#);
+        assert!(catalyst.has_orokin_upgrade() && !catalyst.has_exilus_adapter());
+        let exilus = equipment(r#","Features":2"#);
+        assert!(!exilus.has_orokin_upgrade() && exilus.has_exilus_adapter());
+        let both = equipment(r#","Features":547"#);
+        assert!(both.has_orokin_upgrade() && both.has_exilus_adapter());
     }
 }

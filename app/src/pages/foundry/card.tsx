@@ -77,7 +77,12 @@ function FoundryCardInner({
               title={`${num(item.archon_shards)} Archon Shards installed`}
               className="text-muted-foreground flex items-center gap-1 text-xs tabular-nums"
             >
-              <GameIcon name="archon-shard" size={16} alt="Archon Shards" />
+              <GameIcon
+                name="archon-shard"
+                size={16}
+                alt="Archon Shards"
+                className="invert dark:invert-0"
+              />
               {item.archon_shards}
             </span>
           )}

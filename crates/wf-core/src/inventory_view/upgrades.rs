@@ -1,9 +1,9 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use wf_data::{Item, Rarity};
-use wf_inventory::{Inventory, RIVEN_MARKER, RivenFingerprint};
+use wf_inventory::{EquipmentItem, Inventory, RIVEN_MARKER, RivenFingerprint, UpgradeSlot};
 
-use super::{ModRow, UpgradePrices, display_name};
+use super::{ModHolder, ModRow, UpgradePrices, display_name};
 use crate::catalog::{ARCANE_PREFIX, Catalog, MOD_PREFIX, display_name_from_path};
 use crate::prices::{PriceSource, market_slug};
 use crate::view::View;
@@ -125,20 +125,45 @@ pub(crate) fn arcanes(view: &View) -> Vec<ModRow> {
     upgrade_rows(view, UpgradeKind::Arcane)
 }
 
-fn equipped_names(
+fn equipped_holders(
     catalog: &Catalog,
-    slots: &HashMap<&str, Vec<&str>>,
-    holders: &BTreeSet<&str>,
-) -> Vec<String> {
-    let mut names: Vec<String> = holders
+    slots: &HashMap<&str, Vec<UpgradeSlot<'_>>>,
+    instances: &BTreeSet<&str>,
+) -> Vec<ModHolder> {
+    let mut configs_by_item: BTreeMap<&str, (&EquipmentItem, BTreeSet<usize>)> = BTreeMap::new();
+    for slot in instances
         .iter()
         .filter_map(|item_id| slots.get(*item_id))
         .flatten()
-        .map(|item_type| display_name(catalog, item_type))
+    {
+        configs_by_item
+            .entry(slot.item.item_id.as_str())
+            .or_insert_with(|| (slot.item, BTreeSet::new()))
+            .1
+            .insert(slot.config);
+    }
+    let mut holders: Vec<ModHolder> = configs_by_item
+        .into_iter()
+        .map(|(item_id, (item, configs))| {
+            let identity = item.identity_type();
+            let known = catalog.item(identity);
+            ModHolder {
+                item_id: item_id.to_owned(),
+                name: display_name(catalog, identity),
+                custom_name: item.custom_name().map(str::to_owned),
+                image_name: known.and_then(|known| known.image_name.clone()),
+                rank: known.map(|known| known.mastery_rank_at(item.xp)),
+                takes_orokin_reactor: known.is_some_and(Item::takes_orokin_reactor),
+                orokin_upgrade: item.has_orokin_upgrade(),
+                exilus_adapter: item.has_exilus_adapter(),
+                configs: configs.into_iter().collect(),
+                forma: item.polarized.unwrap_or_default(),
+                archon_shards: item.archon_shards(),
+            }
+        })
         .collect();
-    names.sort_unstable();
-    names.dedup();
-    names
+    holders.sort_by(|a, b| a.name.cmp(&b.name));
+    holders
 }
 
 fn upgrade_prices(
@@ -253,7 +278,7 @@ fn upgrade_rows(view: &View, wanted: UpgradeKind) -> Vec<ModRow> {
                 rank,
                 max_rank,
                 prices: upgrade_prices(prices, &slug, rank, max_rank, wanted),
-                equipped_in: equipped_names(catalog, &slots, &holders),
+                equipped_in: equipped_holders(catalog, &slots, &holders),
                 image_name: known.and_then(|item| item.image_name.clone()),
                 market_thumb: listed
                     .and_then(|upgrade| upgrade.market_thumb)
@@ -573,13 +598,16 @@ mod tests {
         assert!(
             equipped
                 .iter()
-                .all(|row| row.equipped_in.iter().all(|name| !name.is_empty()))
+                .all(|row| row.equipped_in.iter().all(|holder| {
+                    !holder.name.is_empty()
+                        && !holder.configs.is_empty()
+                        && holder.configs.is_sorted()
+                }))
         );
         assert!(equipped.iter().all(|row| {
-            let mut sorted = row.equipped_in.clone();
-            sorted.sort_unstable();
-            sorted.dedup();
-            sorted == row.equipped_in
+            row.equipped_in
+                .windows(2)
+                .all(|pair| pair[0].name <= pair[1].name)
         }));
         assert!(
             rows.iter()
@@ -587,6 +615,50 @@ mod tests {
                 .all(|row| row.equipped_in.is_empty()),
             "an unranked stack has no instance ids to trace"
         );
+    }
+
+    #[test]
+    fn equipped_holders() {
+        let inventory = fixtures::inventory();
+        let catalog = fixtures::mastery_catalog();
+        let rows = mods(&View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &prices(),
+            favourites: &Favourites::default(),
+            listings: &no_listings(),
+        });
+        let braton = rows
+            .iter()
+            .flat_map(|row| &row.equipped_in)
+            .find(|holder| holder.name == "Braton Prime")
+            .unwrap();
+        assert_eq!(braton.image_name.as_deref(), Some("BratonPrime.png"));
+        assert_eq!(braton.configs, [0]);
+        assert_eq!(braton.forma, 0);
+        assert_eq!(braton.archon_shards, 0);
+        assert_eq!(braton.rank, Some(30));
+        assert!(!braton.takes_orokin_reactor);
+        assert!(!braton.orokin_upgrade);
+        assert!(!braton.exilus_adapter);
+        assert_eq!(braton.custom_name, None);
+        let equinox = arcanes(&View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &prices(),
+            favourites: &Favourites::default(),
+            listings: &no_listings(),
+        })
+        .into_iter()
+        .flat_map(|row| row.equipped_in)
+        .find(|holder| holder.name == "Equinox Prime")
+        .unwrap();
+        assert_eq!(equinox.forma, 1);
+        assert_eq!(equinox.archon_shards, 5);
+        assert_eq!(equinox.rank, Some(30));
+        assert!(equinox.takes_orokin_reactor);
+        assert!(equinox.orokin_upgrade);
+        assert!(equinox.exilus_adapter);
     }
 
     #[test]

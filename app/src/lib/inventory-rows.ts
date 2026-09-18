@@ -9,6 +9,7 @@ import type {
 import type {
   InventoryTab,
   MiscRow,
+  ModHolder,
   ModRow,
   PartRow,
   RelicRow,
@@ -36,7 +37,7 @@ export interface Row extends SortableRow {
   platIsFloor: boolean;
   buyPlat: number | null;
   rarity: ArcaneRarity | null;
-  equippedIn: string[];
+  equippedIn: ModHolder[];
   subtitle: string | null;
   refinement: string | null;
   tier: string | null;
@@ -250,8 +251,9 @@ export function equippedLabel(row: Row): string | null {
   if (row.equippedIn.length === 0) {
     return null;
   }
-  const listedFirst = row.equippedIn.slice(0, 3);
-  const rest = row.equippedIn.length - listedFirst.length;
+  const names = [...new Set(row.equippedIn.map((holder) => holder.name))];
+  const listedFirst = names.slice(0, 5);
+  const rest = names.length - listedFirst.length;
   const listed = listedFirst.join(", ");
   return rest > 0 ? `${listed} and ${rest} more` : listed;
 }

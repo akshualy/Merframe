@@ -5,6 +5,12 @@ use crate::model::{CountedItem, EquipmentItem, Inventory, Upgrade};
 pub const RELIC_PREFIX: &str = "/Lotus/Types/Game/Projections/";
 pub const RIVEN_MARKER: &str = "/Randomized/";
 
+#[derive(Debug, Clone, Copy)]
+pub struct UpgradeSlot<'a> {
+    pub item: &'a EquipmentItem,
+    pub config: usize,
+}
+
 impl Inventory {
     pub fn equipment_categories(&self) -> [&[EquipmentItem]; 14] {
         [
@@ -139,18 +145,18 @@ impl Inventory {
             .filter(|item| item.item_type.contains(RIVEN_MARKER) && item.item_count > 0)
     }
 
-    pub fn upgrade_slots(&self) -> HashMap<&str, Vec<&str>> {
-        let mut slots: HashMap<&str, Vec<&str>> = HashMap::new();
+    pub fn upgrade_slots(&self) -> HashMap<&str, Vec<UpgradeSlot<'_>>> {
+        let mut slots: HashMap<&str, Vec<UpgradeSlot<'_>>> = HashMap::new();
         for item in self.equipment() {
-            for config in &item.configs {
-                for upgrade in &config.upgrades {
+            for (config, loadout) in item.configs.iter().enumerate() {
+                for upgrade in &loadout.upgrades {
                     if upgrade.is_empty() {
                         continue;
                     }
                     slots
                         .entry(upgrade.as_str())
                         .or_default()
-                        .push(item.item_type.as_str());
+                        .push(UpgradeSlot { item, config });
                 }
             }
         }
@@ -466,7 +472,9 @@ mod tests {
         assert!(slots.values().all(|holders| !holders.is_empty()));
         assert!(!slots.contains_key(""));
         let trinity = slots.get("5bf0583058c949d97f403a39").unwrap();
-        assert!(trinity.contains(&"/Lotus/Powersuits/Trinity/TrinityPrime"));
+        assert!(trinity.iter().any(|slot| {
+            slot.item.item_type == "/Lotus/Powersuits/Trinity/TrinityPrime" && slot.config < 6
+        }));
     }
 
     #[test]
