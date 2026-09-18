@@ -12,7 +12,7 @@ Displays information about:
 
 In-game overlays are available on Windows, X11 and XWayland (This includes Wayland since Proton uses XWayland).
 
-While I have tested the app on Linux and Windows 10, consider the app in Beta until this line disappears from this document.
+While I have tested the app on Linux and Windows 10, consider the app in Beta until this line disappears from this document. There are currently no automatic updates of the app, patches breaking the app is expected and untested so far.
 
 Bug reports, feature requests, and contributions are welcome.
 
