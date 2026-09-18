@@ -127,7 +127,7 @@ static CHAT_TAB_ADDED: LazyLock<Regex> =
 static RIVEN_DIALOG: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"ThemedDetailedPurchaseDialog\.lua: PopulateInfo->(\S+)$"));
 static RIVEN_CYCLE_DIALOG: LazyLock<Regex> =
-    LazyLock::new(|| compiled(r"want to cycle (.+) for \D*([0-9,]+)\?"));
+    LazyLock::new(|| compiled(r"want to cycle (.+) for \D*(\d+(?:[,.\u{a0}]\d{3})*)\?"));
 static PURCHASE_DIALOG_HUD_VIS: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"ThemedDetailedPurchaseDialog\.lua: DBG: HudVis (\d+)$"));
 static TRADE_DIALOG_DESCRIPTION: LazyLock<Regex> =
@@ -154,7 +154,12 @@ fn mission_set(message: &str) -> Option<Event> {
 
 fn riven_cycle_dialog(message: &str) -> Option<Event> {
     let captures = RIVEN_CYCLE_DIALOG.captures(message)?;
-    let cost = captures[2].replace(',', "").parse().ok()?;
+    let cost = captures[2]
+        .chars()
+        .filter(char::is_ascii_digit)
+        .collect::<String>()
+        .parse()
+        .ok()?;
     Some(Event::RivenCycleDialog {
         riven: captures[1].to_owned(),
         cost,
@@ -646,6 +651,17 @@ mod tests {
                 cost: 3500,
             })
         );
+        for cost in ["3,500", "3.500", "3\u{a0}500"] {
+            assert_eq!(
+                classify(&log_line(&format!(
+                    "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to cycle Vitrica Acridex for \u{e071}{cost}?, title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
+                ))),
+                Some(Event::RivenCycleDialog {
+                    riven: "Vitrica Acridex".to_owned(),
+                    cost: 3500,
+                })
+            );
+        }
         assert_eq!(
             classify(&log_line(
                 "Dialog.lua: Dialog::CreateOkCancel(description=Cycle Riven into current selection?, title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
