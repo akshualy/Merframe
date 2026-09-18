@@ -15,7 +15,7 @@ use std::sync::Arc;
 
 use tauri::plugin::TauriPlugin;
 use tauri::{Manager, Runtime, Url};
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, warn};
 use tracing_subscriber::fmt::writer::MakeWriterExt;
 
 use crate::state::{AppState, AppStateCell};
@@ -173,7 +173,7 @@ pub fn run() {
         .setup(move |app| {
             init_tracing(&state::data_dir(app.handle())?)?;
             #[cfg(target_os = "linux")]
-            info!(
+            tracing::info!(
                 session = ?startup.session,
                 x_display = startup.x_display,
                 gdk_backend_set = startup.gdk_backend_set,

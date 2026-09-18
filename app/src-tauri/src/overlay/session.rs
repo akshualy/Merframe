@@ -1,3 +1,4 @@
+#[cfg(target_os = "linux")]
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
