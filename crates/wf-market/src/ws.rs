@@ -7,15 +7,7 @@ use tokio_tungstenite::tungstenite::http::HeaderValue;
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async};
 
 use crate::error::Result;
-use crate::models::{Activity, UserStatus};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EnvelopeMeta {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stream: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub revision: Option<u64>,
-}
+use crate::models::UserStatus;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Envelope<P> {
@@ -36,43 +28,24 @@ pub struct StatusSetPayload {
     pub status: UserStatus,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub duration: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity: Option<Activity>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct StatusSetEventPayload {
     pub status: UserStatus,
-    #[serde(rename = "statusSetAt")]
-    pub status_set_at: chrono::DateTime<chrono::Utc>,
-    #[serde(rename = "statusUntil")]
-    pub status_until: Option<chrono::DateTime<chrono::Utc>>,
-    pub activity: Option<Activity>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "route")]
 pub enum IncomingEvent {
     #[serde(rename = "@wfm|event/status/set")]
-    StatusSet {
-        payload: StatusSetEventPayload,
-        meta: Option<EnvelopeMeta>,
-    },
-    #[serde(rename = "@wfm|event/reports/online")]
-    OnlineReport { payload: OnlineReportPayload },
+    StatusSet { payload: StatusSetEventPayload },
     #[serde(rename = "@wfm|cmd/auth/signIn:ok")]
     AuthOk,
     #[serde(rename = "@wfm|cmd/auth/signIn:error")]
     AuthError,
     #[serde(other)]
     Unknown,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct OnlineReportPayload {
-    pub connections: u64,
-    #[serde(rename = "authorizedUsers")]
-    pub authorized_users: u64,
 }
 
 pub fn parse_event(json: &str) -> Result<IncomingEvent> {
@@ -145,7 +118,12 @@ mod tests {
         assert!(matches!(
             parse_event(r#"{"route":"@wfm|event/reports/online","payload":{"connections":812,"authorizedUsers":97}}"#)
                 .unwrap(),
-            IncomingEvent::OnlineReport { .. }
+            IncomingEvent::Unknown
+        ));
+        assert!(matches!(
+            parse_event(r#"{"route":"@wfm|event/status/set","payload":{"status":"ingame","statusSetAt":"2026-09-07T18:55:39Z","statusUntil":null,"activity":null}}"#)
+                .unwrap(),
+            IncomingEvent::StatusSet { payload } if payload.status == UserStatus::Ingame
         ));
         assert!(matches!(
             parse_event(r#"{"route":"@wfm|event/orders/new","payload":{}}"#).unwrap(),

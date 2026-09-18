@@ -4,9 +4,7 @@ export interface MarketUser {
   id: string;
   ingameName: string;
   slug: string;
-  reputation: number;
   status?: string;
-  platform: string;
   locale: string;
 }
 
@@ -21,10 +19,8 @@ export interface Order {
   amberStars?: number;
   cyanStars?: number;
   visible: boolean;
-  createdAt: string;
   updatedAt: string;
   itemId: string;
-  groupId?: string;
   user?: MarketUser;
 }
 
@@ -67,16 +63,6 @@ export interface OrderRow {
   show_warning: boolean;
   lowest: number | null;
   lowest_from_rank_zero: boolean;
-}
-
-export interface Transaction {
-  id: string;
-  type: OrderType;
-  originId: string;
-  platinum: number;
-  quantity: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface MarketItem {
@@ -129,34 +115,16 @@ export interface AuctionItem {
   weapon_url_name: string;
 }
 
-export interface AuctionOwner {
-  id: string;
-  ingame_name: string;
-  slug: string;
-  reputation: number;
-  platform: string;
-  crossplay: boolean;
-  locale: string;
-  region: string;
-  avatar: string | null;
-  status: string;
-  last_seen?: string;
-}
-
 export interface Auction {
   id: string;
   buyout_price: number | null;
   starting_price: number;
-  minimal_reputation: number;
   note?: string;
   item: AuctionItem;
   private: boolean;
   visible: boolean;
-  platform: string;
-  crossplay: boolean;
   closed: boolean;
   is_direct_sell: boolean;
-  owner: AuctionOwner;
   created: string;
   updated: string;
 }

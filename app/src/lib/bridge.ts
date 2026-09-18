@@ -29,7 +29,6 @@ import type {
   RivensTab,
   Settings,
   StatsTab,
-  Transaction,
   WorldStateView,
 } from "@/types";
 
@@ -149,7 +148,7 @@ export const api = {
   marketUpdateOrder: (id: string, patch: OrderPatch) =>
     call<Order>("market_update_order", { id, patch }),
   marketCloseOrder: (id: string, quantity: number) =>
-    call<Transaction>("market_close_order", { id, quantity }),
+    call<void>("market_close_order", { id, quantity }),
   marketDeleteOrder: (id: string) => call<Order>("market_delete_order", { id }),
   marketActivity: () => call<void>("market_activity"),
   marketPresence: () => call<MarketPresence>("market_presence"),

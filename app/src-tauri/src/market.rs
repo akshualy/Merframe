@@ -392,8 +392,6 @@ mod tests {
             subtypes: None,
             max_amber_stars: None,
             max_cyan_stars: None,
-            req_mastery_rank: None,
-            trading_tax: None,
             tradable: Some(true),
             bulk_tradable: None,
             vaulted: None,
@@ -404,7 +402,6 @@ mod tests {
                 ItemLocalization {
                     name: name.to_owned(),
                     description: None,
-                    wiki_link: None,
                     icon: String::new(),
                     thumb: format!("thumbs/{slug}.png"),
                 },
@@ -421,14 +418,11 @@ mod tests {
             per_trade: None,
             subtype: subtype.map(str::to_owned),
             rank,
-            charges: None,
             amber_stars: None,
             cyan_stars: None,
             visible: true,
-            created_at: moment(),
             updated_at: moment(),
             item_id: item_id.to_owned(),
-            group_id: None,
             user: None,
         }
     }

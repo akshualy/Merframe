@@ -1,6 +1,6 @@
 use wf_market::{
-    ActivityType, Item, Order, OrderType, Platform, Polarity, RivenAttribute, User, UserPrivate,
-    UserStatus, envelope, parse_chats, parse_price_table, parse_v1_auction, parse_v1_auctions,
+    Item, Order, OrderType, Polarity, RivenAttribute, User, UserPrivate, UserStatus, envelope,
+    parse_chats, parse_price_table, parse_v1_auction, parse_v1_auctions,
 };
 
 #[allow(
@@ -88,7 +88,7 @@ fn orders_for_item() {
         matches!(first.order_type, OrderType::Sell) || matches!(first.order_type, OrderType::Buy)
     );
     let user = first.user.as_ref().unwrap();
-    assert_eq!(user.platform, Platform::Pc);
+    assert_eq!(user.locale, "en");
 }
 
 #[test]
@@ -149,8 +149,6 @@ fn public_user() {
     let user = envelope::<User>(&json).unwrap();
     assert_eq!(user.slug, "testtenno");
     assert_eq!(user.status, Some(UserStatus::Offline));
-    let activity = user.activity.unwrap();
-    assert!(matches!(activity.activity_type, ActivityType::Unknown));
 }
 
 #[test]
@@ -172,7 +170,6 @@ fn v1_auction() {
     let auction = parse_v1_auction(&json).unwrap();
     assert_eq!(auction.item.polarity, Polarity::Naramon);
     assert_eq!(auction.item.weapon_url_name, "okina");
-    assert_eq!(auction.owner.ingame_name, "TestTenno");
 }
 
 #[test]
@@ -196,11 +193,9 @@ fn my_auctions() {
     assert!(!bidding.is_direct_sell);
     assert_eq!(bidding.buyout_price, None);
     assert_eq!(bidding.starting_price, 120);
-    assert_eq!(bidding.minimal_reputation, 5);
     assert!(!bidding.visible);
     assert!(bidding.private);
     assert_eq!(bidding.item.weapon_url_name, "kuva_bramma");
-    assert_eq!(bidding.owner.slug, "merframetester");
     assert_eq!(bidding.created, "2026-08-30T09:14:02.000+00:00");
     assert_eq!(bidding.updated, "2026-09-06T21:02:44.000+00:00");
 }

@@ -209,7 +209,7 @@ fn login_ignores_stored_token() {
 #[test]
 fn v1_jwt_prefix() {
     let client = client().with_token("abc.def.ghi".to_string());
-    let request = client.profile_v1_request("some_user").unwrap();
+    let request = client.auctions_my_request("some_user").unwrap();
     assert_eq!(
         request.headers().get("Authorization").unwrap(),
         "JWT abc.def.ghi"
@@ -327,10 +327,10 @@ fn encoded_path_segments() {
         item.url().as_str(),
         "https://api.warframe.market/v2/items/braton%20prime%23set%3Fx%3D1"
     );
-    let profile = client.profile_v1_request("Tenno Krys").unwrap();
+    let auctions = client.auctions_my_request("Tenno Krys").unwrap();
     assert_eq!(
-        profile.url().as_str(),
-        "https://api.warframe.market/v1/profile/Tenno%20Krys"
+        auctions.url().as_str(),
+        "https://api.warframe.market/v1/profile/Tenno%20Krys/auctions"
     );
     let plain = client
         .orders_for_item_request("braton_prime_barrel")

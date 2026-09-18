@@ -59,56 +59,14 @@ pub enum UserStatus {
     Invisible,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ActivityType {
-    #[serde(rename = "UNKNOWN")]
-    Unknown,
-    #[serde(rename = "IDLE")]
-    Idle,
-    #[serde(rename = "ON_MISSION")]
-    OnMission,
-    #[serde(rename = "IN_DOJO")]
-    InDojo,
-    #[serde(rename = "IN_ORBITER")]
-    InOrbiter,
-    #[serde(rename = "IN_RELAY")]
-    InRelay,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Activity {
-    #[serde(rename = "type")]
-    pub activity_type: ActivityType,
-    pub details: String,
-    #[serde(rename = "startedAt", skip_serializing_if = "Option::is_none")]
-    pub started_at: Option<DateTime<Utc>>,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub role: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tier: Option<String>,
     #[serde(rename = "ingameName")]
     pub ingame_name: String,
     pub slug: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub avatar: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub about: Option<String>,
-    pub reputation: u32,
-    #[serde(rename = "masteryRank", skip_serializing_if = "Option::is_none")]
-    pub mastery_rank: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<UserStatus>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity: Option<Activity>,
-    #[serde(rename = "lastSeen")]
-    pub last_seen: DateTime<Utc>,
-    pub platform: Platform,
-    pub crossplay: bool,
     pub locale: String,
 }
 
@@ -134,8 +92,6 @@ pub struct ItemLocalization {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(rename = "wikiLink", skip_serializing_if = "Option::is_none")]
-    pub wiki_link: Option<String>,
     pub icon: String,
     pub thumb: String,
 }
@@ -155,10 +111,6 @@ pub struct Item {
     pub max_amber_stars: Option<u32>,
     #[serde(rename = "maxCyanStars", skip_serializing_if = "Option::is_none")]
     pub max_cyan_stars: Option<u32>,
-    #[serde(rename = "reqMasteryRank", skip_serializing_if = "Option::is_none")]
-    pub req_mastery_rank: Option<u32>,
-    #[serde(rename = "tradingTax", skip_serializing_if = "Option::is_none")]
-    pub trading_tax: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tradable: Option<bool>,
     #[serde(rename = "bulkTradable", skip_serializing_if = "Option::is_none")]
@@ -190,10 +142,6 @@ pub struct RivenAttribute {
     pub suffix: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit: Option<String>,
-    #[serde(rename = "positiveOnly", skip_serializing_if = "Option::is_none")]
-    pub positive_only: Option<bool>,
-    #[serde(rename = "negativeOnly", skip_serializing_if = "Option::is_none")]
-    pub negative_only: Option<bool>,
     pub i18n: HashMap<String, RivenAttributeLocalization>,
 }
 
@@ -210,38 +158,17 @@ pub struct Order {
     pub subtype: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rank: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub charges: Option<u32>,
     #[serde(rename = "amberStars", skip_serializing_if = "Option::is_none")]
     pub amber_stars: Option<u32>,
     #[serde(rename = "cyanStars", skip_serializing_if = "Option::is_none")]
     pub cyan_stars: Option<u32>,
     pub visible: bool,
-    #[serde(rename = "createdAt")]
-    pub created_at: DateTime<Utc>,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
     #[serde(rename = "itemId")]
     pub item_id: String,
-    #[serde(rename = "groupId", skip_serializing_if = "Option::is_none")]
-    pub group_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub user: Option<User>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Transaction {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub transaction_type: OrderType,
-    #[serde(rename = "originId")]
-    pub origin_id: String,
-    pub platinum: u32,
-    pub quantity: u32,
-    #[serde(rename = "createdAt")]
-    pub created_at: DateTime<Utc>,
-    #[serde(rename = "updatedAt")]
-    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -319,27 +246,6 @@ pub struct V1Payload<T> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct V1User {
-    pub id: String,
-    pub ingame_name: String,
-    pub slug: String,
-    pub reputation: u32,
-    pub platform: Platform,
-    pub crossplay: bool,
-    pub locale: String,
-    pub region: String,
-    pub avatar: Option<String>,
-    pub status: UserStatus,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub last_seen: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct V1Profile {
-    pub profile: V1User,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Chat {
     pub unread_count: u32,
 }
@@ -371,17 +277,13 @@ pub struct Auction {
     pub id: String,
     pub buyout_price: Option<u32>,
     pub starting_price: u32,
-    pub minimal_reputation: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     pub item: AuctionItem,
     pub private: bool,
     pub visible: bool,
-    pub platform: Platform,
-    pub crossplay: bool,
     pub closed: bool,
     pub is_direct_sell: bool,
-    pub owner: V1User,
     pub created: String,
     pub updated: String,
 }
@@ -502,8 +404,6 @@ pub struct RivenAuction {
     pub re_rolls: u32,
     pub mastery_level: u32,
     pub attributes: Vec<RivenAuctionAttribute>,
-    pub owner_name: String,
-    pub owner_status: UserStatus,
     pub updated: String,
 }
 

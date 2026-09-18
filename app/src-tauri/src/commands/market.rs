@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use wf_core::{ListingChoices, riven_listing_payload};
 use wf_market::{
-    Auction, CreateOrderRequest, Order, OrderBook, OrderType, Platform, Transaction,
-    UpdateAuctionRequest, UpdateOrderRequest, UserStatus,
+    Auction, CreateOrderRequest, Order, OrderBook, OrderType, Platform, UpdateAuctionRequest,
+    UpdateOrderRequest, UserStatus,
 };
 
 use super::{Shared, missing_inventory, ready};
@@ -159,11 +159,7 @@ pub async fn market_update_order(
 }
 
 #[tauri::command]
-pub async fn market_close_order(
-    state: Shared<'_>,
-    id: String,
-    quantity: u32,
-) -> CommandResult<Transaction> {
+pub async fn market_close_order(state: Shared<'_>, id: String, quantity: u32) -> CommandResult<()> {
     let state = ready(&state)?;
     Ok(state.market().close_order(&id, quantity).await?)
 }

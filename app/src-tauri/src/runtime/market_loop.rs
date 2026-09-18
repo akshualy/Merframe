@@ -229,7 +229,7 @@ pub(super) async fn auto_close<R: Runtime>(
             continue;
         };
         match client.close_order(&order.id, quantity).await {
-            Ok(_) => {
+            Ok(()) => {
                 info!(
                     order = order.id,
                     item = item.name,
@@ -442,7 +442,6 @@ async fn presence_session<R: Runtime>(
                 .set_status(StatusSetPayload {
                     status,
                     duration: None,
-                    activity: None,
                 })
                 .await?;
             reported = wanted;
@@ -513,10 +512,7 @@ mod tests {
 
     use chrono::Utc;
     use wf_core::{Trade, TradeItem};
-    use wf_market::{
-        Auction, AuctionItem, Order, OrderType, Platform, Polarity, RivenAttributeInstance,
-        UserStatus, V1User,
-    };
+    use wf_market::{Auction, AuctionItem, Order, OrderType, Polarity, RivenAttributeInstance};
 
     use super::*;
 
@@ -529,14 +525,11 @@ mod tests {
             per_trade: None,
             subtype: None,
             rank: None,
-            charges: None,
             amber_stars: None,
             cyan_stars: None,
             visible: true,
-            created_at: Utc::now(),
             updated_at: Utc::now(),
             item_id: item_id.to_owned(),
-            group_id: None,
             user: None,
         }
     }
@@ -548,28 +541,11 @@ mod tests {
         }
     }
 
-    fn owner() -> V1User {
-        V1User {
-            id: String::from("6a5daf0f000000000000d001"),
-            ingame_name: String::from("MerframeTester"),
-            slug: String::from("merframetester"),
-            reputation: 24,
-            platform: Platform::Pc,
-            crossplay: true,
-            locale: "en".to_owned(),
-            region: "en".to_owned(),
-            avatar: None,
-            status: UserStatus::Offline,
-            last_seen: None,
-        }
-    }
-
     fn auction(id: &str, weapon: &str, name: &str, closed: bool) -> Auction {
         Auction {
             id: id.to_owned(),
             buyout_price: Some(500),
             starting_price: 500,
-            minimal_reputation: 0,
             note: None,
             item: AuctionItem {
                 attributes: vec![RivenAttributeInstance {
@@ -586,11 +562,8 @@ mod tests {
             },
             private: false,
             visible: true,
-            platform: Platform::Pc,
-            crossplay: true,
             closed,
             is_direct_sell: true,
-            owner: owner(),
             created: String::from("2026-09-07T18:55:39.000+00:00"),
             updated: String::from("2026-09-07T18:55:39.000+00:00"),
         }

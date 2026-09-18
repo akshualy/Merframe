@@ -8,8 +8,7 @@ use crate::error::{MarketError, Result};
 use crate::models::{
     Auction, Chat, CloseOrderRequest, CreateAuctionRequest, CreateOrderRequest, Item, Order,
     OrdersGroupUpdate, Platform, RivenAttribute, Session, SetAuctionsVisibilityRequest,
-    SetGroupVisibilityRequest, SignInRequest, Transaction, UpdateAuctionRequest,
-    UpdateOrderRequest, User, V1Profile,
+    SetGroupVisibilityRequest, SignInRequest, UpdateAuctionRequest, UpdateOrderRequest,
 };
 use crate::parse;
 use crate::ratelimit::{self, RateLimiter};
@@ -178,21 +177,6 @@ impl Client {
         })
     }
 
-    pub fn user_request(&self, slug: &str) -> Result<Request> {
-        Ok(self
-            .request_builder(
-                reqwest::Method::GET,
-                ApiFamily::V2,
-                &format!("/user/{}", segment(slug)),
-            )
-            .build()?)
-    }
-
-    pub async fn user(&self, slug: &str) -> Result<User> {
-        let request = self.user_request(slug)?;
-        self.execute(request, parse::envelope::<User>).await
-    }
-
     pub fn create_order_request(&self, body: &CreateOrderRequest) -> Result<Request> {
         Ok(self
             .request_builder(reqwest::Method::POST, ApiFamily::V2, "/order")
@@ -247,9 +231,12 @@ impl Client {
             .build()?)
     }
 
-    pub async fn close_order(&self, id: &str, quantity: u32) -> Result<Transaction> {
+    pub async fn close_order(&self, id: &str, quantity: u32) -> Result<()> {
         let request = self.close_order_request(id, quantity)?;
-        self.execute(request, parse::envelope::<Transaction>).await
+        let response = self.send(request).await?;
+        let status = response.status();
+        accepted(status, response.text().await?)?;
+        Ok(())
     }
 
     pub fn set_all_orders_visibility_request(&self, visible: bool) -> Result<Request> {
@@ -304,21 +291,6 @@ impl Client {
             .as_ref()
             .and_then(jwt_token)
             .ok_or(MarketError::MissingJwt)
-    }
-
-    pub fn profile_v1_request(&self, username: &str) -> Result<Request> {
-        Ok(self
-            .request_builder(
-                reqwest::Method::GET,
-                ApiFamily::V1,
-                &format!("/profile/{}", segment(username)),
-            )
-            .build()?)
-    }
-
-    pub async fn profile_v1(&self, username: &str) -> Result<V1Profile> {
-        let request = self.profile_v1_request(username)?;
-        self.execute(request, parse::v1_payload::<V1Profile>).await
     }
 
     pub fn chats_request(&self) -> Result<Request> {
