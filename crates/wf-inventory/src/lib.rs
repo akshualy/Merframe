@@ -12,4 +12,4 @@ pub use model::{
 };
 pub use mongo::{MongoDate, ObjectId, oid_seconds};
 pub use riven::{RivenChallenge, RivenFingerprint, RivenStat};
-pub use views::{RELIC_PREFIX, RIVEN_MARKER};
+pub use views::{RELIC_PREFIX, RIVEN_MARKER, UpgradeSlot};

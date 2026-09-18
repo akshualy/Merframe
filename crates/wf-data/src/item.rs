@@ -175,6 +175,10 @@ impl Item {
         mastery_level_from_affinity(affinity, warframe_like(self), self.affinity_cap()) as u32
     }
 
+    pub fn takes_orokin_reactor(&self) -> bool {
+        warframe_like(self)
+    }
+
     pub fn mastery_xp(&self) -> u32 {
         self.mastery_per_rank() * self.max_mastery_rank()
     }
@@ -284,6 +288,14 @@ mod tests {
         let sirius = by_unique_name("/Lotus/Powersuits/SiriusOrion/SiriusSuit");
         assert!(sirius.is_warframe());
         assert!(!sirius.is_alternate_suit_body());
+    }
+
+    #[test]
+    fn orokin_reactor_or_catalyst() {
+        assert!(item("Warframes", "Suits").takes_orokin_reactor());
+        assert!(item("Sentinels", "Sentinels").takes_orokin_reactor());
+        assert!(!item("Sentinels", "SentinelWeapons").takes_orokin_reactor());
+        assert!(!item("Primary", "LongGuns").takes_orokin_reactor());
     }
 
     #[test]

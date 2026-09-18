@@ -33,6 +33,7 @@ pub struct LoadoutConfig {
 pub struct EquipmentItem {
     pub item_type: String,
     pub item_id: ObjectId,
+    pub item_name: Option<String>,
     #[serde(default, rename = "XP")]
     pub xp: u64,
     pub features: Option<u32>,
@@ -45,7 +46,25 @@ pub struct EquipmentItem {
     pub archon_crystal_upgrades: Vec<ArchonCrystalSlot>,
 }
 
+const OROKIN_UPGRADE: u32 = 1;
+const EXILUS_ADAPTER: u32 = 2;
+
 impl EquipmentItem {
+    pub fn custom_name(&self) -> Option<&str> {
+        self.item_name
+            .as_deref()
+            .and_then(|name| name.rsplit('|').next())
+            .filter(|name| !name.is_empty())
+    }
+
+    pub fn has_orokin_upgrade(&self) -> bool {
+        self.features.unwrap_or_default() & OROKIN_UPGRADE != 0
+    }
+
+    pub fn has_exilus_adapter(&self) -> bool {
+        self.features.unwrap_or_default() & EXILUS_ADAPTER != 0
+    }
+
     pub fn archon_shards(&self) -> u32 {
         self.archon_crystal_upgrades
             .iter()
@@ -301,5 +320,43 @@ pub struct Inventory {
 impl Inventory {
     pub fn parse(json: &str) -> Result<Self> {
         serde_json::from_str(json).map_err(InventoryError::from)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::EquipmentItem;
+
+    fn equipment(fields: &str) -> EquipmentItem {
+        serde_json::from_str(&format!(
+            r#"{{"ItemType":"/Lotus/Weapons/Tenno/Rifle/BratonPrime","ItemId":{{"$oid":"5bf0583058c949d97f403a39"}}{fields}}}"#
+        ))
+        .unwrap()
+    }
+
+    #[test]
+    fn custom_name() {
+        assert_eq!(equipment("").custom_name(), None);
+        assert_eq!(equipment(r#","ItemName":"""#).custom_name(), None);
+        assert_eq!(
+            equipment(r#","ItemName":"Test Rifle""#).custom_name(),
+            Some("Test Rifle")
+        );
+        assert_eq!(
+            equipment(r#","ItemName":"/Lotus/Language/Weapons/KuvaKohm|TEST NAME""#).custom_name(),
+            Some("TEST NAME")
+        );
+    }
+
+    #[test]
+    fn feature_flags() {
+        let bare = equipment("");
+        assert!(!bare.has_orokin_upgrade() && !bare.has_exilus_adapter());
+        let catalyst = equipment(r#","Features":33"#);
+        assert!(catalyst.has_orokin_upgrade() && !catalyst.has_exilus_adapter());
+        let exilus = equipment(r#","Features":2"#);
+        assert!(!exilus.has_orokin_upgrade() && exilus.has_exilus_adapter());
+        let both = equipment(r#","Features":547"#);
+        assert!(both.has_orokin_upgrade() && both.has_exilus_adapter());
     }
 }

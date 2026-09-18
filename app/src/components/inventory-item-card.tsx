@@ -1,5 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { memo } from "react";
+import { EquippedDialog } from "@/components/equipped-dialog";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { ArcaneImage, ItemImage } from "@/components/item-image";
@@ -151,14 +152,7 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
             {row.subtitle}
           </span>
         )}
-        {equipped && (
-          <span
-            className="text-muted-foreground -mt-1 truncate text-xs"
-            title={row.equippedIn.join(", ")}
-          >
-            Equipped in {equipped}
-          </span>
-        )}
+        {equipped && <EquippedDialog row={row} label={equipped} />}
         {row.refinement && (
           <span className="-mt-1 flex items-center gap-1.5 text-xs">
             {row.tier && (

@@ -34,8 +34,8 @@ pub use foundry::{
     MasteryGate, MissingComponent, NeededItem, PendingBuild, Prime, Progress, WorldTimer,
 };
 pub use inventory_view::{
-    InventoryTab, ItemStatus, MiscRow, ModRow, PartRow, PartSet, RelicRow, SetComponent, SetRow,
-    TabTotals, UpgradePrices,
+    InventoryTab, ItemStatus, MiscRow, ModHolder, ModRow, PartRow, PartSet, RelicRow, SetComponent,
+    SetRow, TabTotals, UpgradePrices,
 };
 pub use listings::MarketListings;
 pub use mastery::{

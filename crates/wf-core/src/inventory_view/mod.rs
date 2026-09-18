@@ -54,6 +54,21 @@ pub struct UpgradePrices {
     pub buy: Option<f64>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ModHolder {
+    pub item_id: String,
+    pub name: String,
+    pub custom_name: Option<String>,
+    pub image_name: Option<String>,
+    pub rank: Option<u32>,
+    pub takes_orokin_reactor: bool,
+    pub orokin_upgrade: bool,
+    pub exilus_adapter: bool,
+    pub configs: Vec<usize>,
+    pub forma: u32,
+    pub archon_shards: u32,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ModRow {
     pub name: String,
@@ -66,7 +81,7 @@ pub struct ModRow {
     pub prices: UpgradePrices,
     pub rarity: Option<Rarity>,
     pub prime: bool,
-    pub equipped_in: Vec<String>,
+    pub equipped_in: Vec<ModHolder>,
     pub market_slug: String,
     pub favourite: bool,
     pub order_placed: bool,
