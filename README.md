@@ -1,4 +1,5 @@
-# Merframe
+
+![Merframe header image](.github/Merframe.png)
 
 A companion app for Warframe on Linux and Windows.
 Displays information about:
@@ -15,6 +16,8 @@ In-game overlays are available on Windows, X11 and XWayland (This includes Wayla
 While I have tested the app on Linux and Windows 10, consider the app in Beta until this line disappears from this document. There are currently no automatic updates of the app, patches breaking the app is expected and untested so far.
 
 Bug reports, feature requests, and contributions are welcome.
+
+![Preview of the UI](.github/Preview.jpeg)
 
 ## Contents
 
@@ -124,6 +127,7 @@ Merframe stands on the work of others. Thank you to:
 - The [Warframe Community Developers](https://github.com/WFCD): item data from [`warframe-items`](https://github.com/WFCD/warframe-items), the node, sortie and Nightwave tables from [`warframe-worldstate-data`](https://github.com/WFCD/warframe-worldstate-data), the world cycle arithmetic documented by [`warframe-worldstate-parser`](https://github.com/WFCD/warframe-worldstate-parser), and the item images served from `cdn.warframestat.us`.
 - The editors of the [Warframe wiki](https://wiki.warframe.com), the source of the Helminth ability table and of the items the exports do not carry.
 - Digital Extremes for Warframe, its public worldState and a content policy that lets fan projects exist.
+- [ChickenDrawsDogs](https://x.com/ChickenDraws) for their awesome `Dog Days "Hang Loose" Poster` drawing, which is the header image.
 - [Tauri](https://tauri.app), [React](https://react.dev), [shadcn/ui](https://ui.shadcn.com), [Radix UI](https://www.radix-ui.com), [Tailwind CSS](https://tailwindcss.com) and [Lucide](https://lucide.dev), which the app is built with.
 
 ## License
