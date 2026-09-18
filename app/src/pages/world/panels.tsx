@@ -1,5 +1,6 @@
 import {
   CalendarClock,
+  Check,
   Gem,
   InfinityIcon,
   type LucideIcon,
@@ -48,22 +49,40 @@ function InfoRow({
   hint,
   value,
   strong = false,
+  owned,
 }: {
   label: ReactNode;
   hint?: ReactNode;
   value: ReactNode;
   strong?: boolean;
+  owned?: boolean | null;
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3 text-sm">
       <span className="flex min-w-0 flex-col">
-        <span className="text-muted-foreground truncate">{label}</span>
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span
+            className={cn(
+              "text-muted-foreground truncate",
+              owned === false && "text-foreground",
+            )}
+          >
+            {label}
+          </span>
+          {owned && (
+            <Check
+              aria-label="Owned"
+              className="text-accent size-3.5 shrink-0"
+            />
+          )}
+        </span>
         {hint && <Hint as="span">{hint}</Hint>}
       </span>
       <span
         className={cn(
-          "shrink-0 font-mono tabular-nums",
-          strong ? "text-primary font-semibold" : "text-foreground",
+          "text-foreground shrink-0 font-mono tabular-nums",
+          owned && "text-muted-foreground",
+          strong && "text-primary font-semibold",
         )}
       >
         {value}
@@ -93,6 +112,17 @@ function Panel({
       </div>
       {children}
     </Surface>
+  );
+}
+
+function Group({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="mt-2 flex flex-col gap-1.5">
+      <Hint as="span" className="text-accent font-medium">
+        {label}
+      </Hint>
+      {children}
+    </div>
   );
 }
 
@@ -161,18 +191,18 @@ export function BaroPanel({
             strong
           />
           {manifest.map((group) => (
-            <div key={group.name} className="flex flex-col gap-1.5">
-              <Hint as="span">{group.name}</Hint>
+            <Group key={group.name} label={group.name}>
               {group.items.map((offer) => (
                 <InfoRow
                   key={offer.name}
                   label={offer.name}
+                  owned={offer.owned}
                   value={
                     offer.ducats === null ? "-" : `${num(offer.ducats)} Ducats`
                   }
                 />
               ))}
-            </div>
+            </Group>
           ))}
         </>
       )}
@@ -298,16 +328,12 @@ export function CircuitPanel({
             value={timeLeft(secondsUntil(circuit.rotates, now))}
             strong
           />
-          <div className="flex flex-col gap-1.5 text-sm">
-            <div className="flex flex-col">
-              <Hint as="span">Normal</Hint>
-              <span>{circuit.normal.join(", ")}</span>
-            </div>
-            <div className="flex flex-col">
-              <Hint as="span">Steel Path</Hint>
-              <span>{circuit.hard.join(", ")}</span>
-            </div>
-          </div>
+          <Group label="Normal">
+            <span className="text-sm">{circuit.normal.join(", ")}</span>
+          </Group>
+          <Group label="Steel Path">
+            <span className="text-sm">{circuit.hard.join(", ")}</span>
+          </Group>
         </>
       )}
     </Panel>
@@ -340,8 +366,7 @@ export function NightwavePanel({
               return null;
             }
             return (
-              <div key={kind} className="flex flex-col gap-1.5">
-                <Hint as="span">{label}</Hint>
+              <Group key={kind} label={label}>
                 {group.map((challenge) => (
                   <InfoRow
                     key={challenge.tag}
@@ -350,7 +375,7 @@ export function NightwavePanel({
                     value={timeLeft(secondsUntil(challenge.expiry, now))}
                   />
                 ))}
-              </div>
+              </Group>
             );
           })}
         </>

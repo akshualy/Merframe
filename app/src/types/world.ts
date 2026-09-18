@@ -32,6 +32,7 @@ export interface BaroOffer {
   name: string;
   ducats: number | null;
   credits: number | null;
+  owned: boolean | null;
 }
 
 export interface BaroGroup {

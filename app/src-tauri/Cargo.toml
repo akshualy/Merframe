@@ -29,6 +29,7 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 wf-core = { workspace = true }
 wf-data = { workspace = true, features = ["fetch"] }
+wf-inventory = { workspace = true }
 wf-log = { workspace = true }
 wf-market = { workspace = true }
 wf-mem = { workspace = true }
