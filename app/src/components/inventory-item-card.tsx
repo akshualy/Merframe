@@ -105,7 +105,7 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
           fallbackSrc={
             row.marketThumb ? marketAssetUrl(row.marketThumb) : undefined
           }
-          rarity={row.rarity}
+          rarity={tab === "arcanes" ? row.rarity : null}
           size={isSet ? 88 : 72}
           alt={row.name}
           className={tab === "mods" || tab === "arcanes" ? "bg-muted/60" : ""}
