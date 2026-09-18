@@ -23,13 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - id: read
         run: |
-          version=$(jq -r .version app/src-tauri/tauri.conf.json)
-          package=$(jq -r .version app/package.json)
-          workspace=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "merframe") | .version')
-          if [ "$version" != "$package" ] || [ "$version" != "$workspace" ]; then
-            echo "version mismatch: tauri.conf.json $version, package.json $package, Cargo.toml $workspace"
-            exit 1
-          fi
+          version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "merframe") | .version')
           echo "version=$version" >> "$GITHUB_OUTPUT"
           if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
             echo "release=false" >> "$GITHUB_OUTPUT"
@@ -70,7 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: app
-          tagName: v__VERSION__
-          releaseName: Merframe __VERSION__
+          tagName: v${{ needs.version.outputs.version }}
+          releaseName: Merframe ${{ needs.version.outputs.version }}
           releaseDraft: true
           prerelease: false

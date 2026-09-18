@@ -1,5 +1,6 @@
+import { getVersion } from "@tauri-apps/api/app";
 import { ExternalLink } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Merframe from "@/components/icons/merframe";
 import { Page, Quoted, Section } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,11 @@ const LINKS = [
 export function AboutPage() {
   const quote = usePageQuote("about");
   const { status } = useAppStore();
+  const [version, setVersion] = useState("");
+
+  useEffect(() => {
+    getVersion().then(setVersion, reportError);
+  }, []);
 
   const handleOpen = useCallback(async (url: string) => {
     try {
@@ -43,7 +49,7 @@ export function AboutPage() {
               stay in a local SQLite database.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">Version 0.1.0</Badge>
+              <Badge variant="secondary">Version {version}</Badge>
               <Badge variant="secondary">Tauri 2</Badge>
               <Badge variant="secondary">React 19</Badge>
               <Badge variant="secondary">Rust 2024</Badge>
