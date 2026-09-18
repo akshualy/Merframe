@@ -1,0 +1,487 @@
+[
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T0VoidProjection",
+  "name": "Void Relic",
+  "type": "Relic",
+  "imageName": "OmegaIsotope.png",
+  "category": "Relics",
+  "tradable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjection",
+  "name": "Lith Relic",
+  "type": "Relic",
+  "imageName": "OmegaIsotope.png",
+  "category": "Relics",
+  "tradable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNovaTrinityVaultABronze",
+  "name": "Lith K4 Intact",
+  "type": "Relic",
+  "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054de2e5221e30057501035",
+   "urlName": "lith_k4_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionSevagothPrimeDBronze",
+  "name": "Lith G12 Intact",
+  "type": "Relic",
+  "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "66c6098866bbb2aedca6959b",
+   "urlName": "lith_g12_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionSevagothPrimeEBronze",
+  "name": "Lith G12 Intact",
+  "type": "Relic",
+  "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "66c6098866bbb2aedca6959b",
+   "urlName": "lith_g12_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionStyanaxPrimeABronze",
+  "name": "Lith Q3 Intact",
+  "type": "Relic",
+  "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a33120358b60af8cd1a0d38",
+   "urlName": "lith_q3_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionStyanaxPrimeEBronze",
+  "name": "Lith S18 Intact",
+  "type": "Relic",
+  "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311ff58b60af8cd1a0d34",
+   "urlName": "lith_s18_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionStyanaxPrimeEGold",
+  "name": "Lith S18 Flawless",
+  "type": "Relic",
+  "imageName": "RelicLithB.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311ff58b60af8cd1a0d34",
+   "urlName": "lith_s18_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionStyanaxPrimeEPlatinum",
+  "name": "Lith S18 Radiant",
+  "type": "Relic",
+  "imageName": "RelicLithC.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311ff58b60af8cd1a0d34",
+   "urlName": "lith_s18_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionStyanaxPrimeESilver",
+  "name": "Lith S18 Exceptional",
+  "type": "Relic",
+  "imageName": "RelicLithA.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311ff58b60af8cd1a0d34",
+   "urlName": "lith_s18_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T2VoidProjection",
+  "name": "Meso Relic",
+  "type": "Relic",
+  "imageName": "OmegaIsotope.png",
+  "category": "Relics",
+  "tradable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T2VoidProjectionCalibanPrimeASilver",
+  "name": "Meso L3 Exceptional",
+  "type": "Relic",
+  "imageName": "RelicMesoA.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "68add9ab1027572e028db6d9",
+   "urlName": "meso_l3_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T2VoidProjectionCalibanPrimeCBronze",
+  "name": "Meso V12 Intact",
+  "type": "Relic",
+  "imageName": "RelicMesoD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "68add9a41027572e028db6d5",
+   "urlName": "meso_v12_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T2VoidProjectionChromaZephyrVaultAGold",
+  "name": "Meso R4 Flawless",
+  "type": "Relic",
+  "imageName": "RelicMesoB.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6089662eea9374026927178d",
+   "urlName": "meso_r4_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T2VoidProjectionStyanaxPrimeCBronze",
+  "name": "Meso K8 Intact",
+  "type": "Relic",
+  "imageName": "RelicMesoD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311fb58b60af8cd1a0d31",
+   "urlName": "meso_k8_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T2VoidProjectionVorunaPrimeDBronze",
+  "name": "Meso V15 Intact",
+  "type": "Relic",
+  "imageName": "RelicMesoD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "69df8588158c0f2a93756b12",
+   "urlName": "meso_v15_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjection",
+  "name": "Neo Relic",
+  "type": "Relic",
+  "imageName": "OmegaIsotope.png",
+  "category": "Relics",
+  "tradable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionGrendelPrimeBBronze",
+  "name": "Neo S18 Intact",
+  "type": "Relic",
+  "imageName": "RelicNeoD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6530539f32327ba8746da738",
+   "urlName": "neo_s18_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionGyrePrimeCBronze",
+  "name": "Neo C7 Intact",
+  "type": "Relic",
+  "imageName": "RelicNeoD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6939b7015d9ebda239125d3a",
+   "urlName": "neo_c7_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionOctaviaPrimeCBronze",
+  "name": "Neo P2 Intact",
+  "type": "Relic",
+  "imageName": "RelicNeoD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd955221e30057500f8d",
+   "urlName": "neo_p2_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionOctaviaPrimeCPlatinum",
+  "name": "Neo P2 Radiant",
+  "type": "Relic",
+  "imageName": "RelicNeoC.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd955221e30057500f8d",
+   "urlName": "neo_p2_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjection",
+  "name": "Axi Relic",
+  "type": "Relic",
+  "imageName": "OmegaIsotope.png",
+  "category": "Relics",
+  "tradable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionCalibanPrimeABronze",
+  "name": "Axi S18 Intact",
+  "type": "Relic",
+  "imageName": "RelicAxiD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "68add99e1027572e028db6cf",
+   "urlName": "axi_s18_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGrendelPrimeABronze",
+  "name": "Axi G11 Intact",
+  "type": "Relic",
+  "imageName": "RelicAxiD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6530539732327ba8746da734",
+   "urlName": "axi_g11_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionHildrynPrimeABronze",
+  "name": "Axi H6 Intact",
+  "type": "Relic",
+  "imageName": "RelicAxiD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "641264a47d179f02190e41e7",
+   "urlName": "axi_h6_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionMagNovaVaultBBronze",
+  "name": "Axi A5 Intact",
+  "type": "Relic",
+  "imageName": "RelicAxiD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd425221e30057500f45",
+   "urlName": "axi_a5_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionMagNovaVaultBSilver",
+  "name": "Axi A5 Exceptional",
+  "type": "Relic",
+  "imageName": "RelicAxiA.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd425221e30057500f45",
+   "urlName": "axi_a5_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionNovaTrinityVaultABronze",
+  "name": "Axi S7 Intact",
+  "type": "Relic",
+  "imageName": "RelicAxiD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd375221e30057500f3c",
+   "urlName": "axi_s7_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionPPlatinum",
+  "name": "Axi A2 Radiant",
+  "type": "Relic",
+  "imageName": "RelicAxiC.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd2e5221e30057500f32",
+   "urlName": "axi_a2_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeABronze",
+  "name": "Axi A21 Intact",
+  "type": "Relic",
+  "imageName": "RelicAxiD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311f458b60af8cd1a0d2a",
+   "urlName": "axi_a21_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeAGold",
+  "name": "Axi A21 Flawless",
+  "type": "Relic",
+  "imageName": "RelicAxiB.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311f458b60af8cd1a0d2a",
+   "urlName": "axi_a21_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeAPlatinum",
+  "name": "Axi A21 Radiant",
+  "type": "Relic",
+  "imageName": "RelicAxiC.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311f458b60af8cd1a0d2a",
+   "urlName": "axi_a21_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeASilver",
+  "name": "Axi A21 Exceptional",
+  "type": "Relic",
+  "imageName": "RelicAxiA.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": false,
+  "marketInfo": {
+   "id": "6a3311f458b60af8cd1a0d2a",
+   "urlName": "axi_a21_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T5VoidProjectionImmortal",
+  "name": "Requiem Relic",
+  "type": "Relic",
+  "imageName": "OmegaIsotope.png",
+  "category": "Relics",
+  "tradable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T5VoidProjectionImmortalABronze",
+  "name": "Requiem I Intact",
+  "type": "Relic",
+  "imageName": "RelicImmortalD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd0c5221e30057500f18",
+   "urlName": "requiem_i_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T5VoidProjectionImmortalBBronze",
+  "name": "Requiem II Intact",
+  "type": "Relic",
+  "imageName": "RelicImmortalD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd0b5221e30057500f17",
+   "urlName": "requiem_ii_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T5VoidProjectionImmortalCPlatinum",
+  "name": "Requiem III Radiant",
+  "type": "Relic",
+  "imageName": "RelicImmortalC.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd095221e30057500f16",
+   "urlName": "requiem_iii_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T5VoidProjectionImmortalDBronze",
+  "name": "Requiem IV Intact",
+  "type": "Relic",
+  "imageName": "RelicImmortalD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054dd075221e30057500f15",
+   "urlName": "requiem_iv_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T5VoidProjectionImmortalOmni",
+  "name": "Void Relic",
+  "type": "Relic",
+  "imageName": "OmegaIsotope.png",
+  "category": "Relics",
+  "tradable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T5VoidProjectionImmortalOmniA",
+  "name": "Requiem Eterna Relic",
+  "type": "Relic",
+  "imageName": "RelicImmortalC.png",
+  "category": "Relics",
+  "tradable": false,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "69c52958bb986142bb6e02bb",
+   "urlName": "requiem_eterna_relic"
+  }
+ }
+]

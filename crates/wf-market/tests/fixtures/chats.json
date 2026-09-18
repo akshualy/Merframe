@@ -1,0 +1,42 @@
+{
+  "payload": {
+    "chats": [
+      {
+        "id": "6a1b2c3d4e5f60718293a4b5",
+        "chat_name": "VoidTrader",
+        "unread_count": 2,
+        "last_update": "2026-09-07T18:42:11.000+00:00",
+        "chat_with": [
+          {
+            "id": "5f1e2d3c4b5a6978012345cd",
+            "ingame_name": "VoidTrader",
+            "avatar": "user/avatar/5f1e2d3c4b5a6978012345cd.png",
+            "reputation": 48,
+            "region": "en",
+            "status": "ingame",
+            "last_seen": "2026-09-07T18:41:00.000+00:00"
+          }
+        ],
+        "messages": []
+      },
+      {
+        "id": "7b2c3d4e5f60718293a4b5c6",
+        "chat_name": "RelicHunter",
+        "unread_count": 0,
+        "last_update": "2026-09-06T09:15:00.000+00:00",
+        "chat_with": [
+          {
+            "id": "5f1e2d3c4b5a6978012345ef",
+            "ingame_name": "RelicHunter",
+            "avatar": null,
+            "reputation": 3,
+            "region": "en",
+            "status": "offline",
+            "last_seen": "2026-09-06T09:20:00.000+00:00"
+          }
+        ],
+        "messages": []
+      }
+    ]
+  }
+}

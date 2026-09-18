@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "overlay",
+  "description": "The defaults for the transparent overlay windows are events, paths and the window APIs.",
+  "windows": ["overlay-relic", "overlay-recommend", "overlay-riven"],
+  "permissions": ["core:default"]
+}

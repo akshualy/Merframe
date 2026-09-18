@@ -1,0 +1,1592 @@
+[
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/FireProcResist",
+  "name": "Arcane Ice",
+  "category": "Arcanes",
+  "type": "Warframe Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionHeat.png",
+  "rarity": "Common",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/InstantShieldOnDamage",
+  "name": "Arcane Barrier",
+  "category": "Arcanes",
+  "type": "Warframe Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionAE.png",
+  "rarity": "Legendary",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/MagneticProcResist",
+  "name": "Arcane Nullifier",
+  "category": "Arcanes",
+  "type": "Warframe Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionMagnetic.png",
+  "rarity": "Common",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Offensive/HealCompanionOnSixMeleeKills",
+  "name": "Arcane Bodyguard",
+  "category": "Arcanes",
+  "type": "Warframe Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionHealCompanionOnSixMeleeKills.png",
+  "rarity": "Rare",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Offensive/MeleeDamageForActiveShields",
+  "name": "Melee Retaliation",
+  "category": "Arcanes",
+  "type": "Melee Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionCX.png",
+  "rarity": "Common",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Offensive/PrimaryHeadshotCritMultOnHeadshot",
+  "name": "Primary Blight",
+  "category": "Arcanes",
+  "type": "Primary Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionCS.png",
+  "rarity": "Rare",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/OperatorAmps/VoidToElectricDamage",
+  "name": "Virtuos Surge",
+  "category": "Arcanes",
+  "type": "Amp Arcane",
+  "tradable": true,
+  "imageName": "SolarisVirtuosSurge.png",
+  "rarity": "Common",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup",
+  "name": "Arcane Energize",
+  "category": "Arcanes",
+  "type": "Warframe Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionBI.png",
+  "rarity": "Legendary",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/PistolDamageOnReload",
+  "name": "Arcane Awakening",
+  "category": "Arcanes",
+  "type": "Warframe Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionAS.png",
+  "rarity": "Uncommon",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Zariman/OperatorOnOperatorAbilityIncreaseDamage",
+  "name": "Eternal Eradicate",
+  "category": "Arcanes",
+  "type": "Amp Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionBP.png",
+  "rarity": "Rare",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Zariman/WarframeOnShieldUptimePowerDuration",
+  "name": "Molt Efficiency",
+  "category": "Arcanes",
+  "type": "Warframe Arcane",
+  "tradable": true,
+  "imageName": "ArcaneProjectionBN.png",
+  "rarity": "Rare",
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Antiques/EnterVoidModeOnKnockdown",
+  "name": "Talsek-An",
+  "category": "Mods",
+  "type": "Tektolyst Artifact Mod",
+  "tradable": false,
+  "imageName": "OrokinImageF.jpg",
+  "rarity": "Common",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingDualStatPunctureStatusMeleeMod",
+  "name": "Nebula Bore",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingDualStatPunctureStatusMeleeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingEventColdStatusMeleeMod",
+  "name": "Cryo Coating",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingEventColdStatusMeleeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingEventElectricStatusMeleeMod",
+  "name": "Ion Infusion",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingEventElectricityStatusMeleeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingEventToxinStatusMeleeMod",
+  "name": "Infectious Injection",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingEventToxinStatusMeleeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingMeleeCritChanceMod",
+  "name": "Tempered Blade",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingMeleeCritChanceMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingMeleeDamageMod",
+  "name": "Cutting Edge",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingMeleeDamageMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 10,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingMeleeFireRateMod",
+  "name": "Furor",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingMeleeFireRateMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingMeleeScanOnKillMod",
+  "name": "Astral Autopsy",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingMeleeScanOnKillMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 0
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingWeaponToxinDamageMod",
+  "name": "Poisonous Sting",
+  "category": "Mods",
+  "type": "Arch-Melee Mod",
+  "tradable": true,
+  "imageName": "ArchwingWeaponToxinDamageModMelee.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Rifle/ArchwingDualStatImpactStatusMod",
+  "name": "Comet Blast",
+  "category": "Mods",
+  "type": "Arch-Gun Mod",
+  "tradable": true,
+  "imageName": "ArchwingDualStatImpactStatusRifleMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Rifle/ArchwingDualStatPunctureStatusMod",
+  "name": "Quasar Drill",
+  "category": "Mods",
+  "type": "Arch-Gun Mod",
+  "tradable": true,
+  "imageName": "ArchwingDualStatPunctureStatusRifleMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Rifle/ArchwingEventColdStatusRifleMod",
+  "name": "Hypothermic Shell",
+  "category": "Mods",
+  "type": "Arch-Gun Mod",
+  "tradable": true,
+  "imageName": "ArchwingEventColdStatusRifleMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Rifle/ArchwingEventToxinStatusRifleMod",
+  "name": "Contamination Casing",
+  "category": "Mods",
+  "type": "Arch-Gun Mod",
+  "tradable": true,
+  "imageName": "ArchwingEventToxinStatusRifleMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Rifle/ArchwingWeaponFreezeDamageMod",
+  "name": "Polar Magazine",
+  "category": "Mods",
+  "type": "Arch-Gun Mod",
+  "tradable": true,
+  "imageName": "ArchwingWeaponFreezeDamageModRifle.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Suit/ArchwingSuitAbilityDurationMod",
+  "name": "Efficient Transferral",
+  "category": "Mods",
+  "type": "Archwing Mod",
+  "tradable": true,
+  "imageName": "ArchwingSuitAbilityDurationMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Suit/ArchwingSuitAbilityRangeMod",
+  "name": "Energy Amplifier",
+  "category": "Mods",
+  "type": "Archwing Mod",
+  "tradable": true,
+  "imageName": "ArchwingSuitAbilityRangeMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Aura/PlayerPoisonImmunityAuraMod",
+  "name": "Toxin Resistance",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "PlayerPoisonImmunityBuff.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/DataSpike/Assassin/SwiftExecuteMod",
+  "name": "Swift Mercy",
+  "category": "Mods",
+  "type": "Parazon Mod",
+  "tradable": false,
+  "imageName": "SwiftExecuteMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 0,
+  "levelStats": [
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/DataSpike/Cipher/AutoHackMod",
+  "name": "Auto Breach",
+  "category": "Mods",
+  "type": "Parazon Mod",
+  "tradable": false,
+  "imageName": "AutoHackMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 0,
+  "levelStats": [
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/DataSpike/Cipher/DamageReductionOnHackMod",
+  "name": "Firewall",
+  "category": "Mods",
+  "type": "Parazon Mod",
+  "tradable": false,
+  "imageName": "DamageReductionOnHackMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 0,
+  "levelStats": [
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Hoverboard/HBDoubleJumpHeightMod",
+  "name": "Poppin' Vert",
+  "category": "Mods",
+  "type": "K-Drive Mod",
+  "tradable": true,
+  "imageName": "HoverboardModO.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Immortal/AntivirusThreeMod",
+  "name": "Trojan Tracker",
+  "category": "Mods",
+  "type": "Parazon Mod",
+  "tradable": false,
+  "imageName": "TrojanSnatcher.png",
+  "rarity": "Rare",
+  "fusionLimit": 3
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Melee/Beginner/WeaponMeleeChannelingEfficiencyModBeginner",
+  "name": "Reflex Coil",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "MeleeChargeRateMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Melee/Channel/ChannelStatusMod",
+  "name": "Enduring Strike",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "ChannelingStatusChance.jpg",
+  "rarity": "Common",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Melee/DualStat/CorruptedHeavyDamageChargeSpeedMod",
+  "name": "Corrupt Charge",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "ChannelingCorruptChargeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Melee/DualStat/PoisonEventMeleeMod",
+  "name": "Virulent Scourge",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "PoisonEventMeleeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Melee/WeaponImpactDamageMod",
+  "name": "Heavy Trauma",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "ImpactDamageMeleeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Melee/WeaponMeleeDamageMod",
+  "name": "Pressure Point",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "MeleeDamageMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Melee/WeaponMeleeRangeIncMod",
+  "name": "Reach",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "MeleeRangeMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Necromech/NecromechSlideEfficiencyMod",
+  "name": "Necramech Friction",
+  "category": "Mods",
+  "type": "Necramech Mod",
+  "tradable": true,
+  "imageName": "NecramechSlideEfficiencyMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Nightwave/SobekNightwaveMod",
+  "name": "Clip Delegation",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "SobekNightwaveMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Pistol/Beginner/WeaponPistolFactionDamageInfestedBeginner",
+  "name": "Expel Infested",
+  "category": "Mods",
+  "type": "Secondary Mod",
+  "tradable": true,
+  "imageName": "PistolDamageInfested.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Pistol/DualStat/CorruptedCritChanceFireRatePistol",
+  "name": "Creeping Bullseye",
+  "category": "Mods",
+  "type": "Secondary Mod",
+  "tradable": true,
+  "imageName": "CorruptedCritChanceFireRatePistolMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Pistol/DualStat/CorruptedFireRateDamagePistol",
+  "name": "Anemic Agility",
+  "category": "Mods",
+  "type": "Secondary Mod",
+  "tradable": true,
+  "imageName": "CorruptedFireRateDamagePistolMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Pistol/DualStat/FireEventPistolMod",
+  "name": "Scorch",
+  "category": "Mods",
+  "type": "Secondary Mod",
+  "tradable": true,
+  "imageName": "DualStatFireProcPistol.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Pistol/DualStat/IceEventPistolMod",
+  "name": "Frostbite",
+  "category": "Mods",
+  "type": "Secondary Mod",
+  "tradable": true,
+  "imageName": "IceEventPistolMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Pistol/WeaponProcTimeMod",
+  "name": "Perpetual Agony",
+  "category": "Mods",
+  "type": "Secondary Mod",
+  "tradable": true,
+  "imageName": "WeaponProcTimePistolMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/PvPMods/Pistol/PassiveReloadMod",
+  "name": "Eject Magazine",
+  "category": "Mods",
+  "type": "Secondary Mod",
+  "tradable": true,
+  "imageName": "PassiveReloadPistolMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Railjack/Abilities/CrewShipTetherAbilityCard",
+  "name": "Tether",
+  "category": "Mods",
+  "type": "Plexus Mod",
+  "tradable": false,
+  "imageName": "RailjackModGeneric17.png",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Railjack/Gunnery/ZektiFreeSuperWeaponAmmo",
+  "name": "Artillery Cheap Shot",
+  "category": "Mods",
+  "type": "Plexus Mod",
+  "tradable": false,
+  "imageName": "RailjackModArtilleryCheapShot.png",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Railjack/Gunnery/ZektiSuperWeaponDamage",
+  "name": "Forward Artillery",
+  "category": "Mods",
+  "type": "Plexus Mod",
+  "tradable": false,
+  "imageName": "RailjackModForwardArtillery.png",
+  "rarity": "Rare",
+  "fusionLimit": 10,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Railjack/Tactical/CrewShipQuadDamageAbilityCard",
+  "name": "Battle Stations",
+  "category": "Mods",
+  "type": "Plexus Mod",
+  "tradable": false,
+  "imageName": "RailjackModGeneric01.png",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+  "name": "Archgun Riven Mod",
+  "category": "Mods",
+  "type": "Arch-Gun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "rarity": "Common",
+  "fusionLimit": 434
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusModularMeleeRandomModRare",
+  "name": "Zaw Riven Mod",
+  "category": "Mods",
+  "type": "Zaw Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "rarity": "Common",
+  "fusionLimit": 434
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusModularPistolRandomModRare",
+  "name": "Kitgun Riven Mod",
+  "category": "Mods",
+  "type": "Kitgun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "rarity": "Common",
+  "fusionLimit": 434
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+  "name": "Pistol Riven Mod",
+  "category": "Mods",
+  "type": "Pistol Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "rarity": "Common",
+  "fusionLimit": 434
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+  "name": "Rifle Riven Mod",
+  "category": "Mods",
+  "type": "Rifle Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "rarity": "Common",
+  "fusionLimit": 434
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+  "name": "Shotgun Riven Mod",
+  "category": "Mods",
+  "type": "Shotgun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "rarity": "Common",
+  "fusionLimit": 434
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+  "name": "Melee Riven Mod",
+  "category": "Mods",
+  "type": "Melee Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "rarity": "Common",
+  "fusionLimit": 434
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawArchgunRandomMod",
+  "name": "Archgun Riven Mod",
+  "category": "Mods",
+  "type": "Arch-Gun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawMeleeRandomMod",
+  "name": "Melee Riven Mod",
+  "category": "Mods",
+  "type": "Melee Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawModularMeleeRandomMod",
+  "name": "Zaw Riven Mod",
+  "category": "Mods",
+  "type": "Zaw Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawModularPistolRandomMod",
+  "name": "Kitgun Riven Mod",
+  "category": "Mods",
+  "type": "Kitgun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawPistolRandomMod",
+  "name": "Pistol Riven Mod",
+  "category": "Mods",
+  "type": "Pistol Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawRifleRandomMod",
+  "name": "Rifle Riven Mod",
+  "category": "Mods",
+  "type": "Rifle Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawSentinelWeaponRandomMod",
+  "name": "Companion Weapon Riven Mod",
+  "category": "Mods",
+  "type": "Companion Weapon Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/RawShotgunRandomMod",
+  "name": "Shotgun Riven Mod",
+  "category": "Mods",
+  "type": "Shotgun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaModIndistinctUnveiled.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/Beginner/WeaponDamageAmountModBeginner",
+  "name": "Serration",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "RifleDamageAmountMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/Beginner/WeaponFireDamageModBeginner",
+  "name": "Hellfire",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "RifleFireDamageMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/DualStat/CorruptedMaxClipReloadSpeedRifle",
+  "name": "Tainted Mag",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "CorruptedMaxClipForReloadSpeedMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 10,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/Event/ProjectNightwatch/OgrisNightwatchMod",
+  "name": "Nightwatch Napalm",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "OgrisNightwatchMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/Event/StatusProcWhileAimingRifleMod",
+  "name": "Catalyzer Link",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "StatusChanceWhileAimingMods.jpg",
+  "rarity": "Common",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/WeaponDamageAmountMod",
+  "name": "Serration",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "RifleDamageAmountMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 10,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/WeaponImpactDamageMod",
+  "name": "Rupture",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "ImpactDamageRifleMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/WeaponRifleConvertAmmoMod",
+  "name": "Rifle Ammo Mutation",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "RifleAmmoMutatorMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Rifle/WeaponWeakpointCriticalChanceMod",
+  "name": "Primary Acuity",
+  "category": "Mods",
+  "type": "Primary Mod",
+  "tradable": true,
+  "imageName": "WeaponWeakpointCriticalChanceMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 10,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Sentinel/Moa/MoaMeleeMod",
+  "name": "Hard Engage",
+  "category": "Mods",
+  "type": "Companion Mod",
+  "tradable": true,
+  "imageName": "MoaMeleeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Sets/Amar/AmarWarframeMod",
+  "name": "Amar's Hatred",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "AmarWarframeMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Sets/Ashen/AshenCarapaceMod",
+  "name": "Carnis Carapace",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "AshenCarapace.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Sets/Hunter/CompanionHunterCommandMod",
+  "name": "Hunter Command",
+  "category": "Mods",
+  "type": "Companion Mod",
+  "tradable": true,
+  "imageName": "HunterCommand.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Sets/Mecha/KubrowMechaOverdriveMod",
+  "name": "Mecha Overdrive",
+  "category": "Mods",
+  "type": "Companion Mod",
+  "tradable": true,
+  "imageName": "KubrowMechaOverdriveMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Sets/Strain/WarframeStrainConsumeMod",
+  "name": "Strain Consume",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "WarframeStrainConsumeMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Shotgun/Event/ProjectNightwatch/SobekNightwatchMod",
+  "name": "Acid Shells",
+  "category": "Mods",
+  "type": "Shotgun Mod",
+  "tradable": true,
+  "imageName": "SobekNightwatchMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Shotgun/WeaponStunChanceMod",
+  "name": "Shotgun Savvy",
+  "category": "Mods",
+  "type": "Shotgun Mod",
+  "tradable": true,
+  "imageName": "StatusChanceShotgunMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Syndicate/DualCleaversMod",
+  "name": "Justice Blades",
+  "category": "Mods",
+  "type": "Melee Mod",
+  "tradable": true,
+  "imageName": "DualCleavers.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/AvatarDamageResistanceKnockdown",
+  "name": "Shock Absorbers",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "ShockAbsorbersMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/AvatarFallingImpactMod",
+  "name": "Heavy Impact",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "AvatarHeavyImpactMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/AvatarLootRadarMod",
+  "name": "Thief's Wit",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "LootRadarMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/AvatarRevengeDamageMelee",
+  "name": "Retribution",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "ShockingBarrierMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/AvatarShieldMaxMod",
+  "name": "Redirection",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "ShieldMaxMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 10,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/AvatarTimeLimitIncreaseMod",
+  "name": "Intruder",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "DataSpikeIntruderMod.jpg",
+  "rarity": "Common",
+  "fusionLimit": 0,
+  "levelStats": [
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/Beginner/AvatarEnemyRadarModBeginner",
+  "name": "Enemy Sense",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "EnemyRadarMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/Beginner/AvatarPowerToHealthOnDeathModBeginner",
+  "name": "Quick Thinking",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "AvatarQuickThinkingMod.jpg",
+  "rarity": "Rare",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/Beginner/AvatarSlideBoostModBeginner",
+  "name": "Maglev",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "SlideResistanceDecreaseMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 3,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/Expert/AvatarAbilityDurationModExpert",
+  "name": "Primed Continuity",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "AbilityDurationMod.jpg",
+  "rarity": "Legendary",
+  "fusionLimit": 10,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Warframe/SlashParkourTwoMod",
+  "name": "Rending Turn",
+  "category": "Mods",
+  "type": "Warframe Mod",
+  "tradable": true,
+  "imageName": "SlashParkourTwoMod.jpg",
+  "rarity": "Uncommon",
+  "fusionLimit": 5,
+  "levelStats": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ]
+ }
+]

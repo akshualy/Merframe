@@ -1,0 +1,2688 @@
+[
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+  "name": "Archgun Riven Mod",
+  "category": "Mods",
+  "type": "Arch-Gun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "masterable": false,
+  "upgradeEntries": [
+   {
+    "tag": "WeaponArmorPiercingDamageMod",
+    "prefixTag": "insi",
+    "suffixTag": "cak",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_PUNCTURE_COLOR>Puncture"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritChanceMod",
+    "prefixTag": "crita",
+    "suffixTag": "cron",
+    "upgradeValues": [
+     {
+      "value": 0.0111,
+      "locTag": "|val|% Critical Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritDamageMod",
+    "prefixTag": "acri",
+    "suffixTag": "tis",
+    "upgradeValues": [
+     {
+      "value": 0.0088999998,
+      "locTag": "|val|% Critical Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponElectricityDamageMod",
+    "prefixTag": "vexi",
+    "suffixTag": "tio",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_ELECTRICITY_COLOR>Electricity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireDamageMod",
+    "prefixTag": "igni",
+    "suffixTag": "pha",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_FIRE_COLOR>Heat"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireRateMod",
+    "prefixTag": "croni",
+    "suffixTag": "dra",
+    "upgradeValues": [
+     {
+      "value": 0.00667,
+      "locTag": "|val|% Fire Rate (x2 for Bows)"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFreezeDamageMod",
+    "prefixTag": "geli",
+    "suffixTag": "do",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_FREEZE_COLOR>Cold"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponImpactDamageMod",
+    "prefixTag": "magna",
+    "suffixTag": "ton",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_IMPACT_COLOR>Impact"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProcTimeMod",
+    "prefixTag": "deci",
+    "suffixTag": "des",
+    "upgradeValues": [
+     {
+      "value": 0.01111,
+      "locTag": "|val|% Status Duration"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponSlashDamageMod",
+    "prefixTag": "sci",
+    "suffixTag": "sus",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_SLASH_COLOR>Slash"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponStunChanceMod",
+    "prefixTag": "hexa",
+    "suffixTag": "dex",
+    "upgradeValues": [
+     {
+      "value": 0.0066999998,
+      "locTag": "|val|% Status Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponToxinDamageMod",
+    "prefixTag": "toxi",
+    "suffixTag": "tox",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_POISON_COLOR>Toxin"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponAmmoMaxMod",
+    "prefixTag": "ampi",
+    "suffixTag": "bin",
+    "upgradeValues": [
+     {
+      "value": 0.0111,
+      "locTag": "|val|% Ammo Maximum"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponClipMaxMod",
+    "prefixTag": "arma",
+    "suffixTag": "tin",
+    "upgradeValues": [
+     {
+      "value": 0.0066999998,
+      "locTag": "|val|% Magazine Capacity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponDamageAmountMod",
+    "prefixTag": "visi",
+    "suffixTag": "ata",
+    "upgradeValues": [
+     {
+      "value": 0.0111,
+      "locTag": "|val|% Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireIterationsMod",
+    "prefixTag": "sati",
+    "suffixTag": "can",
+    "upgradeValues": [
+     {
+      "value": 0.0066999998,
+      "locTag": "|val|% Multishot"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponPunctureDepthMod",
+    "prefixTag": "lexi",
+    "suffixTag": "nok",
+    "upgradeValues": [
+     {
+      "value": 0.029999999,
+      "locTag": "|val| Punch Through"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponRecoilReductionMod",
+    "prefixTag": "zeti",
+    "suffixTag": "mag",
+    "upgradeValues": [
+     {
+      "value": -0.0099999998,
+      "locTag": "|val|% Weapon Recoil"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponReloadSpeedMod",
+    "prefixTag": "feva",
+    "suffixTag": "tak",
+    "upgradeValues": [
+     {
+      "value": 0.0111,
+      "locTag": "|val|% Reload Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageCorpus",
+    "prefixTag": "manti",
+    "suffixTag": "tron",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Corpus"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageGrineer",
+    "prefixTag": "argi",
+    "suffixTag": "con",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Grineer"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponZoomFovMod",
+    "prefixTag": "hera",
+    "suffixTag": "lis",
+    "upgradeValues": [
+     {
+      "value": 0.006666,
+      "locTag": "|val|% Zoom"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusModularMeleeRandomModRare",
+  "name": "Zaw Riven Mod",
+  "category": "Mods",
+  "type": "Zaw Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "masterable": false,
+  "upgradeEntries": [
+   {
+    "tag": "WeaponMeleeDamageMod",
+    "prefixTag": "visi",
+    "suffixTag": "ata",
+    "upgradeValues": [
+     {
+      "value": 0.018300001,
+      "locTag": "|val|% Melee Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponArmorPiercingDamageMod",
+    "prefixTag": "insi",
+    "suffixTag": "cak",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_PUNCTURE_COLOR>Puncture"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponImpactDamageMod",
+    "prefixTag": "magna",
+    "suffixTag": "ton",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_IMPACT_COLOR>Impact"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponSlashDamageMod",
+    "prefixTag": "sci",
+    "suffixTag": "sus",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_SLASH_COLOR>Slash"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritChanceMod",
+    "prefixTag": "crita",
+    "suffixTag": "cron",
+    "upgradeValues": [
+     {
+      "value": 0.02,
+      "locTag": "|val|% Critical Chance (x2 for Heavy Attacks)"
+     },
+     {
+      "value": 0.02
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritDamageMod",
+    "prefixTag": "acri",
+    "suffixTag": "tis",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Critical Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponElectricityDamageMod",
+    "prefixTag": "vexi",
+    "suffixTag": "tio",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_ELECTRICITY_COLOR>Electricity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireDamageMod",
+    "prefixTag": "igni",
+    "suffixTag": "pha",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FIRE_COLOR>Heat"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFreezeDamageMod",
+    "prefixTag": "geli",
+    "suffixTag": "do",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FREEZE_COLOR>Cold"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponToxinDamageMod",
+    "prefixTag": "toxi",
+    "suffixTag": "tox",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_POISON_COLOR>Toxin"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProcTimeMod",
+    "prefixTag": "deci",
+    "suffixTag": "des",
+    "upgradeValues": [
+     {
+      "value": 0.01111,
+      "locTag": "|val|% Status Duration"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFactionDamageCorpus",
+    "prefixTag": "manti",
+    "suffixTag": "tron",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Corpus"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFactionDamageGrineer",
+    "prefixTag": "argi",
+    "suffixTag": "con",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Grineer"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFactionDamageInfested",
+    "prefixTag": "pura",
+    "suffixTag": "ada",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Infested"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireRateMod",
+    "prefixTag": "croni",
+    "suffixTag": "dra",
+    "upgradeValues": [
+     {
+      "value": 0.0060999999,
+      "locTag": "|val|% Attack Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponStunChanceMod",
+    "prefixTag": "hexa",
+    "suffixTag": "dex",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Status Chance"
+     }
+    ]
+   },
+   {
+    "tag": "ComboDurationMod",
+    "prefixTag": "tempi",
+    "suffixTag": "nem",
+    "upgradeValues": [
+     {
+      "value": 0.090000004,
+      "locTag": "|val|s Combo Duration"
+     }
+    ]
+   },
+   {
+    "tag": "SlideAttackCritChanceMod",
+    "prefixTag": "pleci",
+    "suffixTag": "nent",
+    "upgradeValues": [
+     {
+      "value": 0.013334,
+      "locTag": "|STAT1|% Critical Chance for Slide Attack"
+     },
+     {
+      "value": 0.013334
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeRangeIncMod",
+    "prefixTag": "locti",
+    "suffixTag": "tor",
+    "upgradeValues": [
+     {
+      "value": 0.021579999,
+      "locTag": "|val| Range"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFinisherDamageMod",
+    "prefixTag": "exi",
+    "suffixTag": "cta",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% Finisher Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboEfficiencyMod",
+    "prefixTag": "forti",
+    "suffixTag": "us",
+    "upgradeValues": [
+     {
+      "value": 0.0081599997,
+      "locTag": "|val|% Heavy Attack Efficiency"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboInitialBonusMod",
+    "prefixTag": "para",
+    "suffixTag": "um",
+    "upgradeValues": [
+     {
+      "value": 0.27224001,
+      "locTag": "|val| Initial Combo"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboPointsOnHitMod",
+    "prefixTag": "",
+    "suffixTag": "",
+    "upgradeValues": [
+     {
+      "value": -0.01165,
+      "locTag": "|val|% Chance to Gain Combo Count"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboBonusOnHitMod",
+    "prefixTag": "laci",
+    "suffixTag": "nus",
+    "upgradeValues": [
+     {
+      "value": 0.0065299999,
+      "locTag": "|val|% Additional Combo Count Chance"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusModularPistolRandomModRare",
+  "name": "Kitgun Riven Mod",
+  "category": "Mods",
+  "type": "Kitgun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "masterable": false,
+  "upgradeEntries": [
+   {
+    "tag": "WeaponArmorPiercingDamageMod",
+    "prefixTag": "insi",
+    "suffixTag": "cak",
+    "upgradeValues": [
+     {
+      "value": 0.01333,
+      "locTag": "|val|% <DT_PUNCTURE_COLOR>Puncture"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritChanceMod",
+    "prefixTag": "crita",
+    "suffixTag": "cron",
+    "upgradeValues": [
+     {
+      "value": 0.016666001,
+      "locTag": "|val|% Critical Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritDamageMod",
+    "prefixTag": "acri",
+    "suffixTag": "tis",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Critical Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponElectricityDamageMod",
+    "prefixTag": "vexi",
+    "suffixTag": "tio",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_ELECTRICITY_COLOR>Electricity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireDamageMod",
+    "prefixTag": "igni",
+    "suffixTag": "pha",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FIRE_COLOR>Heat"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireRateMod",
+    "prefixTag": "croni",
+    "suffixTag": "dra",
+    "upgradeValues": [
+     {
+      "value": 0.0082999999,
+      "locTag": "|val|% Fire Rate"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFreezeDamageMod",
+    "prefixTag": "geli",
+    "suffixTag": "do",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FREEZE_COLOR>Cold"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponImpactDamageMod",
+    "prefixTag": "magna",
+    "suffixTag": "ton",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_IMPACT_COLOR>Impact"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProcTimeMod",
+    "prefixTag": "deci",
+    "suffixTag": "des",
+    "upgradeValues": [
+     {
+      "value": 0.01111,
+      "locTag": "|val|% Status Duration"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponSlashDamageMod",
+    "prefixTag": "sci",
+    "suffixTag": "sus",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_SLASH_COLOR>Slash"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponStunChanceMod",
+    "prefixTag": "hexa",
+    "suffixTag": "dex",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Status Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponToxinDamageMod",
+    "prefixTag": "toxi",
+    "suffixTag": "tox",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_POISON_COLOR>Toxin"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponAmmoMaxMod",
+    "prefixTag": "ampi",
+    "suffixTag": "bin",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Ammo Maximum"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponClipMaxMod",
+    "prefixTag": "arma",
+    "suffixTag": "tin",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Magazine Capacity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponDamageAmountMod",
+    "prefixTag": "visi",
+    "suffixTag": "ata",
+    "upgradeValues": [
+     {
+      "value": 0.0244,
+      "locTag": "|val|% Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireIterationsMod",
+    "prefixTag": "sati",
+    "suffixTag": "can",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% Multishot"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProjectileSpeedMod",
+    "prefixTag": "conci",
+    "suffixTag": "nak",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Projectile Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponPunctureDepthMod",
+    "prefixTag": "lexi",
+    "suffixTag": "nok",
+    "upgradeValues": [
+     {
+      "value": 0.029999999,
+      "locTag": "|val| Punch Through"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponRecoilReductionMod",
+    "prefixTag": "zeti",
+    "suffixTag": "mag",
+    "upgradeValues": [
+     {
+      "value": -0.0099999998,
+      "locTag": "|val|% Weapon Recoil"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponReloadSpeedMod",
+    "prefixTag": "feva",
+    "suffixTag": "tak",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Reload Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageCorpus",
+    "prefixTag": "manti",
+    "suffixTag": "tron",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Corpus"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageGrineer",
+    "prefixTag": "argi",
+    "suffixTag": "con",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Grineer"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageInfested",
+    "prefixTag": "pura",
+    "suffixTag": "ada",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Infested"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponZoomFovMod",
+    "prefixTag": "hera",
+    "suffixTag": "lis",
+    "upgradeValues": [
+     {
+      "value": 0.0088999998,
+      "locTag": "|val|% Zoom"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+  "name": "Pistol Riven Mod",
+  "category": "Mods",
+  "type": "Pistol Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "masterable": false,
+  "upgradeEntries": [
+   {
+    "tag": "WeaponArmorPiercingDamageMod",
+    "prefixTag": "insi",
+    "suffixTag": "cak",
+    "upgradeValues": [
+     {
+      "value": 0.01333,
+      "locTag": "|val|% <DT_PUNCTURE_COLOR>Puncture"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritChanceMod",
+    "prefixTag": "crita",
+    "suffixTag": "cron",
+    "upgradeValues": [
+     {
+      "value": 0.016666001,
+      "locTag": "|val|% Critical Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritDamageMod",
+    "prefixTag": "acri",
+    "suffixTag": "tis",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Critical Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponElectricityDamageMod",
+    "prefixTag": "vexi",
+    "suffixTag": "tio",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_ELECTRICITY_COLOR>Electricity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireDamageMod",
+    "prefixTag": "igni",
+    "suffixTag": "pha",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FIRE_COLOR>Heat"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireRateMod",
+    "prefixTag": "croni",
+    "suffixTag": "dra",
+    "upgradeValues": [
+     {
+      "value": 0.0082999999,
+      "locTag": "|val|% Fire Rate"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFreezeDamageMod",
+    "prefixTag": "geli",
+    "suffixTag": "do",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FREEZE_COLOR>Cold"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponImpactDamageMod",
+    "prefixTag": "magna",
+    "suffixTag": "ton",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_IMPACT_COLOR>Impact"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProcTimeMod",
+    "prefixTag": "deci",
+    "suffixTag": "des",
+    "upgradeValues": [
+     {
+      "value": 0.01111,
+      "locTag": "|val|% Status Duration"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponSlashDamageMod",
+    "prefixTag": "sci",
+    "suffixTag": "sus",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_SLASH_COLOR>Slash"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponStunChanceMod",
+    "prefixTag": "hexa",
+    "suffixTag": "dex",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Status Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponToxinDamageMod",
+    "prefixTag": "toxi",
+    "suffixTag": "tox",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_POISON_COLOR>Toxin"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponAmmoMaxMod",
+    "prefixTag": "ampi",
+    "suffixTag": "bin",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Ammo Maximum"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponClipMaxMod",
+    "prefixTag": "arma",
+    "suffixTag": "tin",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Magazine Capacity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponDamageAmountMod",
+    "prefixTag": "visi",
+    "suffixTag": "ata",
+    "upgradeValues": [
+     {
+      "value": 0.0244,
+      "locTag": "|val|% Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireIterationsMod",
+    "prefixTag": "sati",
+    "suffixTag": "can",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% Multishot"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProjectileSpeedMod",
+    "prefixTag": "conci",
+    "suffixTag": "nak",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Projectile Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponPunctureDepthMod",
+    "prefixTag": "lexi",
+    "suffixTag": "nok",
+    "upgradeValues": [
+     {
+      "value": 0.029999999,
+      "locTag": "|val| Punch Through"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponRecoilReductionMod",
+    "prefixTag": "zeti",
+    "suffixTag": "mag",
+    "upgradeValues": [
+     {
+      "value": -0.0099999998,
+      "locTag": "|val|% Weapon Recoil"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponReloadSpeedMod",
+    "prefixTag": "feva",
+    "suffixTag": "tak",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Reload Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageCorpus",
+    "prefixTag": "manti",
+    "suffixTag": "tron",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Corpus"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageGrineer",
+    "prefixTag": "argi",
+    "suffixTag": "con",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Grineer"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageInfested",
+    "prefixTag": "pura",
+    "suffixTag": "ada",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Infested"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponZoomFovMod",
+    "prefixTag": "hera",
+    "suffixTag": "lis",
+    "upgradeValues": [
+     {
+      "value": 0.0088999998,
+      "locTag": "|val|% Zoom"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+  "name": "Rifle Riven Mod",
+  "category": "Mods",
+  "type": "Rifle Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "masterable": false,
+  "upgradeEntries": [
+   {
+    "tag": "WeaponArmorPiercingDamageMod",
+    "prefixTag": "insi",
+    "suffixTag": "cak",
+    "upgradeValues": [
+     {
+      "value": 0.01333,
+      "locTag": "|val|% <DT_PUNCTURE_COLOR>Puncture"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritChanceMod",
+    "prefixTag": "crita",
+    "suffixTag": "cron",
+    "upgradeValues": [
+     {
+      "value": 0.016666001,
+      "locTag": "|val|% Critical Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritDamageMod",
+    "prefixTag": "acri",
+    "suffixTag": "tis",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% Critical Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponElectricityDamageMod",
+    "prefixTag": "vexi",
+    "suffixTag": "tio",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_ELECTRICITY_COLOR>Electricity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireDamageMod",
+    "prefixTag": "igni",
+    "suffixTag": "pha",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FIRE_COLOR>Heat"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireRateMod",
+    "prefixTag": "croni",
+    "suffixTag": "dra",
+    "upgradeValues": [
+     {
+      "value": 0.00667,
+      "locTag": "|val|% Fire Rate (x2 for Bows)"
+     },
+     {
+      "value": 0.00667
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFreezeDamageMod",
+    "prefixTag": "geli",
+    "suffixTag": "do",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FREEZE_COLOR>Cold"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponImpactDamageMod",
+    "prefixTag": "magna",
+    "suffixTag": "ton",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_IMPACT_COLOR>Impact"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProcTimeMod",
+    "prefixTag": "deci",
+    "suffixTag": "des",
+    "upgradeValues": [
+     {
+      "value": 0.01111,
+      "locTag": "|val|% Status Duration"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponSlashDamageMod",
+    "prefixTag": "sci",
+    "suffixTag": "sus",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_SLASH_COLOR>Slash"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponStunChanceMod",
+    "prefixTag": "hexa",
+    "suffixTag": "dex",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Status Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponToxinDamageMod",
+    "prefixTag": "toxi",
+    "suffixTag": "tox",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_POISON_COLOR>Toxin"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponAmmoMaxMod",
+    "prefixTag": "ampi",
+    "suffixTag": "bin",
+    "upgradeValues": [
+     {
+      "value": 0.0055499999,
+      "locTag": "|val|% Ammo Maximum"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponClipMaxMod",
+    "prefixTag": "arma",
+    "suffixTag": "tin",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Magazine Capacity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponDamageAmountMod",
+    "prefixTag": "visi",
+    "suffixTag": "ata",
+    "upgradeValues": [
+     {
+      "value": 0.018333299,
+      "locTag": "|val|% Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireIterationsMod",
+    "prefixTag": "sati",
+    "suffixTag": "can",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Multishot"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProjectileSpeedMod",
+    "prefixTag": "conci",
+    "suffixTag": "nak",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Projectile Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponPunctureDepthMod",
+    "prefixTag": "lexi",
+    "suffixTag": "nok",
+    "upgradeValues": [
+     {
+      "value": 0.029999999,
+      "locTag": "|val| Punch Through"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponRecoilReductionMod",
+    "prefixTag": "zeti",
+    "suffixTag": "mag",
+    "upgradeValues": [
+     {
+      "value": -0.0099999998,
+      "locTag": "|val|% Weapon Recoil"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponReloadSpeedMod",
+    "prefixTag": "feva",
+    "suffixTag": "tak",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Reload Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageCorpus",
+    "prefixTag": "manti",
+    "suffixTag": "tron",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Corpus"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageGrineer",
+    "prefixTag": "argi",
+    "suffixTag": "con",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Grineer"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageInfested",
+    "prefixTag": "pura",
+    "suffixTag": "ada",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Infested"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponZoomFovMod",
+    "prefixTag": "hera",
+    "suffixTag": "lis",
+    "upgradeValues": [
+     {
+      "value": 0.006666,
+      "locTag": "|val|% Zoom"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+  "name": "Shotgun Riven Mod",
+  "category": "Mods",
+  "type": "Shotgun Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "masterable": false,
+  "upgradeEntries": [
+   {
+    "tag": "WeaponArmorPiercingDamageMod",
+    "prefixTag": "insi",
+    "suffixTag": "cak",
+    "upgradeValues": [
+     {
+      "value": 0.01333,
+      "locTag": "|val|% <DT_PUNCTURE_COLOR>Puncture"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritChanceMod",
+    "prefixTag": "crita",
+    "suffixTag": "cron",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Critical Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritDamageMod",
+    "prefixTag": "acri",
+    "suffixTag": "tis",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Critical Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponElectricityDamageMod",
+    "prefixTag": "vexi",
+    "suffixTag": "tio",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_ELECTRICITY_COLOR>Electricity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireDamageMod",
+    "prefixTag": "igni",
+    "suffixTag": "pha",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FIRE_COLOR>Heat"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireRateMod",
+    "prefixTag": "croni",
+    "suffixTag": "dra",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Fire Rate (x2 for Bows)"
+     },
+     {
+      "value": 0.0099999998
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFreezeDamageMod",
+    "prefixTag": "geli",
+    "suffixTag": "do",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FREEZE_COLOR>Cold"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponImpactDamageMod",
+    "prefixTag": "magna",
+    "suffixTag": "ton",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_IMPACT_COLOR>Impact"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProcTimeMod",
+    "prefixTag": "deci",
+    "suffixTag": "des",
+    "upgradeValues": [
+     {
+      "value": 0.01111,
+      "locTag": "|val|% Status Duration"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponSlashDamageMod",
+    "prefixTag": "sci",
+    "suffixTag": "sus",
+    "upgradeValues": [
+     {
+      "value": 0.013333,
+      "locTag": "|val|% <DT_SLASH_COLOR>Slash"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponStunChanceMod",
+    "prefixTag": "hexa",
+    "suffixTag": "dex",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Status Chance"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponToxinDamageMod",
+    "prefixTag": "toxi",
+    "suffixTag": "tox",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_POISON_COLOR>Toxin"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponAmmoMaxMod",
+    "prefixTag": "ampi",
+    "suffixTag": "bin",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Ammo Maximum"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponClipMaxMod",
+    "prefixTag": "arma",
+    "suffixTag": "tin",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Magazine Capacity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponDamageAmountMod",
+    "prefixTag": "visi",
+    "suffixTag": "ata",
+    "upgradeValues": [
+     {
+      "value": 0.018300001,
+      "locTag": "|val|% Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireIterationsMod",
+    "prefixTag": "sati",
+    "suffixTag": "can",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% Multishot"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProjectileSpeedMod",
+    "prefixTag": "conci",
+    "suffixTag": "nak",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Projectile Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponPunctureDepthMod",
+    "prefixTag": "lexi",
+    "suffixTag": "nok",
+    "upgradeValues": [
+     {
+      "value": 0.029999999,
+      "locTag": "|val| Punch Through"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponRecoilReductionMod",
+    "prefixTag": "zeti",
+    "suffixTag": "mag",
+    "upgradeValues": [
+     {
+      "value": -0.0099999998,
+      "locTag": "|val|% Weapon Recoil"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponReloadSpeedMod",
+    "prefixTag": "feva",
+    "suffixTag": "tak",
+    "upgradeValues": [
+     {
+      "value": 0.0055550002,
+      "locTag": "|val|% Reload Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageCorpus",
+    "prefixTag": "manti",
+    "suffixTag": "tron",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Corpus"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageGrineer",
+    "prefixTag": "argi",
+    "suffixTag": "con",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Grineer"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFactionDamageInfested",
+    "prefixTag": "pura",
+    "suffixTag": "ada",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Infested"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+  "name": "Melee Riven Mod",
+  "category": "Mods",
+  "type": "Melee Riven Mod",
+  "tradable": false,
+  "imageName": "OmegaMod.png",
+  "masterable": false,
+  "upgradeEntries": [
+   {
+    "tag": "WeaponMeleeDamageMod",
+    "prefixTag": "visi",
+    "suffixTag": "ata",
+    "upgradeValues": [
+     {
+      "value": 0.018300001,
+      "locTag": "|val|% Melee Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponArmorPiercingDamageMod",
+    "prefixTag": "insi",
+    "suffixTag": "cak",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_PUNCTURE_COLOR>Puncture"
+     },
+     {
+      "value": 0.066500001
+     }
+    ]
+   },
+   {
+    "tag": "WeaponImpactDamageMod",
+    "prefixTag": "magna",
+    "suffixTag": "ton",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_IMPACT_COLOR>Impact"
+     },
+     {
+      "value": 0.066500001
+     }
+    ]
+   },
+   {
+    "tag": "WeaponSlashDamageMod",
+    "prefixTag": "sci",
+    "suffixTag": "sus",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% <DT_SLASH_COLOR>Slash"
+     },
+     {
+      "value": 0.066500001
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritChanceMod",
+    "prefixTag": "crita",
+    "suffixTag": "cron",
+    "upgradeValues": [
+     {
+      "value": 0.02,
+      "locTag": "|val|% Critical Chance (x2 for Heavy Attacks)"
+     },
+     {
+      "value": 0.02
+     }
+    ]
+   },
+   {
+    "tag": "WeaponCritDamageMod",
+    "prefixTag": "acri",
+    "suffixTag": "tis",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Critical Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponElectricityDamageMod",
+    "prefixTag": "vexi",
+    "suffixTag": "tio",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_ELECTRICITY_COLOR>Electricity"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireDamageMod",
+    "prefixTag": "igni",
+    "suffixTag": "pha",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FIRE_COLOR>Heat"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFreezeDamageMod",
+    "prefixTag": "geli",
+    "suffixTag": "do",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_FREEZE_COLOR>Cold"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponToxinDamageMod",
+    "prefixTag": "toxi",
+    "suffixTag": "tox",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% <DT_POISON_COLOR>Toxin"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponProcTimeMod",
+    "prefixTag": "deci",
+    "suffixTag": "des",
+    "upgradeValues": [
+     {
+      "value": 0.01111,
+      "locTag": "|val|% Status Duration"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFactionDamageCorpus",
+    "prefixTag": "manti",
+    "suffixTag": "tron",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Corpus"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFactionDamageGrineer",
+    "prefixTag": "argi",
+    "suffixTag": "con",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Grineer"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFactionDamageInfested",
+    "prefixTag": "pura",
+    "suffixTag": "ada",
+    "upgradeValues": [
+     {
+      "value": 0.0049999999,
+      "locTag": "|val| Damage to Infested"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponFireRateMod",
+    "prefixTag": "croni",
+    "suffixTag": "dra",
+    "upgradeValues": [
+     {
+      "value": 0.0060999999,
+      "locTag": "|val|% Attack Speed"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponStunChanceMod",
+    "prefixTag": "hexa",
+    "suffixTag": "dex",
+    "upgradeValues": [
+     {
+      "value": 0.0099999998,
+      "locTag": "|val|% Status Chance"
+     }
+    ]
+   },
+   {
+    "tag": "ComboDurationMod",
+    "prefixTag": "tempi",
+    "suffixTag": "nem",
+    "upgradeValues": [
+     {
+      "value": 0.090000004,
+      "locTag": "|val|s Combo Duration"
+     }
+    ]
+   },
+   {
+    "tag": "SlideAttackCritChanceMod",
+    "prefixTag": "pleci",
+    "suffixTag": "nent",
+    "upgradeValues": [
+     {
+      "value": 0.013334,
+      "locTag": "|STAT1|% Critical Chance for Slide Attack"
+     },
+     {
+      "value": 0.013334
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeRangeIncMod",
+    "prefixTag": "locti",
+    "suffixTag": "tor",
+    "upgradeValues": [
+     {
+      "value": 0.021579999,
+      "locTag": "|val| Range"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeFinisherDamageMod",
+    "prefixTag": "exi",
+    "suffixTag": "cta",
+    "upgradeValues": [
+     {
+      "value": 0.0133,
+      "locTag": "|val|% Finisher Damage"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboEfficiencyMod",
+    "prefixTag": "forti",
+    "suffixTag": "us",
+    "upgradeValues": [
+     {
+      "value": 0.0081599997,
+      "locTag": "|val|% Heavy Attack Efficiency"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboInitialBonusMod",
+    "prefixTag": "para",
+    "suffixTag": "um",
+    "upgradeValues": [
+     {
+      "value": 0.27224001,
+      "locTag": "|val| Initial Combo"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboPointsOnHitMod",
+    "prefixTag": "",
+    "suffixTag": "",
+    "upgradeValues": [
+     {
+      "value": -0.01165,
+      "locTag": "|val|% Chance to Gain Combo Count"
+     }
+    ]
+   },
+   {
+    "tag": "WeaponMeleeComboBonusOnHitMod",
+    "prefixTag": "laci",
+    "suffixTag": "nus",
+    "upgradeValues": [
+     {
+      "value": 0.0065299999,
+      "locTag": "|val|% Additional Combo Count Chance"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep",
+  "name": "Nepheri",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 13,
+  "productCategory": "Melee",
+  "imageName": "ArchonDualDaggers.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/ClanTech/Chemical/RocketLauncher",
+  "name": "Ogris",
+  "category": "Primary",
+  "type": "Launcher",
+  "tradable": false,
+  "masteryReq": 9,
+  "productCategory": "LongGuns",
+  "imageName": "Ogris.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.3
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/ClanTech/Energy/CrpLaserRifle",
+  "name": "Flux Rifle",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 6,
+  "productCategory": "LongGuns",
+  "imageName": "FluxRifle.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.55
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Corpus/Bow/Longbow/CrpBow",
+  "name": "Lenz",
+  "category": "Primary",
+  "type": "Bow",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "LongGuns",
+  "imageName": "Lenz.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.05
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Corpus/LongGuns/ChainLightningGun/ChainLightningRifle",
+  "name": "Amprex",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "LongGuns",
+  "imageName": "Amprex.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.85000002
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Corpus/LongGuns/CrpShotgun/CrpShotgun",
+  "name": "Arca Plasmor",
+  "category": "Primary",
+  "type": "Shotgun",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "LongGuns",
+  "imageName": "ArcaPlasmor.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.94999999
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Corpus/LongGuns/GrenadeLauncher/GrenadeLauncher",
+  "name": "Penta",
+  "category": "Primary",
+  "type": "Launcher",
+  "tradable": false,
+  "masteryReq": 6,
+  "productCategory": "LongGuns",
+  "imageName": "Penta.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.35
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Corpus/LongGuns/Spears/Railgun/CorpusRailgun",
+  "name": "Ferrox",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 14,
+  "productCategory": "LongGuns",
+  "imageName": "Ferrox.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.25
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Corpus/Pistols/CorpusMinigun/DualCorpusMinigun",
+  "name": "Dual Cestra",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 7,
+  "productCategory": "Pistols",
+  "imageName": "DualCestras.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.35
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Corpus/Pistols/CrpBriefcaseAkimbo/CrpBriefcaseAkimboPistol",
+  "name": "Tenet Diplos",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 16,
+  "productCategory": "Pistols",
+  "imageName": "CrpBriefcaseAkimboGun.png",
+  "masterable": true,
+  "maxLevelCap": 40,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.80000001
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Bows/GrnBow/GrnBowWeapon",
+  "name": "Kuva Bramma",
+  "category": "Primary",
+  "type": "Bow",
+  "tradable": false,
+  "masteryReq": 15,
+  "productCategory": "LongGuns",
+  "imageName": "KuvaGrnBow.png",
+  "masterable": true,
+  "maxLevelCap": 40,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.64999998
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/LongGuns/GrnFourBarrelRifle/GrnFourBarrelRifleWeapon",
+  "name": "Quartakk",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "LongGuns",
+  "imageName": "Quartakk.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.25
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/LongGuns/GrnGorgSniperRifle/GrnGorgSniperRifle",
+  "name": "Buzlok",
+  "category": "Primary",
+  "type": "Sniper",
+  "tradable": false,
+  "masteryReq": 11,
+  "productCategory": "LongGuns",
+  "imageName": "Buzlok.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.45
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Melee/GrineerClaws/GrnClaws",
+  "name": "Ripkas",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 5,
+  "productCategory": "Melee",
+  "imageName": "Ripkas.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.3
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Melee/GrineerMachetteAndCleaver/Machete",
+  "name": "Machete",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 1,
+  "productCategory": "Melee",
+  "imageName": "Machete.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.45
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Melee/GrineerWhip/GrineerWhip",
+  "name": "Atterax",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 5,
+  "productCategory": "Melee",
+  "imageName": "Atterax.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.15
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Melee/GrnBoomerang/GrnBoomerang",
+  "name": "Halikar",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 7,
+  "productCategory": "Melee",
+  "imageName": "Halikar.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.4400001
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Melee/GrnDualFireAxe/GrnDualFireAxe",
+  "name": "Twin Basolk",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 7,
+  "productCategory": "Melee",
+  "imageName": "TwinBasolk.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.3
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Melee/GrnKuvaLichScythe/GrnKuvaLichScytheWeapon",
+  "name": "Kuva Shildeg",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 13,
+  "productCategory": "Melee",
+  "imageName": "GrnKuvaLichScytheWeapon.png",
+  "masterable": true,
+  "maxLevelCap": 40,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.80000001
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Grineer/Pistols/GrineerCrossbow/GrineerGooGun",
+  "name": "Stug",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 2,
+  "productCategory": "Pistols",
+  "imageName": "Stug.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.48
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Infested/InfestedLich/LongGuns/1999InfShotgun/1999InfShotgunWeapon",
+  "name": "Coda Bassocyst",
+  "category": "Primary",
+  "type": "Shotgun",
+  "tradable": false,
+  "masteryReq": 17,
+  "productCategory": "LongGuns",
+  "imageName": "1999InfShotgunWeapon.png",
+  "masterable": true,
+  "maxLevelCap": 40,
+  "omegaAttenuation": 0.60000002
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Infested/LongGuns/InfWFAccompanyingPri/InfestedBurstRifle",
+  "name": "Hema",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 7,
+  "productCategory": "LongGuns",
+  "imageName": "Hema.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.3
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Infested/LongGuns/Tentacluster/InfestedShotgun",
+  "name": "Phage",
+  "category": "Primary",
+  "type": "Shotgun",
+  "tradable": false,
+  "masteryReq": 11,
+  "productCategory": "LongGuns",
+  "imageName": "Phage.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.46
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Infested/Melee/TipedoStaff/InfTipedoStaff",
+  "name": "Lesion",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 9,
+  "productCategory": "Melee",
+  "imageName": "Lesion.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.85000002
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Infested/Pistols/InfestedDartPistol/InfestedDartPistol",
+  "name": "Tysis",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 9,
+  "productCategory": "Pistols",
+  "imageName": "Tysis.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.45
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Lasria/AK47/TC2024AK47Weapon",
+  "name": "AX-52",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 12,
+  "productCategory": "LongGuns",
+  "masterable": true,
+  "omegaAttenuation": 0.85
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Operator/Melee/DrifterTazer/DrifterTazerPlayerWep",
+  "name": "Rumblejack",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "Melee",
+  "imageName": "DrifterTazer.png",
+  "masterable": true,
+  "omegaAttenuation": 1.2
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Tip/TipOne",
+  "name": "Balla",
+  "category": "Melee",
+  "type": "Zaw Component",
+  "tradable": false,
+  "masteryReq": 0,
+  "productCategory": "Pistols",
+  "imageName": "TipOne.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.80000001
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Archwing/Melee/ExaltedArchScythe/ExaltedAWScytheWeapon",
+  "name": "Corufell",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "Melee",
+  "imageName": "ExaltedAWScytheWeapon.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.05
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Archwing/Primary/ArchBurstGun/ArchBurstGun",
+  "name": "Cyngas",
+  "category": "Arch-Gun",
+  "type": "Arch-Gun",
+  "tradable": false,
+  "masteryReq": 4,
+  "productCategory": "SpaceGuns",
+  "imageName": "Cyngas.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.3
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Archwing/Primary/RocketArtillery/ArchRocketCrossbow",
+  "name": "Fluctus",
+  "category": "Arch-Gun",
+  "type": "Arch-Gun",
+  "tradable": false,
+  "masteryReq": 2,
+  "productCategory": "SpaceGuns",
+  "imageName": "Fluctus.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.1
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Archwing/Primary/ThanoTechGrenadeLaunch/ThanoTechGrenadeLauncher",
+  "name": "Morgha",
+  "category": "Arch-Gun",
+  "type": "Arch-Gun",
+  "tradable": false,
+  "masteryReq": 15,
+  "productCategory": "SpaceGuns",
+  "imageName": "ThanoTechGrenadeLauncher.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Bows/AntlerBow/AntlerBow",
+  "name": "Cernos",
+  "category": "Primary",
+  "type": "Bow",
+  "tradable": false,
+  "masteryReq": 6,
+  "productCategory": "LongGuns",
+  "imageName": "Cernos.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.3
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Bows/PrimeDerelictCernos/DerelictCernos",
+  "name": "Proboscis Cernos",
+  "category": "Primary",
+  "type": "Bow",
+  "tradable": false,
+  "masteryReq": 15,
+  "productCategory": "LongGuns",
+  "imageName": "DerelictCernos.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.89999998
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/LongGuns/RepeatingCrossbow/RepeatingCrossbow",
+  "name": "Zhuge",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "LongGuns",
+  "imageName": "Zhuge.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.2
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/LongGuns/TnAlchemistShotgun/TnAlchemistShotgun",
+  "name": "Cedo",
+  "category": "Primary",
+  "type": "Shotgun",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "LongGuns",
+  "imageName": "Cedo.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.64999998
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/LongGuns/TnRifleErsatz/TnRifleErsatzWeapon",
+  "name": "Aeolak",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "LongGuns",
+  "imageName": "TnRifleErsatzWeapon.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.2
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/LongGuns/TnSMG/TnSMGWeapon",
+  "name": "Baza",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 7,
+  "productCategory": "LongGuns",
+  "imageName": "Baza.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.05
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/LongGuns/TnoLeverAction/TnoLeverActionRifle",
+  "name": "Sybaris",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 5,
+  "productCategory": "LongGuns",
+  "imageName": "Sybaris.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.3
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/DualDagger/DualDagger",
+  "name": "Fang",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 0,
+  "productCategory": "Melee",
+  "imageName": "Fang.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.36
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/DualShortSword/DualEtherSword",
+  "name": "Dual Ether",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "Melee",
+  "imageName": "DualEther.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.45
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Hammer/ThrowingHammer",
+  "name": "Wolf Sledge",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 7,
+  "productCategory": "Melee",
+  "imageName": "WolfHammerSkin.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.25
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Maces/PaladinMace/PaladinMaceWeapon",
+  "name": "Magistar",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 1,
+  "productCategory": "Melee",
+  "imageName": "Magistar.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.35
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Polearms/Naginata/ShrineMaidenNaginataWeapon",
+  "name": "Amanata",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 2,
+  "productCategory": "Melee",
+  "imageName": "NaginataWeapon.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.85000002
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Scythe/ReaperWeapon",
+  "name": "Reaper Prime",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "Melee",
+  "imageName": "ReaperPrime.png",
+  "masterable": true,
+  "vaulted": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.80000001
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Scythe/TnChoirScythe/TnChoirScythe",
+  "name": "Harmony",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "Melee",
+  "imageName": "TnChoirScythe.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.60000002
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/SunDialAxe/SundialAxeWeapon",
+  "name": "Zenistar",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 6,
+  "productCategory": "Melee",
+  "imageName": "Zenistar.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.15
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Swords/KatanaAndWakizashi/Katana",
+  "name": "Nikana",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 4,
+  "productCategory": "Melee",
+  "imageName": "Nikana.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.94999999
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Swords/KrisDagger/KrisDagger",
+  "name": "Karyst",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 6,
+  "productCategory": "Melee",
+  "imageName": "Karyst.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.35
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Swords/NWIIIOrokinSword/NWOrokinSword",
+  "name": "Vitrica",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 13,
+  "productCategory": "Melee",
+  "imageName": "NWOrokinSword.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.1
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Swords/StalkerTwo/StalkerTwoGreatSword",
+  "name": "War",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "Melee",
+  "imageName": "War.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.05
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Swords/StalkerTwo/StalkerTwoSmallSword",
+  "name": "Broken War",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 10,
+  "productCategory": "Melee",
+  "imageName": "BrokenWar.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.15
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/Swords/TnRailjackGreatKatana/TnRailJackGreatKatanaWeapon",
+  "name": "Pennant",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 7,
+  "productCategory": "Melee",
+  "imageName": "TnRailjackGreatKatana.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.94999999
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Pistols/ConclaveLeverPistol/ConclaveLeverPistol",
+  "name": "Zylok",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 6,
+  "productCategory": "Pistols",
+  "imageName": "ConclaveLeverPistol.png",
+  "masterable": true,
+  "omegaAttenuation": 1.25
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Pistols/TennoUzi/TennoUzi",
+  "name": "Akstiletto",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "Pistols",
+  "imageName": "Akstileto.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.94999999
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Pistols/TnBardPistol/TnBardPistolGun",
+  "name": "Pandero",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "Pistols",
+  "imageName": "Pandero.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.2
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Pistols/TnYareliPistol/TnYareliPistolWeapon",
+  "name": "Kompressa",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 8,
+  "productCategory": "Pistols",
+  "imageName": "YareliPistol.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.15
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Rifle/TennoAR",
+  "name": "Soma",
+  "category": "Primary",
+  "type": "Rifle",
+  "tradable": false,
+  "masteryReq": 6,
+  "productCategory": "LongGuns",
+  "imageName": "Soma.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.15
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Thanotech/EntratiWristGun/EntratiWristGunWeapon",
+  "name": "Onos",
+  "category": "Secondary",
+  "type": "Pistol",
+  "tradable": false,
+  "masteryReq": 14,
+  "productCategory": "Pistols",
+  "imageName": "EntratiWristGun.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 0.80000001
+ }
+]

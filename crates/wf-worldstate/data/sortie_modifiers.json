@@ -1,0 +1,92 @@
+{
+  "SORTIE_MODIFIER_ARMOR": {
+    "name": "Augmented Enemy Armor"
+  },
+  "SORTIE_MODIFIER_BOW_ONLY": {
+    "name": "Weapon Restriction: Bow Only"
+  },
+  "SORTIE_MODIFIER_CORROSIVE": {
+    "name": "Enemy Elemental Enhancement: Corrosive"
+  },
+  "SORTIE_MODIFIER_ELECTRICITY": {
+    "name": "Enemy Elemental Enhancement: Electricity"
+  },
+  "SORTIE_MODIFIER_EXIMUS": {
+    "name": "Eximus Stronghold"
+  },
+  "SORTIE_MODIFIER_EXPLOSION": {
+    "name": "Enemy Elemental Enhancement: Blast"
+  },
+  "SORTIE_MODIFIER_FIRE": {
+    "name": "Enemy Elemental Enhancement: Heat"
+  },
+  "SORTIE_MODIFIER_FREEZE": {
+    "name": "Enemy Elemental Enhancement: Cold"
+  },
+  "SORTIE_MODIFIER_GAS": {
+    "name": "Enemy Elemental Enhancement: Gas"
+  },
+  "SORTIE_MODIFIER_HAZARD_COLD": {
+    "name": "Environmental Effect: Extreme Cold"
+  },
+  "SORTIE_MODIFIER_HAZARD_FIRE": {
+    "name": "Environmental Hazard: Fire"
+  },
+  "SORTIE_MODIFIER_HAZARD_FOG": {
+    "name": "Environmental Hazard: Dense Fog"
+  },
+  "SORTIE_MODIFIER_HAZARD_ICE": {
+    "name": "Environmental Effect: Cryogenic Leakage"
+  },
+  "SORTIE_MODIFIER_HAZARD_MAGNETIC": {
+    "name": "Environmental Hazard: Electromagnetic Anomalies"
+  },
+  "SORTIE_MODIFIER_HAZARD_RADIATION": {
+    "name": "Environmental Hazard: Radiation Pockets"
+  },
+  "SORTIE_MODIFIER_IMPACT": {
+    "name": "Enemy Physical Enhancement: Impact"
+  },
+  "SORTIE_MODIFIER_LOW_ENERGY": {
+    "name": "Energy Reduction"
+  },
+  "SORTIE_MODIFIER_MAGNETIC": {
+    "name": "Enemy Elemental Enhancement: Magnetic"
+  },
+  "SORTIE_MODIFIER_MELEE_ONLY": {
+    "name": "Weapon Restriction: Melee Only"
+  },
+  "SORTIE_MODIFIER_POISON": {
+    "name": "Enemy Elemental Enhancement: Toxin"
+  },
+  "SORTIE_MODIFIER_PUNCTURE": {
+    "name": "Enemy Physical Enhancement: Puncture"
+  },
+  "SORTIE_MODIFIER_RADIATION": {
+    "name": "Enemy Elemental Enhancement: Radiation"
+  },
+  "SORTIE_MODIFIER_RIFLE_ONLY": {
+    "name": "Weapon Restriction: Assault Rifle Only"
+  },
+  "SORTIE_MODIFIER_SECONDARY_ONLY": {
+    "name": "Weapon Restriction: Pistol Only"
+  },
+  "SORTIE_MODIFIER_SHIELDS": {
+    "name": "Enhanced Enemy Shields"
+  },
+  "SORTIE_MODIFIER_SHOTGUN_ONLY": {
+    "name": "Weapon Restriction: Shotgun Only"
+  },
+  "SORTIE_MODIFIER_SLASH": {
+    "name": "Enemy Physical Enhancement: Slash"
+  },
+  "SORTIE_MODIFIER_SNIPER_ONLY": {
+    "name": "Weapon Restriction: Sniper Only"
+  },
+  "SORTIE_MODIFIER_TOXIN": {
+    "name": "Enemy Elemental Enhancement: Toxin"
+  },
+  "SORTIE_MODIFIER_VIRAL": {
+    "name": "Enemy Elemental Enhancement: Viral"
+  }
+}

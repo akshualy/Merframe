@@ -1,0 +1,134 @@
+[
+  {
+    "uniqueName": "/Lotus/Upgrades/Mods/Rifle/WeaponDamageAmountMod",
+    "name": "Serration",
+    "category": "Mods",
+    "type": "Primary Mod",
+    "tradable": true,
+    "imageName": "RifleDamageAmountMod.jpg",
+    "rarity": "Uncommon",
+    "masterable": false,
+    "fusionLimit": 10,
+    "levelStats": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Mods/Warframe/Expert/AvatarAbilityDurationModExpert",
+    "name": "Primed Continuity",
+    "category": "Mods",
+    "type": "Warframe Mod",
+    "tradable": true,
+    "imageName": "AbilityDurationMod.jpg",
+    "rarity": "Legendary",
+    "masterable": false,
+    "fusionLimit": 10,
+    "levelStats": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Mods/Melee/DualStat/CorruptedHeavyDamageChargeSpeedMod",
+    "name": "Corrupt Charge",
+    "category": "Mods",
+    "type": "Melee Mod",
+    "tradable": true,
+    "imageName": "ChannelingCorruptChargeMod.jpg",
+    "rarity": "Rare",
+    "masterable": false,
+    "fusionLimit": 3,
+    "levelStats": [
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Mods/Railjack/Gunnery/ZektiFreeSuperWeaponAmmo",
+    "name": "Artillery Cheap Shot",
+    "category": "Mods",
+    "type": "Plexus Mod",
+    "tradable": false,
+    "imageName": "RailjackModArtilleryCheapShot.png",
+    "rarity": "Rare",
+    "masterable": false,
+    "fusionLimit": 5,
+    "levelStats": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingMeleeScanOnKillMod",
+    "name": "Astral Autopsy",
+    "category": "Mods",
+    "type": "Arch-Melee Mod",
+    "tradable": true,
+    "imageName": "ArchwingMeleeScanOnKillMod.jpg",
+    "rarity": "Rare",
+    "masterable": false,
+    "fusionLimit": 0
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup",
+    "name": "Arcane Energize",
+    "category": "Arcanes",
+    "type": "Warframe Arcane",
+    "tradable": true,
+    "imageName": "ArcaneProjectionBI.png",
+    "rarity": "Legendary",
+    "masterable": false,
+    "levelStats": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Offensive/ChannelKillEnergyRate",
+    "name": "Exodia Brave",
+    "category": "Arcanes",
+    "type": "Zaw Arcane",
+    "tradable": true,
+    "imageName": "MeleeArcaneA.png",
+    "rarity": "Rare",
+    "masterable": false,
+    "levelStats": [
+      {},
+      {},
+      {},
+      {}
+    ]
+  }
+]

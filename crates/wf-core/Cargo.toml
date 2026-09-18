@@ -1,0 +1,23 @@
+[package]
+name = "wf-core"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+flate2 = { workspace = true }
+rusqlite = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+wf-data = { workspace = true }
+wf-inventory = { workspace = true }
+wf-log = { workspace = true }
+wf-market = { workspace = true }
+wf-worldstate = { workspace = true }
+
+[lints]
+workspace = true

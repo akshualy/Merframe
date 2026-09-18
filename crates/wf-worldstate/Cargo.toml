@@ -1,0 +1,24 @@
+[package]
+name = "wf-worldstate"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+reqwest = { workspace = true, optional = true }
+
+[build-dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[features]
+fetch = ["dep:reqwest"]
+
+[lints]
+workspace = true

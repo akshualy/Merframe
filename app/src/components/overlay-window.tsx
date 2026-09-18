@@ -1,0 +1,102 @@
+import { type ReactNode, useEffect } from "react";
+import { Route, Routes } from "react-router";
+import {
+  RecommendationSlot,
+  RewardSlot,
+  RivenSlot,
+} from "@/components/overlay-slots";
+import { useOverlayFeed } from "@/hooks/use-overlay-feed";
+import { api, logError } from "@/lib/bridge";
+import { cn } from "@/lib/utils";
+import { useOverlayStore } from "@/stores/overlay-store";
+
+export const OVERLAY_HASH = "#/overlay/";
+
+const OVERLAY_CLASS = "overlay-window";
+
+function OverlayFrame({
+  opacity,
+  fit = false,
+  scroll = true,
+  children,
+}: {
+  opacity: number;
+  fit?: boolean;
+  scroll?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      style={{ opacity: opacity / 100 }}
+      className={cn(
+        "bg-card text-card-foreground flex max-h-full flex-col gap-2 rounded-xl border p-2",
+        scroll ? "overflow-y-auto" : "overflow-hidden",
+        fit && "mx-auto w-fit",
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function OverlayWindow() {
+  const overlays = useOverlayFeed();
+
+  useEffect(() => {
+    document.documentElement.classList.add(OVERLAY_CLASS);
+    return () => document.documentElement.classList.remove(OVERLAY_CLASS);
+  }, []);
+
+  const { loaded } = useOverlayStore();
+
+  useEffect(() => {
+    if (!loaded) {
+      return;
+    }
+    const report = async () => {
+      try {
+        await api.overlayPageReady();
+      } catch (error) {
+        logError("Reporting the overlay page failed", error);
+      }
+    };
+    report();
+  }, [loaded]);
+
+  return (
+    <div className="h-screen w-full p-2">
+      <Routes>
+        <Route
+          path="relic"
+          element={
+            overlays.reward && (
+              <OverlayFrame opacity={overlays.opacity} fit>
+                <RewardSlot trigger={overlays.reward} compact />
+              </OverlayFrame>
+            )
+          }
+        />
+        <Route
+          path="recommend"
+          element={
+            overlays.recommendation && (
+              <OverlayFrame opacity={overlays.opacity} scroll={false}>
+                <RecommendationSlot trigger={overlays.recommendation} compact />
+              </OverlayFrame>
+            )
+          }
+        />
+        <Route
+          path="riven"
+          element={
+            overlays.riven && (
+              <OverlayFrame opacity={overlays.opacity} fit>
+                <RivenSlot trigger={overlays.riven} compact />
+              </OverlayFrame>
+            )
+          }
+        />
+      </Routes>
+    </div>
+  );
+}

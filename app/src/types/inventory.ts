@@ -1,0 +1,144 @@
+import type { ArcaneRarity } from "@/components/game-icon";
+
+export type VaultStatus = "vaulted" | "available" | "unknown";
+
+export interface Prices {
+  sell: number | null;
+  buy: number | null;
+  ducats: number | null;
+}
+
+export interface ItemStatus {
+  built: boolean;
+  mastered: boolean;
+}
+
+export interface PartSet {
+  name: string;
+  complete: boolean;
+}
+
+export interface PartRow {
+  name: string;
+  unique_name: string;
+  image_name: string | null;
+  count: number;
+  prices: Prices;
+  set: PartSet;
+  vault: VaultStatus | null;
+  item: ItemStatus;
+  prime: boolean;
+  market_slug: string;
+  favourite: boolean;
+  order_placed: boolean;
+}
+
+export interface UpgradePrices {
+  sell: number | null;
+  sell_max_rank: number | null;
+  is_floor: boolean;
+  buy: number | null;
+}
+
+export interface ModRow {
+  name: string;
+  unique_name: string;
+  image_name: string | null;
+  market_thumb: string | null;
+  count: number;
+  rank: number | null;
+  max_rank: number | null;
+  prices: UpgradePrices;
+  rarity: ArcaneRarity | null;
+  prime: boolean;
+  equipped_in: string[];
+  market_slug: string;
+  favourite: boolean;
+  order_placed: boolean;
+}
+
+export interface RelicRow {
+  relic: string;
+  tier: string;
+  refinement: string;
+  image_name: string | null;
+  count: number;
+  vault: VaultStatus;
+  unique_name: string;
+  plat: number | null;
+  favourite: boolean;
+  order_placed: boolean;
+}
+
+export interface MiscRow {
+  name: string;
+  unique_name: string;
+  image_name: string | null;
+  count: number;
+  ducats: number | null;
+  plat: number | null;
+  market_slug: string;
+  favourite: boolean;
+  order_placed: boolean;
+}
+
+export interface SetComponent {
+  unique_name: string;
+  name: string;
+  image_name: string | null;
+  owned: number;
+  required: number;
+  enough: boolean;
+}
+
+export interface SetRow {
+  set_name: string;
+  unique_name: string;
+  image_name: string | null;
+  owned_parts: number;
+  total_parts: number;
+  count: number;
+  complete: boolean;
+  item: ItemStatus;
+  vault: VaultStatus | null;
+  prices: Prices;
+  market_slug: string;
+  favourite: boolean;
+  order_placed: boolean;
+  components: SetComponent[];
+}
+
+export interface TabTotals {
+  ducats: number;
+  plat: number;
+}
+
+export interface InventoryTab {
+  parts: PartRow[];
+  mods: ModRow[];
+  arcanes: ModRow[];
+  relics: RelicRow[];
+  misc: MiscRow[];
+  sets: SetRow[];
+  totals: Record<string, TabTotals>;
+}
+
+export interface ResourceRow {
+  unique_name: string;
+  name: string;
+  image_name: string | null;
+  owned: number;
+  required: number;
+  deficit: number;
+}
+
+export interface RecipeDemand {
+  recipe: string;
+  name: string;
+  count: number;
+}
+
+export interface ResourcesTab {
+  resources: ResourceRow[];
+  recipes: RecipeDemand[];
+}

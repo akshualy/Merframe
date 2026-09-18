@@ -1,0 +1,28 @@
+[package]
+name = "wf-log"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-stream.workspace = true
+memchr.workspace = true
+wf-mem.workspace = true
+notify.workspace = true
+regex.workspace = true
+async-stream.workspace = true
+futures-core.workspace = true
+
+[target.'cfg(not(windows))'.dependencies]
+wf-scan.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows-sys.workspace = true
+
+[lints]
+workspace = true

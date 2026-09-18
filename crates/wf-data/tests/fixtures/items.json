@@ -1,0 +1,635 @@
+[
+  {
+    "uniqueName": "/Lotus/Powersuits/Excalibur/Excalibur",
+    "name": "Excalibur",
+    "description": "Excalibur epitomizes the warrior spirit. His master swordsmanship deals high damage. He is the embodiment of martial excellence.",
+    "health": 270,
+    "shield": 270,
+    "armor": 240,
+    "stamina": 3,
+    "power": 100,
+    "codexSecret": false,
+    "masteryReq": 0,
+    "sprintSpeed": 1,
+    "passiveDescription": "Excalibur deals |DAMAGE|% increased damage and attacks |SPEED|% faster when wielding swords.",
+    "exalted": [
+      "/Lotus/Powersuits/Excalibur/DoomSword"
+    ],
+    "abilities": [
+      {
+        "uniqueName": "/Lotus/Powersuits/Excalibur/Abilities/SlashDashNewAbility",
+        "name": "Slash Dash",
+        "description": "Slash and dash through enemies alongside a radial specter. The powerful Exalted Blade’s slashes inflict <DT_SLASH_COLOR>Slash Status.",
+        "imageName": "Power04.png"
+      },
+      {
+        "uniqueName": "/Lotus/Powersuits/Excalibur/Abilities/RadialBlindAbility",
+        "name": "Radial Blind",
+        "description": "Emit a bright flash of light, blinding all nearby enemies.",
+        "imageName": "Power01.png"
+      },
+      {
+        "uniqueName": "/Lotus/Powersuits/Excalibur/Abilities/RadialJavelinAbility",
+        "name": "Radial Javelin",
+        "description": "Radial javelins impale nearby enemies, inflicting <DT_SLASH_COLOR>Slash Status.",
+        "imageName": "Power03.png"
+      },
+      {
+        "uniqueName": "/Lotus/Powersuits/Excalibur/Abilities/SwordOfDoomAbility",
+        "name": "Exalted Blade",
+        "description": "Summon a sword of pure light and immense power.",
+        "imageName": "ExcaliburSwordOfDoom.png"
+      }
+    ],
+    "productCategory": "Suits",
+    "buildPrice": 25000,
+    "buildTime": 86400,
+    "skipBuildTimePrice": 50,
+    "buildQuantity": 1,
+    "consumeOnBuild": true,
+    "components": [
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburBlueprint",
+        "name": "Blueprint",
+        "description": "Excalibur epitomizes the warrior spirit. His master swordsmanship deals high damage. He is the embodiment of martial excellence.",
+        "itemCount": 1,
+        "imageName": "blueprint.png",
+        "tradable": false,
+        "masterable": false
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburChassisComponent",
+        "name": "Chassis",
+        "description": "Chassis component of the Excalibur Warframe.",
+        "codexSecret": false,
+        "itemCount": 1,
+        "imageName": "GenericWarframeChassis.png",
+        "drops": [
+          {
+            "location": "Mars/War (Assassination)",
+            "type": "Excalibur Chassis Blueprint",
+            "chance": 38.72,
+            "rarity": "Common"
+          }
+        ],
+        "tradable": false,
+        "masterable": false
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetComponent",
+        "name": "Neuroptics",
+        "description": "Neuroptics component of the Excalibur Warframe.",
+        "codexSecret": false,
+        "itemCount": 1,
+        "imageName": "GenericWarframeHelmet.png",
+        "drops": [
+          {
+            "location": "Mars/War (Assassination)",
+            "type": "Excalibur Neuroptics Blueprint",
+            "chance": 38.72,
+            "rarity": "Common"
+          }
+        ],
+        "tradable": false,
+        "masterable": false
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+        "name": "Orokin Cell",
+        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
+        "codexSecret": false,
+        "itemCount": 1,
+        "imageName": "ComponentCell.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Annihilation (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburSystemsComponent",
+        "name": "Systems",
+        "description": "Systems component of the Excalibur Warframe.",
+        "codexSecret": false,
+        "itemCount": 1,
+        "imageName": "GenericWarframeSystem.png",
+        "drops": [
+          {
+            "location": "Mars/War (Assassination)",
+            "type": "Excalibur Systems Blueprint",
+            "chance": 22.56,
+            "rarity": "Uncommon"
+          }
+        ],
+        "tradable": false,
+        "masterable": false
+      }
+    ],
+    "type": "Warframe",
+    "imageName": "Excalibur.png",
+    "category": "Warframes",
+    "tradable": false,
+    "wikiAvailable": true,
+    "conclave": true,
+    "color": 0,
+    "introduced": {
+      "name": "Vanilla",
+      "url": "https://wiki.warframe.com/w/Closed_Beta_Updates%23Vanilla",
+      "aliases": [
+        "0",
+        "0.0"
+      ],
+      "parent": "0.0",
+      "date": "2012-10-25"
+    },
+    "marketCost": 75,
+    "bpCost": 35000,
+    "polarities": [
+      "vazarin",
+      "madurai"
+    ],
+    "sex": "Male",
+    "sprint": 1,
+    "wikiaUrl": "https://wiki.warframe.com/w/Excalibur",
+    "releaseDate": "2012-10-25",
+    "isPrime": false,
+    "masterable": true
+  },
+  {
+    "uniqueName": "/Lotus/Powersuits/Trinity/TrinityPrime",
+    "name": "Trinity Prime",
+    "description": "Become the bastion that defends allies using powerful healing abilities with Trinity Prime. Featuring altered mod polarities for greater customization.",
+    "health": 270,
+    "shield": 455,
+    "armor": 135,
+    "stamina": 3,
+    "power": 175,
+    "codexSecret": false,
+    "masteryReq": 0,
+    "sprintSpeed": 1.1,
+    "passiveDescription": "Allies in <AFFINITY_SHARE>Affinity Range gain |BUFF|% of Trinity's Max Energy as Health.",
+    "abilities": [
+      {
+        "uniqueName": "/Lotus/Powersuits/Trinity/Abilities/WellOfLifeAbility",
+        "name": "Well Of Life",
+        "description": "Create a well of life on an enemy who will absorb Status Effect damage intended for nearby allies. Allies gain additional Health when they attack the target. If allies die, enemies in the well of life die in their stead.",
+        "imageName": "TrinityWellOfLife.png"
+      },
+      {
+        "uniqueName": "/Lotus/Powersuits/Trinity/Abilities/EnergyVampireAbility",
+        "name": "Energy Vampire",
+        "description": "Allies will gain energy over time when enemies are marked with Energy Vampire.",
+        "imageName": "TrinityEnergyVampire.png"
+      },
+      {
+        "uniqueName": "/Lotus/Powersuits/Trinity/Abilities/LinkAbility",
+        "name": "Link",
+        "description": "Any damage taken while Link is active will be channeled to a nearby enemy.",
+        "imageName": "TrinityLink.png"
+      },
+      {
+        "uniqueName": "/Lotus/Powersuits/Trinity/Abilities/BlessingAbility",
+        "name": "Blessing",
+        "description": "Restore the health and shields of allies within <AFFINITY_SHARE>Affinity Range while reducing the damage they take from enemies.",
+        "imageName": "TrinityBlessing.png"
+      }
+    ],
+    "productCategory": "Suits",
+    "buildPrice": 25000,
+    "buildTime": 259200,
+    "skipBuildTimePrice": 50,
+    "buildQuantity": 1,
+    "consumeOnBuild": true,
+    "components": [
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeBlueprint",
+        "name": "Blueprint",
+        "description": "Become the bastion that defends allies using powerful healing abilities with Trinity Prime. Featuring altered mod polarities for greater customization.",
+        "itemCount": 1,
+        "primeSellingPrice": 45,
+        "imageName": "blueprint.png",
+        "drops": [
+          {
+            "location": "Axi S1 Relic",
+            "type": "Trinity Prime Blueprint",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionABronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 45
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeChassisComponent",
+        "name": "Chassis",
+        "description": "Chassis component of the Trinity Prime Warframe.",
+        "codexSecret": false,
+        "primeSellingPrice": 45,
+        "itemCount": 1,
+        "imageName": "GenericWarframePrimeChassis.png",
+        "drops": [
+          {
+            "location": "Axi H1 Relic",
+            "type": "Trinity Prime Chassis Blueprint",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionTBronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 45
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeHelmetComponent",
+        "name": "Neuroptics",
+        "description": "Neuroptics component of the Trinity Prime Warframe.",
+        "codexSecret": false,
+        "primeSellingPrice": 25,
+        "itemCount": 1,
+        "imageName": "GenericWarframePrimeHelmet.png",
+        "drops": [
+          {
+            "location": "Lith K8 Relic",
+            "type": "Trinity Prime Neuroptics Blueprint",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionLimboTrinityVaultBBronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 25
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+        "name": "Orokin Cell",
+        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
+        "codexSecret": false,
+        "itemCount": 1,
+        "imageName": "ComponentCell.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent",
+        "name": "Systems",
+        "description": "Systems component of the Trinity Prime Warframe.",
+        "codexSecret": false,
+        "primeSellingPrice": 15,
+        "itemCount": 1,
+        "imageName": "GenericWarframePrimeSystem.png",
+        "drops": [
+          {
+            "location": "Axi A1 Relic (Radiant)",
+            "type": "Trinity Prime Systems Blueprint",
+            "chance": 16.67,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          },
+          {
+            "location": "Axi A1 Relic (Flawless)",
+            "type": "Trinity Prime Systems Blueprint",
+            "chance": 20,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          },
+          {
+            "location": "Axi A1 Relic (Exceptional)",
+            "type": "Trinity Prime Systems Blueprint",
+            "chance": 23.33,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 15
+      }
+    ],
+    "type": "Warframe",
+    "imageName": "TrinityPrime.png",
+    "category": "Warframes",
+    "tradable": false,
+    "wikiAvailable": true,
+    "aura": "vazarin",
+    "conclave": true,
+    "color": 0,
+    "introduced": {
+      "name": "Update 17.6",
+      "url": "https://wiki.warframe.com/w/Update_17%23Update_17.6",
+      "aliases": [
+        "17.6.0",
+        "17.6"
+      ],
+      "parent": "17.6",
+      "date": "2015-10-06"
+    },
+    "polarities": [
+      "vazarin",
+      "vazarin",
+      "madurai",
+      "naramon"
+    ],
+    "sex": "Female",
+    "sprint": 1.1,
+    "wikiaUrl": "https://wiki.warframe.com/w/Trinity%2FPrime",
+    "releaseDate": "2015-10-06",
+    "isPrime": true,
+    "vaulted": true,
+    "vaultDate": "2017-08-29",
+    "estimatedVaultDate": "2017-08-29",
+    "masterable": true
+  },
+  {
+    "name": "Braton Prime",
+    "uniqueName": "/Lotus/Weapons/Tenno/Rifle/BratonPrime",
+    "codexSecret": false,
+    "damagePerShot": [
+      1.75,
+      12.25,
+      21,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "totalDamage": 35,
+    "description": "A classic Orokin weapon, Braton Prime features modified damage levels and a larger magazine over the standard model.",
+    "criticalChance": 0.12,
+    "criticalMultiplier": 2,
+    "procChance": 0.25999999,
+    "fireRate": 9.583334,
+    "masteryReq": 8,
+    "productCategory": "LongGuns",
+    "slot": 1,
+    "accuracy": 28.571428,
+    "omegaAttenuation": 1.25,
+    "noise": "Alarming",
+    "trigger": "Auto",
+    "magazineSize": 75,
+    "reloadTime": 2.1500001,
+    "multishot": 1,
+    "buildPrice": 15000,
+    "buildTime": 43200,
+    "skipBuildTimePrice": 50,
+    "buildQuantity": 1,
+    "consumeOnBuild": true,
+    "components": [
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+        "name": "Barrel",
+        "description": "A prime weapon-crafting component.",
+        "codexSecret": false,
+        "primeSellingPrice": 15,
+        "itemCount": 1,
+        "imageName": "GenericGunPrimeBarrel.png",
+        "drops": [
+          {
+            "location": "Axi A17 Relic (Radiant)",
+            "type": "Braton Prime Barrel",
+            "chance": 16.67,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGrendelPrimeDBronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 15
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint",
+        "name": "Blueprint",
+        "description": "A classic Orokin weapon, Braton Prime features modified damage levels and a larger magazine over the standard model.",
+        "itemCount": 1,
+        "primeSellingPrice": 25,
+        "imageName": "blueprint.png",
+        "drops": [
+          {
+            "location": "Axi G11 Relic",
+            "type": "Braton Prime Blueprint",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGrendelPrimeABronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 25
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+        "name": "Orokin Cell",
+        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
+        "codexSecret": false,
+        "itemCount": 10,
+        "imageName": "ComponentCell.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeReceiver",
+        "name": "Receiver",
+        "description": "A prime weapon-crafting component.",
+        "codexSecret": false,
+        "primeSellingPrice": 45,
+        "itemCount": 1,
+        "imageName": "GenericGunPrimeReceiver.png",
+        "drops": [
+          {
+            "location": "Axi H6 Relic",
+            "type": "Braton Prime Receiver",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionHildrynPrimeABronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 45
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+        "name": "Stock",
+        "description": "A prime weapon-crafting component.",
+        "codexSecret": false,
+        "primeSellingPrice": 25,
+        "itemCount": 1,
+        "imageName": "GenericGunPrimeStock.png",
+        "drops": [
+          {
+            "location": "Axi A1 Relic (Radiant)",
+            "type": "Braton Prime Stock",
+            "chance": 16.67,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          },
+          {
+            "location": "Axi A1 Relic (Flawless)",
+            "type": "Braton Prime Stock",
+            "chance": 20,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          },
+          {
+            "location": "Axi A1 Relic (Exceptional)",
+            "type": "Braton Prime Stock",
+            "chance": 23.33,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 25
+      }
+    ],
+    "type": "Rifle",
+    "damage": {
+      "total": 35,
+      "impact": 1.75,
+      "puncture": 12.25,
+      "slash": 21,
+      "heat": 0,
+      "cold": 0,
+      "electricity": 0,
+      "toxin": 0,
+      "blast": 0,
+      "radiation": 0,
+      "gas": 0,
+      "magnetic": 0,
+      "viral": 0,
+      "corrosive": 0,
+      "void": 0,
+      "tau": 0,
+      "cinematic": 0,
+      "shieldDrain": 0,
+      "healthDrain": 0,
+      "energyDrain": 0,
+      "true": 0
+    },
+    "imageName": "BratonPrime.png",
+    "category": "Primary",
+    "tradable": false,
+    "wikiAvailable": true,
+    "attacks": [
+      {
+        "name": "Normal Attack",
+        "speed": 9.58,
+        "crit_chance": 12,
+        "crit_mult": 2,
+        "status_chance": 26,
+        "shot_type": "Hit-Scan",
+        "damage": {
+          "impact": 1.75,
+          "slash": 21,
+          "puncture": 12.25
+        }
+      },
+      {
+        "name": "Incarnon Form",
+        "speed": 5.67,
+        "crit_chance": 30,
+        "crit_mult": 3,
+        "status_chance": 30,
+        "shot_type": "Hit-Scan",
+        "damage": {
+          "impact": 28,
+          "slash": 39.2,
+          "puncture": 2.8
+        }
+      },
+      {
+        "name": "Incarnon Form AoE",
+        "speed": 5.67,
+        "crit_chance": 30,
+        "crit_mult": 3,
+        "status_chance": 30,
+        "shot_type": "AoE",
+        "falloff": {
+          "start": 0,
+          "end": 3,
+          "reduction": 0.1
+        },
+        "damage": {
+          "heat": 70
+        }
+      }
+    ],
+    "tags": [
+      "Prime",
+      "Never Vaulted"
+    ],
+    "exilusPolarity": "naramon",
+    "wikiaThumbnail": "https://wiki.warframe.com/images/BratonPrime.png?c49e4",
+    "wikiaUrl": "https://wiki.warframe.com/w/Braton_Prime",
+    "introduced": {
+      "name": "Update 9.0",
+      "url": "https://wiki.warframe.com/w/Update_9%23Update_9.0",
+      "aliases": [
+        "Update 9",
+        "9",
+        "9.0"
+      ],
+      "parent": "9.0",
+      "date": "2013-07-13"
+    },
+    "disposition": 4,
+    "releaseDate": "2013-07-13",
+    "isPrime": true,
+    "vaulted": false,
+    "estimatedVaultDate": "2015-04-13",
+    "masterable": true
+  }
+]

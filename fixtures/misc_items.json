@@ -1,0 +1,1280 @@
+[
+ {
+  "name": "Prisma Angstrum",
+  "uniqueName": "/Lotus/Weapons/Corpus/Pistols/CrpHandRL/PrismaAngstrum",
+  "masteryReq": 8,
+  "productCategory": "Pistols",
+  "omegaAttenuation": 1.3,
+  "type": "Pistol",
+  "imageName": "PrismaAngstrum.png",
+  "category": "Secondary",
+  "tradable": true,
+  "masterable": true
+ },
+ {
+  "uniqueName": "/Lotus/Types/Friendly/Pets/CreaturePets/MedjayPredatorKubrowPetPowerSuit",
+  "name": "Medjay Predasite",
+  "productCategory": "KubrowPets",
+  "type": "Pets",
+  "imageName": "KubrowBreedPredasiteMedjay.png",
+  "category": "Pets",
+  "tradable": false,
+  "masteryReq": 0,
+  "masterable": true
+ },
+ {
+  "uniqueName": "/Lotus/Types/Friendly/Pets/CreaturePets/ArmoredInfestedCatbrowPetPowerSuit",
+  "name": "Panzer Vulpaphyla",
+  "productCategory": "KubrowPets",
+  "type": "Pets",
+  "imageName": "KavatBreedPanzerVulpaphyla.png",
+  "category": "Pets",
+  "tradable": false,
+  "masteryReq": 0,
+  "masterable": true
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/CatbrowPet/VampireCatbrowPetPowerSuit",
+  "name": "Vasca Kavat",
+  "productCategory": "KubrowPets",
+  "type": "Pets",
+  "imageName": "KavatBreedVasca.png",
+  "category": "Pets",
+  "tradable": false,
+  "masteryReq": 0,
+  "masterable": true
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/InfestedMicroplanet/Resources/Mechs/DamagedMechPartChassisItem",
+  "name": "Damaged Necramech Casing",
+  "type": "Resource",
+  "imageName": "DamagedMechPartChassis.png",
+  "category": "Resources",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/InfestedMicroplanet/Resources/Mechs/DamagedMechPartEngineItem",
+  "name": "Damaged Necramech Engine",
+  "type": "Resource",
+  "imageName": "DamagedMechPartEngine.png",
+  "category": "Resources",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/InfestedMicroplanet/Resources/Mechs/DamagedMechPartSystemsItem",
+  "name": "Damaged Necramech Pod",
+  "type": "Resource",
+  "imageName": "DamagedMechPartSystems.png",
+  "category": "Resources",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/InfestedMicroplanet/Resources/Mechs/DamagedMechPartWeaponPodItem",
+  "name": "Damaged Necramech Weapon Pod",
+  "type": "Resource",
+  "imageName": "DamagedMechPartWeaponPod.png",
+  "category": "Resources",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/InfestedMicroplanet/Resources/Mechs/DamagedMechWeaponReceiverItem",
+  "name": "Damaged Necramech Weapon Receiver",
+  "type": "Resource",
+  "imageName": "DamagedEntratiMechGunReceiver.png",
+  "category": "Resources",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexF",
+  "name": "Ayatan Anasa Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexF.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexB",
+  "name": "Ayatan Ayr Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexB.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexI",
+  "name": "Ayatan Chattraka Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexI.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexOrnamentA",
+  "name": "Ayatan Cyan Star",
+  "type": "Ayatan Star",
+  "imageName": "OroFusexOrnamentA.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexEntrati",
+  "name": "Ayatan Kitha Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexEntrati.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexC",
+  "name": "Ayatan Orta Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexC.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexE",
+  "name": "Ayatan Piv Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexE.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexA",
+  "name": "Ayatan Sah Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexA.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexG",
+  "name": "Ayatan Valana Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexG.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexD",
+  "name": "Ayatan Vaya Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexD.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/FusionTreasures/OroFusexH",
+  "name": "Ayatan Zambuka Sculpture",
+  "type": "Ayatan Sculpture",
+  "imageName": "OroFusexH.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/FishParts/DeimosGenericSharedFishPartItem",
+  "name": "Benign Infested Tumor",
+  "type": "Fish Part",
+  "imageName": "DeimosGenericSharedFishPart.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/FishParts/DeimosOrokinFishAPartItem",
+  "name": "Biotic Filter",
+  "type": "Fish Part",
+  "imageName": "DeimosOrokinFishAPart.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/FishParts/EidolonFishOilItem",
+  "name": "Fish Oil",
+  "type": "Fish Part",
+  "imageName": "FishResourceOil.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/FishParts/EidolonFishScalesItem",
+  "name": "Fish Scales",
+  "type": "Fish Part",
+  "imageName": "FishResourceScales.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/PhotoboothTileGasCityConCornerEOpen",
+  "name": "Gas City Dead Exit Scene",
+  "type": "Captura",
+  "imageName": "GasCityConCornerEOpen.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/PhotoboothTileGasCityConCornerA",
+  "name": "Gas City Upper Logistics Scene",
+  "type": "Captura",
+  "imageName": "GasCityConCornerA.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/FishParts/CorpusFishParralelBiodeItem",
+  "name": "Mirewinder Parallel Biode",
+  "type": "Fish Part",
+  "imageName": "FishPartParallelBiode.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/FishParts/DayUncommonFishBPartItem",
+  "name": "Mortus Horn",
+  "type": "Fish Part",
+  "imageName": "FishResourceHorn.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/FishParts/NightLegendaryFishAPartItem",
+  "name": "Seram Beetle Shell",
+  "type": "Fish Part",
+  "imageName": "FishResourceShell.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/PhotoboothTileDrifterCamp",
+  "name": "The Drifter Camp Scene",
+  "type": "Captura",
+  "imageName": "DrifterCamp.png",
+  "category": "Misc",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Skins/Brawler/BrawlerAltHelmet",
+  "name": "Atlas Tartarus Helmet",
+  "buildPrice": 20000,
+  "buildTime": 43200,
+  "buildQuantity": 1,
+  "type": "Skin",
+  "imageName": "BrawlerAltHelmet.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Helmets/BrawlerAltHelmetBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "imageName": "blueprint.png",
+    "tradable": false
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
+    "name": "Neurodes",
+    "itemCount": 2,
+    "imageName": "ComponentNeurode.png",
+    "tradable": false
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+    "name": "Orokin Cell",
+    "itemCount": 1,
+    "imageName": "ComponentCell.png",
+    "tradable": false
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OxiumAlloy",
+    "name": "Oxium",
+    "itemCount": 400,
+    "imageName": "ComponentOxium.png",
+    "tradable": false
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 1200,
+    "imageName": "ComponentSalvage.png",
+    "tradable": false
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Emotes/DanceZekeCanthavethis",
+  "name": "Can'T Touch This",
+  "type": "Emotes",
+  "imageName": "EmoteBandZekeA.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/CatbrowPet/Colors/CatbrowPetColorSecondaryB",
+  "name": "Conculyst Brown",
+  "type": "Fur Color",
+  "imageName": "KavatColourSecondaryB.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Skins/Excalibur/ExcaliburHelmet",
+  "name": "Excalibur Helmet",
+  "type": "Skin",
+  "imageName": "ExcaliburHelmet.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Interface/Graphics/CustomUI/FortunaStyle",
+  "name": "Fortuna Theme",
+  "type": "Themes",
+  "imageName": "StyleFortuna.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/SuitCustomizations/ColourPickerGrineerItemA",
+  "name": "Grineer",
+  "type": "Color Palette",
+  "imageName": "ColorPickerGrineer.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/AirHunterTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/ArcaneCollectorTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/ClemTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/CodaKillerTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/CodaMasteryTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/CompleteDescendiaHardcoreTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/CompleteDescendiaHarrowTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/CompleteDescendiaUrielTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/DateAoiTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/DateEleanorTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/DefendLyonTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/DefendMarieTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/DuviriKingQuestTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/DuviriQueenQuestTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/EidolonHunterTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/FollieHuntOneTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/HotwiredTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/HunhullsKillerTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/JadeShadows2Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/JadeShadowsTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/KalymosTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/KuvaMasteryTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/LichKillerTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/LotusEatersTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/LoverTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MaduraiBowTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MaxedRailjackTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MinesweeperTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MinVelTogetherTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR10Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR13Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR16Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR19Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR1Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR22Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR25Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR28Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR30Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR4Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/MR7Title",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/NaramonBladeTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/OldPeaceTeaserTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/OldPeaceTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/OraxiaPreyTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/SecondDreamTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/SentientFriendTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/SisterKillerTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/StickerConquestTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/TenetMasteryTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/TheHexCompleteTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/TheHexFinaleTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/TheNewWarTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/TitleGaussPrime",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/TitleGrendelPrime",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/UrielKillerTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Titles/ZenurikGrimoireTitle",
+  "name": "Honoria",
+  "type": "Misc",
+  "imageName": "GenericHonoriaIcon.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA",
+  "name": "Kavasa Prime Kubrow Collar",
+  "buildPrice": 20000,
+  "buildTime": 43200,
+  "buildQuantity": 1,
+  "type": "Skin",
+  "imageName": "KubrowCollarPrimeA.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "imageName": "blueprint.png",
+    "tradable": true,
+    "ducats": 45
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent",
+    "name": "Kavasa Prime Band",
+    "itemCount": 1,
+    "imageName": "GenericComponentPrimeLatch.png",
+    "tradable": true,
+    "ducats": 45
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABuckleComponent",
+    "name": "Kavasa Prime Buckle",
+    "itemCount": 1,
+    "imageName": "GenericComponentPrimePlug.png",
+    "tradable": true,
+    "ducats": 65
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Emotes/LNY2024DragonEmote",
+  "name": "Lunar Renewal Dragon Flourish",
+  "type": "Emotes",
+  "imageName": "YearOfTheDragonEmote.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/SuitCustomizations/ColourPickerNarmer",
+  "name": "Narmer",
+  "type": "Color Palette",
+  "imageName": "ColorPickerNarmer.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/QuartersWallpapers/NoraWallpaper",
+  "name": "Nora Stencil",
+  "type": "Ship Decoration",
+  "imageName": "NoraWallpaper.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/AvatarImages/AvatarImagePHGlyph",
+  "name": "Ph_glyph",
+  "type": "Glyph",
+  "imageName": "PHGlyph.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Skins/Rhino/RhinoHelmet",
+  "name": "Rhino Helmet",
+  "type": "Skin",
+  "imageName": "RhinoHelmet.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Skins/Rhino/RhinoHelmetAltBStatless",
+  "name": "Rhino Vanguard Helmet",
+  "buildPrice": 0,
+  "buildTime": 0,
+  "buildQuantity": 1,
+  "type": "Skin",
+  "imageName": "RhinoSeries3Helmet.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Upgrades/Skins/Rhino/RhinoHelmetAltB",
+    "name": "Arcane Vanguard Helmet",
+    "buildPrice": 20000,
+    "buildTime": 43200,
+    "itemCount": 1,
+    "imageName": "RhinoSeries3Helmet.png",
+    "tradable": false
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Helmets/ConversionRhinoHelmetAltBBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "imageName": "blueprint.png",
+    "tradable": false
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Emotes/ShawzinEmote",
+  "name": "Shawzin",
+  "type": "Emotes",
+  "imageName": "ShawzinEmote.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/SuitCustomizations/ColourPickerDefaultsItemA",
+  "name": "Tenno",
+  "type": "Color Palette",
+  "imageName": "ColorPickerTenno.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Emotes/HardmodeLuaEmote",
+  "name": "The Steel Path: Lua",
+  "type": "Emotes",
+  "imageName": "EmoteLua.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Skins/Trinity/TrinityHelmet",
+  "name": "Trinity Helmet",
+  "type": "Skin",
+  "imageName": "TrinityHelmet.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/SuitCustomizations/ColourPickerTwilightItemA",
+  "name": "Twilight",
+  "type": "Color Palette",
+  "imageName": "ColorPickerTwilight.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/CatbrowPet/Colors/CatbrowPetColorAccentsEntrati",
+  "name": "Vitreum Brown",
+  "type": "Fur Color",
+  "imageName": "KavatColourAccentsKalymos.png",
+  "category": "Skins",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/InfestedCommonDFishItem",
+  "name": "Amniophysi",
+  "type": "Fish",
+  "imageName": "InfestedCommonD.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/InfestedCommonDFishItemMedium",
+  "name": "Amniophysi",
+  "type": "Fish",
+  "imageName": "InfestedCommonD.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/HybridRareAFishItem",
+  "name": "Aquapulmo",
+  "type": "Fish",
+  "imageName": "HybridRareA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/HybridRareAFishItemLarge",
+  "name": "Aquapulmo",
+  "type": "Fish",
+  "imageName": "HybridRareA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/NightRareFishBItem",
+  "name": "Cuthol",
+  "type": "Fish",
+  "imageName": "FishItemNightRareB.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/NightRareFishBItemLarge",
+  "name": "Cuthol",
+  "type": "Fish",
+  "imageName": "FishItemNightRareB.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/NightRareFishBItemMedium",
+  "name": "Cuthol",
+  "type": "Fish",
+  "imageName": "FishItemNightRareB.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Duviri/DuviriFishAItem",
+  "name": "Inaak",
+  "type": "Fish",
+  "imageName": "DuviriFishA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItem",
+  "name": "Mortus Lungfish",
+  "type": "Fish",
+  "imageName": "FishItemDayUncommonB.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItemLarge",
+  "name": "Mortus Lungfish",
+  "type": "Fish",
+  "imageName": "FishItemDayUncommonB.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItemMedium",
+  "name": "Mortus Lungfish",
+  "type": "Fish",
+  "imageName": "FishItemDayUncommonB.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/OrokinLegendaryAFishItem",
+  "name": "Myxostomata",
+  "type": "Fish",
+  "imageName": "OrokinLegendaryA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/OrokinLegendaryAFishItemMedium",
+  "name": "Myxostomata",
+  "type": "Fish",
+  "imageName": "OrokinLegendaryA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Deimos/HybridUncommonAFishItem",
+  "name": "Ostimyr",
+  "type": "Fish",
+  "imageName": "HybridUncommonA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/SolarisBothCommonFishAItem",
+  "name": "Scrubber",
+  "type": "Fish",
+  "imageName": "SolarisBothCommonFishA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/OrokinBothLegendaryFishAMediumItem",
+  "name": "Synathid",
+  "type": "Fish",
+  "imageName": "OrokinClearLegendaryFishAMedium.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/SolarisCoolCommonFishAItem",
+  "name": "Tink",
+  "type": "Fish",
+  "imageName": "SolarisCoolCommonFishA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/SolarisCoolCommonFishAMediumItem",
+  "name": "Tink",
+  "type": "Fish",
+  "imageName": "SolarisStormUncommonFishAMedium.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/OrokinCoolRareFishAItem",
+  "name": "Tromyzon",
+  "type": "Fish",
+  "imageName": "OrokinCoolRareFishA.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/OrokinCoolRareFishALargeItem",
+  "name": "Tromyzon",
+  "type": "Fish",
+  "imageName": "OrokinCoolRareFishALarge.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/OrokinCoolRareFishAMediumItem",
+  "name": "Tromyzon",
+  "type": "Fish",
+  "imageName": "OrokinCoolRareFishAMedium.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/AvatarImages/Factions/GlyphFactionCorpus",
+  "name": "Corpus Glyph",
+  "type": "Glyph",
+  "imageName": "FactionCorpus.png",
+  "category": "Glyphs",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/AvatarImages/AvatarImageItem1",
+  "name": "Excalibur Glyph",
+  "type": "Glyph",
+  "imageName": "Icon01.png",
+  "category": "Glyphs",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/AvatarImages/AvatarImagePride2025Glyph",
+  "name": "Pride Glyph Iv",
+  "type": "Glyph",
+  "imageName": "PrideGlyph2025.png",
+  "category": "Glyphs",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/AvatarImages/FanChannel/AvatarImageTennoGen10Year",
+  "name": "Tennogen Decennial Glyph",
+  "type": "Glyph",
+  "imageName": "Tennogen10YearGlyph.png",
+  "category": "Glyphs",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/StoreItems/AvatarImages/AvatarImageItem2",
+  "name": "Volt Glyph",
+  "type": "Glyph",
+  "imageName": "Icon02.png",
+  "category": "Glyphs",
+  "tradable": false,
+  "masterable": false
+ }
+]

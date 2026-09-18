@@ -1,0 +1,196 @@
+import { ImageOff } from "lucide-react";
+import { memo, useEffect, useState } from "react";
+import {
+  ARCANE_BACKDROP,
+  type ArcaneRarity,
+  GameIcon,
+} from "@/components/game-icon";
+import { api, logError } from "@/lib/bridge";
+import { cn } from "@/lib/utils";
+
+type Resolved = { src: string } | { failed: true };
+
+const resolved = new Map<string, Resolved>();
+const pending = new Map<string, Promise<Resolved>>();
+
+async function convert(path: string): Promise<string> {
+  const { convertFileSrc } = await import("@tauri-apps/api/core");
+  return convertFileSrc(path);
+}
+
+async function resolve(imageName: string): Promise<Resolved> {
+  let state: Resolved;
+  try {
+    state = { src: await convert(await api.itemImage(imageName)) };
+  } catch (error) {
+    logError(`Loading image ${imageName}`, error);
+    state = { failed: true };
+  }
+  resolved.set(imageName, state);
+  pending.delete(imageName);
+  return state;
+}
+
+async function load(imageName: string): Promise<Resolved> {
+  const cached = resolved.get(imageName);
+  if (cached) {
+    return cached;
+  }
+  const inFlight = pending.get(imageName);
+  if (inFlight) {
+    return inFlight;
+  }
+  const request = resolve(imageName);
+  pending.set(imageName, request);
+  return request;
+}
+
+export async function prefetchImages(names: (string | null | undefined)[]) {
+  const wanted = [
+    ...new Set(
+      names.filter(
+        (name): name is string =>
+          typeof name === "string" && name.length > 0 && !resolved.has(name),
+      ),
+    ),
+  ];
+  if (wanted.length === 0) {
+    return;
+  }
+  try {
+    await api.prefetchImages(wanted);
+  } catch (error) {
+    logError("Prefetching images", error);
+  }
+}
+
+interface ItemImageProps {
+  imageName?: string | null;
+  fallbackSrc?: string | null;
+  size?: number;
+  alt?: string;
+  className?: string;
+}
+
+function ItemImageInner({
+  imageName,
+  fallbackSrc,
+  size = 32,
+  alt = "",
+  className,
+}: ItemImageProps) {
+  const [state, setState] = useState<Resolved | null>(() => {
+    if (!imageName) {
+      return fallbackSrc ? { src: fallbackSrc } : { failed: true };
+    }
+    return resolved.get(imageName) ?? null;
+  });
+
+  useEffect(() => {
+    if (!imageName) {
+      setState(fallbackSrc ? { src: fallbackSrc } : { failed: true });
+      return;
+    }
+    const known = resolved.get(imageName);
+    if (known) {
+      setState(known);
+      return;
+    }
+
+    let active = true;
+    setState(null);
+    async function show(name: string) {
+      const next = await load(name);
+      if (!active) {
+        return;
+      }
+      setState("failed" in next && fallbackSrc ? { src: fallbackSrc } : next);
+    }
+    show(imageName);
+
+    return () => {
+      active = false;
+    };
+  }, [fallbackSrc, imageName]);
+
+  const box = cn(
+    "bg-muted flex shrink-0 items-center justify-center overflow-hidden rounded-md",
+    className,
+  );
+  const style = { width: size, height: size };
+
+  if (state && "src" in state) {
+    return (
+      <img
+        src={state.src}
+        alt={alt}
+        width={size}
+        height={size}
+        loading="lazy"
+        className={cn(box, "object-contain")}
+        style={style}
+        onError={() => {
+          if (fallbackSrc && state.src !== fallbackSrc) {
+            setState({ src: fallbackSrc });
+          } else {
+            setState({ failed: true });
+          }
+        }}
+      />
+    );
+  }
+
+  return (
+    <span
+      className={box}
+      style={style}
+      aria-hidden={alt === ""}
+      role="img"
+      aria-label={alt || undefined}
+    >
+      {state && (
+        <ImageOff
+          className="text-muted-foreground"
+          style={{ width: size * 0.5, height: size * 0.5 }}
+        />
+      )}
+    </span>
+  );
+}
+
+export const ItemImage = memo(ItemImageInner);
+
+const GLYPH_ON_BACKDROP = 0.68;
+
+function ArcaneImageInner({
+  rarity,
+  size = 32,
+  className,
+  ...glyph
+}: ItemImageProps & { rarity?: ArcaneRarity | null }) {
+  if (!rarity) {
+    return <ItemImage size={size} className={className} {...glyph} />;
+  }
+  return (
+    <span
+      className={cn(
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-md",
+        className,
+      )}
+      style={{ width: size, height: size }}
+    >
+      <GameIcon
+        name={ARCANE_BACKDROP[rarity]}
+        size={size}
+        className="absolute inset-0"
+      />
+      <ItemImage
+        {...glyph}
+        size={Math.round(size * GLYPH_ON_BACKDROP)}
+        className="relative bg-transparent"
+      />
+    </span>
+  );
+}
+
+export const ArcaneImage = memo(ArcaneImageInner);

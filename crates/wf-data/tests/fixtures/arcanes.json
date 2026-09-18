@@ -1,0 +1,51 @@
+[
+  {
+    "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/MagneticProcResist",
+    "name": "Arcane Nullifier",
+    "category": "Arcanes",
+    "type": "Warframe Arcane",
+    "tradable": true,
+    "rarity": "Common",
+    "imageName": "ArcaneProjectionMagnetic.png",
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/PistolDamageOnReload",
+    "name": "Arcane Awakening",
+    "category": "Arcanes",
+    "type": "Warframe Arcane",
+    "tradable": true,
+    "rarity": "Uncommon",
+    "imageName": "ArcaneProjectionAS.png",
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup",
+    "name": "Arcane Energize",
+    "category": "Arcanes",
+    "type": "Warframe Arcane",
+    "tradable": true,
+    "rarity": "Legendary",
+    "imageName": "ArcaneProjectionBI.png",
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/SlowerBleedOutOnPredeath",
+    "name": "Arcane Survival",
+    "category": "Arcanes",
+    "type": "Arcane",
+    "tradable": true,
+    "imageName": "ArcaneProjectionAV.png",
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Zariman/WarframeOnShieldUptimePowerDuration",
+    "name": "Molt Efficiency",
+    "category": "Arcanes",
+    "type": "Warframe Arcane",
+    "tradable": true,
+    "rarity": "Rare",
+    "imageName": "ArcaneProjectionBN.png",
+    "masterable": false
+  }
+]

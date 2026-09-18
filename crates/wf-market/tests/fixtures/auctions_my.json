@@ -1,0 +1,129 @@
+{
+  "payload": {
+    "auctions": [
+      {
+        "minimal_reputation": 0,
+        "starting_price": 500,
+        "buyout_price": 500,
+        "visible": true,
+        "note": "",
+        "platform": "pc",
+        "crossplay": true,
+        "closed": false,
+        "top_bid": null,
+        "is_marked_for": null,
+        "marked_operation_at": null,
+        "created": "2026-09-07T18:55:39.000+00:00",
+        "updated": "2026-09-07T18:55:39.000+00:00",
+        "note_raw": "",
+        "is_direct_sell": true,
+        "id": "6a9f08ab51f7f20eeeb6add2",
+        "owner": {
+          "reputation": 24,
+          "platform": "pc",
+          "crossplay": true,
+          "locale": "en",
+          "avatar": "user/avatar/6a5daf0f000000000000d001.8af71272.webp",
+          "last_seen": "2026-09-07T18:50:49.465+00:00",
+          "ingame_name": "MerframeTester",
+          "slug": "merframetester",
+          "status": "offline",
+          "id": "6a5daf0f000000000000d001",
+          "region": "en"
+        },
+        "winner": null,
+        "item": {
+          "polarity": "naramon",
+          "attributes": [
+            {
+              "value": 124.4,
+              "positive": true,
+              "url_name": "electric_damage"
+            },
+            {
+              "value": 129.9,
+              "positive": true,
+              "url_name": "critical_damage"
+            },
+            {
+              "value": 163.1,
+              "positive": true,
+              "url_name": "puncture_damage"
+            },
+            {
+              "value": -115.0,
+              "positive": false,
+              "url_name": "critical_chance_on_slide_attack"
+            }
+          ],
+          "re_rolls": 86,
+          "weapon_url_name": "okina",
+          "mastery_level": 12,
+          "name": "acri-vexicak",
+          "mod_rank": 8,
+          "type": "riven"
+        },
+        "private": false
+      },
+      {
+        "minimal_reputation": 5,
+        "starting_price": 120,
+        "buyout_price": null,
+        "visible": false,
+        "note": "Taking offers until Sunday.",
+        "platform": "pc",
+        "crossplay": true,
+        "closed": false,
+        "top_bid": 145,
+        "is_marked_for": null,
+        "marked_operation_at": null,
+        "created": "2026-08-30T09:14:02.000+00:00",
+        "updated": "2026-09-06T21:02:44.000+00:00",
+        "note_raw": "Taking offers until Sunday.",
+        "is_direct_sell": false,
+        "id": "6a9c2f1d51f7f20eeeb6a001",
+        "owner": {
+          "reputation": 24,
+          "platform": "pc",
+          "crossplay": true,
+          "locale": "en",
+          "avatar": null,
+          "last_seen": "2026-09-07T18:50:49.465+00:00",
+          "ingame_name": "MerframeTester",
+          "slug": "merframetester",
+          "status": "offline",
+          "id": "6a5daf0f000000000000d001",
+          "region": "en"
+        },
+        "winner": null,
+        "item": {
+          "polarity": "madurai",
+          "attributes": [
+            {
+              "value": 168.2,
+              "positive": true,
+              "url_name": "damage_vs_grineer"
+            },
+            {
+              "value": 92.1,
+              "positive": true,
+              "url_name": "critical_chance"
+            },
+            {
+              "value": -38.4,
+              "positive": false,
+              "url_name": "ammo_maximum"
+            }
+          ],
+          "re_rolls": 12,
+          "weapon_url_name": "kuva_bramma",
+          "mastery_level": 16,
+          "name": "crita-critacan",
+          "mod_rank": 8,
+          "type": "riven"
+        },
+        "private": true
+      }
+    ]
+  }
+}

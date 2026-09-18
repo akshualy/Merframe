@@ -1,0 +1,35 @@
+{
+  "source": "https://wiki.warframe.com/w/Orbiter, https://wiki.warframe.com/w/Kaithe, https://wiki.warframe.com/w/Gemini_Skins, https://wiki.warframe.com/w/Enter_Nihil's_Oubliette, https://wiki.warframe.com/w/Fishing",
+  "fetched": "2026-09-10",
+  "names": {
+    "/Lotus/Types/Game/ShipScenes/CorpusShipScene": "Corpus Interior Decorations",
+    "/Lotus/Types/Game/ShipScenes/HalloweenScene": "Haunted Interior Decorations",
+    "/Lotus/Types/Game/ShipScenes/NidusPrimeScene": "Infested Orbiter Decorations",
+    "/Lotus/Types/Game/ShipScenes/PrimeLisetFiligreeScene": "Filigree Prime Decoration",
+    "/Lotus/Types/Items/Emotes/GeminiEmote": "Universal Gemini Emote",
+    "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey": "Enter Nihil's Oubliette",
+    "/Lotus/Upgrades/Skins/Horse/HorseHelmetDrapery": "Aumen Chamfron"
+  },
+  "derived_catch_grades": [
+    {
+      "prefix": "/Lotus/Types/Items/Fish/Eidolon/",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    {
+      "prefix": "/Lotus/Types/Items/Fish/Deimos/Infested",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    {
+      "prefix": "/Lotus/Types/Items/Fish/Deimos/",
+      "medium": "Adorned",
+      "large": "Magnificent"
+    },
+    {
+      "prefix": "/Lotus/Types/Items/Fish/Solaris/",
+      "medium": "Adorned",
+      "large": "Magnificent"
+    }
+  ]
+}

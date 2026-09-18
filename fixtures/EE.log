@@ -1,0 +1,1371 @@
+0.043 Sys [Diag]: Process Command-line: -windowMode:2 -shaderCache:1 -graphicsDriver:dx11 -gpuPreference:2 -cluster:public -language:en -clienttype:Steam
+0.043 Sys [Diag]: Build Label: 2026.203.0.113.87 Retail Windows x64 [Stripped]
+0.043 Sys [Diag]: Build Unique ID: 100000000
+0.044 Sys [Diag]: Windows user-name: steamuser
+0.044 Sys [Diag]: Windows computer-name: workstation
+0.044 Sys [Diag]: Current time: Tue Jan  6 12:00:00 2026 [UTC: Tue Jan  6 12:00:00 2026]
+0.044 Sys [Diag]: Current directory: C:\Games\Warframe\Tools
+0.094 Sys [Diag]: Physical Memory: 16GB / 32GB free
+0.094 Sys [Diag]: Address Space: 128TB / 128TB free
+0.094 Sys [Diag]: Page size: 4KB (Granularity: 64KB)
+0.094 Sys [Diag]: Operating System: WINE 10.0
+0.095 Sys [Diag]: Found Monitor: (0, 0) - (1920, 1080) : 1920x1080
+0.095 Sys [Diag]: Process is DPI-aware
+0.095 Sys [Diag]: Clock frequency: 10,000,000Hz
+0.101 Gfx [Info]: Private shader options need 22 bits
+0.107 Sys [Info]: Loading packages took 0.0ms
+0.107 Sys [Info]: Cache languages enabled: _en
+0.107 Sys [Error]: WINHTTP_OPTION_IPV6_FAST_FALLBACK() failed (ERROR_WINHTTP_INVALID_OPTION)
+0.107 Sys [Info]: Scanning C:\Games\Warframe\Cache.Windows\ for cache blocks...
+0.108 Sys [Info]: Found 34 cache blocks...
+0.469 Sys [Info]: Loaded TOC for Windows/H.Misc (took 190ms, loaded 247372 entries, found 426 deleted)
+0.537 Sys [Info]: Loaded TOC for Windows/B.Misc (took 60.3ms, loaded 151840 entries, found 24 deleted)
+4.405 Sys [Info]: Steam active. IsBicPic=0 IsSteamDeck=0
+4.647 Sys [Info]: Server ready for load [Heap: 220,134,512/240,189,440 Footprint: 641,036,288 Handles: 0], sessionPlayers=1
+2.740 Input [Info]: Enumerated STEAM controller: 0
+2.744 Input [Info]: InitMapping for all devices with bindings  and filter 
+2.745 Sys [Info]: Driver registered: InputMgrWin Supported types: []
+4.409 Sys [Error]: Discord core failed to initialize: result 4
+4.410 Sys [Info]: WM_ACTIVATEAPP 1
+4.411 Sys [Info]: TypeMgr cleaned 5 instances (0us) and unbuilt 24 types (1.09ms) in 1.09ms
+4.753 Sys [Info]: Shutting down context... [Heap: 225,565,072/238,747,648 Footprint: 644,907,008 Handles: 0]
+4.753 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+9.126 Sys [Info]: 1 batches optimized away by cache planner (0 ms)
+9.128 Sys [Info]: WM_ACTIVATEAPP 0
+9.128 Sys [Info]: Connectivity update flags: 1, requires full update: 0
+10.580 Script [Info]: ThemedMainMenu.lua: UpdateButtons(false)
+10.581 Sys [Info]: Logging in as 
+10.583 Script [Info]: Background.lua: Background::ForceClearChildMovie()
+11.768 Script [Info]: Progress.lua: ProgressScreenClosed
+13.608 Sys [Info]: WM_ACTIVATEAPP 1
+13.619 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+14.701 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+14.701 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+14.818 Script [Info]: ThemedMainMenu.lua: KickLogin(4)
+14.818 Script [Info]: ThemedMainMenu.lua: UpdateButtons(false)
+14.819 Sys [Info]: Logging in as 
+15.235 Sys [Info]: Logged in TestTenno
+15.243 Sys [Info]: CreateChallengeManager
+15.243 Sys [Info]: SyncInventoryFromDB
+15.243 Sys [Info]: Calculating (item based) player XP
+15.485 Net [Info]: Client test reply from 203.0.113.196:4950 (17ms, 15L), public address 203.0.113.116:4955
+15.573 Sys [Info]: WM_ACTIVATEAPP 0
+15.601 Sys [Info]: OnInventoryResults, body size=2057635
+16.024 Game [Info]: OnSynchPlatformFriends(0)
+16.024 Sys [Info]: OnInventoryResults completed in 423ms
+16.024 Sys [Info]: Budget overrun updating WebGet (409 ms)
+18.323 Script [Info]: Hub.lua: Initializing UI triggers
+18.323 Script [Info]: Hub.lua: Inventory sync done
+18.323 Script [Info]: Background.lua: initializing region challenges
+19.435 Sys [Info]: Resource load completed 0x000000005C550190 (15 root types) in one pass and 1.0s (I/O ~= 2.7%, inherited 432 of 432)
+19.452 Sys [Info]: WM_ACTIVATEAPP 1
+19.453 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+19.752 Script [Info]: ChatRedux.lua: ChatRedux::RemoveTab: Removing tab with name D, pSkipRedraw: nil
+19.752 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: Q_EN_EU to index 1
+19.752 Script [Info]: ChatRedux.lua: Chat: Filters for Q_EN_EU:
+28.318 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+29.031 Sys [Info]: WM_ACTIVATEAPP 0
+29.255 Sys [Info]: WM_ACTIVATEAPP 1
+29.269 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+30.752 Script [Info]: ConsumablesOverlay.lua: ScopeDebug: Show from ConsumablesOverlay
+30.885 Sys [Info]: UIConsoleTrigger::Open() /Layer1/Layer2/UIConsoleTrigger4
+30.887 Script [Info]: LoadOutRedux.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+38.354 Sys [Info]: WM_ACTIVATEAPP 0
+38.971 Sys [Info]: WM_ACTIVATEAPP 1
+38.986 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+38.990 Sys [Info]: OnEntitlementServiceComplete false:
+39.118 Sys [Info]: SyncInventoryFromDB
+39.119 Sys [Info]: LotusProfileData::UpdateStoreCatalog()
+39.119 Sys [Info]: LotusProfileData::UpdateStoreCatalog: catalogue already processed
+39.622 Sys [Info]: WM_ACTIVATEAPP 0
+39.984 Sys [Info]: OnInventoryResults, body size=2057764
+40.090 Script [Info]: CheckInventoryOwnership.lua: [CheckInventoryOwnership] /Lotus/Upgrades/Skins/Clan/ConservationBadgeItem is not there. Fail
+40.090 Sys [Info]: OnInventoryResults completed in 105ms
+40.090 Sys [Info]: Budget overrun updating WebGet (91.1 ms)
+40.091 Sys [Info]: WM_ACTIVATEAPP 1
+40.093 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+40.135 Snd [Error]: Buffer underrun streaming /Lotus/Sounds/Hub/LisetSpaceRandoms/LisetSpaceRandomD.wav (0 active streams)
+43.139 Sys [Info]: WM_ACTIVATEAPP 0
+70.914 Sys [Info]: WM_ACTIVATEAPP 1
+70.919 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+104.601 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+104.602 Script [Info]: MapRedux.lua: Duviri: rolled mood Anger mood
+104.615 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+104.616 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+105.318 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+105.320 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+118.186 Script [Info]: MapRedux.lua: Confirm sector EventNode25_Event
+118.186 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode25_Event"}
+118.186 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+121.319 Script [Info]: ThemedSquadOverlay.lua: ResetSquadMission
+121.319 Net [Info]: Set squad mission: 
+121.319 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+121.319 Script [Info]: ThemedSquadOverlay.lua: ResetSquadMission
+121.319 Net [Info]: Set squad mission: 
+121.319 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+126.536 Script [Info]: MapRedux.lua: Confirm sector EventNode25_Event
+126.536 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode25_Event"}
+126.536 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+127.237 Script [Info]: ChatRedux.lua: CHATREDUX - SessionID2: 429782ade9f4dc3a12feb9c0 - 429782ade9f4dc3a12feb9c0
+127.237 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: S429782ade9f4dc3a12feb9c0 to index 1
+127.237 Script [Info]: ChatRedux.lua: Chat: Filters for S429782ade9f4dc3a12feb9c0:
+127.486 Net [Info]: SendSquadMission - no host found!
+127.486 Net [Info]: Set squad mission: 
+127.486 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+127.786 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+131.869 Net [Info]: SendSquadMission - no host found!
+131.869 Net [Info]: Set squad mission: 
+131.869 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+132.154 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+132.636 Script [Info]: MapRedux.lua: Confirm sector EventNode25_Event
+132.637 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode25_Event"}
+132.637 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+145.236 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for EventNode25_Event (/Lotus/Levels/GrineerBeach/GrineerBeachEvent.level)
+145.236 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+145.251 Game [Info]: ServerFramework:OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+145.253 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+145.254 Script [Info]: MapRedux.lua: DBG: HudVis 0
+145.254 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+145.274 Sys [Info]: Shutting down context... [Heap: 915,858,448/990,642,176 Footprint: 2,045,435,904 Handles: 0]
+145.275 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+145.275 Sys [Info]: Spot-loading resources for /Temp/LocalPlayer loadout... Flags=0x010002A3
+148.419 Sys [Error]: Could not use object: /Lotus/Types/Gameplay/KuvaPath/KuvaPathScriptTrigger (broken)
+148.419 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+148.420 Game [Info]: 1 players joined, all avatars spawned starting game
+409.269 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+409.269 Script [Info]: EndOfMatch.lua: Mission Succeeded
+409.269 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+460.620 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+460.620 Script [Info]: EndOfMatch.lua: Mission Succeeded
+460.620 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+460.621 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+460.634 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+460.634 Game [Info]: CommitInventoryChangesToDB
+460.634 Sys [Info]: EOM missionLocationUnlocked=1
+473.556 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: T_EN_EU to index 4
+473.557 Script [Info]: Notifications.lua: codexManifest Filter:	Warframe
+473.559 Script [Info]: Background.lua: return to ship: initial sync
+473.559 Sys [Info]: SyncInventoryFromDB
+473.559 Sys [Info]: Using cached inventory data instead of performing sync
+473.606 Script [Info]: Background.lua: Trying to reset calendar challenges
+473.606 Sys [Info]: OnInventoryResults completed in 48ms
+474.347 Script [Info]: Hub.lua: Initializing UI triggers
+474.347 Script [Info]: Hub.lua: Inventory sync done
+474.347 Script [Info]: Background.lua: initializing region challenges
+475.987 Script [Info]: Progress.lua: StartProgressFade
+475.987 Script [Info]: EndOfMatch.lua: ReturnedToShip
+475.988 Script [Info]: ThemedMainMenu.lua: MainMenu::SetCurrentState(1)
+477.185 Script [Info]: Progress.lua: ProgressScreenClosed
+477.185 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+477.700 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+477.700 Sys [Info]: CancelJobs batchcount 0
+478.686 Input [Info]: Subscribing for /Lotus/Interface/TopMenu.swf with input filter /EE/Types/Input/MenuInputFilter
+478.686 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MenuInputFilter
+481.817 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+481.818 Script [Info]: MapRedux.lua: Duviri: rolled mood Anger mood
+481.823 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+481.823 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+488.468 Script [Info]: MapRedux.lua: Confirm sector EventNode24_Event
+488.468 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode24_Event"}
+488.468 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+489.818 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+489.818 Script [Info]: MapRedux.lua: DBG: HudVis 0
+489.818 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+740.285 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+740.285 Script [Info]: EndOfMatch.lua: Mission Succeeded
+740.285 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+798.802 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+798.803 Script [Info]: EndOfMatch.lua: Mission Succeeded
+798.803 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+798.804 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+798.817 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+798.817 Game [Info]: CommitInventoryChangesToDB
+798.817 Sys [Info]: EOM missionLocationUnlocked=1
+798.848 Input [Info]: Subscribing for /Lotus/Interface/EndOfMatchPvp.swf with input filter /Lotus/Interface/EndOfMatchInputFilter
+798.848 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/EndOfMatchInputFilter
+799.217 Sys [Info]: Stats uploaded
+801.313 Sys [Info]: WM_ACTIVATEAPP 0
+802.417 Sys [Info]: Created /Lotus/Interface/Notifications.swf
+809.201 Sys [Info]: Full connectivity update took 1us
+809.201 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+809.201 Sys [Info]: CancelJobs batchcount 0
+812.109 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: T_EN_EU to index 4
+812.110 Script [Info]: Notifications.lua: codexManifest Filter:	Warframe
+812.111 Script [Info]: Background.lua: return to ship: initial sync
+812.111 Sys [Info]: SyncInventoryFromDB
+812.111 Sys [Info]: Using cached inventory data instead of performing sync
+812.159 Script [Info]: Background.lua: Trying to reset calendar challenges
+812.159 Sys [Info]: OnInventoryResults completed in 47ms
+812.159 Net [Info]: Sending LEAVE message
+812.868 Script [Info]: Hub.lua: Initializing UI triggers
+812.868 Script [Info]: Hub.lua: Inventory sync done
+812.868 Script [Info]: Background.lua: initializing region challenges
+815.566 Script [Info]: Progress.lua: ProgressScreenClosed
+815.566 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+817.916 Sys [Info]: Resource load completed 0x0000000074FB7140 (5 root types) in one pass and 0.3s (I/O ~= 0.7%, inherited 126 of 252)
+823.400 Sys [Info]: WM_ACTIVATEAPP 1
+823.402 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+827.800 Sys [Info]: Resource load completed 0x000000005590ABE0 (187 root types) in one pass and 0.0s (I/O ~= 0.0%, inherited 184 of 185)
+834.789 Sys [Info]: WM_ACTIVATEAPP 0
+851.701 Script [Info]: Background.lua: Update the Profile Variable
+1006.421 Script [Info]: RadialSolarMapLite.lua: Duviri: rolled mood Anger mood
+1030.916 Sys [Info]: WM_ACTIVATEAPP 1
+1030.918 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+1033.233 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+1035.850 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+1035.851 Script [Info]: MapRedux.lua: Duviri: rolled mood Anger mood
+1035.856 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+1035.857 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+1036.568 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+1099.118 Script [Info]: MapRedux.lua: Confirm sector EventNode34_Event
+1099.118 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode34_Event"}
+1099.118 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+1100.033 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+1100.033 Script [Info]: MapRedux.lua: DBG: HudVis 0
+1100.034 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+1100.034 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+1100.049 Sys [Info]: Flushed 160 bytes of recycled effects.
+1100.050 Sys [Info]: Connectivity update flags: 4, requires full update: 0
+1224.834 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+1226.134 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoInputFilter
+1227.884 Game [Info]: TestSquadU was killed by 9 / 12 damage from a Executioner Dhurnam using a WaterSprayerAI
+1295.517 Game [Info]: TestSquadU was killed by 10 / 16 damage from a Executioner Nok using a WaterSprayerAI
+1298.394 Sys [Info]: WM_ACTIVATEAPP 0
+1298.500 Sys [Info]: ArenaTennoAvatar366 with ID 366 [1710027168] has new player: TestSquadU
+1341.684 Game [Info]: TestSquadU was killed by 11 / 12 damage from a Executioner Nok using a WaterSprayerAI
+1343.171 Sys [Info]: WM_ACTIVATEAPP 1
+1343.183 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+1391.701 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+1391.702 Script [Info]: EndOfMatch.lua: Mission Succeeded
+1391.702 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+1391.703 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+1391.716 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+1391.716 Game [Info]: CommitInventoryChangesToDB
+1391.717 Sys [Info]: EOM missionLocationUnlocked=1
+1404.217 Sys [Info]: Shutting down context... [Heap: 702,520,048/1,138,688,000 Footprint: 2,416,222,208 Handles: 0]
+1404.217 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+1404.217 Sys [Info]: Connectivity update flags: 4, requires full update: 1
+1407.046 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: R_EN_EU to index 3
+1407.048 Script [Info]: Background.lua: return to ship: initial sync
+1407.048 Sys [Info]: SyncInventoryFromDB
+1407.048 Sys [Info]: Using cached inventory data instead of performing sync
+1407.096 Script [Info]: Background.lua: Trying to reset calendar challenges
+1407.096 Sys [Info]: OnInventoryResults completed in 48ms
+1407.096 Net [Info]: Sending LEAVE message
+1407.625 Script [Info]: Hub.lua: Initializing UI triggers
+1407.625 Script [Info]: Hub.lua: Inventory sync done
+1407.625 Script [Info]: Background.lua: initializing region challenges
+1410.316 Script [Info]: Progress.lua: ProgressScreenClosed
+1410.316 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+1414.938 Input [Info]: Subscribing for /Lotus/Interface/ChatRedux.swf with input filter /EE/Types/Input/MenuInputFilter
+1414.938 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MenuInputFilter
+1415.866 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+1415.867 Script [Info]: MapRedux.lua: Duviri: rolled mood Anger mood
+1415.873 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+1415.873 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+1416.652 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+1416.743 Game [Info]: TestTenno loadout loader finished.
+1417.743 Sys [Info]: WM_ACTIVATEAPP 0
+1454.782 Sys [Info]: WM_ACTIVATEAPP 1
+1454.784 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+3431.188 Sys [Info]: WM_ACTIVATEAPP 0
+3457.611 Net [Info]: NAT bound for client to 203.0.113.116:4955
+3520.045 Net [Info]: NAT bound for server to 203.0.113.116:4950
+3520.761 Sys [Info]: WM_ACTIVATEAPP 1
+3520.762 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+3522.345 Net [Info]: SendSquadMission - no host found!
+3522.345 Net [Info]: Set squad mission: 
+3522.345 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+3522.530 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+3522.566 Net [Info]: NAT bound for client to 203.0.113.116:4955
+3522.629 Script [Info]: MapRedux.lua: DBG: HudVis 0
+3522.629 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+3525.796 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+3528.769 Sys [Info]: WM_ACTIVATEAPP 0
+3533.798 Sys [Info]: WM_ACTIVATEAPP 1
+3533.812 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+3533.812 Input [Info]: New gamepad 3 is connected, UserNumber 3 
+3535.494 Sys [Info]: UIConsoleTrigger::Open() /Layer1/Layer2/UIConsoleTrigger4
+3535.496 Script [Info]: LoadOutRedux.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+3535.757 Game [Info]: ArsenalInventoryController ScriptSetSpaceMode(0)
+3535.771 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+3535.773 Input [Info]: Subscribing for /Lotus/Interface/LoadOutRedux.swf with input filter /Lotus/Types/Input/LoadoutReduxInputFilter
+3556.028 Gfx [Info]: Bink startup: finished opening video
+3558.804 Sys [Info]: WM_ACTIVATEAPP 0
+3580.061 Net [Info]: NAT bound for server to 203.0.113.116:4950
+3580.168 Sys [Info]: WM_ACTIVATEAPP 1
+3580.179 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+3587.337 Input [Info]: Subscribing for /Lotus/Interface/ChatRedux.swf with input filter /EE/Types/Input/MenuInputFilter
+3587.337 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MenuInputFilter
+3587.344 Script [Info]: GenericNotification.lua: Queuing new transmission: DAfterLoadoutOrdis
+3642.611 Net [Info]: NAT bound for client to 203.0.113.116:4955
+3646.658 Sys [Info]: WM_ACTIVATEAPP 0
+3681.089 Sys [Info]: WM_ACTIVATEAPP 1
+3681.095 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+3702.628 Net [Info]: NAT bound for client to 203.0.113.116:4955
+3705.561 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+3705.562 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+3705.574 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+3705.575 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+3706.146 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+3706.146 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+3706.148 Input [Info]: Subscribing for /Lotus/Interface/Dialog.swf with input filter /EE/Types/Input/MenuInputFilter
+3706.179 Sys [Info]: Shutting down context... [Heap: 1,084,804,480/1,227,816,960 Footprint: 2,507,821,056 Handles: 0]
+3706.179 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+3706.297 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+3708.162 Script [Info]: MapRedux.lua: MapRedux::NodeRollOver SolNode63 - MANTLE
+3708.700 Sys [Info]: WM_ACTIVATEAPP 0
+3741.082 Sys [Info]: WM_ACTIVATEAPP 1
+3741.095 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+3743.329 Script [Info]: GenericMenu.lua: Confirm sector EarthHUB_HUB
+3743.329 Net [Info]: Set squad mission: {"difficulty":0.5,"name":"EarthHUB_HUB"}
+3743.329 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+3743.346 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+3748.230 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for EarthHUB_HUB (/Lotus/Levels/Proc/Hub/RelayStationHubTwoB)
+3748.230 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/Proc/Hub/RelayStationHubTwoB
+3748.230 Script [Info]: ThemedSquadOverlay.lua: No pending job
+3748.441 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+3748.441 Script [Info]: MapRedux.lua: DBG: HudVis 0
+3748.441 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+3750.983 Game [Info]: Init town game rules - hub level name: EarthHUB_HUB
+3750.983 Net [Info]: Set squad mission: 
+3750.983 Game [Info]: Running: 0, active: 1
+3751.362 Game [Info]: Registered to hub: 203.0.113.216:6950, hub index = 4
+3751.395 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: H_EARTH_EU_EN_4 to index 2
+3751.395 Script [Info]: ChatRedux.lua: Chat: Filters for H_EARTH_EU_EN_4:
+3752.404 Sys [Info]: Cinematic /Layer26/Prefab0/Cinematic2 Play()
+3752.404 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+3752.406 Game [Warning]: Player camera not enabled. Free cam=0, this cinematic: /Layer26/Prefab0/Cinematic2, player cam disabled: 0
+3752.413 Script [Info]: Background.lua: return to ship: initial sync
+3752.413 Sys [Info]: SyncInventoryFromDB
+3752.782 Script [Info]: CheckInventoryOwnership.lua: [CheckInventoryOwnership] /Lotus/Upgrades/Skins/Clan/ConservationBadgeItem is not there. Fail
+3752.782 Sys [Info]: OnInventoryResults completed in 75ms
+3752.782 Sys [Info]: Budget overrun updating WebGet (61.1 ms)
+3754.728 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+3754.728 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+3755.894 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+3755.894 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+3756.022 Script [Info]: Hub.lua: Initializing UI triggers
+3756.022 Script [Info]: Hub.lua: Inventory sync done
+3756.022 Script [Info]: Background.lua: initializing region challenges
+3790.361 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+3790.361 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+3790.477 Script [Info]: TopMenu.lua: Abort: in hub (1)
+3790.691 Sys [Info]: Shutting down context... [Heap: 1,312,478,432/1,314,455,552 Footprint: 2,749,960,192 Handles: 0]
+3790.691 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+3792.876 Script [Info]: Background.lua: return to ship: initial sync
+3792.876 Sys [Info]: SyncInventoryFromDB
+3793.559 Script [Info]: Background.lua: Trying to reset calendar challenges
+3793.559 Sys [Info]: OnInventoryResults completed in 50ms
+3793.559 Sys [Info]: Budget overrun updating WebGet (30.6 ms)
+3793.686 Script [Info]: Hub.lua: Initializing UI triggers
+3793.686 Script [Info]: Hub.lua: Inventory sync done
+3793.686 Script [Info]: Background.lua: initializing region challenges
+3796.662 Input [Info]: Subscribing for /Lotus/Interface/ConsumablesOverlay.swf with input filter /Lotus/Types/Input/ConsumablesInputFilter
+3796.662 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Input/ConsumablesInputFilter
+3798.078 Sys [Info]: UIConsoleTrigger::Open() /Layer1/Layer2/UIConsoleTrigger4
+3798.079 Script [Info]: LoadOutRedux.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+3923.893 Game [Info]: MotionController::DoDodgeRoll TennoMotion Setting PM_DODGE to true
+3924.477 Sys [Info]: UIConsoleTrigger::Open() /Layer1/Layer2/UIConsoleTrigger4
+3924.478 Script [Info]: LoadOutRedux.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+3936.077 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+3937.760 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+3937.761 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+3937.767 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+3937.768 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+3937.768 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MapReduxInputFilter
+3938.361 Script [Info]: MapRedux.lua: Hosting lobby from MapRedux.lua (InitializeMore)
+3938.481 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+3942.912 Script [Info]: MapRedux.lua: Confirm sector EventNode35_Event
+3942.912 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode35_Event"}
+3942.912 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+3943.794 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+3943.794 Script [Info]: MapRedux.lua: DBG: HudVis 0
+3943.794 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+3943.811 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+3943.811 Sys [Info]: Context shutdown complete [Heap: 979,782,624/1,312,489,472 Footprint: 2,756,960,256 Handles: 0]
+4082.262 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+4082.262 Script [Info]: EndOfMatch.lua: Mission Succeeded
+4082.262 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+4110.544 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4110.956 Sys [Info]: WM_ACTIVATEAPP 0
+4113.277 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4113.944 Sys [Info]: client received full cache!
+4114.968 Sys [Info]: WM_ACTIVATEAPP 1
+4114.978 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4114.983 Sys [Info]: OnEntitlementServiceComplete false:
+4116.486 Sys [Info]: WM_ACTIVATEAPP 0
+4118.412 Game [Info]: Moonwalk debug: ArenaTennoAvatar395 Setting PM_DODGE to false
+4118.412 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4118.641 Sys [Info]: WM_ACTIVATEAPP 1
+4118.644 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4139.678 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4140.688 Sys [Info]: WM_ACTIVATEAPP 0
+4143.977 Sys [Info]: client received full cache!
+4146.565 Sys [Info]: WM_ACTIVATEAPP 1
+4146.578 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4150.427 Sys [Info]: Created /Lotus/Interface/SpecialReticles/GlaiveReticle.swf
+4150.428 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoEquippedMeleeFilter
+4150.893 Sys [Info]: We used to clear held button here. Is that ok?
+4241.560 Sys [Info]: Finished new region
+4242.647 Sys [Info]: WM_ACTIVATEAPP 0
+4244.377 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4256.314 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+4256.314 Script [Info]: EndOfMatch.lua: Mission Succeeded
+4256.314 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+4256.315 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+4256.328 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+4256.328 Game [Info]: CommitInventoryChangesToDB
+4256.328 Sys [Info]: EOM missionLocationUnlocked=1
+4266.826 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4266.826 Sys [Info]: CancelJobs batchcount 0
+4269.606 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: R_EN_EU to index 3
+4269.609 Script [Info]: Background.lua: return to ship: initial sync
+4269.609 Sys [Info]: SyncInventoryFromDB
+4269.609 Sys [Info]: Using cached inventory data instead of performing sync
+4269.658 Script [Info]: Background.lua: Trying to reset calendar challenges
+4269.658 Sys [Info]: OnInventoryResults completed in 49ms
+4269.658 Net [Info]: Sending LEAVE message
+4270.219 Script [Info]: Hub.lua: Initializing UI triggers
+4270.219 Script [Info]: Hub.lua: Inventory sync done
+4270.219 Script [Info]: Background.lua: initializing region challenges
+4273.427 Script [Info]: Progress.lua: ProgressScreenClosed
+4273.427 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+4275.293 Sys [Info]: Resource load completed 0x0000000044D06950 (5 root types) in one pass and 0.3s (I/O ~= 2.6%, inherited 129 of 252)
+4277.676 Sys [Info]: WM_ACTIVATEAPP 1
+4277.678 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4278.093 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+4278.112 Sys [Info]: Created /Lotus/Interface/ContextAction.swf
+4282.509 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+4282.511 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+4282.516 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+4282.517 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4283.229 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4287.928 Script [Info]: GenericMenu.lua: Confirm sector CetusHub4_HUB
+4287.928 Net [Info]: Set squad mission: {"difficulty":0.5,"name":"CetusHub4_HUB"}
+4287.928 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+4287.945 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4287.945 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MapReduxInputFilter
+4287.947 Script [Info]: ThemedSquadOverlay.lua: OnSquadCountdown: 5
+4288.827 Script [Info]: ThemedSquadOverlay.lua: OnSquadCountdown: 4
+4289.678 Sys [Info]: WM_ACTIVATEAPP 0
+4289.827 Script [Info]: ThemedSquadOverlay.lua: OnSquadCountdown: 3
+4292.844 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for CetusHub4_HUB (/Lotus/Levels/Proc/TheNewWar/PartOne/PostWarOstronTown)
+4292.844 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/Proc/TheNewWar/PartOne/PostWarOstronTown
+4292.844 Script [Info]: ThemedSquadOverlay.lua: No pending job
+4293.056 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+4293.056 Script [Info]: MapRedux.lua: DBG: HudVis 0
+4293.056 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+4295.825 Game [Info]: Init town game rules - hub level name: CetusHub4_HUB
+4295.825 Net [Info]: Set squad mission: 
+4295.825 Game [Info]: Running: 0, active: 1
+4297.444 Script [Info]: Background.lua: return to ship: initial sync
+4297.444 Sys [Info]: SyncInventoryFromDB
+4297.781 Script [Info]: CheckInventoryOwnership.lua: [CheckInventoryOwnership] /Lotus/Upgrades/Skins/Clan/ConservationBadgeItem is not there. Fail
+4297.781 Sys [Info]: OnInventoryResults completed in 78ms
+4297.781 Sys [Info]: Budget overrun updating WebGet (76.4 ms)
+4298.238 Sys [Info]: Full connectivity update took 1us
+4298.238 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4298.692 Sys [Info]: WM_ACTIVATEAPP 1
+4298.695 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4299.576 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+4299.576 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+4299.705 Script [Info]: Hub.lua: Initializing UI triggers
+4299.705 Script [Info]: Hub.lua: Inventory sync done
+4299.705 Script [Info]: Background.lua: initializing region challenges
+4304.311 Game [Info]: TennoAvatarHubPeer209 - changing anim controller to RunnerAnimController
+4305.110 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Input/DialogInputFilter
+4305.113 Input [Info]: Subscribing for /Lotus/Interface/ThemedButtonBar.swf with input filter /EE/Types/Input/MenuInputFilter
+4309.896 Script [Info]: ThemedDetailedPurchaseDialog.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+4309.896 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2
+4309.911 Sys [Info]: Created /Lotus/Interface/ThemedDetailedPurchaseDialog.swf
+4310.331 Game [Info]: TennoDioramaAvatar211 - changing anim controller to YareliAnimController
+4310.355 Script [Info]: ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Upgrades/Skins/Effects/DogDaysEphemera
+4311.228 Sys [Info]: Creating loader for /Temp/HubPlayers/f11925875f65241fcddba837 loadout... Flags=0xC0000000
+4311.590 Sys [Info]: CancelJobs batchcount 0
+4311.591 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1
+4311.601 Sys [Info]: Used shared /Lotus/Interface/ClanEmblems/a/66e0b1cd3a3f9e5afc0256aa_em.png (8,157B Copy: 187us Write: 5us Latency: 58.2ms)
+4313.845 Script [Info]: ThemedDetailedPurchaseDialog.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+4313.845 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2
+4313.861 Sys [Info]: Created /Lotus/Interface/ThemedDetailedPurchaseDialog.swf
+4313.944 Sys [Info]: Full connectivity update took 7us
+4313.972 Script [Info]: ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Types/Items/Titles/DogDaysTitle
+4314.045 Script [Info]: Background.lua: Update the Profile Variable
+4315.507 Sys [Info]: CancelJobs batchcount 0
+4315.508 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1
+4315.518 Sys [Info]: Resource load completed 0x000000005F0CAA40 (9 root types) in one pass and 0.0s (I/O ~= 0.6%, inherited 119 of 119)
+4318.778 Script [Info]: ThemedDetailedPurchaseDialog.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+4318.778 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2
+4318.793 Sys [Info]: Created /Lotus/Interface/ThemedDetailedPurchaseDialog.swf
+4319.375 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4319.376 Sys [Info]: Context shutdown complete [Heap: 1,122,045,712/1,310,195,712 Footprint: 3,045,986,304 Handles: 0]
+4319.380 Game [Info]: TennoDioramaAvatar216 - changing anim controller to YareliAnimController
+4319.405 Script [Info]: ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Upgrades/Skins/Yareli/KompressaDaybreakSkin
+4320.194 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+4320.374 Sys [Info]: CancelJobs batchcount 0
+4320.375 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1
+4320.386 Sys [Info]: Resource load completed 0x000000005F4FBA00 (9 root types) in one pass and 0.0s (I/O ~= 0.3%, inherited 119 of 119)
+4323.097 Script [Info]: ThemedDetailedPurchaseDialog.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+4323.097 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2
+4323.113 Sys [Info]: Created /Lotus/Interface/ThemedDetailedPurchaseDialog.swf
+4323.666 Game [Info]: TennoDioramaAvatar217 - changing anim controller to YareliAnimController
+4323.722 Script [Info]: ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Upgrades/Skins/Scarves/UmbraDaxDaybreakSyandana
+4324.327 Sys [Info]: Creating loader for /Temp/HubPlayers/62225cfe7fed4a192a46b87e loadout... Flags=0xC0000000
+4324.560 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1
+4327.729 Script [Info]: ThemedDetailedPurchaseDialog.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+4327.729 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2
+4327.744 Sys [Info]: Created /Lotus/Interface/ThemedDetailedPurchaseDialog.swf
+4327.827 Sys [Info]: Full connectivity update took 7us
+4327.855 Script [Info]: ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/FuraxWraithRightGauntlet
+4327.856 Sys [Error]: SetCallbacks on unknown clip: 'Preview.TagContainer.Tag1.Bg', movie: '/Lotus/Interface/ThemedDetailedPurchaseDialog.swf'
+4328.890 Sys [Info]: CancelJobs batchcount 0
+4328.890 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1
+4328.900 Sys [Info]: Resource load completed 0x000000007B2174F0 (9 root types) in one pass and 0.0s (I/O ~= 0.0%, inherited 119 of 119)
+4335.477 Game [Info]: TennoAvatarHubPeer219 - changing anim controller to GarudaAnimController
+4338.494 Sys [Info]: WM_ACTIVATEAPP 0
+4339.342 Net [Error]: Threaded DTLS SSL failure and connection not found! 198.51.100.237:4950
+4339.343 Net [Error]: SSL failure and connection not found! 198.51.100.237:4950
+4344.010 Sys [Info]: WM_ACTIVATEAPP 1
+4344.011 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4347.928 Game [Info]: BuildLoadOut took 734us
+4349.602 Sys [Info]: WM_ACTIVATEAPP 0
+4355.771 Sys [Info]: WM_ACTIVATEAPP 1
+4355.777 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4357.332 Sys [Info]: WM_ACTIVATEAPP 0
+4360.493 Net [Info]: NAT bound for server to 203.0.113.116:4950
+4378.933 Sys [Info]: WM_ACTIVATEAPP 1
+4378.945 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4385.661 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4390.359 Sys [Info]: WM_ACTIVATEAPP 0
+4406.250 Sys [Info]: WM_ACTIVATEAPP 1
+4406.261 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4421.911 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4424.576 Sys [Info]: WM_ACTIVATEAPP 0
+4427.625 Sys [Info]: WM_ACTIVATEAPP 1
+4427.627 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4452.960 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+4452.960 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+4453.076 Script [Info]: TopMenu.lua: Abort: in hub (1)
+4453.292 Sys [Info]: Shutting down context... [Heap: 1,145,891,712/1,310,195,712 Footprint: 3,064,840,192 Handles: 0]
+4453.292 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4455.924 Script [Info]: Background.lua: return to ship: initial sync
+4455.924 Sys [Info]: SyncInventoryFromDB
+4456.625 Script [Info]: Background.lua: Trying to reset calendar challenges
+4456.625 Sys [Info]: OnInventoryResults completed in 63ms
+4456.626 Sys [Info]: Budget overrun updating WebGet (45.5 ms)
+4456.763 Script [Info]: Hub.lua: Initializing UI triggers
+4456.763 Script [Info]: Hub.lua: Inventory sync done
+4456.763 Script [Info]: Background.lua: initializing region challenges
+4460.542 Sys [Info]: Resource load completed 0x0000000013BD5270 (12 root types) in one pass and 1.5s (I/O ~= 1.0%, inherited 0 of 22)
+4460.543 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+4460.544 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+4460.551 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+4460.552 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4461.329 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4461.347 Script [Info]: ChatRedux.lua: CHATREDUX - SessionID2: b9307b2baa2332ec2d9de707 - b9307b2baa2332ec2d9de707
+4461.348 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: Sb9307b2baa2332ec2d9de707 to index 1
+4461.349 Script [Info]: ChatRedux.lua: Chat: Filters for Sb9307b2baa2332ec2d9de707:
+4463.776 Script [Info]: MapRedux.lua: Confirm sector EventNode35_Event
+4463.776 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode35_Event"}
+4463.776 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+4468.663 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for EventNode35_Event (/Lotus/Levels/GrineerBeach/GrineerBeachEvent.level)
+4468.663 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+4468.676 Game [Info]: ServerFramework:OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+4468.680 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+4468.680 Script [Info]: MapRedux.lua: DBG: HudVis 0
+4468.681 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+4468.694 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4468.694 Sys [Info]: Context shutdown complete [Heap: 988,063,344/1,310,195,712 Footprint: 3,063,844,864 Handles: 0]
+4468.694 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+4523.346 Script [Info]: Background.lua: Trying to add calendar challenges
+4524.089 Sys [Info]: WM_ACTIVATEAPP 0
+4524.638 Sys [Info]: WM_ACTIVATEAPP 1
+4524.645 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4574.376 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4575.156 Sys [Info]: WM_ACTIVATEAPP 0
+4578.777 Sys [Info]: WM_ACTIVATEAPP 1
+4578.779 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4624.876 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4625.990 Sys [Info]: WM_ACTIVATEAPP 0
+4632.363 Game [Info]: TestTenno was killed by 18 / 18 damage from a level 34 Executioner Reth using a WaterSprayerAI
+4632.393 Script [Info]: HudRedux.lua: *** Enabling spectator mode ***
+4634.074 Sys [Info]: WM_ACTIVATEAPP 1
+4634.077 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4649.961 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+4652.518 Sys [Info]: WM_ACTIVATEAPP 0
+4660.625 Net [Info]: NAT bound for server to 203.0.113.116:4950
+4661.135 Sys [Info]: WM_ACTIVATEAPP 1
+4661.143 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4769.228 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+4769.228 Script [Info]: EndOfMatch.lua: Mission Succeeded
+4769.228 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+4779.345 Sys [Info]: WM_ACTIVATEAPP 0
+4780.960 Net [Info]: NAT bound for server to 203.0.113.116:4950
+4791.728 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+4791.728 Script [Info]: EndOfMatch.lua: Mission Succeeded
+4791.728 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+4791.730 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+4791.747 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+4791.747 Game [Info]: CommitInventoryChangesToDB
+4791.747 Sys [Info]: EOM missionLocationUnlocked=1
+4804.542 Script [Info]: Background.lua: return to ship: initial sync
+4804.542 Sys [Info]: SyncInventoryFromDB
+4804.542 Sys [Info]: Using cached inventory data instead of performing sync
+4804.591 Script [Info]: Background.lua: Trying to reset calendar challenges
+4804.591 Sys [Info]: OnInventoryResults completed in 49ms
+4805.331 Script [Info]: Hub.lua: Initializing UI triggers
+4805.331 Script [Info]: Hub.lua: Inventory sync done
+4805.331 Script [Info]: Background.lua: initializing region challenges
+4807.246 Script [Info]: ThemedMainMenu.lua: NotifyEomScreen
+4807.246 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+4807.247 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+4808.176 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+4808.177 Input [Info]: Subscribing for /Lotus/Interface/EndOfMatch.swf with input filter /Lotus/Interface/EndOfMatchInputFilter
+4901.076 Net [Info]: NAT bound for server to 203.0.113.116:4950
+4905.692 Sys [Info]: WM_ACTIVATEAPP 1
+4905.693 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+4906.625 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4906.625 Sys [Info]: CancelJobs batchcount 0
+4906.811 Sys [Info]: Created /Lotus/Interface/ContextAction.swf
+4907.842 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+4907.843 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+4907.848 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+4907.849 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4916.144 Script [Info]: MapRedux.lua: Confirm sector EventNode35_Event
+4916.144 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode35_Event"}
+4916.144 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+4919.943 Script [Info]: ThemedSquadOverlay.lua: ResetSquadMission
+4919.943 Net [Info]: Set squad mission: 
+4919.943 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+4919.943 Script [Info]: ThemedSquadOverlay.lua: ResetSquadMission
+4919.943 Net [Info]: Set squad mission: 
+4919.943 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+4923.059 Script [Info]: MapRedux.lua: Confirm sector EventNode24_Event
+4923.059 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode24_Event"}
+4923.059 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+4923.694 Script [Info]: ChatRedux.lua: CHATREDUX - SessionID2: 45dbc5ad45e3ec981ef51ad8 - 45dbc5ad45e3ec981ef51ad8
+4923.694 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: S45dbc5ad45e3ec981ef51ad8 to index 1
+4923.700 Script [Info]: ChatRedux.lua: Chat: Filters for S45dbc5ad45e3ec981ef51ad8:
+4923.992 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+4923.992 Script [Info]: MapRedux.lua: DBG: HudVis 0
+4923.993 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+4933.275 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+4933.275 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+4933.392 Script [Info]: TopMenu.lua: Abort: client/session/PVP
+4933.392 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+4933.392 Game [Info]: CommitInventoryChangesToDB
+4933.392 Sys [Info]: EOM missionLocationUnlocked=1
+4933.872 Sys [Info]: Shutting down context... [Heap: 742,087,440/1,310,195,712 Footprint: 3,075,551,232 Handles: 0]
+4933.872 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4933.873 Sys [Info]: Context shutdown complete [Heap: 739,707,408/1,310,195,712 Footprint: 3,075,551,232 Handles: 0]
+4933.873 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoInputFilter
+4938.182 Script [Info]: Background.lua: return to ship: initial sync
+4938.182 Sys [Info]: SyncInventoryFromDB
+4938.182 Sys [Info]: Using cached inventory data instead of performing sync
+4938.230 Script [Info]: Background.lua: Trying to reset calendar challenges
+4938.231 Sys [Info]: OnInventoryResults completed in 48ms
+4938.973 Script [Info]: Hub.lua: Initializing UI triggers
+4938.973 Script [Info]: Hub.lua: Inventory sync done
+4938.973 Script [Info]: Background.lua: initializing region challenges
+4944.525 Script [Info]: EndOfMatch.lua: Background::GoToPreviousScreen(skipScreens=nil)
+4944.542 Sys [Info]: Flushed 208 bytes of recycled effects.
+4944.542 Sys [Info]: Connectivity update flags: 4, requires full update: 0
+4944.728 Sys [Info]: Created /Lotus/Interface/ContextAction.swf
+4945.858 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+4945.860 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+4945.865 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+4945.866 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4946.611 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+4946.658 Script [Info]: ChatRedux.lua: CHATREDUX - SessionID2: 638358c1915e3cf44315c2e8 - 638358c1915e3cf44315c2e8
+4946.658 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: S638358c1915e3cf44315c2e8 to index 1
+4946.659 Script [Info]: ChatRedux.lua: Chat: Filters for S638358c1915e3cf44315c2e8:
+4949.692 Script [Info]: MapRedux.lua: Confirm sector EventNode35_Event
+4949.692 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode35_Event"}
+4949.692 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+4950.013 Input [Info]: Subscribing for /Lotus/Interface/Dialog.swf with input filter /EE/Types/Input/MenuInputFilter
+4950.013 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MenuInputFilter
+4950.017 Script [Info]: Dialog.lua: Dialog::CreateOkCancel(description=/Lotus/Language/Menu/NavBar_QuickMatchPleaseWait, title= leftItem=nil, rightItem=nil)
+4950.359 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+4950.359 Script [Info]: MapRedux.lua: DBG: HudVis 0
+4950.359 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+4955.128 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+4955.128 Sys [Info]: CancelJobs batchcount 0
+5238.210 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+5238.210 Script [Info]: EndOfMatch.lua: Mission Succeeded
+5238.210 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+5238.212 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+5238.224 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+5238.224 Game [Info]: CommitInventoryChangesToDB
+5238.224 Sys [Info]: EOM missionLocationUnlocked=1
+5249.404 Sys [Info]: Created /Lotus/Interface/Progress.swf
+5249.404 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/LoadingInputFilter
+5249.406 Input [Info]: Subscribing for /Lotus/Interface/Progress.swf with input filter /Lotus/Interface/ProgressInputFilter
+5251.605 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: T_EN_EU to index 4
+5251.605 Script [Info]: Notifications.lua: codexManifest Filter:	Warframe
+5251.612 Script [Info]: Background.lua: return to ship: initial sync
+5251.612 Sys [Info]: SyncInventoryFromDB
+5251.612 Sys [Info]: Using cached inventory data instead of performing sync
+5251.661 Script [Info]: Background.lua: Trying to reset calendar challenges
+5251.661 Sys [Info]: OnInventoryResults completed in 49ms
+5251.661 Net [Info]: Sending LEAVE message
+5252.186 Script [Info]: Hub.lua: Initializing UI triggers
+5252.186 Script [Info]: Hub.lua: Inventory sync done
+5252.186 Script [Info]: Background.lua: initializing region challenges
+5253.955 Script [Info]: ThemedMainMenu.lua: NotifyEomScreen
+5253.955 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+5351.911 Sys [Info]: Created /Lotus/Interface/ContextAction.swf
+5354.524 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+5354.526 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+5354.531 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+5354.531 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+5355.343 Sys [Info]: Shutting down context... [Heap: 1,035,406,896/1,310,195,712 Footprint: 3,076,947,968 Handles: 0]
+5355.343 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+5355.394 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+5360.410 Script [Info]: MapRedux.lua: Confirm sector EventNode35_Event
+5360.410 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode35_Event"}
+5360.410 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+5362.858 Net [Info]: 203.0.113.95:39183 adding as plain text
+5363.012 Sys [Info]: WM_ACTIVATEAPP 0
+5363.208 Game [Info]: Received introduction request from 203.0.113.95:4950 (reply to 203.0.113.95:39183)
+5363.277 Script [Info]: ThemedSquadOverlay.lua: ResetSquadMission
+5363.277 Net [Info]: Set squad mission: 
+5363.277 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+5363.277 Net [Info]: SquadSetCountdownTimer(60000)
+5363.292 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+5363.293 Input [Info]: Subscribing for /Lotus/Interface/Dialog.swf with input filter /EE/Types/Input/MenuInputFilter
+5363.441 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode35_Event"}
+5363.441 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+5363.444 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+5373.343 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for EventNode35_Event (/Lotus/Levels/GrineerBeach/GrineerBeachEvent.level)
+5373.343 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+5373.357 Game [Info]: ServerFramework:OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+5373.360 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+5373.360 Script [Info]: MapRedux.lua: DBG: HudVis 0
+5373.360 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+5385.243 Game [Info]: PVEDM: Adding player info for WFGrineerChampionHeavyAgent, index=6 (NPC)
+5390.163 Sys [Info]: WM_ACTIVATEAPP 1
+5390.175 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+5669.309 Sys [Info]: FindWeapon couldn't find weapon with ID 5e41f949b3c8c513a2958e39(LOT_NORMAL, MELEE_SLOT)
+5669.873 Sys [Info]: WM_ACTIVATEAPP 0
+5670.658 Sys [Info]: received reward activity tracker from client TestSquadO for cache!
+5672.358 Sys [Info]: WM_ACTIVATEAPP 1
+5672.359 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+5683.709 Sys [Info]: FindWeapon couldn't find weapon with ID 5e41f949b3c8c513a2958e39(LOT_NORMAL, MELEE_SLOT)
+5684.989 Sys [Info]: WM_ACTIVATEAPP 0
+5685.658 Sys [Info]: received reward activity tracker from client TestSquadO for cache!
+!5685.664 Sys [Info]: WM_ACTIVATEAPP 1
+5685.675 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+5696.660 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+5696.661 Script [Info]: EndOfMatch.lua: Mission Succeeded
+5696.661 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+5696.662 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+5696.675 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+5696.675 Game [Info]: CommitInventoryChangesToDB
+5696.675 Sys [Info]: EOM missionLocationUnlocked=1
+5705.828 Sys [Info]: WM_ACTIVATEAPP 0
+5706.658 Script [Info]: EndOfMatch.lua: EndOfMatch.lua - Close
+5707.038 Sys [Info]: Shutting down context... [Heap: 821,677,968/1,310,195,712 Footprint: 3,076,251,648 Handles: 0]
+5707.038 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+5707.038 Sys [Info]: Connectivity update flags: 4, requires full update: 1
+5707.077 Sys [Info]: /Lotus/Levels/Proc/PlayerShip/AeAg.lp: 0, prio: 1, layer: 4294967295, (0, 0, 0, 1), autonomous: 0
+5707.077 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/EndOfMatchInputFilter
+5707.078 Sys [Info]: HostRegion: Acquired 3 root types to load [Heap: 761,037,584/1,310,195,712 Footprint: 3,076,243,456 Handles: 0]
+5709.584 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: R_EN_EU to index 3
+5709.592 Script [Info]: Background.lua: return to ship: initial sync
+5709.592 Sys [Info]: SyncInventoryFromDB
+5709.592 Sys [Info]: Using cached inventory data instead of performing sync
+5709.641 Script [Info]: Background.lua: Trying to reset calendar challenges
+5709.642 Sys [Info]: OnInventoryResults completed in 50ms
+5710.378 Script [Info]: Hub.lua: Initializing UI triggers
+5710.378 Script [Info]: Hub.lua: Inventory sync done
+5710.378 Script [Info]: Background.lua: initializing region challenges
+5712.672 Script [Info]: ThemedMainMenu.lua: NotifyEomScreen
+5712.672 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+5712.673 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+5715.824 Sys [Info]: Resource load completed 0x0000000044EBB1C0 (5 root types) in one pass and 0.3s (I/O ~= 0.8%, inherited 126 of 252)
+5737.291 Sys [Info]: WM_ACTIVATEAPP 1
+5737.292 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+5738.925 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+5738.926 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+5738.931 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+5738.945 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+5740.626 Script [Info]: MapRedux.lua: Confirm sector EventNode35_Event
+5740.627 Net [Info]: Set squad mission: {"difficulty":0,"name":"EventNode35_Event"}
+5740.627 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+5741.441 Net [Info]: NAT bound for server to 203.0.113.116:4950
+5742.551 Sys [Info]: WM_ACTIVATEAPP 0
+5750.824 Net [Info]: Resolved 1 / 2
+5760.911 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for EventNode35_Event (/Lotus/Levels/GrineerBeach/GrineerBeachEvent.level)
+5760.911 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+5760.923 Game [Info]: ServerFramework:OpenLevel - /Lotus/Levels/GrineerBeach/GrineerBeachEvent.level
+5760.926 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+5760.926 Script [Info]: MapRedux.lua: DBG: HudVis 0
+5760.927 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+5760.941 Sys [Info]: Shutting down context... [Heap: 1,038,286,416/1,310,195,712 Footprint: 3,076,325,376 Handles: 0]
+5760.941 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+5763.557 Game [Info]: Old player not found!
+5763.557 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+5763.559 Sys [Info]: Player acquired; enabling input on client.
+5765.242 Net [Info]: 198.51.100.125:4955 adding as plain text
+5765.483 Sys [Info]: WM_ACTIVATEAPP 1
+5765.492 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+5935.692 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+5935.692 Script [Info]: EndOfMatch.lua: Mission Succeeded
+5935.692 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+5937.008 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+5937.009 Script [Info]: EndOfMatch.lua: Mission Succeeded
+5937.009 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+6071.424 Sys [Info]: received reward activity tracker from client TestSquadC for cache!
+!6072.324 Sys [Info]: WM_ACTIVATEAPP 0
+6084.426 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+6084.426 Script [Info]: EndOfMatch.lua: Mission Succeeded
+6084.426 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+6084.428 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+6084.440 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+6084.440 Game [Info]: CommitInventoryChangesToDB
+6084.440 Sys [Info]: EOM missionLocationUnlocked=1
+6097.309 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: T_EN_EU to index 4
+6097.310 Script [Info]: Notifications.lua: codexManifest Filter:	Warframe
+6097.312 Script [Info]: Background.lua: return to ship: initial sync
+6097.312 Sys [Info]: SyncInventoryFromDB
+6097.312 Sys [Info]: Using cached inventory data instead of performing sync
+6097.360 Script [Info]: Background.lua: Trying to reset calendar challenges
+6097.360 Sys [Info]: OnInventoryResults completed in 49ms
+6098.101 Script [Info]: Hub.lua: Initializing UI triggers
+6098.101 Script [Info]: Hub.lua: Inventory sync done
+6098.101 Script [Info]: Background.lua: initializing region challenges
+6099.958 Script [Info]: ThemedMainMenu.lua: NotifyEomScreen
+6099.958 Script [Info]: EndOfMatch.lua: Skip ReturnedToShip
+6099.960 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+6281.991 Net [Info]: NAT bound for server to 203.0.113.116:4950
+6328.788 Sys [Info]: WM_ACTIVATEAPP 1
+6328.791 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6329.489 Sys [Info]: Potential sets updated 0 entities and 0 containers
+6329.490 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+6329.496 Script [Info]: Background.lua: Tried to close non-existent blocking message
+6329.508 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoShipInputFilter
+6329.510 Input [Info]: Subscribing for /Lotus/Interface/ChatRedux.swf with input filter /EE/Types/Input/MenuInputFilter
+6329.675 Sys [Info]: Created /Lotus/Interface/ContextAction.swf
+6330.639 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+6330.641 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+6330.646 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+6330.646 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+6332.441 Script [Info]: MapRedux.lua: codex entry missing image:/Lotus/Types/Enemies/GrineerChampions/Events/WFGrineerChampionSniperAgent
+6333.120 Sys [Info]: WM_ACTIVATEAPP 0
+6337.279 Sys [Info]: WM_ACTIVATEAPP 1
+6337.291 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6342.440 Script [Info]: GenericMenu.lua: Confirm sector CetusHub4_HUB
+6342.440 Net [Info]: Set squad mission: {"difficulty":0.5,"name":"CetusHub4_HUB"}
+6342.440 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+6342.459 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+6346.356 Script [Info]: ThemedSquadOverlay.lua: OnSquadCountdown: 1
+6347.102 Sys [Info]: WM_ACTIVATEAPP 0
+6347.356 Script [Info]: ThemedSquadOverlay.lua: Mission name: Cetus (Earth)
+6347.357 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for CetusHub4_HUB (/Lotus/Levels/Proc/TheNewWar/PartOne/PostWarOstronTown)
+6347.357 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/Proc/TheNewWar/PartOne/PostWarOstronTown
+6347.357 Script [Info]: ThemedSquadOverlay.lua: No pending job
+6347.568 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+6347.569 Script [Info]: MapRedux.lua: DBG: HudVis 0
+6347.569 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+6350.588 Game [Info]: Init town game rules - hub level name: CetusHub4_HUB
+6350.588 Net [Info]: Set squad mission: 
+6350.588 Game [Info]: Running: 0, active: 1
+6352.204 Sys [Info]: Cinematic /Layer0/Prefab1/LotusCinematic0 Play()
+6352.204 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+6352.206 Sys [Warning]: Can't find ExcaliburHelmet1 in scene (needed by /Lotus/Animations/LevelEvents/TerrainIntro_cin.fbx)
+6352.211 Script [Info]: Background.lua: return to ship: initial sync
+6352.211 Sys [Info]: SyncInventoryFromDB
+6352.547 Script [Info]: CheckInventoryOwnership.lua: [CheckInventoryOwnership] /Lotus/Upgrades/Skins/Clan/ConservationBadgeItem is not there. Fail
+6352.547 Sys [Info]: OnInventoryResults completed in 78ms
+6352.547 Sys [Info]: Budget overrun updating WebGet (76.6 ms)
+6352.997 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+6352.997 Sys [Info]: CancelJobs batchcount 0
+6356.123 Game [Info]: TennoAvatarHubPeer707 - changing anim controller to WerewolfAnimController
+6359.723 Sys [Info]: WM_ACTIVATEAPP 1
+6359.724 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6361.576 Script [Info]: Hub.lua: Initializing UI triggers
+6361.576 Script [Info]: Hub.lua: Inventory sync done
+6361.576 Script [Info]: Background.lua: initializing region challenges
+6372.607 Script [Info]: ThemedSquadOverlay.lua: OnMasteryMaterialReady1(Loaded: /Lotus/Interface/Icons/MasteryRanks/NewMasteryRanks/Rank34to36)
+6373.744 Sys [Info]: WM_ACTIVATEAPP 0
+6376.689 Sys [Info]: Port: /Layer0/Layer5/PortDispatch1 Dispatching
+6395.224 Anim [Info]: Using /Layer0/Layer20/Decoration32 as OstronStaffProxy23
+6396.750 Sys [Info]: WM_ACTIVATEAPP 1
+6396.758 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6401.341 Script [Info]: ThemedDetailedPurchaseDialog.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+6401.341 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2
+6401.357 Sys [Info]: Created /Lotus/Interface/ThemedDetailedPurchaseDialog.swf
+6402.008 Sys [Info]: Full connectivity update took 15us
+6402.022 Script [Info]: ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Upgrades/Skins/Daybreak/DaybreakBubonicoSkin
+6402.028 Game [Info]: TennoDioramaAvatar710 - changing anim controller to YareliAnimController
+6403.674 Sys [Info]: CancelJobs batchcount 0
+6403.675 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1
+6403.684 Sys [Info]: Resource load completed 0x000000003F6F1E10 (9 root types) in one pass and 0.0s (I/O ~= 0.0%, inherited 119 of 119)
+6405.825 Script [Info]: ThemedDetailedPurchaseDialog.lua: USE SLOW UPDATE TOUCH BUTTONS	false
+6405.825 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2
+6405.840 Sys [Info]: Created /Lotus/Interface/ThemedDetailedPurchaseDialog.swf
+6406.194 Game [Info]: TennoDioramaAvatar711 - changing anim controller to YareliAnimController
+6406.252 Script [Info]: ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Upgrades/Skins/MeleeDangles/DaybreakDamanMeleeDangle
+6407.006 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+6407.207 Sys [Info]: CancelJobs batchcount 0
+6407.208 Script [Info]: ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1
+6407.217 Sys [Info]: Resource load completed 0x0000000047885F40 (9 root types) in one pass and 0.0s (I/O ~= 0.0%, inherited 119 of 119)
+6424.424 Game [Info]: TennoAvatarHubPeer713 - changing anim controller to WerewolfAnimController
+6426.870 Sys [Info]: WM_ACTIVATEAPP 0
+6432.117 Sys [Info]: WM_ACTIVATEAPP 1
+6432.124 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6452.840 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+6456.736 Sys [Info]: WM_ACTIVATEAPP 0
+6461.149 Sys [Info]: WM_ACTIVATEAPP 1
+6461.157 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6462.073 Net [Info]: NAT bound for server to 203.0.113.116:4950
+6465.320 Sys [Info]: WM_ACTIVATEAPP 0
+6470.957 Net [Info]: NAT bound for client to 203.0.113.116:4955
+6477.090 Game [Info]: TennoAvatarHubPeer715 - changing anim controller to DemonFrameAnimController
+6477.573 Sys [Info]: WM_ACTIVATEAPP 1
+6477.574 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6490.322 Sys [Info]: Resource load completed 0x0000000088DB36B0 (2 root types) in one pass and 0.1s (I/O ~= 0.2%, inherited 6 of 10)
+6491.914 Sys [Info]: WM_ACTIVATEAPP 0
+6507.624 Sys [Info]: Spot-building /Lotus/Types/Items/Titles/LichKillerTitle
+6660.691 Script [Info]: Background.lua: Trying to add calendar challenges
+6673.516 Sys [Info]: WM_ACTIVATEAPP 1
+6673.524 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6693.107 Game [Info]: TennoAvatarHubPeer730 - changing anim controller to PagemasterAnimController
+6693.383 Sys [Info]: WM_ACTIVATEAPP 0
+6696.758 Sys [Info]: Spot-building /Lotus/Types/Items/Titles/RoatheTitles/TitleKonzu
+6701.554 Sys [Info]: WM_ACTIVATEAPP 1
+6713.140 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+6716.878 Sys [Info]: WM_ACTIVATEAPP 0
+6724.003 Sys [Info]: WM_ACTIVATEAPP 1
+6724.007 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6724.011 Sys [Info]: OnEntitlementServiceComplete false:
+6725.722 Sys [Info]: WM_ACTIVATEAPP 0
+6728.740 Sys [Info]: Creating loader for /Temp/HubPlayers/cca296081b7d977414b4252c loadout... Flags=0xC0000000
+6729.258 Game [Info]: BuildLoadOut took 717us
+6730.944 Sys [Info]: WM_ACTIVATEAPP 1
+6730.958 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6737.540 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+6739.331 Sys [Info]: WM_ACTIVATEAPP 0
+6744.146 Sys [Info]: WM_ACTIVATEAPP 1
+6744.158 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6771.123 Net [Info]: NAT bound for client to 203.0.113.116:4955
+6772.767 Sys [Info]: WM_ACTIVATEAPP 0
+6784.006 Sys [Info]: Creating loader for /Temp/HubPlayers/9ac07b211bff5c1f5fddab69 loadout... Flags=0xC0000000
+6798.919 Sys [Info]: WM_ACTIVATEAPP 1
+6798.924 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6809.323 Game [Info]: TennoAvatarHubPeer739 - changing anim controller to WerewolfAnimController
+6814.070 Sys [Info]: WM_ACTIVATEAPP 0
+6822.240 Net [Info]: NAT bound for server to 203.0.113.116:4950
+6891.189 Net [Info]: NAT bound for client to 203.0.113.116:4955
+6892.348 Sys [Info]: WM_ACTIVATEAPP 1
+6892.356 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6892.360 Sys [Info]: OnEntitlementServiceComplete false:
+6892.939 Sys [Info]: WM_ACTIVATEAPP 0
+6895.447 Sys [Info]: WM_ACTIVATEAPP 1
+6895.457 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6902.624 Game [Info]: BuildLoadOut took 652us
+6909.915 Sys [Info]: WM_ACTIVATEAPP 0
+6909.922 Sys [Info]: WM_ACTIVATEAPP 1
+6909.924 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6911.608 Script [Info]: Background.lua: Trying to add calendar challenges
+6912.499 Sys [Info]: WM_ACTIVATEAPP 0
+6916.481 Sys [Info]: WM_ACTIVATEAPP 1
+6916.491 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6916.491 Input [Info]: New gamepad 3 is connected, UserNumber 3 
+6923.651 Sys [Info]: WM_ACTIVATEAPP 0
+6924.605 Net [Info]: Updating session (heartbeat)
+6926.023 Game [Info]: BuildLoadOut took 646us
+6939.482 Sys [Info]: WM_ACTIVATEAPP 1
+6939.490 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6951.873 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+6954.600 Sys [Info]: WM_ACTIVATEAPP 0
+6956.411 Sys [Info]: WM_ACTIVATEAPP 1
+6956.423 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+6960.705 Sys [Info]: Resource load completed 0x000000003DB7E8A0 (12 root types) in one pass and 0.0s (I/O ~= 0.0%, inherited 22 of 22)
+6963.184 Sys [Info]: WM_ACTIVATEAPP 0
+6970.556 Sys [Info]: Creating loader for /Temp/HubPlayers/347f6e974a3fe48e0b4e13be loadout... Flags=0xC0000000
+7002.690 Game [Info]: BuildLoadOut took 697us
+7006.556 Sys [Info]: WM_ACTIVATEAPP 1
+7006.557 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+7006.561 Sys [Info]: OnEntitlementServiceComplete false:
+7007.600 Sys [Info]: WM_ACTIVATEAPP 0
+7009.540 Sys [Info]: Creating loader for /Temp/HubPlayers/13e86ac3f25a2a03a00e2c4b loadout... Flags=0xC0000000
+7252.489 Net [Info]: NAT bound for server to 203.0.113.116:4950
+7254.788 Sys [Info]: WM_ACTIVATEAPP 1
+7254.790 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+7271.474 Game [Info]: TennoAvatarHubPeer770 - changing anim controller to FairyAnimController
+7283.047 Sys [Info]: WM_ACTIVATEAPP 0
+7290.406 Sys [Info]: Creating loader for /Temp/HubPlayers/54ea33382d0a30f13c4945e8 loadout... Flags=0xC0000000
+7290.873 Game [Info]: BuildLoadOut took 659us
+7292.638 Sys [Info]: WM_ACTIVATEAPP 1
+7292.640 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+7294.605 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+7294.605 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+7294.722 Script [Info]: TopMenu.lua: Abort: in hub (1)
+7294.936 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+7294.936 Sys [Info]: Context shutdown complete [Heap: 1,113,931,680/1,310,195,712 Footprint: 3,141,005,312 Handles: 0]
+7297.458 Script [Info]: Background.lua: return to ship: initial sync
+7297.458 Sys [Info]: SyncInventoryFromDB
+7298.142 Script [Info]: Background.lua: Trying to reset calendar challenges
+7298.142 Sys [Info]: OnInventoryResults completed in 52ms
+7298.142 Sys [Info]: Budget overrun updating WebGet (32.6 ms)
+7298.142 Sys [Info]: Resloader 0x000000006EBAF0B0 (/Lotus/Types/Game/VendorManifests/Events/RadioLegionVendorScreenLauncher) starting
+7298.145 Sys [Info]: WM_ACTIVATEAPP 0
+7298.146 Sys [Info]: Connectivity update flags: 1, requires full update: 0
+7298.265 Game [Info]: BuildLoadOut took 11.4ms
+7298.266 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+7298.268 Sys [Info]: Created /Lotus/Interface/PostCameraUpdateHud.swf
+7298.269 Script [Info]: Hub.lua: Initializing UI triggers
+7298.269 Script [Info]: Hub.lua: Inventory sync done
+7298.269 Script [Info]: Background.lua: initializing region challenges
+7298.659 Sys [Info]: WM_ACTIVATEAPP 1
+7298.661 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+7300.197 Sys [Info]: WM_ACTIVATEAPP 0
+7303.205 Sys [Info]: Resource load completed 0x000000003B54E070 (5 root types) in one pass and 0.3s (I/O ~= 1.0%, inherited 124 of 252)
+7305.938 Sys [Info]: WM_ACTIVATEAPP 1
+7305.940 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+7305.940 Input [Info]: New gamepad 3 is connected, UserNumber 3 
+7306.622 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+7306.623 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+7306.628 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+7306.629 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+7307.340 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+7335.488 Script [Info]: ThemedProjectionManager.lua: LoadingComplete
+7335.649 Script [Info]: ThemedProjectionManager.lua: LoadingCompleteEnd
+7336.590 Sys [Info]: Spot-building /Lotus/Types/Game/MissionDecks/EidolonJobMissionRewards/PlagueStarTableRewards
+7341.005 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+7341.005 Script [Info]: Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to equip Lith K12 Relic for this mission? It will be consumed if you seal the Void Fissure and extract., title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)
+7341.939 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+7341.939 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+7342.057 Script [Info]: MapRedux.lua: Confirm sector SolNode14_ActiveMission
+7342.057 Net [Info]: Set squad mission: {"difficulty":"","voidTier":"VoidT1","quest":"","name":"SolNode14_ActiveMission"}
+7342.057 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+7342.102 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+7346.957 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for SolNode14_ActiveMission (/Lotus/Levels/Proc/Corpus/CorpusIcePlanetExterminateCaves)
+7346.957 Game [Info]: FrameworkCmd::OpenLevel - /Lotus/Levels/Proc/Corpus/CorpusIcePlanetExterminateCaves
+7347.187 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+7347.187 Script [Info]: MapRedux.lua: DBG: HudVis 0
+7347.187 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+7347.267 Sys [Info]: Full connectivity update took 1us
+7347.267 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+7347.267 Sys [Info]: CancelJobs batchcount 0
+7351.043 Script [Info]: LotusGameRules.lua: AmmoDropTableAtten: Adding Upgrade of 0.22500000894069672 to TennoAvatar780
+7351.043 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+7351.045 Game [Info]: TestTenno - new avatar: TennoAvatar780
+7353.021 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+7353.021 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+7447.089 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoInputFilter
+7501.505 Game [Info]: MotionController::DoDodgeRoll TennoMotion Setting PM_DODGE to true
+7501.690 Sys [Info]: VoidProjections: OpenVoidProjectionRewardScreen - PostMigration: 0
+7501.691 Script [Info]: ExtractionTimer.lua: EOM: All players extracting
+7501.693 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+7501.693 Script [Info]: EndOfMatch.lua: Mission Succeeded
+7501.693 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+7501.695 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+7501.703 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+7501.703 Game [Info]: CommitInventoryChangesToDB
+7501.703 Sys [Info]: EOM missionLocationUnlocked=1
+7508.772 Script [Info]: EndOfMatch.lua: Auto close delay=10.083568572998047
+7511.443 Sys [Info]: WM_ACTIVATEAPP 0
+7518.854 Script [Info]: EndOfMatch.lua: EndOfMatch.lua - Close
+7521.814 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: R_EN_EU to index 3
+7521.840 Script [Info]: Background.lua: return to ship: initial sync
+7521.840 Sys [Info]: SyncInventoryFromDB
+7521.840 Sys [Info]: Using cached inventory data instead of performing sync
+7521.889 Script [Info]: Background.lua: Trying to reset calendar challenges
+7521.889 Sys [Info]: OnInventoryResults completed in 49ms
+7522.629 Script [Info]: Hub.lua: Initializing UI triggers
+7522.629 Script [Info]: Hub.lua: Inventory sync done
+7522.629 Script [Info]: Background.lua: initializing region challenges
+7524.282 Script [Info]: Progress.lua: StartProgressFade
+7524.282 Script [Info]: EndOfMatch.lua: ReturnedToShip
+7524.283 Script [Info]: ThemedMainMenu.lua: MainMenu::SetCurrentState(1)
+7552.638 Net [Info]: NAT bound for server to 203.0.113.116:4950
+7554.711 Sys [Info]: WM_ACTIVATEAPP 1
+7554.722 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+7555.000 Input [Info]: Subscribing for /Lotus/Interface/ChatRedux.swf with input filter /EE/Types/Input/MenuInputFilter
+7555.000 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MenuInputFilter
+7555.002 Gfx [Info]: Creating render target: /EE/Materials/VolumetricFogScatterTarget0
+7555.157 Sys [Info]: Created /Lotus/Interface/ContextAction.swf
+7556.054 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+7556.056 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+7556.062 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+7556.062 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+7556.873 Sys [Info]: Shutting down context... [Heap: 986,830,128/1,310,195,712 Footprint: 3,284,393,984 Handles: 0]
+7556.873 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+7568.282 Sys [Info]: WM_ACTIVATEAPP 0
+7584.355 Net [Info]: NAT bound for client to 203.0.113.116:4955
+7605.332 Sys [Info]: WM_ACTIVATEAPP 1
+7605.338 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+7627.456 Script [Info]: MapRedux.lua: MapRedux::NodeRollOver SolNode11 - THARSIS
+7628.376 Sys [Info]: WM_ACTIVATEAPP 0
+7644.388 Net [Info]: NAT bound for client to 203.0.113.116:4955
+8303.845 Sys [Info]: WM_ACTIVATEAPP 1
+8303.854 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+8306.354 Script [Info]: MapRedux.lua: MapRedux::NodeRollOver MarsToPhobosJunction - PHOBOS JUNCTION
+8334.118 Sys [Info]: WM_ACTIVATEAPP 0
+8343.020 Net [Info]: NAT bound for server to 203.0.113.116:4950
+8350.926 Sys [Info]: WM_ACTIVATEAPP 1
+8350.937 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+8366.053 Script [Info]: ThemedProjectionManager.lua: LoadingComplete
+8366.214 Script [Info]: ThemedProjectionManager.lua: LoadingCompleteEnd
+8367.338 Sys [Info]: Spot-building /Lotus/Types/Game/MissionDecks/EidolonJobMissionRewards/PlagueStarTableRewards
+8368.353 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+8368.354 Script [Info]: Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to equip Lith E2 Relic for this mission? It will be consumed if you seal the Void Fissure and extract., title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)
+8369.504 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+8369.504 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+8369.621 Script [Info]: MapRedux.lua: Confirm sector SolNode14_ActiveMission
+8369.621 Net [Info]: Set squad mission: {"difficulty":"","voidTier":"VoidT1","quest":"","name":"SolNode14_ActiveMission"}
+8369.621 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+8369.666 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+8370.971 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+8375.669 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+8375.670 Script [Info]: MapRedux.lua: DBG: HudVis 0
+8375.670 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+8379.941 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+8379.942 Game [Info]: TestTenno - new avatar: TennoAvatar595
+8384.720 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+8384.720 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+8412.138 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+8412.272 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoInputFilter
+8466.021 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+8466.021 Script [Info]: EndOfMatch.lua: Mission Succeeded
+8466.021 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+8466.021 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+8466.021 Script [Info]: EndOfMatch.lua: Connected: true
+8470.620 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+8470.970 Sys [Info]: VoidProjections: OpenVoidProjectionRewardScreenRMI
+8470.971 Sys [Info]: Created /Lotus/Interface/ProjectionsCountdown.swf
+8471.104 Script [Info]: OverlayBackground.lua: DBG: HudVis 1
+8471.136 Sys [Info]: VoidProjections: 672c6a314e9a1465566bc265 gets reward /Lotus/StoreItems/Types/Recipes/Weapons/PrimeDaikyuBlueprint
+8471.136 Sys [Info]: VoidProjections: Client got reward info from 672c6a314e9a1465566bc265
+8471.136 Sys [Info]: VoidProjections: Still waiting on response from 42a092177891781452d5359d
+8471.136 Sys [Info]: VoidProjections: Sending reward info from 672c6a314e9a1465566bc265 to host!
+8471.152 Sys [Info]: VoidProjections: Client got reward info from 42a092177891781452d5359d
+8471.152 Sys [Info]: VoidProjections: Still waiting on response from 546b9a4bdc79fa807fd919fb
+8471.245 Sys [Info]: Spot-loading took 18.2ms
+8471.246 Sys [Info]: VoidProjections: Client got reward info from 546b9a4bdc79fa807fd919fb
+8471.246 Sys [Info]: VoidProjections: Still waiting on response from be45bc6c9ce4323883dab475
+8471.386 Sys [Info]: Resource load completed 0x000000004F311C30 (7 root types) in one pass and 0.1s (I/O ~= 0.3%, inherited 6 of 17)
+8471.388 Sys [Info]: VoidProjections: Client got reward info from be45bc6c9ce4323883dab475
+8471.388 Sys [Info]: VoidProjections: Client has reward info for all players now
+8471.388 Script [Info]: ProjectionsCountdown.lua: Relic timer closed
+8471.388 Script [Info]: ProjectionRewardChoice.lua: Got rewards
+8471.388 Sys [Info]: Created /Lotus/Interface/ProjectionsCountdown.swf
+8486.571 Script [Info]: EndOfMatch.lua: DBG: HudVis 3
+8486.571 Script [Info]: EndOfMatch.lua: Mission Succeeded
+8486.571 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+8486.572 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+8486.589 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+8486.589 Game [Info]: CommitInventoryChangesToDB
+8486.589 Sys [Info]: EOM missionLocationUnlocked=1
+8498.920 Sys [Info]: client received full cache!
+8501.842 Sys [Info]: WM_ACTIVATEAPP 0
+8503.569 Net [Info]: Sub type: MISSION_READY
+8503.954 Sys [Info]: Shutting down context... [Heap: 1,033,399,824/1,310,195,712 Footprint: 3,335,340,032 Handles: 0]
+8503.955 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+8503.976 Sys [Info]: Destroying Operator Avatar AdultOperatorAvatar604
+8504.882 Input [Info]: Subscribing for /Lotus/Interface/Progress.swf with input filter /Lotus/Interface/ProgressInputFilter
+8504.882 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter
+8504.883 Sys [Info]: Executing valid open callback for /Lotus/Interface/Progress.swf
+8507.139 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: R_EN_EU to index 3
+8507.164 Script [Info]: Background.lua: return to ship: initial sync
+8507.164 Sys [Info]: SyncInventoryFromDB
+8507.164 Sys [Info]: Using cached inventory data instead of performing sync
+8507.211 Script [Info]: Background.lua: Trying to reset calendar challenges
+8507.211 Sys [Info]: OnInventoryResults completed in 47ms
+8507.211 Net [Info]: Sending LEAVE message
+8507.953 Script [Info]: Hub.lua: Initializing UI triggers
+8507.953 Script [Info]: Hub.lua: Inventory sync done
+8507.953 Script [Info]: Background.lua: initializing region challenges
+8509.539 Script [Info]: Progress.lua: StartProgressFade
+8509.539 Script [Info]: EndOfMatch.lua: ReturnedToShip
+8509.540 Script [Info]: ThemedMainMenu.lua: MainMenu::SetCurrentState(1)
+8513.703 Net [Error]: SSL failure and connection not found! 198.51.100.166:4950
+8517.069 Sys [Info]: WM_ACTIVATEAPP 1
+8517.070 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+8517.455 Sys [Info]: Created /Lotus/Interface/ContextAction.swf
+8517.879 Sys [Info]: WM_ACTIVATEAPP 0
+8523.235 Net [Info]: NAT bound for server to 203.0.113.116:4950
+8883.435 Net [Info]: NAT bound for server to 203.0.113.116:4950
+8895.446 Sys [Info]: WM_ACTIVATEAPP 1
+8895.453 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9048.185 Net [Info]: NAT bound for client to 203.0.113.116:4955
+9054.335 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+9054.336 Script [Info]: MapRedux.lua: Duviri: rolled mood Envy mood
+9054.343 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+9054.343 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+9055.105 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+9055.185 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+9055.185 Sys [Info]: Context shutdown complete [Heap: 1,146,105,472/1,310,195,712 Footprint: 3,336,335,360 Handles: 0]
+9115.202 Net [Info]: NAT bound for client to 203.0.113.116:4955
+9119.845 Sys [Info]: WM_ACTIVATEAPP 0
+9123.535 Net [Info]: NAT bound for server to 203.0.113.116:4950
+9124.729 Sys [Info]: WM_ACTIVATEAPP 1
+9124.735 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9178.319 Script [Info]: MapRedux.lua: MapRedux::NodeRollOver MarsToPhobosJunction - PHOBOS JUNCTION
+9179.830 Sys [Info]: WM_ACTIVATEAPP 0
+9183.553 Net [Info]: NAT bound for server to 203.0.113.116:4950
+9200.602 Script [Info]: Background.lua: Trying to add calendar challenges
+9232.507 Sys [Info]: WM_ACTIVATEAPP 1
+9232.525 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9243.585 Net [Info]: NAT bound for server to 203.0.113.116:4950
+9265.877 Sys [Info]: WM_ACTIVATEAPP 0
+9268.009 Sys [Info]: WM_ACTIVATEAPP 1
+9268.020 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9363.651 Net [Info]: NAT bound for server to 203.0.113.116:4950
+9396.530 Sys [Info]: WM_ACTIVATEAPP 0
+9408.638 Sys [Error]: Bad data from worldState.php (error 4): 
+9423.685 Net [Info]: NAT bound for server to 203.0.113.116:4950
+9449.094 Sys [Info]: WM_ACTIVATEAPP 1
+9449.103 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9449.386 Script [Info]: MapRedux.lua: MapRedux::NodeRollOver MarsToPhobosJunction - PHOBOS JUNCTION
+9455.079 Sys [Info]: WM_ACTIVATEAPP 0
+9456.760 Sys [Info]: WM_ACTIVATEAPP 1
+9456.769 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9456.769 Input [Info]: New gamepad 3 is connected, UserNumber 3 
+9457.926 Sys [Info]: WM_ACTIVATEAPP 0
+9463.477 Sys [Info]: WM_ACTIVATEAPP 1
+9463.484 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9463.484 Input [Info]: New gamepad 3 is connected, UserNumber 3 
+9464.984 Sys [Info]: WM_ACTIVATEAPP 0
+9475.367 Net [Info]: NAT bound for client to 203.0.113.116:4955
+9535.400 Net [Info]: NAT bound for client to 203.0.113.116:4955
+9536.756 Sys [Info]: WM_ACTIVATEAPP 1
+9536.768 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+9536.773 Sys [Info]: OnEntitlementServiceComplete false:
+9542.000 Sys [Info]: WM_ACTIVATEAPP 0
+9543.751 Net [Info]: NAT bound for server to 203.0.113.116:4950
+11301.433 Script [Info]: Background.lua: Trying to add calendar challenges
+11301.738 Sys [Info]: WM_ACTIVATEAPP 1
+11301.748 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+11301.754 Sys [Info]: OnEntitlementServiceComplete false:
+11302.835 Sys [Info]: WM_ACTIVATEAPP 0
+11311.309 Sys [Info]: WM_ACTIVATEAPP 1
+11311.313 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+11328.355 Input [Info]: Subscribing for /Lotus/Interface/ThemedProjectionManager.swf with input filter /EE/Types/Input/MenuInputFilter
+11328.355 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MenuInputFilter
+11328.529 Script [Info]: ThemedProjectionManager.lua: LoadingComplete
+11328.693 Script [Info]: ThemedProjectionManager.lua: LoadingCompleteEnd
+11329.684 Sys [Info]: Spot-building /Lotus/Types/Game/MissionDecks/EidolonJobMissionRewards/PlagueStarTableRewards
+11332.863 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+11332.863 Script [Info]: Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to equip Lith E2 Relic for this mission? It will be consumed if you seal the Void Fissure and extract., title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)
+11333.981 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+11333.981 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+11334.103 Script [Info]: MapRedux.lua: Confirm sector SolNode123_ActiveMission
+11334.103 Net [Info]: Set squad mission: {"difficulty":"","voidTier":"VoidT1","quest":"","name":"SolNode123_ActiveMission"}
+11334.103 Script [Info]: ThemedSquadOverlay.lua: OnSquadMissionSelected - force=false
+11334.145 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+11335.163 Script [Info]: ThemedMainMenu.lua: *** Main menu -- shutdown ***
+11335.163 Script [Info]: MapRedux.lua: DBG: HudVis 0
+11335.164 Sys [Info]: Created /Lotus/Interface/RadialSolarMapLite.swf
+11448.196 Sys [Info]: Created /Lotus/Interface/SpecialReticles/EvolvingMelee.swf
+11448.199 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoEquippedMeleeFilter
+11452.247 Game [Info]: Moonwalk debug: TennoAvatar41 Setting PM_DODGE to false
+11475.165 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'
+11475.165 Script [Info]: EndOfMatch.lua: Mission Succeeded
+11475.165 Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'
+11475.165 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+11475.165 Script [Info]: EndOfMatch.lua: Connected: true
+11643.582 Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false
+11643.813 Sys [Info]: VoidProjections: OpenVoidProjectionRewardScreenRMI
+11643.814 Sys [Info]: Created /Lotus/Interface/ProjectionsCountdown.swf
+11648.963 Script [Info]: OverlayBackground.lua: DBG: HudVis 1
+11648.997 Sys [Info]: VoidProjections: Client got reward info from 40ff6cc3f2986375225de854
+11648.997 Sys [Info]: VoidProjections: Still waiting on response from 430e32609a511042e23a8710
+11648.997 Sys [Info]: VoidProjections: Still waiting on response from 1f9e4c01e28ebc77102d8ffa
+11649.029 Sys [Info]: VoidProjections: 672c6a314e9a1465566bc265 gets reward /Lotus/StoreItems/Types/Recipes/WarframeRecipes/SevagothPrimeSystemsBlueprint
+11649.029 Sys [Info]: VoidProjections: Client got reward info from 672c6a314e9a1465566bc265
+11649.029 Sys [Info]: VoidProjections: Still waiting on response from 430e32609a511042e23a8710
+11649.298 Script [Info]: ThemedSquadOverlay.lua: OnMasteryMaterialReady4(Loaded: /Lotus/Interface/Icons/MasteryRanks/NewMasteryRanks/Rank16to18)
+11649.430 Sys [Info]: VoidProjections: Client got reward info from 1f9e4c01e28ebc77102d8ffa
+11649.430 Sys [Info]: VoidProjections: Still waiting on response from 430e32609a511042e23a8710
+11649.713 Sys [Info]: VoidProjections: Client got reward info from 430e32609a511042e23a8710
+11649.713 Sys [Info]: VoidProjections: Client has reward info for all players now
+11649.713 Script [Info]: ProjectionsCountdown.lua: Relic timer closed
+11649.713 Script [Info]: ProjectionRewardChoice.lua: Got rewards
+11649.714 Sys [Info]: Created /Lotus/Interface/ProjectionsCountdown.swf
+11649.729 Sys [Info]: Resource load completed 0x000000005544F710 (5 root types) in one pass and 0.0s (I/O ~= 0.0%, inherited 10 of 10)
+11651.937 Sys [Info]: WM_ACTIVATEAPP 0
+11664.213 Sys [Info]: WM_ACTIVATEAPP 1
+11664.215 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+11664.761 Sys [Info]: Resource load completed 0x000000003C93D400 (223 root types) in one pass and 0.0s (I/O ~= 0.0%, inherited 1,051 of 1,270)
+11664.763 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoInputFilter
+11664.765 Input [Info]: Subscribing for /Lotus/Interface/ThemedProjectionManager.swf with input filter /EE/Types/Input/MenuInputFilter
+11664.816 Script [Info]: ProjectionsCountdown.lua: Initialize timer nil	20
+11664.831 Script [Info]: ThemedProjectionManager.lua: LoadingCompleteEnd
+11665.711 Sys [Info]: WM_ACTIVATEAPP 0
+11673.811 Sys [Info]: WM_ACTIVATEAPP 1
+11673.813 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+11674.330 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+11674.330 Script [Info]: Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to equip Lith E2 Relic for this mission? It will be consumed if you seal the Void Fissure and extract., title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)
+11674.712 Sys [Info]: Executing command: /EE/Editor/ToolMenus/Commands/CmdCinematicSkipEnd
+11674.795 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+11674.795 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+11674.979 Script [Info]: ProjectionsCountdown.lua: Relic timer closed
+11675.351 Sys [Info]: WM_ACTIVATEAPP 0
+11675.479 Script [Info]: ThemedProjectionManager.lua: DBG: HudVis 2
+11680.628 Sys [Info]: WM_ACTIVATEAPP 1
+11680.630 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+11743.447 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+11743.447 Script [Info]: EndOfMatch.lua: Mission Succeeded
+11743.447 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+11743.450 Sys [Info]: Redirecting package save to: C:\users\steamuser\AppData\Local\Warframe\EE.cfg
+11743.458 Sys [Info]: FindWeapon couldn't find weapon with ID fbacb83fcb0c88d3df3479c1(LOT_DRIFTER, MELEE_SLOT)
+11743.458 Game [Info]: CommitInventoryChangesToDB
+11743.458 Sys [Info]: EOM missionLocationUnlocked=1
+11753.865 Sys [Info]: Full connectivity update took 1us
+11753.865 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+11753.865 Sys [Info]: CancelJobs batchcount 0
+11756.892 Sys [Info]: Resloader 0x000000006EB9ED40 (/Lotus/Levels/Episodes/MissionEndA.level) starting
+11756.895 Script [Info]: ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: Q_EN_EU to index 2
+11756.922 Script [Info]: Background.lua: return to ship: initial sync
+11756.922 Sys [Info]: SyncInventoryFromDB
+11756.922 Sys [Info]: Using cached inventory data instead of performing sync
+11756.971 Script [Info]: Background.lua: Trying to reset calendar challenges
+11756.971 Sys [Info]: OnInventoryResults completed in 49ms
+11756.971 Net [Info]: Sending LEAVE message
+11757.673 Script [Info]: Hub.lua: Initializing UI triggers
+11757.673 Script [Info]: Hub.lua: Inventory sync done
+11757.673 Script [Info]: Background.lua: initializing region challenges
+11759.693 Script [Info]: Progress.lua: StartProgressFade
+11759.693 Script [Info]: EndOfMatch.lua: ReturnedToShip
+11759.694 Script [Info]: ThemedMainMenu.lua: MainMenu::SetCurrentState(1)
+11760.882 Input [Info]: Subscribing for /Lotus/Interface/EndOfMatch.swf with input filter /Lotus/Interface/EndOfMatchInputFilter
+11760.882 Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/EndOfMatchInputFilter
+11771.528 Sys [Info]: Potential sets updated 0 entities and 0 containers
+11771.529 AI [Info]: NpcManager::ClearAgents() ReadyToCreateAgents = false
+11774.278 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger2
+11774.281 Script [Info]: ThemedSyndicates.lua: DBG: HudVis 1
+11798.162 Sys [Info]: UIConsoleTrigger::Open() /Layer0/Layer36/UIConsoleTrigger1
+11798.163 Script [Info]: MapRedux.lua: Duviri: rolled mood Sorrow mood
+11798.180 Sys [Info]: Created /Lotus/Interface/MapRedux.swf
+11798.180 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+11798.882 Input [Info]: Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter
+11823.065 Script [Info]: Background.lua: Trying to add calendar challenges
+11823.286 Sys [Info]: WM_ACTIVATEAPP 0
+11823.748 Script [Info]: Background.lua: Update the Profile Variable
+11979.045 Net [Info]: NAT bound for client to 203.0.113.116:4955
+11991.110 Sys [Info]: WM_ACTIVATEAPP 1
+11991.112 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+11991.118 Sys [Info]: OnEntitlementServiceComplete false:
+12001.423 Sys [Info]: WM_ACTIVATEAPP 0
+12005.729 Net [Info]: NAT bound for server to 203.0.113.116:4950
+12039.095 Net [Info]: NAT bound for client to 203.0.113.116:4955
+12044.355 Sys [Info]: WM_ACTIVATEAPP 1
+12044.362 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+12044.367 Sys [Info]: OnEntitlementServiceComplete false:
+12055.900 Sys [Info]: WM_ACTIVATEAPP 0
+12059.598 Sys [Error]: Bad data from worldState.php (error 4): 
+12125.795 Net [Info]: NAT bound for server to 203.0.113.116:4950
+12130.806 Sys [Info]: WM_ACTIVATEAPP 1
+12130.812 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+12130.816 Sys [Info]: OnEntitlementServiceComplete false:
+12132.899 Sys [Info]: WM_ACTIVATEAPP 0
+12159.128 Net [Info]: NAT bound for client to 203.0.113.116:4955
+12279.194 Net [Info]: NAT bound for client to 203.0.113.116:4955
+12288.845 Sys [Info]: WM_ACTIVATEAPP 1
+12288.846 Input [Info]: New gamepad 0 is connected, UserNumber 0 
+12303.545 Script [Info]: MapRedux.lua: MapRedux::NodeRollOver ClanNode1 - MALVA
+12304.177 Sys [Info]: WM_ACTIVATEAPP 0
+12306.027 Net [Info]: NAT bound for server to 203.0.113.116:4950

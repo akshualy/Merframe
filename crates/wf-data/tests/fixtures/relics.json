@@ -1,0 +1,1298 @@
+[
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionESilver",
+    "name": "Axi A1 Exceptional",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiA.png",
+    "category": "Relics",
+    "tradable": true,
+    "locations": [],
+    "rewards": [
+      {
+        "chance": 13,
+        "item": {
+          "name": "Akstiletto Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AkstilettoPrimeBarrel",
+          "warframeMarket": {
+            "id": "573b804a0ec44a47787a6916",
+            "urlName": "akstiletto_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 23.33,
+        "item": {
+          "name": "Trinity Prime Systems Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+          "warframeMarket": {
+            "id": "561536a1b66f836f854b966a",
+            "urlName": "trinity_prime_systems_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 23.33,
+        "item": {
+          "name": "Fragor Prime Head",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/FragorPrimeHead",
+          "warframeMarket": {
+            "id": "573b80280ec44a47787a6913",
+            "urlName": "fragor_prime_head"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 13,
+        "item": {
+          "name": "Dual Kamas Prime Handle",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeDualKamasHandle",
+          "warframeMarket": {
+            "id": "561536e4b66f836f8e15eb18",
+            "urlName": "dual_kamas_prime_handle"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 23.33,
+        "item": {
+          "name": "Braton Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+          "warframeMarket": {
+            "id": "54a73e65e779893a797fff35",
+            "urlName": "braton_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 4,
+        "item": {
+          "name": "Nikana Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/PrimeNikanaBlueprint",
+          "warframeMarket": {
+            "id": "56c3bbee5d2f0202da32e940",
+            "urlName": "nikana_prime_blueprint"
+          }
+        },
+        "rarity": "Rare"
+      }
+    ],
+    "marketInfo": {
+      "id": "6054dd685221e30057500f63",
+      "urlName": "axi_a1_relic"
+    },
+    "vaulted": true,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEGold",
+    "name": "Axi A1 Flawless",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiB.png",
+    "category": "Relics",
+    "tradable": true,
+    "locations": [],
+    "rewards": [
+      {
+        "chance": 17,
+        "item": {
+          "name": "Akstiletto Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AkstilettoPrimeBarrel",
+          "warframeMarket": {
+            "id": "573b804a0ec44a47787a6916",
+            "urlName": "akstiletto_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Trinity Prime Systems Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+          "warframeMarket": {
+            "id": "561536a1b66f836f854b966a",
+            "urlName": "trinity_prime_systems_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Fragor Prime Head",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/FragorPrimeHead",
+          "warframeMarket": {
+            "id": "573b80280ec44a47787a6913",
+            "urlName": "fragor_prime_head"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 17,
+        "item": {
+          "name": "Dual Kamas Prime Handle",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeDualKamasHandle",
+          "warframeMarket": {
+            "id": "561536e4b66f836f8e15eb18",
+            "urlName": "dual_kamas_prime_handle"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Braton Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+          "warframeMarket": {
+            "id": "54a73e65e779893a797fff35",
+            "urlName": "braton_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 6,
+        "item": {
+          "name": "Nikana Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/PrimeNikanaBlueprint",
+          "warframeMarket": {
+            "id": "56c3bbee5d2f0202da32e940",
+            "urlName": "nikana_prime_blueprint"
+          }
+        },
+        "rarity": "Rare"
+      }
+    ],
+    "marketInfo": {
+      "id": "6054dd685221e30057500f63",
+      "urlName": "axi_a1_relic"
+    },
+    "vaulted": true,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze",
+    "name": "Axi A1 Intact",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiD.png",
+    "category": "Relics",
+    "tradable": true,
+    "locations": [],
+    "rewards": [
+      {
+        "chance": 11,
+        "item": {
+          "name": "Akstiletto Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AkstilettoPrimeBarrel",
+          "warframeMarket": {
+            "id": "573b804a0ec44a47787a6916",
+            "urlName": "akstiletto_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 25.33,
+        "item": {
+          "name": "Trinity Prime Systems Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+          "warframeMarket": {
+            "id": "561536a1b66f836f854b966a",
+            "urlName": "trinity_prime_systems_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 25.33,
+        "item": {
+          "name": "Fragor Prime Head",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/FragorPrimeHead",
+          "warframeMarket": {
+            "id": "573b80280ec44a47787a6913",
+            "urlName": "fragor_prime_head"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 11,
+        "item": {
+          "name": "Dual Kamas Prime Handle",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeDualKamasHandle",
+          "warframeMarket": {
+            "id": "561536e4b66f836f8e15eb18",
+            "urlName": "dual_kamas_prime_handle"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 25.33,
+        "item": {
+          "name": "Braton Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+          "warframeMarket": {
+            "id": "54a73e65e779893a797fff35",
+            "urlName": "braton_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 2,
+        "item": {
+          "name": "Nikana Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/PrimeNikanaBlueprint",
+          "warframeMarket": {
+            "id": "56c3bbee5d2f0202da32e940",
+            "urlName": "nikana_prime_blueprint"
+          }
+        },
+        "rarity": "Rare"
+      }
+    ],
+    "marketInfo": {
+      "id": "6054dd685221e30057500f63",
+      "urlName": "axi_a1_relic"
+    },
+    "vaulted": true,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEPlatinum",
+    "name": "Axi A1 Radiant",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiC.png",
+    "category": "Relics",
+    "tradable": true,
+    "locations": [],
+    "rewards": [
+      {
+        "chance": 20,
+        "item": {
+          "name": "Akstiletto Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AkstilettoPrimeBarrel",
+          "warframeMarket": {
+            "id": "573b804a0ec44a47787a6916",
+            "urlName": "akstiletto_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 16.67,
+        "item": {
+          "name": "Trinity Prime Systems Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+          "warframeMarket": {
+            "id": "561536a1b66f836f854b966a",
+            "urlName": "trinity_prime_systems_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 16.67,
+        "item": {
+          "name": "Fragor Prime Head",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/FragorPrimeHead",
+          "warframeMarket": {
+            "id": "573b80280ec44a47787a6913",
+            "urlName": "fragor_prime_head"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Dual Kamas Prime Handle",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeDualKamasHandle",
+          "warframeMarket": {
+            "id": "561536e4b66f836f8e15eb18",
+            "urlName": "dual_kamas_prime_handle"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 16.67,
+        "item": {
+          "name": "Braton Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+          "warframeMarket": {
+            "id": "54a73e65e779893a797fff35",
+            "urlName": "braton_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 10,
+        "item": {
+          "name": "Nikana Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/PrimeNikanaBlueprint",
+          "warframeMarket": {
+            "id": "56c3bbee5d2f0202da32e940",
+            "urlName": "nikana_prime_blueprint"
+          }
+        },
+        "rarity": "Rare"
+      }
+    ],
+    "marketInfo": {
+      "id": "6054dd685221e30057500f63",
+      "urlName": "axi_a1_relic"
+    },
+    "vaulted": true,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeASilver",
+    "name": "Axi A21 Exceptional",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiA.png",
+    "category": "Relics",
+    "drops": [
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 0.29,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.42,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.58,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.67,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 10.84,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      }
+    ],
+    "tradable": true,
+    "locations": [
+      {
+        "chance": 0.29,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.42,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.58,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.67,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 10.84,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "rarity": "Uncommon"
+      }
+    ],
+    "rewards": [
+      {
+        "chance": 4,
+        "item": {
+          "name": "Alternox Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock",
+          "warframeMarket": {
+            "id": "6939aa8d5d9ebda239125d2f",
+            "urlName": "alternox_prime_stock"
+          }
+        },
+        "rarity": "Rare"
+      },
+      {
+        "chance": 13,
+        "item": {
+          "name": "Voruna Prime Chassis Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/VorunaPrimeChassisBlueprint",
+          "warframeMarket": {
+            "id": "69d67673b3984cc97e24174f",
+            "urlName": "voruna_prime_chassis_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 13,
+        "item": {
+          "name": "Cedo Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/CedoPrimeBarrel",
+          "warframeMarket": {
+            "id": "67acd8fd125398d92c8bb4e2",
+            "urlName": "cedo_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 23.33,
+        "item": {
+          "name": "Styanax Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint",
+          "warframeMarket": {
+            "id": "6a330f3e58b60af8cd1a0d08",
+            "urlName": "styanax_prime_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 23.33,
+        "item": {
+          "name": "Forma Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Components/FormaBlueprint"
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 23.33,
+        "item": {
+          "name": "Vadarya Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeLightningGunStock",
+          "warframeMarket": {
+            "id": "68add07d731e63abe79a5d19",
+            "urlName": "vadarya_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      }
+    ],
+    "marketInfo": {
+      "id": "6a3311f458b60af8cd1a0d2a",
+      "urlName": "axi_a21_relic"
+    },
+    "vaulted": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeAGold",
+    "name": "Axi A21 Flawless",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiB.png",
+    "category": "Relics",
+    "drops": [
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 0.29,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.42,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.58,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.67,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 10.84,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      }
+    ],
+    "tradable": true,
+    "locations": [
+      {
+        "chance": 0.29,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.42,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.58,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.67,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 10.84,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "rarity": "Uncommon"
+      }
+    ],
+    "rewards": [
+      {
+        "chance": 6,
+        "item": {
+          "name": "Alternox Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock",
+          "warframeMarket": {
+            "id": "6939aa8d5d9ebda239125d2f",
+            "urlName": "alternox_prime_stock"
+          }
+        },
+        "rarity": "Rare"
+      },
+      {
+        "chance": 17,
+        "item": {
+          "name": "Voruna Prime Chassis Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/VorunaPrimeChassisBlueprint",
+          "warframeMarket": {
+            "id": "69d67673b3984cc97e24174f",
+            "urlName": "voruna_prime_chassis_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 17,
+        "item": {
+          "name": "Cedo Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/CedoPrimeBarrel",
+          "warframeMarket": {
+            "id": "67acd8fd125398d92c8bb4e2",
+            "urlName": "cedo_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Styanax Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint",
+          "warframeMarket": {
+            "id": "6a330f3e58b60af8cd1a0d08",
+            "urlName": "styanax_prime_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Forma Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Components/FormaBlueprint"
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Vadarya Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeLightningGunStock",
+          "warframeMarket": {
+            "id": "68add07d731e63abe79a5d19",
+            "urlName": "vadarya_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      }
+    ],
+    "marketInfo": {
+      "id": "6a3311f458b60af8cd1a0d2a",
+      "urlName": "axi_a21_relic"
+    },
+    "vaulted": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeABronze",
+    "name": "Axi A21 Intact",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiD.png",
+    "category": "Relics",
+    "drops": [
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 0.29,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.42,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.58,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.67,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 10.84,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      }
+    ],
+    "tradable": true,
+    "locations": [
+      {
+        "chance": 0.29,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.42,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.58,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.67,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 10.84,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "rarity": "Uncommon"
+      }
+    ],
+    "rewards": [
+      {
+        "chance": 2,
+        "item": {
+          "name": "Alternox Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock",
+          "warframeMarket": {
+            "id": "6939aa8d5d9ebda239125d2f",
+            "urlName": "alternox_prime_stock"
+          }
+        },
+        "rarity": "Rare"
+      },
+      {
+        "chance": 11,
+        "item": {
+          "name": "Voruna Prime Chassis Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/VorunaPrimeChassisBlueprint",
+          "warframeMarket": {
+            "id": "69d67673b3984cc97e24174f",
+            "urlName": "voruna_prime_chassis_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 11,
+        "item": {
+          "name": "Cedo Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/CedoPrimeBarrel",
+          "warframeMarket": {
+            "id": "67acd8fd125398d92c8bb4e2",
+            "urlName": "cedo_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 25.33,
+        "item": {
+          "name": "Styanax Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint",
+          "warframeMarket": {
+            "id": "6a330f3e58b60af8cd1a0d08",
+            "urlName": "styanax_prime_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 25.33,
+        "item": {
+          "name": "Forma Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Components/FormaBlueprint"
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 25.33,
+        "item": {
+          "name": "Vadarya Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeLightningGunStock",
+          "warframeMarket": {
+            "id": "68add07d731e63abe79a5d19",
+            "urlName": "vadarya_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      }
+    ],
+    "marketInfo": {
+      "id": "6a3311f458b60af8cd1a0d2a",
+      "urlName": "axi_a21_relic"
+    },
+    "vaulted": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeAPlatinum",
+    "name": "Axi A21 Radiant",
+    "codexSecret": false,
+    "description": "An artifact containing Orokin secrets. It can only be opened through the power of the Void.",
+    "type": "Relic",
+    "imageName": "RelicAxiC.png",
+    "category": "Relics",
+    "drops": [
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 0.29,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.42,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.58,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "type": "Axi A21 Relic",
+        "chance": 0.67,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Void/Mithra (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 10.84,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Eris/Xini (Interception), Rotation C",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "type": "Axi A21 Relic",
+        "chance": 14.29,
+        "rarity": "Uncommon"
+      }
+    ],
+    "tradable": true,
+    "locations": [
+      {
+        "chance": 0.29,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.42,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.58,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 0.67,
+        "location": "Earth/Cetus (Level 15 - 25 Plague Star), Rotation A",
+        "rarity": "Legendary"
+      },
+      {
+        "chance": 10.84,
+        "location": "Void/Mithra (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Phalan (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Sporid (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Eris/Xini (Interception), Rotation C",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Lua/Apollo (Disruption), Rotation B",
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 14.29,
+        "location": "Pluto/Cerberus (Interception), Rotation B",
+        "rarity": "Uncommon"
+      }
+    ],
+    "rewards": [
+      {
+        "chance": 10,
+        "item": {
+          "name": "Alternox Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock",
+          "warframeMarket": {
+            "id": "6939aa8d5d9ebda239125d2f",
+            "urlName": "alternox_prime_stock"
+          }
+        },
+        "rarity": "Rare"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Voruna Prime Chassis Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/VorunaPrimeChassisBlueprint",
+          "warframeMarket": {
+            "id": "69d67673b3984cc97e24174f",
+            "urlName": "voruna_prime_chassis_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 20,
+        "item": {
+          "name": "Cedo Prime Barrel",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/CedoPrimeBarrel",
+          "warframeMarket": {
+            "id": "67acd8fd125398d92c8bb4e2",
+            "urlName": "cedo_prime_barrel"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 16.67,
+        "item": {
+          "name": "Styanax Prime Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint",
+          "warframeMarket": {
+            "id": "6a330f3e58b60af8cd1a0d08",
+            "urlName": "styanax_prime_blueprint"
+          }
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 16.67,
+        "item": {
+          "name": "Forma Blueprint",
+          "uniqueName": "/Lotus/Types/Recipes/Components/FormaBlueprint"
+        },
+        "rarity": "Uncommon"
+      },
+      {
+        "chance": 16.67,
+        "item": {
+          "name": "Vadarya Prime Stock",
+          "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/PrimeLightningGunStock",
+          "warframeMarket": {
+            "id": "68add07d731e63abe79a5d19",
+            "urlName": "vadarya_prime_stock"
+          }
+        },
+        "rarity": "Uncommon"
+      }
+    ],
+    "marketInfo": {
+      "id": "6a3311f458b60af8cd1a0d2a",
+      "urlName": "axi_a21_relic"
+    },
+    "vaulted": false,
+    "masterable": false
+  }
+]

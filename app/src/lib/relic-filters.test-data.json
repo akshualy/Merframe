@@ -1,0 +1,155 @@
+{
+  "plans": [
+    {
+      "relic": "Axi A20",
+      "unique_name": "/Lotus/Types/Game/Projections/T4VoidProjectionGyrePrimeABronze",
+      "tier": "Axi",
+      "image_name": "RelicAxiA.png",
+      "market": { "slug": "axi_a20_relic", "sell": 50.0, "buy": 40.0 },
+      "vaulted": true,
+      "ownership": {
+        "owned": 6,
+        "by_refinement": [{ "refinement": "Intact", "count": 6 }],
+        "all_sets_owned": false,
+        "all_items_owned": true,
+        "missing_items": 0
+      },
+      "rewards": [
+        {
+          "unique_name": "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
+          "name": "Alternox Prime Blueprint",
+          "image_name": "AlternoxPrime.png",
+          "rarity": "Rare",
+          "plat": 50.0,
+          "ducats": 100,
+          "ownership": {
+            "owned": 0,
+            "needed": 1,
+            "needed_for_set": true,
+            "parent_owned": true
+          },
+          "forma": false,
+          "favourite": true
+        }
+      ],
+      "values": [
+        {
+          "refinement": "Intact",
+          "expected_plat": 50.0,
+          "expected_ducats": 20.0,
+          "wanted_chance": 90.0,
+          "traces": 0,
+          "plat_per_trace": null,
+          "ducats_per_trace": null,
+          "chances": [2.0],
+          "expected_plat_shares": [1.0]
+        },
+        {
+          "refinement": "Radiant",
+          "expected_plat": 45.0,
+          "expected_ducats": 30.0,
+          "wanted_chance": 95.0,
+          "traces": 100,
+          "plat_per_trace": -0.1,
+          "ducats_per_trace": 0.2,
+          "chances": [10.0],
+          "expected_plat_shares": [2.0]
+        }
+      ],
+      "best": {
+        "plat": 50.0,
+        "refinement": "Intact",
+        "wanted_chance": 90.0,
+        "plat_per_trace": null,
+        "ducats_per_trace": null
+      },
+      "intact_to_radiant": { "plat": -5.0, "ducats": 10.0 },
+      "favourite": true,
+      "favourite_rewards": 0,
+      "drops": [],
+      "drop_locations": 0
+    },
+    {
+      "relic": "Lith B11",
+      "unique_name": "/Lotus/Types/Game/Projections/T1VoidProjectionHildrynPrimeCBronze",
+      "tier": "Lith",
+      "image_name": "RelicLithA.png",
+      "market": { "slug": "lith_b11_relic", "sell": 30.0, "buy": 24.0 },
+      "vaulted": true,
+      "ownership": {
+        "owned": 3,
+        "by_refinement": [{ "refinement": "Intact", "count": 3 }],
+        "all_sets_owned": false,
+        "all_items_owned": true,
+        "missing_items": 0
+      },
+      "rewards": [],
+      "values": [
+        {
+          "refinement": "Intact",
+          "expected_plat": 30.0,
+          "expected_ducats": 15.0,
+          "wanted_chance": 90.0,
+          "traces": 0,
+          "plat_per_trace": null,
+          "ducats_per_trace": null,
+          "chances": [],
+          "expected_plat_shares": []
+        }
+      ],
+      "best": {
+        "plat": 30.0,
+        "refinement": "Intact",
+        "wanted_chance": 90.0,
+        "plat_per_trace": null,
+        "ducats_per_trace": null
+      },
+      "intact_to_radiant": { "plat": 0.0, "ducats": 0.0 },
+      "favourite": false,
+      "favourite_rewards": 0,
+      "drops": [],
+      "drop_locations": 0
+    },
+    {
+      "relic": "Lith P5",
+      "unique_name": "/Lotus/Types/Game/Projections/T1VoidProjectionNezhaPrimeDBronze",
+      "tier": "Lith",
+      "image_name": "RelicLithA.png",
+      "market": { "slug": "lith_p5_relic", "sell": 28.0, "buy": 22.0 },
+      "vaulted": true,
+      "ownership": {
+        "owned": 12,
+        "by_refinement": [{ "refinement": "Intact", "count": 12 }],
+        "all_sets_owned": false,
+        "all_items_owned": true,
+        "missing_items": 0
+      },
+      "rewards": [],
+      "values": [
+        {
+          "refinement": "Intact",
+          "expected_plat": 28.0,
+          "expected_ducats": 14.0,
+          "wanted_chance": 90.0,
+          "traces": 0,
+          "plat_per_trace": null,
+          "ducats_per_trace": null,
+          "chances": [],
+          "expected_plat_shares": []
+        }
+      ],
+      "best": {
+        "plat": 28.0,
+        "refinement": "Intact",
+        "wanted_chance": 90.0,
+        "plat_per_trace": null,
+        "ducats_per_trace": null
+      },
+      "intact_to_radiant": { "plat": 0.0, "ducats": 0.0 },
+      "favourite": false,
+      "favourite_rewards": 0,
+      "drops": [],
+      "drop_locations": 0
+    }
+  ]
+}

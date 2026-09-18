@@ -1,0 +1,830 @@
+[
+  {
+    "uniqueName": "/Lotus/Upgrades/Skins/Excalibur/ExcaliburHelmet",
+    "name": "Excalibur Helmet",
+    "codexSecret": false,
+    "description": "The standard issue helmet for the Excalibur Warframe.",
+    "type": "Skin",
+    "imageName": "ExcaliburHelmet.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Skins/Brawler/BrawlerAltHelmet",
+    "name": "Atlas Tartarus Helmet",
+    "codexSecret": false,
+    "description": "A uniquely-styled alternate helmet for Atlas.",
+    "buildPrice": 20000,
+    "buildTime": 43200,
+    "skipBuildTimePrice": 25,
+    "buildQuantity": 1,
+    "consumeOnBuild": true,
+    "components": [
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Helmets/BrawlerAltHelmetBlueprint",
+        "name": "Blueprint",
+        "description": "A uniquely-styled alternate helmet for Atlas.",
+        "itemCount": 1,
+        "imageName": "blueprint.png",
+        "tradable": false,
+        "masterable": false
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
+        "name": "Neurodes",
+        "description": "Biotech sensor organ harvested from Infested entities.\n\nLocation: Earth, Lua, Eris, and Deimos",
+        "codexSecret": false,
+        "itemCount": 2,
+        "imageName": "ComponentNeurode.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "Neurodes",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Annihilation (Conclave), Rotation B",
+            "type": "Neurodes",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+            "type": "Neurodes",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          }
+        ],
+        "tradable": false,
+        "masterable": false
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+        "name": "Orokin Cell",
+        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
+        "codexSecret": false,
+        "itemCount": 1,
+        "imageName": "ComponentCell.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Annihilation (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/OxiumAlloy",
+        "name": "Oxium",
+        "description": "Oxium is a rare lighter than air alloy of Orokin origin, used in certain Corpus Robotics.\n\nLocation: Venus, Jupiter, Mars, Neptune, Pluto, Eris, Europa, and Lua.",
+        "codexSecret": false,
+        "itemCount": 400,
+        "imageName": "ComponentOxium.png",
+        "drops": [
+          {
+            "location": "Carrypod",
+            "type": "Oxium",
+            "chance": 0.5,
+            "rarity": "Rare"
+          },
+          {
+            "location": "Common Corpus Storage Container",
+            "type": "Oxium",
+            "chance": 0.5,
+            "rarity": "Rare"
+          },
+          {
+            "location": "Dusty Storage Crate",
+            "type": "Oxium",
+            "chance": 0.5,
+            "rarity": "Rare"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+        "name": "Salvage",
+        "description": "High value metals collected from war salvage.\n\nLocation: Mars, Jupiter, and Sedna",
+        "codexSecret": false,
+        "itemCount": 1200,
+        "imageName": "ComponentSalvage.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "600X Salvage",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          },
+          {
+            "location": "Saturn/Annihilation (Conclave), Rotation B",
+            "type": "600X Salvage",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          },
+          {
+            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+            "type": "600X Salvage",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      }
+    ],
+    "type": "Skin",
+    "imageName": "BrawlerAltHelmet.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Skins/Trinity/TrinityHelmetAlt",
+    "name": "Arcane Aura Helmet",
+    "codexSecret": false,
+    "description": "This helmet is worn by Trinity, and increases the Ability Duration, but adversely affects Health.",
+    "buildPrice": 20000,
+    "buildTime": 43200,
+    "skipBuildTimePrice": 25,
+    "buildQuantity": 1,
+    "consumeOnBuild": true,
+    "components": [
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+        "name": "Alloy Plate",
+        "description": "Carbon steel plates used to reinforce Grineer armor.\n\nLocation: Venus, Phobos, Ceres, Jupiter, Pluto, and Sedna.",
+        "codexSecret": false,
+        "itemCount": 350,
+        "imageName": "AlloyPlate.png",
+        "drops": [
+          {
+            "location": "Mars/Gradivus (Caches), Rotation B",
+            "type": "750X Alloy Plate",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          },
+          {
+            "location": "Mercury/Neruda (Caches), Rotation B",
+            "type": "750X Alloy Plate",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          },
+          {
+            "location": "Mercury/Terminus (Caches), Rotation B",
+            "type": "750X Alloy Plate",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Helmets/TrinityAltHelmetBlueprint",
+        "name": "Blueprint",
+        "description": "This helmet is worn by Trinity, and increases the Ability Duration, but adversely affects Health.",
+        "itemCount": 1,
+        "imageName": "blueprint.png",
+        "tradable": false,
+        "masterable": false
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
+        "name": "Neurodes",
+        "description": "Biotech sensor organ harvested from Infested entities.\n\nLocation: Earth, Lua, Eris, and Deimos",
+        "codexSecret": false,
+        "itemCount": 2,
+        "imageName": "ComponentNeurode.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "Neurodes",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Annihilation (Conclave), Rotation B",
+            "type": "Neurodes",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+            "type": "Neurodes",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          }
+        ],
+        "tradable": false,
+        "masterable": false
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+        "name": "Orokin Cell",
+        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
+        "codexSecret": false,
+        "itemCount": 1,
+        "imageName": "ComponentCell.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Annihilation (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          },
+          {
+            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+            "type": "Orokin Cell",
+            "chance": 0.25,
+            "rarity": "Legendary"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      },
+      {
+        "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+        "name": "Salvage",
+        "description": "High value metals collected from war salvage.\n\nLocation: Mars, Jupiter, and Sedna",
+        "codexSecret": false,
+        "itemCount": 500,
+        "imageName": "ComponentSalvage.png",
+        "drops": [
+          {
+            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+            "type": "600X Salvage",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          },
+          {
+            "location": "Saturn/Annihilation (Conclave), Rotation B",
+            "type": "600X Salvage",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          },
+          {
+            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+            "type": "600X Salvage",
+            "chance": 12.65,
+            "rarity": "Uncommon"
+          }
+        ],
+        "tradable": false,
+        "masterable": false,
+        "type": "Resource"
+      }
+    ],
+    "type": "Skin",
+    "imageName": "TrinityAltHelmet.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Skins/Effects/TwitchEphemera",
+    "name": "Verv Ephemera",
+    "codexSecret": false,
+    "excludeFromCodex": true,
+    "description": "Broadcast your presence with every move.",
+    "type": "Skin",
+    "imageName": "TwitchEphemera.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Skins/Armor/ArbiterOfHexisArmor/ArbiterOfHexisArmorA",
+    "name": "Hexis Arm Plates",
+    "codexSecret": false,
+    "description": "An armor set traditionally worn by those entrusted with the duties of Arbitration according to the Precepts of Hexis.",
+    "type": "Skin",
+    "imageName": "ArbitersOfHexisArm.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/StoreItems/AvatarImages/AvatarImagePHGlyph",
+    "name": "Ph_glyph",
+    "description": "PH_DESCRIPTION: A glyph for your profile. Created by Community artist Searyn.",
+    "codexSecret": true,
+    "type": "Glyph",
+    "imageName": "PHGlyph.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/StoreItems/SuitCustomizations/ColourPickerTwilightItemA",
+    "name": "Twilight",
+    "description": "Features earthen hues of brown, and dusky shades of blue and purple.",
+    "codexSecret": false,
+    "hexColours": [
+      {
+        "value": "0x00784712"
+      },
+      {
+        "value": "0x00683B13"
+      },
+      {
+        "value": "0x00562F13"
+      },
+      {
+        "value": "0x00462314"
+      },
+      {
+        "value": "0x003B1B14"
+      },
+      {
+        "value": "0x00A48B76"
+      },
+      {
+        "value": "0x00846D5B"
+      },
+      {
+        "value": "0x00614A3C"
+      },
+      {
+        "value": "0x00412C21"
+      },
+      {
+        "value": "0x002B170E"
+      },
+      {
+        "value": "0x00DCCF7F"
+      },
+      {
+        "value": "0x00C0AD6C"
+      },
+      {
+        "value": "0x009F8757"
+      },
+      {
+        "value": "0x00836544"
+      },
+      {
+        "value": "0x006F4E37"
+      },
+      {
+        "value": "0x00E7DBBB"
+      },
+      {
+        "value": "0x00D1B589"
+      },
+      {
+        "value": "0x00BA8B53"
+      },
+      {
+        "value": "0x00A46521"
+      },
+      {
+        "value": "0x00964B00"
+      },
+      {
+        "value": "0x00D2B48C"
+      },
+      {
+        "value": "0x00C6A479"
+      },
+      {
+        "value": "0x00B38C5E"
+      },
+      {
+        "value": "0x009F713F"
+      },
+      {
+        "value": "0x008C5924"
+      },
+      {
+        "value": "0x00F5DEB3"
+      },
+      {
+        "value": "0x00E0C99C"
+      },
+      {
+        "value": "0x00C2AA7B"
+      },
+      {
+        "value": "0x009F8856"
+      },
+      {
+        "value": "0x00816935"
+      },
+      {
+        "value": "0x00C2B280"
+      },
+      {
+        "value": "0x00B1A775"
+      },
+      {
+        "value": "0x00999766"
+      },
+      {
+        "value": "0x007E8554"
+      },
+      {
+        "value": "0x00667545"
+      },
+      {
+        "value": "0x00E0A65D"
+      },
+      {
+        "value": "0x00D78F4F"
+      },
+      {
+        "value": "0x00CA703B"
+      },
+      {
+        "value": "0x00BC4E26"
+      },
+      {
+        "value": "0x00B03014"
+      },
+      {
+        "value": "0x00CC7722"
+      },
+      {
+        "value": "0x00C36522"
+      },
+      {
+        "value": "0x00B54A21"
+      },
+      {
+        "value": "0x00A72D21"
+      },
+      {
+        "value": "0x00991220"
+      },
+      {
+        "value": "0x00B791F8"
+      },
+      {
+        "value": "0x00A77EE9"
+      },
+      {
+        "value": "0x009061D4"
+      },
+      {
+        "value": "0x007641BC"
+      },
+      {
+        "value": "0x005F24A7"
+      },
+      {
+        "value": "0x00CD9FE3"
+      },
+      {
+        "value": "0x00BD94DC"
+      },
+      {
+        "value": "0x00A585D1"
+      },
+      {
+        "value": "0x008A74C5"
+      },
+      {
+        "value": "0x007265BA"
+      },
+      {
+        "value": "0x00BB70E1"
+      },
+      {
+        "value": "0x00A060C0"
+      },
+      {
+        "value": "0x00814E9B"
+      },
+      {
+        "value": "0x00663D7A"
+      },
+      {
+        "value": "0x00533263"
+      },
+      {
+        "value": "0x00B5AFF8"
+      },
+      {
+        "value": "0x00A198DE"
+      },
+      {
+        "value": "0x008579BB"
+      },
+      {
+        "value": "0x00685795"
+      },
+      {
+        "value": "0x004D3974"
+      },
+      {
+        "value": "0x00AA5DE3"
+      },
+      {
+        "value": "0x009054CA"
+      },
+      {
+        "value": "0x00744AAE"
+      },
+      {
+        "value": "0x005A4095"
+      },
+      {
+        "value": "0x00483A84"
+      },
+      {
+        "value": "0x007E0AC7"
+      },
+      {
+        "value": "0x00700EC1"
+      },
+      {
+        "value": "0x005C14B7"
+      },
+      {
+        "value": "0x00461AAD"
+      },
+      {
+        "value": "0x003120A3"
+      },
+      {
+        "value": "0x005F0AC7"
+      },
+      {
+        "value": "0x00510DB7"
+      },
+      {
+        "value": "0x003B129F"
+      },
+      {
+        "value": "0x00241784"
+      },
+      {
+        "value": "0x000E1C6C"
+      },
+      {
+        "value": "0x009E16E1"
+      },
+      {
+        "value": "0x008610C0"
+      },
+      {
+        "value": "0x006B0A9B"
+      },
+      {
+        "value": "0x0053047A"
+      },
+      {
+        "value": "0x00430064"
+      },
+      {
+        "value": "0x00B046E3"
+      },
+      {
+        "value": "0x008E34BB"
+      },
+      {
+        "value": "0x006A1F8E"
+      },
+      {
+        "value": "0x00480D66"
+      },
+      {
+        "value": "0x0032004A"
+      }
+    ],
+    "type": "Color Palette",
+    "imageName": "ColorPickerTwilight.png",
+    "category": "Skins",
+    "drops": [
+      {
+        "location": "Denial Bursa",
+        "type": "Astral Twilight",
+        "chance": 0.06,
+        "rarity": "Rare"
+      },
+      {
+        "location": "Kuva Jester",
+        "type": "Astral Twilight",
+        "chance": 0.5,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Sedna/Vodyanoi (Arena)",
+        "type": "Astral Twilight",
+        "chance": 0.5,
+        "rarity": "Legendary"
+      }
+    ],
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/Emotes/HardmodeLuaEmote",
+    "name": "The Steel Path: Lua",
+    "description": "Awarded for completing The Steel Path: Lua.",
+    "codexSecret": false,
+    "type": "Emotes",
+    "imageName": "EmoteLua.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/QuartersWallpapers/NoraWallpaper",
+    "name": "Nora Stencil",
+    "description": "Personalize your quarters with this unique stencil.",
+    "codexSecret": false,
+    "excludeFromCodex": true,
+    "type": "Ship Decoration",
+    "imageName": "NoraWallpaper.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Interface/Graphics/CustomUI/FortunaStyle",
+    "name": "Fortuna Theme",
+    "description": "A custom UI color theme.",
+    "codexSecret": false,
+    "excludeFromCodex": true,
+    "type": "Themes",
+    "imageName": "StyleFortuna.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/Titles/MR16Title",
+    "name": "Honoria",
+    "description": "An Honoria for your profile.",
+    "codexSecret": false,
+    "excludeFromCodex": true,
+    "type": "Misc",
+    "imageName": "GenericHonoriaIcon.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Game/CatbrowPet/Colors/CatbrowPetColorSecondaryB",
+    "name": "Conculyst Brown",
+    "description": "Splices the genes in your pet Kavat to change the color of its fur.",
+    "codexSecret": true,
+    "type": "Fur Color",
+    "imageName": "KavatColourSecondaryB.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA",
+    "name": "Kavasa Prime Kubrow Collar",
+    "codexSecret": false,
+    "description": "A collar used to honor especially loyal Kubrows in the Orokin era.",
+    "buildPrice": 20000,
+    "buildTime": 43200,
+    "skipBuildTimePrice": 25,
+    "buildQuantity": 1,
+    "consumeOnBuild": true,
+    "components": [
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABlueprint",
+        "name": "Blueprint",
+        "description": "A collar used to honor especially loyal Kubrows in the Orokin era.",
+        "itemCount": 1,
+        "primeSellingPrice": 45,
+        "imageName": "blueprint.png",
+        "drops": [
+          {
+            "location": "Axi G1 Relic",
+            "type": "Kavasa Prime Kubrow Collar Blueprint",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionKBronze"
+          },
+          {
+            "location": "Axi S7 Relic",
+            "type": "Kavasa Prime Kubrow Collar Blueprint",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionNovaTrinityVaultABronze"
+          },
+          {
+            "location": "Lith S4 Relic",
+            "type": "Kavasa Prime Kubrow Collar Blueprint",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNBronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 45
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent",
+        "name": "Kavasa Prime Band",
+        "description": "A prime companion accessory-crafting component.",
+        "codexSecret": false,
+        "primeSellingPrice": 45,
+        "itemCount": 1,
+        "imageName": "GenericComponentPrimeLatch.png",
+        "drops": [
+          {
+            "location": "Lith C1 Relic",
+            "type": "Kavasa Prime Band",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionJBronze"
+          },
+          {
+            "location": "Lith L3 Relic",
+            "type": "Kavasa Prime Band",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionLimboTrinityVaultABronze"
+          },
+          {
+            "location": "Lith N2 Relic",
+            "type": "Kavasa Prime Band",
+            "chance": 11,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionRBronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 45
+      },
+      {
+        "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABuckleComponent",
+        "name": "Kavasa Prime Buckle",
+        "description": "A prime companion accessory-crafting component.",
+        "codexSecret": false,
+        "primeSellingPrice": 65,
+        "itemCount": 1,
+        "imageName": "GenericComponentPrimePlug.png",
+        "drops": [
+          {
+            "location": "Axi K1 Relic (Radiant)",
+            "type": "Kavasa Prime Buckle",
+            "chance": 10,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionCBronze"
+          },
+          {
+            "location": "Lith K1 Relic (Radiant)",
+            "type": "Kavasa Prime Buckle",
+            "chance": 10,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionKBronze"
+          },
+          {
+            "location": "Lith K4 Relic (Radiant)",
+            "type": "Kavasa Prime Buckle",
+            "chance": 10,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNovaTrinityVaultABronze"
+          }
+        ],
+        "tradable": true,
+        "masterable": false,
+        "ducats": 65
+      }
+    ],
+    "type": "Skin",
+    "imageName": "KubrowCollarPrimeA.png",
+    "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  }
+]

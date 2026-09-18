@@ -1,0 +1,7432 @@
+{
+ "updated_at": 1789074544,
+ "weapons_updated_at": 1789074543,
+ "good_rolls_updated_at": 1789074544,
+ "attribution": "Good rolls by 44bananas and Xennethkeisere",
+ "weapons": [
+  {
+   "game_ref": "/Lotus/Weapons/Lasria/AK47/TC2024AK47Weapon",
+   "slug": "ax_52",
+   "name": "AX-52",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 0.85,
+   "mastery_rank": 12
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/LongGuns/SapientPrimary/SapientPrimaryWeapon",
+   "slug": "acceltra",
+   "name": "Acceltra",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 0.65,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/LongGuns/TnRifleErsatz/TnRifleErsatzWeapon",
+   "slug": "aeolak",
+   "name": "Aeolak",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.2,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetMeleeWeaponPS",
+   "slug": "akaten",
+   "name": "Akaten",
+   "group": "sentinel",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Pistols/TennoUzi/TennoUzi",
+   "slug": "akstiletto",
+   "name": "Akstiletto",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 0.95,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Polearms/Naginata/ShrineMaidenNaginataWeapon",
+   "slug": "amanata",
+   "name": "Amanata",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.85,
+   "mastery_rank": 2
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/LongGuns/CrpArSniper/CrpArSniperRifle",
+   "slug": "ambassador",
+   "name": "Ambassador",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/LongGuns/ChainLightningGun/ChainLightningRifle",
+   "slug": "amprex",
+   "name": "Amprex",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 0.85,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Scythe/ParisScythe/ParisScythe",
+   "slug": "anku",
+   "name": "Anku",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.46,
+   "mastery_rank": 3
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/LongGuns/CrpShotgun/CrpShotgun",
+   "slug": "arca_plasmor",
+   "name": "Arca Plasmor",
+   "group": "primary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 0.95,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Types/Sentinels/SentinelWeapons/Gremlin",
+   "slug": "artax",
+   "name": "Artax",
+   "group": "sentinel",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Melee/GrineerWhip/GrineerWhip",
+   "slug": "atterax",
+   "name": "Atterax",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 5
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Tip/TipOne",
+   "slug": "balla",
+   "name": "Balla",
+   "group": "zaw",
+   "riven_type": "zaw",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusModularMeleeRandomModRare",
+   "disposition": 0.8,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Sentients/SentRifleNewWar/SentRifleNewWarGun",
+   "slug": "basmu",
+   "name": "Basmu",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.2,
+   "mastery_rank": 11
+  },
+  {
+   "game_ref": "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetMeleeWeaponIP",
+   "slug": "batoten",
+   "name": "Batoten",
+   "group": "sentinel",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/LongGuns/TnSMG/TnSMGWeapon",
+   "slug": "baza",
+   "name": "Baza",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.05,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Shotgun/FullAutoShotgun",
+   "slug": "boar",
+   "name": "Boar",
+   "group": "primary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 1.45,
+   "mastery_rank": 2
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Rifle/BoltoRifle",
+   "slug": "boltor",
+   "name": "Boltor",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 2
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Rifle/Rifle",
+   "slug": "braton",
+   "name": "Braton",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.35,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/StalkerTwo/StalkerTwoSmallSword",
+   "slug": "broken_war",
+   "name": "Broken War",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Pistol/HandShotGun",
+   "slug": "bronco",
+   "name": "Bronco",
+   "group": "secondary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 1.45,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/LongGuns/GrnGorgSniperRifle/GrnGorgSniperRifle",
+   "slug": "buzlok",
+   "name": "Buzlok",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.45,
+   "mastery_rank": 11
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/LongGuns/TnAlchemistShotgun/TnAlchemistShotgun",
+   "slug": "cedo",
+   "name": "Cedo",
+   "group": "primary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 0.65,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Bows/AntlerBow/AntlerBow",
+   "slug": "cernos",
+   "name": "Cernos",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 6
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Infested/InfestedLich/LongGuns/1999InfShotgun/1999InfShotgunWeapon",
+   "slug": "coda_bassocyst",
+   "name": "Coda Bassocyst",
+   "group": "primary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 0.6,
+   "mastery_rank": 17
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Archwing/Melee/ExaltedArchScythe/ExaltedAWScytheWeapon",
+   "slug": "corufell",
+   "name": "Corufell",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.05,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetComponents/CryoxionWeapon",
+   "slug": "cryotra",
+   "name": "Cryotra",
+   "group": "sentinel",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Archwing/Primary/ArchBurstGun/ArchBurstGun",
+   "slug": "cyngas",
+   "name": "Cyngas",
+   "group": "archgun",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 4
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Dagger/DarkDagger",
+   "slug": "dark_dagger",
+   "name": "Dark Dagger",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.1,
+   "mastery_rank": 2
+  },
+  {
+   "game_ref": "/Lotus/Types/Sentinels/SentinelWeapons/SentGlaiveWeapon",
+   "slug": "deconstructor",
+   "name": "Deconstructor",
+   "group": "sentinel",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.25,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/KatanaAndWakizashi/Dex2023Nikana/Dex2023Nikana",
+   "slug": "dex_nikana",
+   "name": "Dex Nikana",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.1,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/Pistols/CorpusMinigun/DualCorpusMinigun",
+   "slug": "dual_cestra",
+   "name": "Dual Cestra",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 1.35,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Archwing/Primary/ArchwingHeavyPistols/ArchHeavyPistols",
+   "slug": "dual_decurion",
+   "name": "Dual Decurion",
+   "group": "archgun",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 1
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/DualShortSword/DualEtherSword",
+   "slug": "dual_ether",
+   "name": "Dual Ether",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.45,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/DualKamas/DualKamas",
+   "slug": "dual_kamas",
+   "name": "Dual Kamas",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.35,
+   "mastery_rank": 1
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/DualDagger/DualDagger",
+   "slug": "fang",
+   "name": "Fang",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.36,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/LongGuns/Spears/Railgun/CorpusRailgun",
+   "slug": "ferrox",
+   "name": "Ferrox",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.25,
+   "mastery_rank": 14
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Archwing/Primary/RocketArtillery/ArchRocketCrossbow",
+   "slug": "fluctus",
+   "name": "Fluctus",
+   "group": "archgun",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+   "disposition": 1.1,
+   "mastery_rank": 2
+  },
+  {
+   "game_ref": "/Lotus/Weapons/ClanTech/Energy/CrpLaserRifle",
+   "slug": "flux_rifle",
+   "name": "Flux Rifle",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.55,
+   "mastery_rank": 6
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Syndicates/CephalonSuda/Pistols/CSDroidArray",
+   "slug": "gammacor",
+   "name": "Gammacor",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 2
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Grimoire/TnGrimoire",
+   "slug": "grimoire",
+   "name": "Grimoire",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 0.6,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Melee/GrnBoomerang/GrnBoomerang",
+   "slug": "halikar",
+   "name": "Halikar",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.44,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Scythe/TnChoirScythe/TnChoirScythe",
+   "slug": "harmony",
+   "name": "Harmony",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.6,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Shotgun/QuadShotgun",
+   "slug": "hek",
+   "name": "Hek",
+   "group": "primary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 1.2,
+   "mastery_rank": 4
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Infested/LongGuns/InfWFAccompanyingPri/InfestedBurstRifle",
+   "slug": "hema",
+   "name": "Hema",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/ClanTech/Chemical/FlameThrower",
+   "slug": "ignis",
+   "name": "Ignis",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 0.7,
+   "mastery_rank": 5
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Archwing/Primary/FoldingMachineGun/ArchMachineGun",
+   "slug": "imperator",
+   "name": "Imperator",
+   "group": "archgun",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+   "disposition": 1.1,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama",
+   "slug": "kama",
+   "name": "Kama",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.47,
+   "mastery_rank": 1
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/LongGuns/GrineerM16Homage/GrineerM16Rifle",
+   "slug": "karak",
+   "name": "Karak",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.35,
+   "mastery_rank": 1
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/KrisDagger/KrisDagger",
+   "slug": "karyst",
+   "name": "Karyst",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.35,
+   "mastery_rank": 6
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Pistols/TnYareliPistol/TnYareliPistolWeapon",
+   "slug": "kompressa",
+   "name": "Kompressa",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Bows/GrnBow/GrnBowWeapon",
+   "slug": "kuva_bramma",
+   "name": "Kuva Bramma",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 0.65,
+   "mastery_rank": 15
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Melee/GrnKuvaLichScythe/GrnKuvaLichScytheWeapon",
+   "slug": "kuva_shildeg",
+   "name": "Kuva Shildeg",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.8,
+   "mastery_rank": 13
+  },
+  {
+   "game_ref": "/Lotus/Types/Sentinels/SentinelWeapons/LaserRifle",
+   "slug": "laser_rifle",
+   "name": "Laser Rifle",
+   "group": "sentinel",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.21,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/Bow/Longbow/CrpBow",
+   "slug": "lenz",
+   "name": "Lenz",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.05,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Infested/Melee/TipedoStaff/InfTipedoStaff",
+   "slug": "lesion",
+   "name": "Lesion",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.85,
+   "mastery_rank": 9
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Melee/GrineerMachetteAndCleaver/Machete",
+   "slug": "machete",
+   "name": "Machete",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.45,
+   "mastery_rank": 1
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Maces/PaladinMace/PaladinMaceWeapon",
+   "slug": "magistar",
+   "name": "Magistar",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.35,
+   "mastery_rank": 1
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Archwing/Primary/ThanoTechGrenadeLaunch/ThanoTechGrenadeLauncher",
+   "slug": "morgha",
+   "name": "Morgha",
+   "group": "archgun",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 15
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep",
+   "slug": "nepheri",
+   "name": "Nepheri",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 13
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/KatanaAndWakizashi/Katana",
+   "slug": "nikana",
+   "name": "Nikana",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.95,
+   "mastery_rank": 4
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/Melee/KickAndPunch/KickPunchWeapon",
+   "slug": "obex",
+   "name": "Obex",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 4
+  },
+  {
+   "game_ref": "/Lotus/Weapons/ClanTech/Chemical/RocketLauncher",
+   "slug": "ogris",
+   "name": "Ogris",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 9
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/TennoSai/TennoSais",
+   "slug": "okina",
+   "name": "Okina",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.4,
+   "mastery_rank": 5
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Thanotech/EntratiWristGun/EntratiWristGunWeapon",
+   "slug": "onos",
+   "name": "Onos",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 0.8,
+   "mastery_rank": 14
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Pistols/TnBardPistol/TnBardPistolGun",
+   "slug": "pandero",
+   "name": "Pandero",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 1.2,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Orokin/BallasSword/BallasSwordWeapon",
+   "slug": "paracesis",
+   "name": "Paracesis",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.65,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/TnRailjackGreatKatana/TnRailJackGreatKatanaWeapon",
+   "slug": "pennant",
+   "name": "Pennant",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.95,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/LongGuns/GrenadeLauncher/GrenadeLauncher",
+   "slug": "penta",
+   "name": "Penta",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.35,
+   "mastery_rank": 6
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Infested/LongGuns/Tentacluster/InfestedShotgun",
+   "slug": "phage",
+   "name": "Phage",
+   "group": "primary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 1.46,
+   "mastery_rank": 11
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Zariman/Melee/Tonfas/ZarimanTonfaWeapon",
+   "slug": "praedos",
+   "name": "Praedos",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.6,
+   "mastery_rank": 14
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Bows/PrimeDerelictCernos/DerelictCernos",
+   "slug": "proboscis_cernos",
+   "name": "Proboscis Cernos",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 0.9,
+   "mastery_rank": 15
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Infested/Melee/Nunchaku/InfNunchuck/InfNunchuck",
+   "slug": "pulmonars",
+   "name": "Pulmonars",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.2,
+   "mastery_rank": 11
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/LongGuns/GrnFourBarrelRifle/GrnFourBarrelRifleWeapon",
+   "slug": "quartakk",
+   "name": "Quartakk",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.25,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Scythe/ReaperWeapon",
+   "slug": "reaper_prime",
+   "name": "Reaper Prime",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.8,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Melee/GrineerClaws/GrnClaws",
+   "slug": "ripkas",
+   "name": "Ripkas",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 5
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Operator/Melee/DrifterTazer/DrifterTazerPlayerWep",
+   "slug": "rumblejack",
+   "name": "Rumblejack",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.2,
+   "mastery_rank": 8
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/LongSword/LongSword",
+   "slug": "skana",
+   "name": "Skana",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Shotgun/DoubleBarrelShotgun",
+   "slug": "sobek",
+   "name": "Sobek",
+   "group": "primary",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 1.33,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Rifle/TennoAR",
+   "slug": "soma",
+   "name": "Soma",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 6
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Whips/SpiderWhip/SpiderWhipWeapon",
+   "slug": "spinnerex",
+   "name": "Spinnerex",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.75,
+   "mastery_rank": 12
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/LongGuns/CrpRubanRifle/CrpRubanRifle",
+   "slug": "stahlta",
+   "name": "Stahlta",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.05,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Types/Sentinels/SentinelWeapons/SentBioWeapon",
+   "slug": "stinger",
+   "name": "Stinger",
+   "group": "sentinel",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.32,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Pistols/GrineerCrossbow/GrineerGooGun",
+   "slug": "stug",
+   "name": "Stug",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 1.48,
+   "mastery_rank": 2
+  },
+  {
+   "game_ref": "/Lotus/Types/Sentinels/SentinelWeapons/SentShotgun",
+   "slug": "sweeper",
+   "name": "Sweeper",
+   "group": "sentinel",
+   "riven_type": "shotgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusShotgunRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/LongGuns/TnoLeverAction/TnoLeverActionRifle",
+   "slug": "sybaris",
+   "name": "Sybaris",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 5
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Gauntlet/BrawlerKnuckles/BrawlerKnuckles",
+   "slug": "tekko",
+   "name": "Tekko",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.4,
+   "mastery_rank": 6
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/Pistols/CrpBriefcaseAkimbo/CrpBriefcaseAkimboPistol",
+   "slug": "tenet_diplos",
+   "name": "Tenet Diplos",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 0.8,
+   "mastery_rank": 16
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/LongGuns/TnModQuestRifle/TnModQuestRifleWeapon",
+   "slug": "thornbak",
+   "name": "Thornbak",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/ClanTech/Bio/BioWeapon",
+   "slug": "torid",
+   "name": "Torid",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 4
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Grineer/Melee/GrnDualFireAxe/GrnDualFireAxe",
+   "slug": "twin_basolk",
+   "name": "Twin Basolk",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.3,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Infested/Pistols/InfestedDartPistol/InfestedDartPistol",
+   "slug": "tysis",
+   "name": "Tysis",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 1.45,
+   "mastery_rank": 9
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Archwing/Primary/Railgun/ArchRailgun",
+   "slug": "velocitus",
+   "name": "Velocitus",
+   "group": "archgun",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare",
+   "disposition": 1.1,
+   "mastery_rank": 0
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Archon/Melee/Whip/ArchonWhipPlayerWep",
+   "slug": "verdilac",
+   "name": "Verdilac",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.1,
+   "mastery_rank": 13
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/NWIIIOrokinSword/NWOrokinSword",
+   "slug": "vitrica",
+   "name": "Vitrica",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.1,
+   "mastery_rank": 13
+  },
+  {
+   "game_ref": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetComponents/ThermocorMoaWeapon",
+   "slug": "vulcax",
+   "name": "Vulcax",
+   "group": "sentinel",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.0,
+   "mastery_rank": 14
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Swords/StalkerTwo/StalkerTwoGreatSword",
+   "slug": "war",
+   "name": "War",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.05,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/Hammer/ThrowingHammer",
+   "slug": "wolf_sledge",
+   "name": "Wolf Sledge",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.25,
+   "mastery_rank": 7
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Corpus/Melee/Glaive/CrpGhostCatcherGlaive/CrpGhostCatcherGlaive",
+   "slug": "xoris",
+   "name": "Xoris",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 0.65,
+   "mastery_rank": 4
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Melee/SunDialAxe/SundialAxeWeapon",
+   "slug": "zenistar",
+   "name": "Zenistar",
+   "group": "melee",
+   "riven_type": "melee",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
+   "disposition": 1.15,
+   "mastery_rank": 6
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/LongGuns/RepeatingCrossbow/RepeatingCrossbow",
+   "slug": "zhuge",
+   "name": "Zhuge",
+   "group": "primary",
+   "riven_type": "rifle",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
+   "disposition": 1.2,
+   "mastery_rank": 10
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Tenno/Pistols/ConclaveLeverPistol/ConclaveLeverPistol",
+   "slug": "zylok",
+   "name": "Zylok",
+   "group": "secondary",
+   "riven_type": "pistol",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare",
+   "disposition": 1.25,
+   "mastery_rank": 6
+  }
+ ],
+ "good_rolls": {
+  "acceltra": {
+   "weapon": "acceltra",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "aeolak": {
+   "weapon": "aeolak",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RLS",
+       "tags": [
+        "WeaponReloadSpeedMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: having 2 quality of life stats are good for use but don't sell well(RLS AND FR), if PUNC is enough to not proc it's worse.)"
+  },
+  "ambassador": {
+   "weapon": "ambassador",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "amprex": {
+   "weapon": "amprex",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "basmu": {
+   "weapon": "basmu",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "AMMO",
+     "tags": [
+      "WeaponAmmoMaxMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "baza": {
+   "weapon": "baza",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "boar": {
+   "weapon": "boar",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "HEAT",
+       "tags": [
+        "WeaponFireDamageMod"
+       ]
+      },
+      {
+       "abbr": "PT",
+       "tags": [
+        "WeaponPunctureDepthMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "HEAT",
+       "tags": [
+        "WeaponFireDamageMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "boltor": {
+   "weapon": "boltor",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "braton": {
+   "weapon": "braton",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "buzlok": {
+   "weapon": "buzlok",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "cedo": {
+   "weapon": "cedo",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "SD",
+       "tags": [
+        "WeaponProcTimeMod"
+       ]
+      },
+      {
+       "abbr": "PFS",
+       "tags": [
+        "WeaponProjectileSpeedMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "AMMO",
+     "tags": [
+      "WeaponAmmoMaxMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: REC is high on this, -PUNC hurts damage but collectors still buy it)"
+  },
+  "cernos": {
+   "weapon": "cernos",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "MAG",
+     "tags": [
+      "WeaponClipMaxMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative IMP kills IB build)"
+  },
+  "ferrox": {
+   "weapon": "ferrox",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEMENT",
+       "tags": [
+        "WeaponFreezeDamageMod",
+        "WeaponFireDamageMod",
+        "WeaponToxinDamageMod",
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "hek": {
+   "weapon": "hek",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RLS",
+       "tags": [
+        "WeaponReloadSpeedMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "hema": {
+   "weapon": "hema",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "AMMO",
+     "tags": [
+      "WeaponAmmoMaxMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "ignis": {
+   "weapon": "ignis",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "COLD",
+       "tags": [
+        "WeaponFreezeDamageMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "karak": {
+   "weapon": "karak",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "lenz": {
+   "weapon": "lenz",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "MAG",
+     "tags": [
+      "WeaponClipMaxMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "ogris": {
+   "weapon": "ogris",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MAG",
+       "tags": [
+        "WeaponClipMaxMod"
+       ]
+      },
+      {
+       "abbr": "PFS",
+       "tags": [
+        "WeaponProjectileSpeedMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MAG",
+       "tags": [
+        "WeaponClipMaxMod"
+       ]
+      },
+      {
+       "abbr": "PFS",
+       "tags": [
+        "WeaponProjectileSpeedMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "REC",
+       "tags": [
+        "WeaponRecoilReductionMod"
+       ]
+      },
+      {
+       "abbr": "RLS",
+       "tags": [
+        "WeaponReloadSpeedMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "CC",
+     "tags": [
+      "WeaponCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "SC",
+     "tags": [
+      "WeaponStunChanceMod"
+     ]
+    },
+    {
+     "abbr": "SD",
+     "tags": [
+      "WeaponProcTimeMod"
+     ]
+    },
+    {
+     "abbr": "DTI",
+     "tags": [
+      "WeaponFactionDamageInfested"
+     ]
+    },
+    {
+     "abbr": "DTG",
+     "tags": [
+      "WeaponFactionDamageGrineer"
+     ]
+    },
+    {
+     "abbr": "DTC",
+     "tags": [
+      "WeaponFactionDamageCorpus"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative DTI/DTG/DTC is for profit taker otherwise it is a harmful negative)"
+  },
+  "penta": {
+   "weapon": "penta",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "phage": {
+   "weapon": "phage",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "PT",
+       "tags": [
+        "WeaponPunctureDepthMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "quartakk": {
+   "weapon": "quartakk",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "sobek": {
+   "weapon": "sobek",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DTC",
+       "tags": [
+        "WeaponFactionDamageCorpus"
+       ]
+      },
+      {
+       "abbr": "DTG",
+       "tags": [
+        "WeaponFactionDamageGrineer"
+       ]
+      },
+      {
+       "abbr": "DTI",
+       "tags": [
+        "WeaponFactionDamageInfested"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "soma": {
+   "weapon": "soma",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "stahlta": {
+   "weapon": "stahlta",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "sybaris": {
+   "weapon": "sybaris",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "thornbak": {
+   "weapon": "thornbak",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "torid": {
+   "weapon": "torid",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "MAG",
+     "tags": [
+      "WeaponClipMaxMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: -MAG on negative only good with incarnon evo, has a breakpoint of >=50%)"
+  },
+  "zhuge": {
+   "weapon": "zhuge",
+   "weapon_class": "primary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "akstiletto": {
+   "weapon": "akstiletto",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "PT",
+       "tags": [
+        "WeaponPunctureDepthMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PFS",
+     "tags": [
+      "WeaponProjectileSpeedMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "bronco": {
+   "weapon": "bronco",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "PT",
+       "tags": [
+        "WeaponPunctureDepthMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      },
+      {
+       "abbr": "PT",
+       "tags": [
+        "WeaponPunctureDepthMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: -IMP only for collectors)"
+  },
+  "gammacor": {
+   "weapon": "gammacor",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "grimoire": {
+   "weapon": "grimoire",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "MAG",
+     "tags": [
+      "WeaponClipMaxMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "kompressa": {
+   "weapon": "kompressa",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      },
+      {
+       "abbr": "RLS",
+       "tags": [
+        "WeaponReloadSpeedMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "onos": {
+   "weapon": "onos",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "pandero": {
+   "weapon": "pandero",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "PT",
+       "tags": [
+        "WeaponPunctureDepthMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "PFS",
+     "tags": [
+      "WeaponProjectileSpeedMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "stug": {
+   "weapon": "stug",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      },
+      {
+       "abbr": "ELEMENT",
+       "tags": [
+        "WeaponFreezeDamageMod",
+        "WeaponFireDamageMod",
+        "WeaponToxinDamageMod",
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "tysis": {
+   "weapon": "tysis",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEMENT",
+       "tags": [
+        "WeaponFreezeDamageMod",
+        "WeaponFireDamageMod",
+        "WeaponToxinDamageMod",
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "zylok": {
+   "weapon": "zylok",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "PT",
+       "tags": [
+        "WeaponPunctureDepthMod"
+       ]
+      },
+      {
+       "abbr": "SC",
+       "tags": [
+        "WeaponStunChanceMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "PFS",
+     "tags": [
+      "WeaponProjectileSpeedMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "amanata": {
+   "weapon": "amanata",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "anku": {
+   "weapon": "anku",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "atterax": {
+   "weapon": "atterax",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "balla": {
+   "weapon": "balla",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      },
+      {
+       "abbr": "DTC",
+       "tags": [
+        "WeaponMeleeFactionDamageCorpus"
+       ]
+      },
+      {
+       "abbr": "HEAT",
+       "tags": [
+        "WeaponFireDamageMod"
+       ]
+      },
+      {
+       "abbr": "TOX",
+       "tags": [
+        "WeaponToxinDamageMod"
+       ]
+      },
+      {
+       "abbr": "COLD",
+       "tags": [
+        "WeaponFreezeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: you do not want IMP or PUNC with the profit taker roll\"CD AS DMG/DTC\")"
+  },
+  "corufell": {
+   "weapon": "corufell",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "fang": {
+   "weapon": "fang",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "halikar": {
+   "weapon": "halikar",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: RANGE is not a good stat for use but it can sell)"
+  },
+  "harmony": {
+   "weapon": "harmony",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "SD",
+       "tags": [
+        "WeaponProcTimeMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "kama": {
+   "weapon": "kama",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "karyst": {
+   "weapon": "karyst",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "lesion": {
+   "weapon": "lesion",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "machete": {
+   "weapon": "machete",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "magistar": {
+   "weapon": "magistar",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative EFF is harmful for heavy builds)"
+  },
+  "nepheri": {
+   "weapon": "nepheri",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "nikana": {
+   "weapon": "nikana",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "obex": {
+   "weapon": "obex",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: ELEC for melee influence)"
+  },
+  "okina": {
+   "weapon": "okina",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "SLASH",
+     "tags": [
+      "WeaponSlashDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: ELEC and negative SLASH for melee influence)"
+  },
+  "paracesis": {
+   "weapon": "paracesis",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "pennant": {
+   "weapon": "pennant",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "praedos": {
+   "weapon": "praedos",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "pulmonars": {
+   "weapon": "pulmonars",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "ripkas": {
+   "weapon": "ripkas",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "rumblejack": {
+   "weapon": "rumblejack",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "SLASH",
+     "tags": [
+      "WeaponSlashDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "skana": {
+   "weapon": "skana",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "spinnerex": {
+   "weapon": "spinnerex",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "tekko": {
+   "weapon": "tekko",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "verdilac": {
+   "weapon": "verdilac",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "vitrica": {
+   "weapon": "vitrica",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "war": {
+   "weapon": "war",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "xoris": {
+   "weapon": "xoris",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    },
+    {
+     "mandatory": [],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 3
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: RANGE is not a good stat for use but it can sell)"
+  },
+  "zenistar": {
+   "weapon": "zenistar",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
+     ]
+    },
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "cyngas": {
+   "weapon": "cyngas",
+   "weapon_class": "archgun",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5)"
+  },
+  "fluctus": {
+   "weapon": "fluctus",
+   "weapon_class": "archgun",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: COLD/ELEC/DTC are for profit taker)"
+  },
+  "imperator": {
+   "weapon": "imperator",
+   "weapon_class": "archgun",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "DTC",
+       "tags": [
+        "WeaponFactionDamageCorpus"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "COLD",
+       "tags": [
+        "WeaponFreezeDamageMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: negative PUNC hurts some if you can reliablly proc it because each stack of PUNC gives 5%CC each with max stack of 5, COLD/ELEC/DTC are for profit taker)"
+  },
+  "morgha": {
+   "weapon": "morgha",
+   "weapon_class": "archgun",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "velocitus": {
+   "weapon": "velocitus",
+   "weapon_class": "archgun",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "COLD",
+       "tags": [
+        "WeaponFreezeDamageMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      },
+      {
+       "abbr": "DTC",
+       "tags": [
+        "WeaponFactionDamageCorpus"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    }
+   ],
+   "note": "(NOTE: COLD/ELEC/DTC are for profit taker)"
+  }
+ }
+}

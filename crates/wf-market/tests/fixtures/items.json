@@ -1,0 +1,426 @@
+{
+  "apiVersion": "0.25.0",
+  "data": [
+    {
+      "id": "54aae292e7798909064f1575",
+      "slug": "secura_dual_cestra",
+      "gameRef": "/Lotus/Weapons/Syndicates/PerrinSequence/Pistols/PSDualCestra",
+      "tags": [
+        "syndicate",
+        "weapon",
+        "secondary"
+      ],
+      "i18n": {
+        "en": {
+          "name": "Secura Dual Cestra",
+          "icon": "items/images/en/secura_dual_cestra.3d47a4ec6675ff774bb0da9b16c53e0e.png",
+          "thumb": "items/images/en/thumbs/secura_dual_cestra.3d47a4ec6675ff774bb0da9b16c53e0e.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "54ca39abe7798915c1c11e10",
+      "slug": "creeping_bullseye",
+      "gameRef": "/Lotus/Upgrades/Mods/Pistol/DualStat/CorruptedCritChanceFireRatePistol",
+      "tags": [
+        "mod",
+        "rare",
+        "pistol",
+        "secondary"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Creeping Bullseye",
+          "icon": "items/images/en/creeping_bullseye.dfcb8d21b36d9e2a2632f37c75b3532f.png",
+          "thumb": "items/images/en/thumbs/creeping_bullseye.dfcb8d21b36d9e2a2632f37c75b3532f.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "54d4c727e77989281cc7d753",
+      "slug": "mutalist_alad_v_assassinate_key",
+      "gameRef": "/Lotus/Types/Keys/InfestedAladVQuest/AssassinateInfestedAladVKey",
+      "tags": [
+        "key"
+      ],
+      "i18n": {
+        "en": {
+          "name": "Mutalist Alad V Assassinate (Key)",
+          "icon": "items/images/en/mutalist_alad_v_assassinate_key.7540fb6d7ef2b2843352e32c9ff64e73.png",
+          "thumb": "items/images/en/thumbs/mutalist_alad_v_assassinate_key.7540fb6d7ef2b2843352e32c9ff64e73.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "54e0c9eee7798903744178b0",
+      "slug": "irradiating_disarm",
+      "gameRef": "/Lotus/Powersuits/Loki/DisarmAugmentCard",
+      "tags": [
+        "mod",
+        "warframe",
+        "augment",
+        "loki",
+        "rare"
+      ],
+      "maxRank": 3,
+      "i18n": {
+        "en": {
+          "name": "Irradiating Disarm",
+          "icon": "items/images/en/irradiating_disarm.cffd5ed77e1365babfd3e9559b96ebc6.png",
+          "thumb": "items/images/en/thumbs/irradiating_disarm.cffd5ed77e1365babfd3e9559b96ebc6.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "54e644ffe779897594fa68cf",
+      "slug": "antimatter_absorb",
+      "gameRef": "/Lotus/Powersuits/AntiMatter/AntiMatterDropAugmentCard",
+      "tags": [
+        "mod",
+        "warframe",
+        "nova",
+        "augment",
+        "rare"
+      ],
+      "maxRank": 3,
+      "i18n": {
+        "en": {
+          "name": "Antimatter Absorb",
+          "icon": "items/images/en/antimatter_absorb.1402d671df9b6f5ae2504d6abec4d4fd.png",
+          "thumb": "items/images/en/thumbs/antimatter_absorb.1402d671df9b6f5ae2504d6abec4d4fd.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "551085aee77989729e1416d0",
+      "slug": "arcane_barrier",
+      "gameRef": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/InstantShieldOnDamage",
+      "tags": [
+        "legendary",
+        "arcane_enhancement"
+      ],
+      "bulkTradable": true,
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Arcane Barrier",
+          "icon": "items/images/en/arcane_barrier.c4b3b25fcc9c874a4bfc0f8998b9f5bd.png",
+          "thumb": "items/images/en/thumbs/arcane_barrier.c4b3b25fcc9c874a4bfc0f8998b9f5bd.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "551085c9e7798972b4a2b206",
+      "slug": "arcane_ice",
+      "gameRef": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/FireProcResist",
+      "tags": [
+        "common",
+        "arcane_enhancement"
+      ],
+      "bulkTradable": true,
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Arcane Ice",
+          "icon": "items/images/en/arcane_ice.d3cb62ba9923dcf396c854fb857e5718.png",
+          "thumb": "items/images/en/thumbs/arcane_ice.d3cb62ba9923dcf396c854fb857e5718.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "55e797d2e7798924849dd9f0",
+      "slug": "telos_boltor",
+      "gameRef": "/Lotus/Weapons/Syndicates/ArbitersOfHexis/LongGuns/AHBoltor",
+      "tags": [
+        "syndicate",
+        "primary",
+        "weapon"
+      ],
+      "i18n": {
+        "en": {
+          "name": "Telos Boltor",
+          "icon": "items/images/en/telos_boltor.9a109e6b666017c81b2402e7031243b5.png",
+          "thumb": "items/images/en/thumbs/telos_boltor.9a109e6b666017c81b2402e7031243b5.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "56783f24cbfa8f0432dd899c",
+      "slug": "frost_prime_set",
+      "gameRef": "/Lotus/Powersuits/Frost/FrostPrime",
+      "tags": [
+        "set",
+        "prime",
+        "warframe"
+      ],
+      "ducats": 175,
+      "i18n": {
+        "en": {
+          "name": "Frost Prime Set",
+          "icon": "items/images/en/frost_prime_set.4f8ff8605be1afaab9a0e5cc3c67cb21.png",
+          "thumb": "items/images/en/thumbs/frost_prime_set.4f8ff8605be1afaab9a0e5cc3c67cb21.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "56a7b2a51133f656cb085d93",
+      "slug": "catalyzer_link",
+      "gameRef": "/Lotus/Upgrades/Mods/Rifle/Event/StatusProcWhileAimingRifleMod",
+      "tags": [
+        "common",
+        "mod",
+        "rifle",
+        "primary"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Catalyzer Link",
+          "icon": "items/images/en/catalyzer_link.8ffa520e67c52e10b51ccc1cec6b7f88.png",
+          "thumb": "items/images/en/thumbs/catalyzer_link.8ffa520e67c52e10b51ccc1cec6b7f88.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "56a7b2bb1133f656cb085d98",
+      "slug": "targeting_subsystem",
+      "gameRef": "/Lotus/Upgrades/Mods/Pistol/Event/AccuracyWhileAimingPistolMod",
+      "tags": [
+        "mod",
+        "uncommon",
+        "secondary",
+        "pistol"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Targeting Subsystem",
+          "icon": "items/images/en/targeting_subsystem.bab012feb316116d1c4c66888e73a6e8.png",
+          "thumb": "items/images/en/thumbs/targeting_subsystem.bab012feb316116d1c4c66888e73a6e8.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "56aba2f78d6d183da42403c0",
+      "slug": "strun_wraith_receiver",
+      "gameRef": "/Lotus/Types/Recipes/Weapons/WeaponParts/StrunWraithReceiver",
+      "tags": [
+        "component",
+        "weapon"
+      ],
+      "i18n": {
+        "en": {
+          "name": "Strun Wraith Receiver",
+          "icon": "items/images/en/strun_wraith_receiver.0ef693321b08beb361c5a654663ecf32.png",
+          "thumb": "items/images/en/thumbs/strun_wraith_receiver.0ef693321b08beb361c5a654663ecf32.128x128.png",
+          "subIcon": "sub_icons/weapon/generic_receiver_128x128.png"
+        }
+      }
+    },
+    {
+      "id": "56b656d1ef0390c7e4006381",
+      "slug": "tectonic_fracture",
+      "gameRef": "/Lotus/Powersuits/Brawler/BrawlerBarrierAugmentCard",
+      "tags": [
+        "atlas",
+        "mod",
+        "warframe",
+        "augment",
+        "rare"
+      ],
+      "maxRank": 3,
+      "i18n": {
+        "en": {
+          "name": "Tectonic Fracture",
+          "icon": "items/images/en/tectonic_fracture.7c38025ee84d0e86175625030dd0a712.png",
+          "thumb": "items/images/en/thumbs/tectonic_fracture.7c38025ee84d0e86175625030dd0a712.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "57222f1c92cc365777a61c0f",
+      "slug": "mantis_set",
+      "gameRef": "/Lotus/Types/Items/Ships/InsectShip",
+      "tags": [
+        "set"
+      ],
+      "i18n": {
+        "en": {
+          "name": "Mantis Set",
+          "icon": "items/images/en/mantis_set.d4716b0defc2695308eb9b5a4b18d935.png",
+          "thumb": "items/images/en/thumbs/mantis_set.d4716b0defc2695308eb9b5a4b18d935.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5729bd02cb59ed5a9b484e8c",
+      "slug": "acid_shells",
+      "gameRef": "/Lotus/Upgrades/Mods/Shotgun/Event/ProjectNightwatch/SobekNightwatchMod",
+      "tags": [
+        "mod",
+        "uncommon",
+        "primary",
+        "sobek"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Acid Shells",
+          "icon": "items/images/en/acid_shells.b43df89f2ae8597841c0087d02df2314.png",
+          "thumb": "items/images/en/thumbs/acid_shells.b43df89f2ae8597841c0087d02df2314.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5729bd0acb59ed5a9b484e8e",
+      "slug": "nightwatch_napalm",
+      "gameRef": "/Lotus/Upgrades/Mods/Rifle/Event/ProjectNightwatch/OgrisNightwatchMod",
+      "tags": [
+        "mod",
+        "uncommon",
+        "primary",
+        "ogris"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Nightwatch Napalm",
+          "icon": "items/images/en/nightwatch_napalm.b05aadc47dbdbf18a8e8adb0a7dd564e.png",
+          "thumb": "items/images/en/thumbs/nightwatch_napalm.b05aadc47dbdbf18a8e8adb0a7dd564e.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5783909ad9b6753790c89e82",
+      "slug": "quasar_drill",
+      "gameRef": "/Lotus/Upgrades/Mods/Archwing/Rifle/ArchwingDualStatPunctureStatusMod",
+      "tags": [
+        "rare",
+        "primary",
+        "mod",
+        "archwing",
+        "archgun"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Quasar Drill",
+          "icon": "items/images/en/quasar_drill.b72db23f1035e11a63dceb0c92f5acbe.png",
+          "thumb": "items/images/en/thumbs/quasar_drill.b72db23f1035e11a63dceb0c92f5acbe.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5783909ed9b6753790c89e83",
+      "slug": "comet_blast",
+      "gameRef": "/Lotus/Upgrades/Mods/Archwing/Rifle/ArchwingDualStatImpactStatusMod",
+      "tags": [
+        "rare",
+        "primary",
+        "mod",
+        "archwing",
+        "archgun"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Comet Blast",
+          "icon": "items/images/en/comet_blast.887ff3540f0524b94f2066e6ed3ac7a9.png",
+          "thumb": "items/images/en/thumbs/comet_blast.887ff3540f0524b94f2066e6ed3ac7a9.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "578390a2d9b6753790c89e84",
+      "slug": "nebula_bore",
+      "gameRef": "/Lotus/Upgrades/Mods/Archwing/Melee/ArchwingDualStatPunctureStatusMeleeMod",
+      "tags": [
+        "rare",
+        "melee",
+        "mod",
+        "archwing",
+        "archmelee"
+      ],
+      "maxRank": 5,
+      "i18n": {
+        "en": {
+          "name": "Nebula Bore",
+          "icon": "items/images/en/nebula_bore.fd708a4b4dcd2f8a9c8fc0b16a351a7d.png",
+          "thumb": "items/images/en/thumbs/nebula_bore.fd708a4b4dcd2f8a9c8fc0b16a351a7d.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5783bee2d9b6753790c89e87",
+      "slug": "kaszas_blade",
+      "gameRef": "/Lotus/Types/Recipes/Weapons/WeaponParts/ArchScytheBlade",
+      "tags": [
+        "component",
+        "weapon",
+        "archwing"
+      ],
+      "i18n": {
+        "en": {
+          "name": "Kaszas Blade",
+          "icon": "items/images/en/kaszas_blade.11baea8229af2d3500c79b829f9dfcee.png",
+          "thumb": "items/images/en/thumbs/kaszas_blade.11baea8229af2d3500c79b829f9dfcee.128x128.png",
+          "subIcon": "sub_icons/weapon/generic_blade_128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5a2feeb1c2c9e90cbdaa23ba",
+      "slug": "meso_c1_relic",
+      "gameRef": "/Lotus/Types/Game/MissionDecks/VoidMissionDecks/MesoC1VoidProjection",
+      "tags": [
+        "relic",
+        "meso"
+      ],
+      "subtypes": ["intact", "exceptional", "flawless", "radiant"],
+      "i18n": {
+        "en": {
+          "name": "Meso C1 Relic",
+          "icon": "items/images/en/meso_c1_relic.9a2f0e0c9e4c8e0a9b7a5b6b7c8d9e0f.png",
+          "thumb": "items/images/en/thumbs/meso_c1_relic.9a2f0e0c9e4c8e0a9b7a5b6b7c8d9e0f.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5a2feeb1c2c9e90cbdaa23bb",
+      "slug": "cuthol",
+      "gameRef": "/Lotus/Types/Items/Fish/CutholFish",
+      "tags": [
+        "fish",
+        "resource"
+      ],
+      "subtypes": ["small", "medium", "large"],
+      "i18n": {
+        "en": {
+          "name": "Cuthol",
+          "icon": "items/images/en/cuthol.6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e.png",
+          "thumb": "items/images/en/thumbs/cuthol.6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e.128x128.png"
+        }
+      }
+    },
+    {
+      "id": "5a2feeb1c2c9e90cbdaa23bc",
+      "slug": "ayatan_orta_sculpture",
+      "gameRef": "/Lotus/Types/Items/Emblems/AyatanTreasures/OrtaTreasure",
+      "tags": [
+        "sculpture",
+        "resource"
+      ],
+      "maxAmberStars": 2,
+      "maxCyanStars": 1,
+      "i18n": {
+        "en": {
+          "name": "Ayatan Orta Sculpture",
+          "icon": "items/images/en/ayatan_orta_sculpture.7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f.png",
+          "thumb": "items/images/en/thumbs/ayatan_orta_sculpture.7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f.128x128.png"
+        }
+      }
+    }
+  ],
+  "error": null
+}

@@ -1,0 +1,850 @@
+[
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+  "name": "Alloy Plate",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "AlloyPlate.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/ArgonCrystal",
+  "name": "Argon Crystal",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "ArgonCrystal.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Powersuits/Banshee/BansheePrime",
+  "name": "Banshee Prime",
+  "category": "Warframes",
+  "type": "Warframe",
+  "tradable": false,
+  "masteryReq": 0,
+  "productCategory": "Suits",
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": true,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeChassisComponent",
+    "name": "Chassis",
+    "itemCount": 1,
+    "tradable": true,
+    "imageName": "GenericWarframePrimeChassis.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeHelmetComponent",
+    "name": "Neuroptics",
+    "itemCount": 1,
+    "tradable": true,
+    "imageName": "GenericWarframePrimeHelmet.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+    "name": "Orokin Cell",
+    "itemCount": 5,
+    "tradable": false,
+    "imageName": "ComponentCell.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeSystemsComponent",
+    "name": "Systems",
+    "itemCount": 1,
+    "tradable": true,
+    "imageName": "GenericWarframePrimeSystem.png"
+   }
+  ],
+  "imageName": "BansheePrime.png",
+  "masterable": true,
+  "vaulted": true,
+  "buildQuantity": 1,
+  "buildPrice": 25000,
+  "buildTime": 259200
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Shotgun/FullAutoShotgun",
+  "name": "Boar",
+  "category": "Primary",
+  "type": "Shotgun",
+  "tradable": false,
+  "masteryReq": 2,
+  "productCategory": "LongGuns",
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+    "name": "Alloy Plate",
+    "itemCount": 900,
+    "tradable": false,
+    "imageName": "AlloyPlate.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/StrunShotgunBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Morphic",
+    "name": "Morphics",
+    "itemCount": 6,
+    "tradable": false,
+    "imageName": "ComponentMorphic.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Plastids",
+    "name": "Plastids",
+    "itemCount": 900,
+    "tradable": false,
+    "imageName": "ComponentPlastids.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 750,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "Boar.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 43200,
+  "omegaAttenuation": 1.45,
+  "tags": [
+   "Tenno"
+  ],
+  "attacks": [
+   {
+    "name": "Normal Attack"
+   },
+   {
+    "name": "Incarnon Form"
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Eidolonium",
+  "name": "Breath Of The Eidolon",
+  "category": "Misc",
+  "type": "Misc",
+  "tradable": false,
+  "imageName": "Eidolonium.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Circuits",
+  "name": "Circuits",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "ComponentCircuits.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/ControlModule",
+  "name": "Control Module",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+    "name": "Alloy Plate",
+    "itemCount": 10000,
+    "tradable": false,
+    "imageName": "AlloyPlate.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Components/ControlModuleResourceBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Ferrite",
+    "name": "Ferrite",
+    "itemCount": 10000,
+    "tradable": false,
+    "imageName": "ComponentFerrite.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Nanospores",
+    "name": "Nano Spores",
+    "itemCount": 25000,
+    "tradable": false,
+    "imageName": "ComponentNanospores.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 10000,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "ControlModule.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 3600
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Research/ChemFragment",
+  "name": "Detonite Ampule",
+  "category": "Resources",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "GrineerFragment.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Research/ChemComponent",
+  "name": "Detonite Injector",
+  "category": "Resources",
+  "type": "Resource",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/Research/ChemComponentBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/ControlModule",
+    "name": "Control Module",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "ControlModule.png",
+    "buildPrice": 15000,
+    "buildTime": 3600
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/Research/ChemFragment",
+    "name": "Detonite Ampule",
+    "itemCount": 10,
+    "tradable": false,
+    "imageName": "GrineerFragment.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Plastids",
+    "name": "Plastids",
+    "itemCount": 250,
+    "tradable": false,
+    "imageName": "ComponentPlastids.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 500,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "GrineerComponent.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 43200
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/DualKamas/DualKamas",
+  "name": "Dual Kamas",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 1,
+  "productCategory": "Melee",
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/DualKamasBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama",
+    "name": "Kama",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "Kama.png",
+    "buildPrice": 20000,
+    "buildTime": 43200
+   },
+   {
+    "uniqueName": "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama",
+    "name": "Kama",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "Kama.png",
+    "buildPrice": 20000,
+    "buildTime": 43200
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+    "name": "Orokin Cell",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "ComponentCell.png"
+   }
+  ],
+  "imageName": "DualKamas.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.35,
+  "buildPrice": 20000,
+  "buildTime": 43200
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Focus/PowerLensOstron",
+  "name": "Eidolon Zenurik Lens",
+  "category": "Misc",
+  "type": "Focus Lens",
+  "tradable": true,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Lens/PowerLensOstronBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Eidolonium",
+    "name": "Breath Of The Eidolon",
+    "itemCount": 5,
+    "tradable": false,
+    "imageName": "Eidolonium.png"
+   },
+   {
+    "uniqueName": "/Lotus/Upgrades/Focus/PowerLensGreater",
+    "name": "Greater Zenurik Lens",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "FocusLens2Rank.png",
+    "buildPrice": 25000,
+    "buildTime": 86400
+   }
+  ],
+  "imageName": "FocusLens3Rank.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 25000,
+  "buildTime": 86400
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Ferrite",
+  "name": "Ferrite",
+  "category": "Misc",
+  "type": "Misc",
+  "tradable": false,
+  "imageName": "ComponentFerrite.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Forma",
+  "name": "Forma",
+  "category": "Misc",
+  "type": "Equipment Adapter",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Components/FormaBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Morphic",
+    "name": "Morphics",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "ComponentMorphic.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/NeuralSensor",
+    "name": "Neural Sensors",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "NeuralSensor.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
+    "name": "Neurodes",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "ComponentNeurode.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+    "name": "Orokin Cell",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "ComponentCell.png"
+   }
+  ],
+  "imageName": "GenericComponent.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 35000,
+  "buildTime": 82800
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Focus/PowerLensGreater",
+  "name": "Greater Zenurik Lens",
+  "category": "Misc",
+  "type": "Focus Lens",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/ArgonCrystal",
+    "name": "Argon Crystal",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "ArgonCrystal.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Lens/PowerLensGreaterBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Forma",
+    "name": "Forma",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "GenericComponent.png",
+    "buildPrice": 35000,
+    "buildTime": 82800
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+    "name": "Orokin Cell",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "ComponentCell.png",
+    "buildPrice": 15000,
+    "buildTime": 3600
+   },
+   {
+    "uniqueName": "/Lotus/Upgrades/Focus/PowerLens",
+    "name": "Zenurik Lens",
+    "itemCount": 4,
+    "tradable": false,
+    "imageName": "FocusLens1Rank.png"
+   }
+  ],
+  "imageName": "FocusLens2Rank.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 25000,
+  "buildTime": 86400
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama",
+  "name": "Kama",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 1,
+  "productCategory": "Melee",
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/SingleKamaBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Circuits",
+    "name": "Circuits",
+    "itemCount": 900,
+    "tradable": false,
+    "imageName": "ComponentCircuits.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Ferrite",
+    "name": "Ferrite",
+    "itemCount": 1200,
+    "tradable": false,
+    "imageName": "ComponentFerrite.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/NeuralSensor",
+    "name": "Neural Sensors",
+    "itemCount": 5,
+    "tradable": false,
+    "imageName": "NeuralSensor.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/PolymerBundle",
+    "name": "Polymer Bundle",
+    "itemCount": 1200,
+    "tradable": false,
+    "imageName": "PolymerBundle.png"
+   }
+  ],
+  "imageName": "Kama.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "omegaAttenuation": 1.47,
+  "buildPrice": 20000,
+  "buildTime": 43200
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Focus/PowerLensLua",
+  "name": "Lua Zenurik Lens",
+  "category": "Misc",
+  "type": "Focus Lens",
+  "tradable": true,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Lens/PowerLensLuaBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Upgrades/Focus/PowerLensOstron",
+    "name": "Eidolon Zenurik Lens",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "FocusLens3Rank.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/MemoryCryptoFragment",
+    "name": "Somatic Fibers",
+    "itemCount": 5,
+    "tradable": false,
+    "imageName": "MemoryCryptoFragment.png"
+   }
+  ],
+  "imageName": "FocusLens4Rank.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 25000,
+  "buildTime": 86400
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Morphic",
+  "name": "Morphics",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Components/MorphicsResourceBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Ferrite",
+    "name": "Ferrite",
+    "itemCount": 10000,
+    "tradable": false,
+    "imageName": "ComponentFerrite.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Nanospores",
+    "name": "Nano Spores",
+    "itemCount": 25000,
+    "tradable": false,
+    "imageName": "ComponentNanospores.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/PolymerBundle",
+    "name": "Polymer Bundle",
+    "itemCount": 5000,
+    "tradable": false,
+    "imageName": "PolymerBundle.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 10000,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "ComponentMorphic.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 3600
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Nanospores",
+  "name": "Nano Spores",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "ComponentNanospores.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/NeuralSensor",
+  "name": "Neural Sensors",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+    "name": "Alloy Plate",
+    "itemCount": 50000,
+    "tradable": false,
+    "imageName": "AlloyPlate.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Components/NeuralSensorResourceBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Nanospores",
+    "name": "Nano Spores",
+    "itemCount": 50000,
+    "tradable": false,
+    "imageName": "ComponentNanospores.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 25000,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "NeuralSensor.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 3600
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
+  "name": "Neurodes",
+  "category": "Misc",
+  "type": "Misc",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+    "name": "Alloy Plate",
+    "itemCount": 50000,
+    "tradable": false,
+    "imageName": "AlloyPlate.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Components/NeurodeResourceBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Nanospores",
+    "name": "Nano Spores",
+    "itemCount": 50000,
+    "tradable": false,
+    "imageName": "ComponentNanospores.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 25000,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "ComponentNeurode.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 3600
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+  "name": "Orokin Cell",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+    "name": "Alloy Plate",
+    "itemCount": 50000,
+    "tradable": false,
+    "imageName": "AlloyPlate.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Components/OrokinCellResourceBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Nanospores",
+    "name": "Nano Spores",
+    "itemCount": 50000,
+    "tradable": false,
+    "imageName": "ComponentNanospores.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 25000,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "ComponentCell.png",
+  "masterable": false,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 3600
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Plastids",
+  "name": "Plastids",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "ComponentPlastids.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/PolymerBundle",
+  "name": "Polymer Bundle",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "PolymerBundle.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+  "name": "Salvage",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "ComponentSalvage.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/LongSword/LongSword",
+  "name": "Skana",
+  "category": "Melee",
+  "type": "Melee",
+  "tradable": false,
+  "masteryReq": 0,
+  "productCategory": "Melee",
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+    "name": "Alloy Plate",
+    "itemCount": 1100,
+    "tradable": false,
+    "imageName": "AlloyPlate.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/SkanaSwordBlueprint",
+    "name": "Blueprint",
+    "itemCount": 1,
+    "tradable": false,
+    "imageName": "blueprint.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Morphic",
+    "name": "Morphics",
+    "itemCount": 3,
+    "tradable": false,
+    "imageName": "ComponentMorphic.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Plastids",
+    "name": "Plastids",
+    "itemCount": 500,
+    "tradable": false,
+    "imageName": "ComponentPlastids.png"
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "itemCount": 750,
+    "tradable": false,
+    "imageName": "ComponentSalvage.png"
+   }
+  ],
+  "imageName": "Skana.png",
+  "masterable": true,
+  "buildQuantity": 1,
+  "buildPrice": 15000,
+  "buildTime": 43200,
+  "omegaAttenuation": 1.3,
+  "tags": [
+   "Tenno"
+  ],
+  "attacks": [
+   {
+    "name": "Normal Attack"
+   },
+   {
+    "name": "Slam Attack"
+   },
+   {
+    "name": "Heavy Slam Attack"
+   }
+  ]
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/IncarnonAdapters/Melee/SkanaIncarnonUnlocker",
+  "name": "Skana Incarnon Genesis",
+  "category": "Misc",
+  "type": "Equipment Adapter",
+  "tradable": false,
+  "imageName": "SkanaIncarnonAdapter.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/MemoryCryptoFragment",
+  "name": "Somatic Fibers",
+  "category": "Misc",
+  "type": "Resource",
+  "tradable": false,
+  "imageName": "MemoryCryptoFragment.png",
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Focus/PowerLens",
+  "name": "Zenurik Lens",
+  "category": "Misc",
+  "type": "Focus Lens",
+  "tradable": true,
+  "imageName": "FocusLens1Rank.png",
+  "masterable": false
+ }
+]

@@ -1,0 +1,96 @@
+{
+  "updated_at": 1757410800,
+  "count": 10,
+  "items": {
+    "braton_prime_set": {
+      "sell_r0": 45,
+      "sell_max": null,
+      "buy_r0": 30,
+      "buy_max": null,
+      "sell_volume": 118,
+      "buy_volume": 64,
+      "updated_at": 1757410800
+    },
+    "braton_prime_barrel": {
+      "sell_r0": 8,
+      "sell_max": null,
+      "buy_r0": 4,
+      "buy_max": null,
+      "sell_volume": 41,
+      "buy_volume": 9,
+      "updated_at": 1757410800
+    },
+    "trinity_prime_systems_blueprint": {
+      "sell_r0": 14,
+      "sell_max": null,
+      "buy_r0": 7,
+      "buy_max": null,
+      "sell_volume": 22,
+      "buy_volume": 5,
+      "updated_at": 1757410740
+    },
+    "axi_a21_relic": {
+      "sell_r0": 5,
+      "sell_max": null,
+      "buy_r0": 2,
+      "buy_max": null,
+      "sell_volume": 76,
+      "buy_volume": 31,
+      "updated_at": 1757410800
+    },
+    "primed_continuity": {
+      "sell_r0": 12,
+      "sell_max": 165,
+      "buy_r0": 6,
+      "buy_max": 120,
+      "sell_volume": 54,
+      "buy_volume": 27,
+      "updated_at": 1757410800
+    },
+    "arcane_energize": {
+      "sell_r0": 55,
+      "sell_max": 940,
+      "buy_r0": 40,
+      "buy_max": 800,
+      "sell_volume": 61,
+      "buy_volume": 44,
+      "updated_at": 1757410800
+    },
+    "magus_elevate": {
+      "sell_r0": 25,
+      "sell_max": 70,
+      "buy_r0": 15,
+      "buy_max": 55,
+      "sell_volume": 33,
+      "buy_volume": 18,
+      "updated_at": 1757410620
+    },
+    "vasca_kavat_imprint": {
+      "sell_r0": null,
+      "sell_max": null,
+      "buy_r0": null,
+      "buy_max": null,
+      "sell_volume": 0,
+      "buy_volume": 0,
+      "updated_at": 1757410800
+    },
+    "primed_flow": {
+      "sell_r0": 20,
+      "sell_max": 210,
+      "buy_r0": 12,
+      "buy_max": 160,
+      "volume_48h": 246,
+      "median_48h": 205.5,
+      "updated_at": 1757410800
+    },
+    "mirage_prime_set": {
+      "sell_r0": 130,
+      "sell_max": null,
+      "buy_r0": 95,
+      "buy_max": null,
+      "volume_48h": 87,
+      "median_48h": 138.0,
+      "updated_at": 1757410800
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "items": [
+    {
+      "unique_name": "/Lotus/Weapons/Corpus/LongGuns/AcceltraTestFixture",
+      "name": "Acceltra",
+      "kind": "weapon",
+      "type_name": "Rifle",
+      "image_name": "Acceltra.png",
+      "prime": null,
+      "mastered": true,
+      "progress": { "owned": false, "pending": false, "ready_to_build": true },
+      "crafts_into": [],
+      "mastery": { "required": 8, "met": true },
+      "incarnon": false,
+      "helminth": null,
+      "archon_shards": 0,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Types/Items/MiscItems/HexenonTestFixture",
+          "name": "Hexenon",
+          "image_name": "Hexenon.png",
+          "owned": 10,
+          "required": 5,
+          "enough": true,
+          "favourite": false
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Powersuits/NovaPrimeTestFixture",
+      "name": "Nova Prime",
+      "kind": "warframe",
+      "type_name": "Warframe",
+      "image_name": "NovaPrime.png",
+      "prime": { "vault": "vaulted", "resurgence": false },
+      "mastered": true,
+      "progress": { "owned": true, "pending": false, "ready_to_build": false },
+      "crafts_into": [],
+      "mastery": { "required": 0, "met": true },
+      "incarnon": false,
+      "helminth": null,
+      "archon_shards": 0,
+      "favourite": false,
+      "components": []
+    }
+  ]
+}

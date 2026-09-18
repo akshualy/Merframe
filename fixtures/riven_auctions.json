@@ -1,0 +1,1272 @@
+{
+ "slug": "torid",
+ "updated_at": 1789240000,
+ "truncated": false,
+ "auctions": [
+  {
+   "id": "1936123ea9999d41be532edf",
+   "buyout_price": 330,
+   "starting_price": 330,
+   "is_direct_sell": true,
+   "name": "argi-critatron",
+   "polarity": "madurai",
+   "mod_rank": 0,
+   "re_rolls": 35,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "damage_vs_grineer",
+     "value": 1.05,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": 16.1,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_corpus",
+     "value": 1.05,
+     "positive": true
+    }
+   ],
+   "owner_name": "OrokinTrader68528",
+   "owner_status": "offline",
+   "updated": "2026-09-12T18:35:22.000+00:00"
+  },
+  {
+   "id": "a9d1fe10c65f8cd38043d8d2",
+   "buyout_price": 340,
+   "starting_price": 340,
+   "is_direct_sell": true,
+   "name": "hera-mantinok",
+   "polarity": "naramon",
+   "mod_rank": 0,
+   "re_rolls": 68,
+   "mastery_level": 16,
+   "attributes": [
+    {
+     "url_name": "punch_through",
+     "value": 0.3,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_corpus",
+     "value": 1.05,
+     "positive": true
+    },
+    {
+     "url_name": "zoom",
+     "value": 6.6,
+     "positive": true
+    }
+   ],
+   "owner_name": "tenno_vault",
+   "owner_status": "offline",
+   "updated": "2026-09-12T00:53:59.000+00:00"
+  },
+  {
+   "id": "67e2bb8d6842248cb3fcb46a",
+   "buyout_price": 345,
+   "starting_price": 345,
+   "is_direct_sell": true,
+   "name": "armanok",
+   "polarity": "naramon",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 10,
+   "attributes": [
+    {
+     "url_name": "punch_through",
+     "value": 0.4,
+     "positive": true
+    },
+    {
+     "url_name": "magazine_capacity",
+     "value": 0.76,
+     "positive": true
+    }
+   ],
+   "owner_name": "tenno_trader",
+   "owner_status": "offline",
+   "updated": "2026-09-12T11:13:14.000+00:00"
+  },
+  {
+   "id": "516a0df3c0651e4e36d8f4b6",
+   "buyout_price": 348,
+   "starting_price": 348,
+   "is_direct_sell": true,
+   "name": "gelitis",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 22,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "cold_damage",
+     "value": 13.9,
+     "positive": true
+    },
+    {
+     "url_name": "critical_damage",
+     "value": 17.9,
+     "positive": true
+    }
+   ],
+   "owner_name": "CETUSTRADER70",
+   "owner_status": "offline",
+   "updated": "2026-09-07T19:46:11.000+00:00"
+  },
+  {
+   "id": "e3eb2402752d60ade23ecd8c",
+   "buyout_price": 350,
+   "starting_price": 350,
+   "is_direct_sell": true,
+   "name": "decimag",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 10,
+   "attributes": [
+    {
+     "url_name": "status_duration",
+     "value": 149.4,
+     "positive": true
+    },
+    {
+     "url_name": "recoil",
+     "value": -131.2,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_grineer",
+     "value": 0.7,
+     "positive": false
+    }
+   ],
+   "owner_name": "OROKINVAULT82",
+   "owner_status": "offline",
+   "updated": "2026-09-11T14:17:08.000+00:00"
+  },
+  {
+   "id": "7f541b2118f90bdc512a152b",
+   "buyout_price": 350,
+   "starting_price": 350,
+   "is_direct_sell": true,
+   "name": "conci-decitis",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 16,
+   "attributes": [
+    {
+     "url_name": "critical_damage",
+     "value": 15.1,
+     "positive": true
+    },
+    {
+     "url_name": "projectile_speed",
+     "value": 12.8,
+     "positive": true
+    },
+    {
+     "url_name": "status_duration",
+     "value": 13.5,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": -17.4,
+     "positive": false
+    }
+   ],
+   "owner_name": "tennomesa4510",
+   "owner_status": "offline",
+   "updated": "2026-09-10T23:03:33.000+00:00"
+  },
+  {
+   "id": "ca9e4c8e8a4c77739deea04c",
+   "buyout_price": 350,
+   "starting_price": 350,
+   "is_direct_sell": true,
+   "name": "satiada",
+   "polarity": "madurai",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 9,
+   "attributes": [
+    {
+     "url_name": "multishot",
+     "value": 17.0,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_infested",
+     "value": 1.07,
+     "positive": true
+    },
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": -4.4,
+     "positive": false
+    }
+   ],
+   "owner_name": "OstronForge42910",
+   "owner_status": "offline",
+   "updated": "2026-09-09T22:12:14.000+00:00"
+  },
+  {
+   "id": "1ff479d268c6da70521c8d0b",
+   "buyout_price": 350,
+   "starting_price": 350,
+   "is_direct_sell": true,
+   "name": "croni-puratron",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 16,
+   "attributes": [
+    {
+     "url_name": "damage_vs_corpus",
+     "value": 1.06,
+     "positive": true
+    },
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": 8.8,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_infested",
+     "value": 1.06,
+     "positive": true
+    },
+    {
+     "url_name": "recoil",
+     "value": 10.1,
+     "positive": false
+    }
+   ],
+   "owner_name": "DeimosWisp16441",
+   "owner_status": "offline",
+   "updated": "2026-09-07T19:24:34.000+00:00"
+  },
+  {
+   "id": "976b6db67aeb4549f13f3010",
+   "buyout_price": 350,
+   "starting_price": 350,
+   "is_direct_sell": true,
+   "name": "acricron",
+   "polarity": "vazarin",
+   "mod_rank": 8,
+   "re_rolls": 106,
+   "mastery_level": 14,
+   "attributes": [
+    {
+     "url_name": "critical_damage",
+     "value": 199.6,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": 236.6,
+     "positive": true
+    },
+    {
+     "url_name": "status_chance",
+     "value": -53.6,
+     "positive": false
+    }
+   ],
+   "owner_name": "DuviriWalker",
+   "owner_status": "offline",
+   "updated": "2026-09-12T16:20:19.000+00:00"
+  },
+  {
+   "id": "d6fb66178e3a5d40ed4aa453",
+   "buyout_price": 350,
+   "starting_price": 350,
+   "is_direct_sell": true,
+   "name": "geli-heracron",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "zoom",
+     "value": 8.0,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": 19.1,
+     "positive": true
+    },
+    {
+     "url_name": "cold_damage",
+     "value": 12.2,
+     "positive": true
+    },
+    {
+     "url_name": "recoil",
+     "value": 9.9,
+     "positive": false
+    }
+   ],
+   "owner_name": "garanova7381",
+   "owner_status": "offline",
+   "updated": "2026-09-12T16:35:37.000+00:00"
+  },
+  {
+   "id": "93b4475b67c52c980f6b095c",
+   "buyout_price": 355,
+   "starting_price": 355,
+   "is_direct_sell": true,
+   "name": "igni-armabin",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 12,
+   "attributes": [
+    {
+     "url_name": "heat_damage",
+     "value": 1.0,
+     "positive": true
+    },
+    {
+     "url_name": "magazine_capacity",
+     "value": 1.0,
+     "positive": true
+    },
+    {
+     "url_name": "ammo_maximum",
+     "value": 1.0,
+     "positive": true
+    }
+   ],
+   "owner_name": "LuaSaryn",
+   "owner_status": "offline",
+   "updated": "2026-09-07T02:40:17.000+00:00"
+  },
+  {
+   "id": "05e43f9584975ae730fbb8b4",
+   "buyout_price": 360,
+   "starting_price": 360,
+   "is_direct_sell": true,
+   "name": "acripha",
+   "polarity": "naramon",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "heat_damage",
+     "value": 15.2,
+     "positive": true
+    },
+    {
+     "url_name": "critical_damage",
+     "value": 20.9,
+     "positive": true
+    },
+    {
+     "url_name": "reload_speed",
+     "value": -3.9,
+     "positive": false
+    }
+   ],
+   "owner_name": "sentient-hunter",
+   "owner_status": "offline",
+   "updated": "2026-09-08T19:13:50.000+00:00"
+  },
+  {
+   "id": "7edded8582165f2c264df295",
+   "buyout_price": 370,
+   "starting_price": 370,
+   "is_direct_sell": true,
+   "name": "critatin",
+   "polarity": "madurai",
+   "mod_rank": 8,
+   "re_rolls": 0,
+   "mastery_level": 15,
+   "attributes": [
+    {
+     "url_name": "magazine_capacity",
+     "value": 79.7,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": 243.0,
+     "positive": true
+    },
+    {
+     "url_name": "recoil",
+     "value": 53.9,
+     "positive": false
+    }
+   ],
+   "owner_name": "kuva-vault",
+   "owner_status": "offline",
+   "updated": "2026-09-12T15:26:38.000+00:00"
+  },
+  {
+   "id": "2a91b05905a183740bbc8e1a",
+   "buyout_price": 370,
+   "starting_price": 370,
+   "is_direct_sell": true,
+   "name": "toxi-satibin",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 10,
+   "attributes": [
+    {
+     "url_name": "multishot",
+     "value": 9.8,
+     "positive": true
+    },
+    {
+     "url_name": "ammo_maximum",
+     "value": 5.3,
+     "positive": true
+    },
+    {
+     "url_name": "toxin_damage",
+     "value": 10.6,
+     "positive": true
+    }
+   ],
+   "owner_name": "ENTRATITRADER14",
+   "owner_status": "offline",
+   "updated": "2026-09-11T08:05:02.000+00:00"
+  },
+  {
+   "id": "4e8d106951f2391413177435",
+   "buyout_price": 370,
+   "starting_price": 370,
+   "is_direct_sell": true,
+   "name": "crita-acrides",
+   "polarity": "madurai",
+   "mod_rank": 8,
+   "re_rolls": 66,
+   "mastery_level": 13,
+   "attributes": [
+    {
+     "url_name": "critical_chance",
+     "value": 197.0,
+     "positive": true
+    },
+    {
+     "url_name": "critical_damage",
+     "value": 152.8,
+     "positive": true
+    },
+    {
+     "url_name": "status_duration",
+     "value": 125.3,
+     "positive": true
+    },
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": -61.3,
+     "positive": false
+    }
+   ],
+   "owner_name": "VOIDLIMBO32",
+   "owner_status": "offline",
+   "updated": "2026-09-07T19:37:37.000+00:00"
+  },
+  {
+   "id": "6c5caaa6fdeebfc70113b1c0",
+   "buyout_price": 370,
+   "starting_price": 370,
+   "is_direct_sell": true,
+   "name": "heradra",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 9,
+   "attributes": [
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": 8.2,
+     "positive": true
+    },
+    {
+     "url_name": "zoom",
+     "value": 8.7,
+     "positive": true
+    }
+   ],
+   "owner_name": "GRINEERNOVA94",
+   "owner_status": "offline",
+   "updated": "2026-09-06T14:14:37.000+00:00"
+  },
+  {
+   "id": "a01fdf209ab8301b1f683d1e",
+   "buyout_price": 370,
+   "starting_price": 370,
+   "is_direct_sell": true,
+   "name": "visi-hexatis",
+   "polarity": "naramon",
+   "mod_rank": 8,
+   "re_rolls": 26,
+   "mastery_level": 13,
+   "attributes": [
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": 213.3,
+     "positive": true
+    },
+    {
+     "url_name": "critical_damage",
+     "value": 141.3,
+     "positive": true
+    },
+    {
+     "url_name": "status_chance",
+     "value": 108.9,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_grineer",
+     "value": 0.55,
+     "positive": false
+    }
+   ],
+   "owner_name": "RiftRunner71591",
+   "owner_status": "offline",
+   "updated": "2026-09-08T15:13:26.000+00:00"
+  },
+  {
+   "id": "485a97edcccf22828ff0b22e",
+   "buyout_price": 375,
+   "starting_price": 375,
+   "is_direct_sell": true,
+   "name": "acri-puratox",
+   "polarity": "vazarin",
+   "mod_rank": 8,
+   "re_rolls": 28,
+   "mastery_level": 11,
+   "attributes": [
+    {
+     "url_name": "critical_damage",
+     "value": 127.0,
+     "positive": true
+    },
+    {
+     "url_name": "toxin_damage",
+     "value": 84.9,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_infested",
+     "value": 1.44,
+     "positive": true
+    }
+   ],
+   "owner_name": "OROKINMESA93",
+   "owner_status": "offline",
+   "updated": "2026-09-09T14:46:17.000+00:00"
+  },
+  {
+   "id": "cf81e122f96fb5ffa9036317",
+   "buyout_price": 375,
+   "starting_price": 375,
+   "is_direct_sell": true,
+   "name": "arma-lexican",
+   "polarity": "naramon",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "magazine_capacity",
+     "value": 64.0,
+     "positive": true
+    },
+    {
+     "url_name": "punch_through",
+     "value": 3.6,
+     "positive": true
+    },
+    {
+     "url_name": "multishot",
+     "value": 100.5,
+     "positive": true
+    },
+    {
+     "url_name": "reload_speed",
+     "value": -48.0,
+     "positive": false
+    }
+   ],
+   "owner_name": "SENTIENTEMBER79",
+   "owner_status": "offline",
+   "updated": "2026-09-09T10:02:26.000+00:00"
+  },
+  {
+   "id": "1991431e42d8080b265af0b7",
+   "buyout_price": 375,
+   "starting_price": 375,
+   "is_direct_sell": true,
+   "name": "crita-toxipha",
+   "polarity": "vazarin",
+   "mod_rank": 8,
+   "re_rolls": 30,
+   "mastery_level": 10,
+   "attributes": [
+    {
+     "url_name": "critical_chance",
+     "value": 132.2,
+     "positive": true
+    },
+    {
+     "url_name": "toxin_damage",
+     "value": 79.7,
+     "positive": true
+    },
+    {
+     "url_name": "heat_damage",
+     "value": 91.2,
+     "positive": true
+    }
+   ],
+   "owner_name": "rift_limbo",
+   "owner_status": "offline",
+   "updated": "2026-08-30T08:12:14.000+00:00"
+  },
+  {
+   "id": "9e3ef9e7ff12c70363576cf0",
+   "buyout_price": 376,
+   "starting_price": 376,
+   "is_direct_sell": true,
+   "name": "ignilis",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 9,
+   "attributes": [
+    {
+     "url_name": "heat_damage",
+     "value": 16.7,
+     "positive": true
+    },
+    {
+     "url_name": "zoom",
+     "value": 11.0,
+     "positive": true
+    },
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": -11.9,
+     "positive": false
+    }
+   ],
+   "owner_name": "corpus_titania",
+   "owner_status": "ingame",
+   "updated": "2026-09-12T18:51:58.000+00:00"
+  },
+  {
+   "id": "97e1af11707548814331f822",
+   "buyout_price": 378,
+   "starting_price": 378,
+   "is_direct_sell": true,
+   "name": "ignilis",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 9,
+   "attributes": [
+    {
+     "url_name": "heat_damage",
+     "value": 16.7,
+     "positive": true
+    },
+    {
+     "url_name": "zoom",
+     "value": 11.0,
+     "positive": true
+    },
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": -11.9,
+     "positive": false
+    }
+   ],
+   "owner_name": "corpus_titania",
+   "owner_status": "ingame",
+   "updated": "2026-09-12T18:51:48.000+00:00"
+  },
+  {
+   "id": "1f722bd163857789f19aefc4",
+   "buyout_price": 378,
+   "starting_price": 378,
+   "is_direct_sell": true,
+   "name": "manti-critanak",
+   "polarity": "vazarin",
+   "mod_rank": 8,
+   "re_rolls": 34,
+   "mastery_level": 12,
+   "attributes": [
+    {
+     "url_name": "critical_chance",
+     "value": 193.1,
+     "positive": true
+    },
+    {
+     "url_name": "projectile_speed",
+     "value": 107.9,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_corpus",
+     "value": 1.59,
+     "positive": true
+    },
+    {
+     "url_name": "zoom",
+     "value": -63.8,
+     "positive": false
+    }
+   ],
+   "owner_name": "cetus-saryn",
+   "owner_status": "offline",
+   "updated": "2026-09-05T10:32:45.000+00:00"
+  },
+  {
+   "id": "2ec34e831a707a8980ecfa0e",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "armanak",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "magazine_capacity",
+     "value": 86.7,
+     "positive": true
+    },
+    {
+     "url_name": "projectile_speed",
+     "value": 141.8,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": -105.6,
+     "positive": false
+    }
+   ],
+   "owner_name": "DuviriBloom62246",
+   "owner_status": "ingame",
+   "updated": "2026-09-12T18:12:11.000+00:00"
+  },
+  {
+   "id": "ec3db35f216667ce97f2458b",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "hexa-critapha",
+   "polarity": "naramon",
+   "mod_rank": 8,
+   "re_rolls": 10,
+   "mastery_level": 11,
+   "attributes": [
+    {
+     "url_name": "status_chance",
+     "value": 114.5,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": 181.9,
+     "positive": true
+    },
+    {
+     "url_name": "heat_damage",
+     "value": 108.3,
+     "positive": true
+    },
+    {
+     "url_name": "magazine_capacity",
+     "value": -48.5,
+     "positive": false
+    }
+   ],
+   "owner_name": "entrati_spark",
+   "owner_status": "offline",
+   "updated": "2026-09-12T15:53:54.000+00:00"
+  },
+  {
+   "id": "c1d1c032cf1040b182ac8f9d",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "igni-satiata",
+   "polarity": "madurai",
+   "mod_rank": 8,
+   "re_rolls": 630,
+   "mastery_level": 16,
+   "attributes": [
+    {
+     "url_name": "multishot",
+     "value": 120.3,
+     "positive": true
+    },
+    {
+     "url_name": "heat_damage",
+     "value": 106.9,
+     "positive": true
+    },
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": 192.6,
+     "positive": true
+    },
+    {
+     "url_name": "magazine_capacity",
+     "value": -52.8,
+     "positive": false
+    }
+   ],
+   "owner_name": "zarimanhunter7476",
+   "owner_status": "offline",
+   "updated": "2026-09-12T15:13:55.000+00:00"
+  },
+  {
+   "id": "62db905443a45240ec022d59",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "herabin",
+   "polarity": "naramon",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 10,
+   "attributes": [
+    {
+     "url_name": "zoom",
+     "value": 7.9,
+     "positive": true
+    },
+    {
+     "url_name": "ammo_maximum",
+     "value": 6.5,
+     "positive": true
+    }
+   ],
+   "owner_name": "duviriember1289",
+   "owner_status": "offline",
+   "updated": "2026-09-12T10:07:47.000+00:00"
+  },
+  {
+   "id": "f6d97513a92ea359797c2a90",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "visi-satitin",
+   "polarity": "naramon",
+   "mod_rank": 0,
+   "re_rolls": 85,
+   "mastery_level": 13,
+   "attributes": [
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": 18.0,
+     "positive": true
+    },
+    {
+     "url_name": "multishot",
+     "value": 9.3,
+     "positive": true
+    },
+    {
+     "url_name": "magazine_capacity",
+     "value": 4.9,
+     "positive": true
+    }
+   ],
+   "owner_name": "GrineerBloom19055",
+   "owner_status": "offline",
+   "updated": "2026-09-12T18:12:47.000+00:00"
+  },
+  {
+   "id": "399a0231d81a40bdc7e444cc",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "acridra",
+   "polarity": "naramon",
+   "mod_rank": 8,
+   "re_rolls": 0,
+   "mastery_level": 11,
+   "attributes": [
+    {
+     "url_name": "critical_damage",
+     "value": 163.1,
+     "positive": true
+    },
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": 76.8,
+     "positive": true
+    }
+   ],
+   "owner_name": "rift_nidus",
+   "owner_status": "offline",
+   "updated": "2026-09-11T11:25:06.000+00:00"
+  },
+  {
+   "id": "39c77e268bb90a0d847c5fc5",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "hera-ignidra",
+   "polarity": "madurai",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "zoom",
+     "value": 6.0,
+     "positive": true
+    },
+    {
+     "url_name": "heat_damage",
+     "value": 9.0,
+     "positive": true
+    },
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": 6.0,
+     "positive": true
+    }
+   ],
+   "owner_name": "GrineerNova",
+   "owner_status": "offline",
+   "updated": "2026-09-11T09:20:47.000+00:00"
+  },
+  {
+   "id": "53096effbb7f5ba3a3c0fd8a",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "crita-lexitis",
+   "polarity": "vazarin",
+   "mod_rank": 8,
+   "re_rolls": 27,
+   "mastery_level": 13,
+   "attributes": [
+    {
+     "url_name": "critical_chance",
+     "value": 159.3,
+     "positive": true
+    },
+    {
+     "url_name": "critical_damage",
+     "value": 119.7,
+     "positive": true
+    },
+    {
+     "url_name": "punch_through",
+     "value": 2.7,
+     "positive": true
+    }
+   ],
+   "owner_name": "TENNOHUNTER10",
+   "owner_status": "offline",
+   "updated": "2026-09-12T15:26:55.000+00:00"
+  },
+  {
+   "id": "f7b358d4c24fd12b8aa35a9c",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "manti-visican",
+   "polarity": "vazarin",
+   "mod_rank": 8,
+   "re_rolls": 189,
+   "mastery_level": 10,
+   "attributes": [
+    {
+     "url_name": "damage_vs_corpus",
+     "value": 1.48,
+     "positive": true
+    },
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": 168.6,
+     "positive": true
+    },
+    {
+     "url_name": "multishot",
+     "value": 91.9,
+     "positive": true
+    }
+   ],
+   "owner_name": "duviri-forge",
+   "owner_status": "offline",
+   "updated": "2026-09-09T11:31:24.000+00:00"
+  },
+  {
+   "id": "66b5b0dbe273add34932327c",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "gelidex",
+   "polarity": "vazarin",
+   "mod_rank": 8,
+   "re_rolls": 0,
+   "mastery_level": 11,
+   "attributes": [
+    {
+     "url_name": "cold_damage",
+     "value": 158.8,
+     "positive": true
+    },
+    {
+     "url_name": "status_chance",
+     "value": 151.7,
+     "positive": true
+    },
+    {
+     "url_name": "status_duration",
+     "value": -64.4,
+     "positive": false
+    }
+   ],
+   "owner_name": "corpus_spark",
+   "owner_status": "offline",
+   "updated": "2026-09-05T08:17:40.000+00:00"
+  },
+  {
+   "id": "b330864a10e16dad9d268e68",
+   "buyout_price": 380,
+   "starting_price": 380,
+   "is_direct_sell": true,
+   "name": "argi-acrides",
+   "polarity": "madurai",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 8,
+   "attributes": [
+    {
+     "url_name": "damage_vs_grineer",
+     "value": 1.6,
+     "positive": true
+    },
+    {
+     "url_name": "critical_damage",
+     "value": 139.9,
+     "positive": true
+    },
+    {
+     "url_name": "status_duration",
+     "value": 123.3,
+     "positive": true
+    },
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": -55.4,
+     "positive": false
+    }
+   ],
+   "owner_name": "ostronember2271",
+   "owner_status": "offline",
+   "updated": "2026-08-24T21:51:04.000+00:00"
+  },
+  {
+   "id": "0a9993fc5e6c6b355be037d7",
+   "buyout_price": 385,
+   "starting_price": 385,
+   "is_direct_sell": true,
+   "name": "crita-geliata",
+   "polarity": "vazarin",
+   "mod_rank": 0,
+   "re_rolls": 51,
+   "mastery_level": 15,
+   "attributes": [
+    {
+     "url_name": "cold_damage",
+     "value": 9.7,
+     "positive": true
+    },
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": 17.4,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": 16.8,
+     "positive": true
+    }
+   ],
+   "owner_name": "DEIMOSLIMBO98",
+   "owner_status": "offline",
+   "updated": "2026-09-06T16:18:57.000+00:00"
+  },
+  {
+   "id": "df7f134414523fb2384cb1c6",
+   "buyout_price": 385,
+   "starting_price": 385,
+   "is_direct_sell": true,
+   "name": "critadra",
+   "polarity": "madurai",
+   "mod_rank": 0,
+   "re_rolls": 9,
+   "mastery_level": 16,
+   "attributes": [
+    {
+     "url_name": "critical_chance",
+     "value": 26.8,
+     "positive": true
+    },
+    {
+     "url_name": "fire_rate_/_attack_speed",
+     "value": 10.3,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_infested",
+     "value": 0.97,
+     "positive": false
+    }
+   ],
+   "owner_name": "zarimanspark2060",
+   "owner_status": "offline",
+   "updated": "2026-09-02T18:06:05.000+00:00"
+  },
+  {
+   "id": "c81cf25fef6889d1e682e33d",
+   "buyout_price": 389,
+   "starting_price": 389,
+   "is_direct_sell": true,
+   "name": "satitis",
+   "polarity": "naramon",
+   "mod_rank": 8,
+   "re_rolls": 59,
+   "mastery_level": 16,
+   "attributes": [
+    {
+     "url_name": "multishot",
+     "value": 150.0,
+     "positive": true
+    },
+    {
+     "url_name": "critical_damage",
+     "value": 209.0,
+     "positive": true
+    },
+    {
+     "url_name": "status_chance",
+     "value": -57.0,
+     "positive": false
+    }
+   ],
+   "owner_name": "kuvarunner1652",
+   "owner_status": "offline",
+   "updated": "2026-09-06T13:25:32.000+00:00"
+  },
+  {
+   "id": "300226b9ef49da3e16a8bf45",
+   "buyout_price": 389,
+   "starting_price": 389,
+   "is_direct_sell": true,
+   "name": "critacan",
+   "polarity": "naramon",
+   "mod_rank": 8,
+   "re_rolls": 221,
+   "mastery_level": 15,
+   "attributes": [
+    {
+     "url_name": "multishot",
+     "value": 134.5,
+     "positive": true
+    },
+    {
+     "url_name": "critical_chance",
+     "value": 255.6,
+     "positive": true
+    },
+    {
+     "url_name": "damage_vs_grineer",
+     "value": 0.7,
+     "positive": false
+    }
+   ],
+   "owner_name": "lua-ember",
+   "owner_status": "offline",
+   "updated": "2026-09-06T00:48:06.000+00:00"
+  },
+  {
+   "id": "0be85b207884ebd4f9940c2c",
+   "buyout_price": 390,
+   "starting_price": 390,
+   "is_direct_sell": true,
+   "name": "armadex",
+   "polarity": "madurai",
+   "mod_rank": 8,
+   "re_rolls": 6,
+   "mastery_level": 9,
+   "attributes": [
+    {
+     "url_name": "magazine_capacity",
+     "value": 88.3,
+     "positive": true
+    },
+    {
+     "url_name": "status_chance",
+     "value": 154.5,
+     "positive": true
+    },
+    {
+     "url_name": "recoil",
+     "value": 59.2,
+     "positive": false
+    }
+   ],
+   "owner_name": "OstronVolt",
+   "owner_status": "offline",
+   "updated": "2026-09-12T19:39:38.000+00:00"
+  },
+  {
+   "id": "c40fa48c0e841969c9677379",
+   "buyout_price": 390,
+   "starting_price": 390,
+   "is_direct_sell": true,
+   "name": "toxidex",
+   "polarity": "madurai",
+   "mod_rank": 0,
+   "re_rolls": 0,
+   "mastery_level": 10,
+   "attributes": [
+    {
+     "url_name": "toxin_damage",
+     "value": 15.9,
+     "positive": true
+    },
+    {
+     "url_name": "status_chance",
+     "value": 18.4,
+     "positive": true
+    },
+    {
+     "url_name": "base_damage_/_melee_damage",
+     "value": -12.2,
+     "positive": false
+    }
+   ],
+   "owner_name": "LuaWisp26756",
+   "owner_status": "offline",
+   "updated": "2026-09-12T14:52:04.000+00:00"
+  }
+ ]
+}
