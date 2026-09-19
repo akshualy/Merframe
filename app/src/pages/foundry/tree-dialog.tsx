@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FavouriteStar } from "@/components/favourite-star";
 import { ItemImage } from "@/components/item-image";
 import { EmptyNote } from "@/components/page";
@@ -7,7 +7,6 @@ import { CheckboxField } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -24,6 +23,7 @@ import type {
   FoundryItem,
   NeededItem,
 } from "@/types";
+import { NodeDetails, WikiButton } from "./node-details";
 
 const EMPTY_SUMMARY: CraftSummary = {
   credits: 0,
@@ -58,9 +58,11 @@ function Summary({ summary }: { summary: CraftSummary }) {
 function ShoppingList({
   label,
   items,
+  onSelect,
 }: {
   label: string;
   items: NeededItem[];
+  onSelect: (uniqueName: string) => void;
 }) {
   if (items.length === 0) {
     return null;
@@ -70,14 +72,20 @@ function ShoppingList({
       <Hint as="span">{label}</Hint>
       <div className="flex flex-wrap gap-2">
         {items.map((needed) => (
-          <Badge key={needed.unique_name} variant="secondary">
-            <ItemImage
-              imageName={needed.image_name}
-              size={18}
-              alt={needed.name}
-            />
-            {needed.name}
-            <span className="tabular-nums">x{num(needed.amount)}</span>
+          <Badge key={needed.unique_name} variant="secondary" asChild>
+            <button
+              type="button"
+              onClick={() => onSelect(needed.unique_name)}
+              className="cursor-pointer"
+            >
+              <ItemImage
+                imageName={needed.image_name}
+                size={18}
+                alt={needed.name}
+              />
+              {needed.name}
+              <span className="tabular-nums">x{num(needed.amount)}</span>
+            </button>
           </Badge>
         ))}
       </div>
@@ -85,45 +93,116 @@ function ShoppingList({
   );
 }
 
+function childPath(prefix: string, position: number): string {
+  return prefix === "" ? String(position) : `${prefix}.${position}`;
+}
+
+function defaultPath(nodes: CraftNode[]): string | null {
+  if (nodes.length === 0) {
+    return null;
+  }
+  return String(
+    Math.max(
+      0,
+      nodes.findIndex((node) => !node.stocked),
+    ),
+  );
+}
+
+function pathOf(
+  nodes: CraftNode[],
+  uniqueName: string,
+  prefix = "",
+): string | null {
+  for (const [position, node] of nodes.entries()) {
+    const path = childPath(prefix, position);
+    if (node.unique_name === uniqueName && !node.stocked) {
+      return path;
+    }
+    const deeper = pathOf(node.children, uniqueName, path);
+    if (deeper !== null) {
+      return deeper;
+    }
+  }
+  return null;
+}
+
+function nodeAt(nodes: CraftNode[], path: string): CraftNode | null {
+  let level = nodes;
+  let found: CraftNode | null = null;
+  for (const step of path.split(".")) {
+    found = level[Number(step)] ?? null;
+    if (!found) {
+      return null;
+    }
+    level = found.children;
+  }
+  return found;
+}
+
 function Tree({
   nodes,
   hideCompleted,
+  selected,
+  onSelect,
+  prefix = "",
   depth = 0,
 }: {
   nodes: CraftNode[];
   hideCompleted: boolean;
+  selected: string | null;
+  onSelect: (path: string) => void;
+  prefix?: string;
   depth?: number;
 }) {
   const keys = occurrenceKeys(nodes.map((node) => node.unique_name));
   return (
     <ul className={cn("flex flex-col gap-1", depth > 0 && "border-l pl-4")}>
-      {nodes.map((node, position) => (
-        <li key={keys[position]} className="flex flex-col gap-1">
-          <span className="flex items-center gap-2 text-sm">
-            <ItemImage imageName={node.image_name} size={22} alt={node.name} />
-            <span
+      {nodes.map((node, position) => {
+        const path = childPath(prefix, position);
+        return (
+          <li key={keys[position]} className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => onSelect(path)}
               className={cn(
-                "font-medium",
-                node.covered && "opacity-50",
-                node.stocked ? "text-foreground" : "text-warning",
+                "flex w-fit cursor-pointer items-center gap-2 rounded-md px-1.5 py-0.5 text-left text-sm",
+                selected === path
+                  ? "bg-foreground/10"
+                  : "hover:bg-foreground/5",
               )}
             >
-              {node.name}
-            </span>
-            <Hint as="span" className="tabular-nums">
-              {num(node.owned)} / {num(node.required)}
-            </Hint>
-            {node.craftable && <Badge variant="accent">craftable</Badge>}
-          </span>
-          {node.children.length > 0 && !(hideCompleted && node.stocked) && (
-            <Tree
-              nodes={node.children}
-              hideCompleted={hideCompleted}
-              depth={depth + 1}
-            />
-          )}
-        </li>
-      ))}
+              <ItemImage
+                imageName={node.image_name}
+                size={22}
+                alt={node.name}
+              />
+              <span
+                className={cn(
+                  node.covered && "opacity-50",
+                  node.stocked ? "text-foreground" : "text-warning",
+                )}
+              >
+                {node.name}
+              </span>
+              <Hint as="span" className="tabular-nums">
+                {num(node.owned)} / {num(node.required)}
+              </Hint>
+              {node.craftable && <Badge variant="accent">craftable</Badge>}
+            </button>
+            {node.children.length > 0 && !(hideCompleted && node.stocked) && (
+              <Tree
+                nodes={node.children}
+                hideCompleted={hideCompleted}
+                selected={selected}
+                onSelect={onSelect}
+                prefix={path}
+                depth={depth + 1}
+              />
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -137,6 +216,7 @@ export function FoundryTreeDialog({
 }) {
   const [details, setDetails] = useState<CraftDetails | null>(null);
   const [hideCompleted, setHideCompleted] = useState(true);
+  const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
     if (!item) {
@@ -144,15 +224,17 @@ export function FoundryTreeDialog({
     }
     let cancelled = false;
     setDetails(null);
+    setSelected(null);
     async function load(uniqueName: string) {
       try {
         const next = await api.craftTree(uniqueName);
         if (!cancelled) {
           setDetails(next);
+          setSelected(defaultPath(next.tree));
         }
       } catch (error) {
         if (!cancelled) {
-          setDetails({ tree: [], missing: [], summary: EMPTY_SUMMARY });
+          setDetails({ tree: [], summary: EMPTY_SUMMARY });
           reportError(error);
         }
       }
@@ -162,6 +244,19 @@ export function FoundryTreeDialog({
       cancelled = true;
     };
   }, [item]);
+
+  const selectedNode = useMemo(
+    () => (details && selected ? nodeAt(details.tree, selected) : null),
+    [details, selected],
+  );
+
+  const selectNeeded = useCallback(
+    (uniqueName: string) =>
+      setSelected((current) =>
+        details ? (pathOf(details.tree, uniqueName) ?? current) : current,
+      ),
+    [details],
+  );
 
   return (
     <Dialog open={item !== null} onOpenChange={(open) => !open && onClose()}>
@@ -176,10 +271,8 @@ export function FoundryTreeDialog({
                 favourite={item.favourite}
               />
             )}
+            {item?.wiki_url && <WikiButton url={item.wiki_url} />}
           </DialogTitle>
-          <DialogDescription>
-            Required parts and current stock
-          </DialogDescription>
           {details && details.tree.length > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Summary summary={details.summary} />
@@ -188,7 +281,7 @@ export function FoundryTreeDialog({
                 checked={hideCompleted}
                 onChange={setHideCompleted}
               >
-                Hide what you already own
+                Collapse parts you already own
               </CheckboxField>
             </div>
           )}
@@ -200,33 +293,23 @@ export function FoundryTreeDialog({
             <EmptyNote>This item has no recipe.</EmptyNote>
           ) : (
             <div className="flex flex-col gap-4">
-              <Tree nodes={details.tree} hideCompleted={hideCompleted} />
+              <Tree
+                nodes={details.tree}
+                hideCompleted={hideCompleted}
+                selected={selected}
+                onSelect={setSelected}
+              />
+              {selectedNode && <NodeDetails node={selectedNode} />}
               <ShoppingList
                 label="Blueprints still to craft"
                 items={details.summary.blueprints_needed}
+                onSelect={selectNeeded}
               />
               <ShoppingList
                 label="Resources still to gather"
                 items={details.summary.resources_needed}
+                onSelect={selectNeeded}
               />
-              {details.missing.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <Hint as="span">Short for this recipe</Hint>
-                  <div className="flex flex-wrap gap-2">
-                    {details.missing.map((component) => (
-                      <Badge key={component.unique_name} variant="warning">
-                        <ItemImage
-                          imageName={component.image_name}
-                          size={18}
-                          alt={component.name}
-                        />
-                        {component.name} {num(component.owned)}/
-                        {num(component.required)}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

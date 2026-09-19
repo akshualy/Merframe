@@ -3,7 +3,12 @@ import { memo } from "react";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
-import { num } from "@/lib/format";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
 import { cn } from "@/lib/utils";
 import type { FoundryItem } from "@/types";
@@ -14,30 +19,58 @@ function ComponentTile({
   component: FoundryItem["components"][number];
 }) {
   return (
-    <span
-      title={`${component.name}: ${num(component.owned)} of ${num(component.required)}`}
-      className={cn(
-        "bg-background relative flex size-11 items-center justify-center rounded-full border",
-        component.enough ? "border-primary border-2" : "opacity-60",
-      )}
-    >
-      <ItemImage
-        imageName={component.image_name}
-        size={30}
-        className="bg-transparent"
-      />
-      {component.favourite && (
-        <Star
-          className="text-accent absolute -top-1 -right-1 size-3.5"
-          fill="currentColor"
-        />
-      )}
-      {component.owned > 0 && (
-        <span className="bg-secondary text-secondary-foreground absolute -right-1 -bottom-1 min-w-5 rounded-full px-1 text-center text-xs leading-4 font-medium tabular-nums">
-          {component.owned > 999 ? "999+" : component.owned}
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          className={cn(
+            "bg-background relative flex size-11 items-center justify-center rounded-full border",
+            component.enough ? "border-primary border-2" : "opacity-60",
+          )}
+        >
+          <ItemImage
+            imageName={component.image_name}
+            size={30}
+            className="bg-transparent"
+          />
+          {component.favourite && (
+            <Star
+              className="text-accent absolute -top-1 -right-1 size-3.5"
+              fill="currentColor"
+            />
+          )}
+          {component.owned > 0 && (
+            <span className="bg-secondary text-secondary-foreground absolute -right-1 -bottom-1 min-w-5 rounded-full px-1 text-center text-xs leading-4 font-medium tabular-nums">
+              {component.owned > 999 ? "999+" : component.owned}
+            </span>
+          )}
         </span>
-      )}
-    </span>
+      </TooltipTrigger>
+      <TooltipContent className="flex flex-col gap-1">
+        <span>{component.name}</span>
+        <span className="tabular-nums">
+          {num(component.owned)} of {num(component.required)}
+        </span>
+        {component.owned_relics.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {component.owned_relics.map((relic) => (
+              <li
+                key={relic.unique_name}
+                className="flex items-center gap-1.5 tabular-nums"
+              >
+                <ItemImage
+                  imageName={relic.image_name}
+                  size={18}
+                  alt={relic.name}
+                />
+                <span className="flex-1">{relic.name}</span>
+                <span>x{num(relic.owned)}</span>
+                <span>{percent(relic.chance / 100, 1)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

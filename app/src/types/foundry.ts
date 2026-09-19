@@ -9,12 +9,30 @@ export interface PendingBuild {
   ready: boolean;
 }
 
-export interface MissingComponent {
+export type NodeDrop =
+  | {
+      kind: "relic";
+      unique_name: string;
+      name: string;
+      image_name: string | null;
+      owned: number;
+      chance: number;
+      vaulted: boolean;
+    }
+  | { kind: "purchase"; credits: number }
+  | { kind: "location"; location: string; chance: number };
+
+export interface NodeMarket {
+  slug: string;
+  sell: number;
+}
+
+export interface OwnedRelic {
   unique_name: string;
   name: string;
   image_name: string | null;
   owned: number;
-  required: number;
+  chance: number;
 }
 
 export interface CraftNode {
@@ -29,6 +47,9 @@ export interface CraftNode {
   craftable: boolean;
   stocked: boolean;
   covered: boolean;
+  wiki_url: string | null;
+  drops: NodeDrop[];
+  market: NodeMarket | null;
   children: CraftNode[];
 }
 
@@ -40,6 +61,7 @@ export interface FoundryComponent {
   required: number;
   enough: boolean;
   favourite: boolean;
+  owned_relics: OwnedRelic[];
 }
 
 export interface Prime {
@@ -78,6 +100,7 @@ export interface FoundryItem {
   helminth: Helminth | null;
   archon_shards: number;
   favourite: boolean;
+  wiki_url: string | null;
   components: FoundryComponent[];
 }
 
@@ -98,7 +121,6 @@ export interface CraftSummary {
 
 export interface CraftDetails {
   tree: CraftNode[];
-  missing: MissingComponent[];
   summary: CraftSummary;
 }
 

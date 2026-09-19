@@ -329,6 +329,13 @@
             "chance": 23.33,
             "rarity": "Uncommon",
             "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          },
+          {
+            "location": "Axi A1 Relic",
+            "type": "Trinity Prime Systems Blueprint",
+            "chance": 25.33,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
           }
         ],
         "tradable": true,
@@ -526,6 +533,13 @@
             "location": "Axi A1 Relic (Exceptional)",
             "type": "Braton Prime Stock",
             "chance": 23.33,
+            "rarity": "Uncommon",
+            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+          },
+          {
+            "location": "Axi A1 Relic",
+            "type": "Braton Prime Stock",
+            "chance": 25.33,
             "rarity": "Uncommon",
             "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
           }

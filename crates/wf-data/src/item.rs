@@ -75,6 +75,8 @@ pub struct Item {
     pub warframe_market: Option<MarketSlug>,
     #[serde(rename = "imageName")]
     pub image_name: Option<String>,
+    #[serde(rename = "wikiaUrl")]
+    pub wikia_url: Option<String>,
     pub masterable: Option<bool>,
     pub rarity: Option<Rarity>,
     #[serde(rename = "maxLevelCap")]
@@ -84,6 +86,8 @@ pub struct Item {
     pub build_quantity: Option<u32>,
     #[serde(rename = "buildPrice")]
     pub build_price: Option<u32>,
+    #[serde(rename = "bpCost")]
+    pub blueprint_cost: Option<u32>,
     #[serde(rename = "buildTime")]
     pub build_time: Option<u32>,
     pub tags: Option<Vec<String>>,
@@ -221,12 +225,14 @@ mod tests {
             components: None,
             warframe_market: None,
             image_name: None,
+            wikia_url: None,
             masterable: Some(true),
             rarity: None,
             max_level_cap: None,
             vaulted: None,
             build_quantity: None,
             build_price: None,
+            blueprint_cost: None,
             build_time: None,
             tags: None,
             attacks: None,

@@ -57,6 +57,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchPlaceholder?: string;
   searchValue?: (row: TData) => string;
+  initialSearch?: string;
   initialSorting?: SortingState;
   primarySort?: SortingState;
   toolbar?: ReactNode;
@@ -81,6 +82,7 @@ export function DataTable<TData, TValue>({
   data,
   searchPlaceholder = "Filter",
   searchValue,
+  initialSearch = "",
   initialSorting = [],
   primarySort,
   toolbar,
@@ -91,7 +93,7 @@ export function DataTable<TData, TValue>({
   rowKey,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [expanded, setExpanded] = useState<string | null>(null);
   const { hiddenColumns, setHiddenColumns } = usePreferencesStore();
   const hidden = hiddenColumns[tableId];

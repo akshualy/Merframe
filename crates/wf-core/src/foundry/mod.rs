@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::catalog::VaultStatus;
 
+mod acquisition;
 mod stock;
 mod tab;
 mod tree;
@@ -20,20 +21,47 @@ pub struct PendingBuild {
     pub ready: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct MissingComponent {
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum NodeDrop {
+    Relic {
+        unique_name: String,
+        name: String,
+        image_name: Option<String>,
+        owned: i64,
+        chance: f64,
+        vaulted: bool,
+    },
+    Purchase {
+        credits: u32,
+    },
+    Location {
+        location: String,
+        chance: f64,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct NodeMarket {
+    pub slug: String,
+    pub sell: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct OwnedRelic {
     pub unique_name: String,
     pub name: String,
     pub image_name: Option<String>,
     pub owned: i64,
-    pub required: i64,
+    pub chance: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct CraftNode {
     pub unique_name: String,
     pub name: String,
     pub image_name: Option<String>,
+    pub wiki_url: Option<String>,
     pub required: i64,
     pub owned: i64,
     pub per_craft: i64,
@@ -42,6 +70,8 @@ pub struct CraftNode {
     pub craftable: bool,
     pub stocked: bool,
     pub covered: bool,
+    pub drops: Vec<NodeDrop>,
+    pub market: Option<NodeMarket>,
     pub children: Vec<CraftNode>,
 }
 
@@ -53,7 +83,7 @@ pub struct NeededItem {
     pub amount: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FoundryComponent {
     pub unique_name: String,
     pub name: String,
@@ -62,6 +92,7 @@ pub struct FoundryComponent {
     pub required: i64,
     pub enough: bool,
     pub favourite: bool,
+    pub owned_relics: Vec<OwnedRelic>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -89,13 +120,14 @@ pub struct Helminth {
     pub subsumed: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FoundryItem {
     pub unique_name: String,
     pub name: String,
     pub kind: &'static str,
     pub type_name: String,
     pub image_name: Option<String>,
+    pub wiki_url: Option<String>,
     pub prime: Option<Prime>,
     pub mastered: bool,
     pub progress: Progress,
@@ -116,10 +148,9 @@ pub struct WorldTimer {
     pub remaining_secs: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct CraftDetails {
     pub tree: Vec<CraftNode>,
-    pub missing: Vec<MissingComponent>,
     pub summary: CraftSummary,
 }
 

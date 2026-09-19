@@ -31,7 +31,7 @@ pub use facade::{Core, RelicPlannerTab, StatsTab};
 pub use favourites::Favourites;
 pub use foundry::{
     CraftDetails, CraftNode, CraftSummary, FoundryComponent, FoundryItem, FoundryTab, Helminth,
-    MasteryGate, MissingComponent, NeededItem, PendingBuild, Prime, Progress, WorldTimer,
+    MasteryGate, NeededItem, NodeDrop, OwnedRelic, PendingBuild, Prime, Progress, WorldTimer,
 };
 pub use inventory_view::{
     InventoryTab, ItemStatus, MiscRow, ModHolder, ModRow, PartRow, PartSet, RelicRow, SetComponent,
