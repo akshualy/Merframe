@@ -56,10 +56,15 @@ function Ducats({
 function RewardComponentTile({ component }: { component: RankedComponent }) {
   return (
     <span
-      title={`${component.name}: ${num(component.owned)} of ${num(component.needed)}`}
+      title={
+        component.owned === null
+          ? component.name
+          : `${component.name}: ${num(component.owned)} of ${num(component.needed)}`
+      }
       className={cn(
         "bg-background relative flex size-9 items-center justify-center rounded-full border",
-        component.enough ? "border-primary bg-primary/15" : "opacity-60",
+        component.enough && "border-primary bg-primary/15",
+        component.owned !== null && !component.enough && "opacity-60",
         component.this_reward && "ring-accent ring-2",
       )}
     >
@@ -75,9 +80,11 @@ function RewardComponentTile({ component }: { component: RankedComponent }) {
           aria-label="Favourite"
         />
       )}
-      <span className="bg-secondary text-secondary-foreground absolute -right-1 -bottom-1 min-w-4 rounded-full px-1 text-center text-xs leading-4 font-medium tabular-nums">
-        {num(component.owned)}
-      </span>
+      {component.owned !== null && (
+        <span className="bg-secondary text-secondary-foreground absolute -right-1 -bottom-1 min-w-4 rounded-full px-1 text-center text-xs leading-4 font-medium tabular-nums">
+          {num(component.owned)}
+        </span>
+      )}
     </span>
   );
 }
@@ -126,14 +133,16 @@ function RewardTile({ reward, compact }: { reward: Ranked; compact: boolean }) {
         )}
       </span>
 
-      <span className="flex items-center justify-between gap-2 text-xs">
-        <span className={reward.ownership.parent_owned ? "" : "text-warning"}>
-          {reward.ownership.parent_owned ? "Crafted" : "Not crafted"}
+      {reward.ownership && (
+        <span className="flex items-center justify-between gap-2 text-xs">
+          <span className={reward.ownership.parent_owned ? "" : "text-warning"}>
+            {reward.ownership.parent_owned ? "Crafted" : "Not crafted"}
+          </span>
+          <span className="text-muted-foreground tabular-nums">
+            {num(reward.ownership.owned)}/{num(reward.ownership.needed)}
+          </span>
         </span>
-        <span className="text-muted-foreground tabular-nums">
-          {num(reward.ownership.owned)}/{num(reward.ownership.needed)}
-        </span>
-      </span>
+      )}
 
       {reward.components.length > 0 && (
         <span className="flex flex-wrap items-center gap-1.5 pt-0.5">
@@ -174,9 +183,7 @@ export function RelicRewardOverlay({
   }, [screen]);
 
   if (screen.ranked.length === 0) {
-    return (
-      <EmptyNote>The reward names could not be read from the game.</EmptyNote>
-    );
+    return <EmptyNote>The reward prices could not be loaded.</EmptyNote>;
   }
 
   const keys = occurrenceKeys(screen.ranked.map((reward) => reward.store_item));
@@ -187,20 +194,22 @@ export function RelicRewardOverlay({
           <RewardTile key={keys[index]} reward={reward} compact={compact} />
         ))}
       </ul>
-      <div className="text-muted-foreground flex items-center justify-end gap-4 text-xs">
-        <span className="flex items-center gap-1">
-          Platinum
-          <Platinum
-            amount={num(screen.account_plat)}
-            size={14}
-            className="font-medium"
-          />
-        </span>
-        <span className="flex items-center gap-1">
-          Ducats
-          <Ducats amount={num(screen.account_ducats)} size={14} />
-        </span>
-      </div>
+      {screen.account && (
+        <div className="text-muted-foreground flex items-center justify-end gap-4 text-xs">
+          <span className="flex items-center gap-1">
+            Platinum
+            <Platinum
+              amount={num(screen.account.plat)}
+              size={14}
+              className="font-medium"
+            />
+          </span>
+          <span className="flex items-center gap-1">
+            Ducats
+            <Ducats amount={num(screen.account.ducats)} size={14} />
+          </span>
+        </div>
+      )}
     </div>
   );
 }

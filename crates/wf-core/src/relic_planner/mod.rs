@@ -15,7 +15,7 @@ pub use expectation::{Best, PerTrace, RefinementValue};
 pub(crate) use plan::plan;
 pub use plan::{DropLocation, IntactToRadiant, Ownership, RelicMarket, RelicPlan};
 pub(crate) use reward_screen::recommend;
-pub use reward_screen::{Ranked, RankedComponent, RewardScreen};
+pub use reward_screen::{AccountBalance, Ranked, RankedComponent, RewardScreen};
 pub use rewards::{RewardBreakdown, RewardOwnership};
 pub use sources::RelicSource;
 pub(crate) use sources::relics_for;
