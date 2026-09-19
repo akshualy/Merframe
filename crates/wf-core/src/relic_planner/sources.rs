@@ -4,7 +4,7 @@ use wf_inventory::Inventory;
 
 use crate::catalog::{Catalog, Stock, part_identity};
 
-use super::owned_refinements;
+use super::owned_relic_count;
 use super::rewards::rarity_name;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -32,10 +32,7 @@ pub(crate) fn relics_for(
                 .rewards_for(Refinement::Intact)
                 .iter()
                 .find(|reward| part_identity(&reward.item_unique_name) == key)?;
-            let owned: i64 = owned_refinements(&stock, relic)
-                .iter()
-                .map(|entry| entry.count)
-                .sum();
+            let owned = owned_relic_count(&stock, relic);
             Some(RelicSource {
                 relic: relic.name.clone(),
                 tier: relic.tier.clone(),

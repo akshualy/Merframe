@@ -5,10 +5,13 @@ use wf_data::{Component, Item, base_warframe_name, helminth_ability, store_item_
 use wf_inventory::Inventory;
 use wf_worldstate::WorldState;
 
-use crate::catalog::{Catalog, VaultStatus, component_image, is_prime, item_name, part_name};
+use crate::catalog::{
+    Catalog, Stock, VaultStatus, component_image, is_prime, item_name, part_name,
+};
 use crate::favourites::Favourites;
 use crate::mastery::{includes_founders, kind_of, masterable};
 
+use super::acquisition::{owned_relics, wiki_url};
 use super::stock::fill_slots;
 use super::{
     FoundryComponent, FoundryItem, FoundryTab, Helminth, MasteryGate, PendingBuild, Prime,
@@ -72,6 +75,7 @@ pub(crate) fn items(
     let shards = inventory.archon_shard_index();
     let owned_types = inventory.owned_item_types();
     let affinity = inventory.affinity_index();
+    let stock = Stock::new(inventory);
     let pending: HashSet<&str> = inventory
         .pending_recipes
         .iter()
@@ -90,8 +94,13 @@ pub(crate) fn items(
                         name: component_name(catalog, item, component),
                         image_name: component_image(item, component),
                         owned: slot.filled,
-                        required: i64::from(component.item_count),
+                        required: slot.required,
                         enough: slot.satisfied,
+                        owned_relics: owned_relics(
+                            catalog,
+                            &stock,
+                            component.drops.as_deref().unwrap_or_default(),
+                        ),
                     })
                     .collect();
                 let pending_here = components
@@ -109,6 +118,7 @@ pub(crate) fn items(
                     kind,
                     type_name: item.item_type.clone(),
                     image_name: item.image_name.clone(),
+                    wiki_url: wiki_url(catalog, &item.unique_name),
                     prime: is_prime(item).then(|| Prime {
                         vault: vault_status(item),
                         resurgence: resurgence.contains(item.unique_name.as_str()),
@@ -251,6 +261,7 @@ mod tests {
     use super::*;
     use crate::catalog::fixtures;
     use crate::foundry::details;
+    use crate::prices::FixedPrices;
 
     const DUAL_KAMAS: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/DualKamas";
     const SINGLE_KAMA: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama";
@@ -385,16 +396,21 @@ mod tests {
         assert!(trinity.mastered);
         assert!(trinity.prime.is_some());
 
-        let tree = details(&inventory, &catalog, &excalibur.unique_name)
-            .unwrap()
-            .tree;
+        let tree = details(
+            &inventory,
+            &catalog,
+            &FixedPrices::default(),
+            &excalibur.unique_name,
+        )
+        .unwrap()
+        .tree;
         let cell = tree
             .iter()
             .find(|node| node.name == "Orokin Cell")
             .expect("Orokin Cell");
         assert_eq!(cell.owned, 3319);
         assert!(cell.children.is_empty());
-        assert!(details(&inventory, &catalog, "/Lotus/Nope").is_none());
+        assert!(details(&inventory, &catalog, &FixedPrices::default(), "/Lotus/Nope").is_none());
 
         let with_skins = fixtures::with_skins(fixtures::ITEMS);
         assert_eq!(
@@ -510,10 +526,16 @@ mod tests {
         let excalibur = rows.iter().find(|row| row.name == "Excalibur").unwrap();
         assert!(excalibur.progress.ready_to_build);
         assert!(
-            details(&inventory, &catalog, &excalibur.unique_name)
-                .unwrap()
-                .missing
-                .is_empty()
+            details(
+                &inventory,
+                &catalog,
+                &FixedPrices::default(),
+                &excalibur.unique_name
+            )
+            .unwrap()
+            .tree
+            .iter()
+            .all(|node| node.stocked)
         );
     }
 
@@ -730,6 +752,54 @@ mod tests {
         assert_eq!(kama.crafts_into, ["Dual Kamas"]);
         assert!(row(&rows, DUAL_KAMAS).crafts_into.is_empty());
         assert!(row(&rows, BANSHEE_PRIME).crafts_into.is_empty());
+    }
+
+    #[test]
+    fn cards_carry_a_wiki_link_and_the_owned_relics() {
+        let catalog = fixtures::catalog();
+        let inventory = fixtures::inventory_stocked(
+            &[],
+            &[(
+                "MiscItems",
+                "/Lotus/Types/Game/Projections/T4VoidProjectionEGold",
+                3,
+            )],
+        );
+        let rows = items(
+            &inventory,
+            &catalog,
+            None,
+            None,
+            at(VARZIA_TRADING_MS),
+            &Favourites::default(),
+        );
+        let braton = rows.iter().find(|row| row.name == "Braton Prime").unwrap();
+        assert_eq!(
+            braton.wiki_url.as_deref(),
+            Some("https://wiki.warframe.com/w/Braton_Prime")
+        );
+        let stock = braton
+            .components
+            .iter()
+            .find(|component| component.name == "Braton Prime Stock")
+            .unwrap();
+        assert_eq!(
+            stock
+                .owned_relics
+                .iter()
+                .map(|relic| (relic.name.as_str(), relic.owned))
+                .collect::<Vec<(&str, i64)>>(),
+            vec![("Axi A1 Flawless", 3)]
+        );
+        let barrel = braton
+            .components
+            .iter()
+            .find(|component| component.name == "Braton Prime Barrel")
+            .unwrap();
+        assert!(
+            barrel.owned_relics.is_empty(),
+            "Axi A17 is not in the relic catalogue and no copy is owned"
+        );
     }
 
     #[test]

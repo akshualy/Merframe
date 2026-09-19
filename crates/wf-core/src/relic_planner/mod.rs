@@ -66,6 +66,13 @@ fn owned_refinements(stock: &Stock, relic: &Relic) -> Vec<OwnedRefinement> {
         .collect()
 }
 
+pub(crate) fn owned_relic_count(stock: &Stock, relic: &Relic) -> i64 {
+    owned_refinements(stock, relic)
+        .iter()
+        .map(|entry| entry.count)
+        .sum()
+}
+
 pub(crate) fn void_traces(inventory: &Inventory) -> i64 {
     inventory.counted("/Lotus/Types/Items/MiscItems/VoidTearDrop")
 }

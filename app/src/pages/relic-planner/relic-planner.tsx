@@ -1,5 +1,6 @@
 import { Filter, X } from "lucide-react";
 import { type RefObject, useCallback, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { DataTable } from "@/components/data-table";
 import { FilterField, FilterGrid } from "@/components/filter-grid";
@@ -66,6 +67,7 @@ export function RelicPlannerPage() {
   const [selectedPart, setSelectedPart] = useState<string | null>(null);
   const wantedPanel = useRef<HTMLDivElement>(null);
   const sourcesPanel = useRef<HTMLDivElement>(null);
+  const [params] = useSearchParams();
 
   const load = useCallback(
     () => api.relicPlannerTab(squadSize, onlyOwned),
@@ -252,6 +254,7 @@ export function RelicPlannerPage() {
           data={rows}
           searchPlaceholder="Filter relics and rewards"
           searchValue={searchValue}
+          initialSearch={params.get("search") ?? ""}
           initialSorting={[{ id: "expected_plat", desc: true }]}
           primarySort={
             favourite === "order"

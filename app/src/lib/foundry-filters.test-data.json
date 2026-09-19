@@ -15,6 +15,7 @@
       "helminth": null,
       "archon_shards": 0,
       "favourite": false,
+      "wiki_url": "https://wiki.warframe.com/w/Acceltra",
       "components": [
         {
           "unique_name": "/Lotus/Types/Items/MiscItems/HexenonTestFixture",
@@ -23,7 +24,8 @@
           "owned": 10,
           "required": 5,
           "enough": true,
-          "favourite": false
+          "favourite": false,
+          "owned_relics": []
         }
       ]
     },
@@ -42,6 +44,7 @@
       "helminth": null,
       "archon_shards": 0,
       "favourite": false,
+      "wiki_url": "https://wiki.warframe.com/w/Nova/Prime",
       "components": []
     }
   ]

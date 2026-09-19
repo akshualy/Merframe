@@ -274,7 +274,7 @@ impl Core {
 
     pub fn craft_tree(&self, unique_name: &str) -> Option<foundry::CraftDetails> {
         let inventory = self.inventory.as_ref()?;
-        foundry::details(inventory, &self.catalog, unique_name)
+        foundry::details(inventory, &self.catalog, self.prices.as_ref(), unique_name)
     }
 
     pub fn mastery_tab(&self, options: MasteryOptions) -> Option<MasteryTab> {
