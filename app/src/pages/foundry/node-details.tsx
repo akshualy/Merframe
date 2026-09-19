@@ -28,7 +28,7 @@ export function WikiButton({ url }: { url: string }) {
     }
   }, [url]);
   return (
-    <Button variant="ghost" size="sm" onClick={handleOpen}>
+    <Button variant="outline" size="sm" onClick={handleOpen}>
       Wiki
       <ExternalLink className="size-3.5" />
     </Button>
