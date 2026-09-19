@@ -35,6 +35,15 @@ pub async fn overlay_page_ready<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn overlay_content_shrank<R: Runtime>(
+    window: tauri::WebviewWindow<R>,
+    state: Shared<'_>,
+) -> CommandResult<()> {
+    overlay::on_content_shrank(window.app_handle(), &ready(&state)?, window.label());
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn rescan_inventory<R: Runtime>(
     app: AppHandle<R>,
     state: Shared<'_>,

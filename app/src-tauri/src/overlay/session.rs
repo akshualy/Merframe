@@ -1,3 +1,4 @@
+use std::path::Path;
 #[cfg(target_os = "linux")]
 use std::path::PathBuf;
 use std::sync::OnceLock;
@@ -95,6 +96,10 @@ fn session_from_env(x11: bool) -> (Session, bool) {
         x11,
     );
     (session, forced)
+}
+
+pub(super) fn keeps_vacated_pixels() -> bool {
+    Path::new("/proc/driver/nvidia/version").exists()
 }
 
 #[cfg(target_os = "linux")]

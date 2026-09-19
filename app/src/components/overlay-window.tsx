@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Route, Routes } from "react-router";
 import {
   RecommendationSlot,
@@ -25,8 +25,36 @@ function OverlayFrame({
   scroll?: boolean;
   children: ReactNode;
 }) {
+  const frame = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = frame.current;
+    if (!element) {
+      return;
+    }
+    let width = element.offsetWidth;
+    let height = element.offsetHeight;
+    const observer = new ResizeObserver(async () => {
+      const shrank =
+        element.offsetWidth < width || element.offsetHeight < height;
+      width = element.offsetWidth;
+      height = element.offsetHeight;
+      if (!shrank) {
+        return;
+      }
+      try {
+        await api.overlayContentShrank();
+      } catch (error) {
+        logError("Reporting the smaller overlay content failed", error);
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
+      ref={frame}
       style={{ opacity: opacity / 100 }}
       className={cn(
         "bg-card text-card-foreground flex max-h-full flex-col gap-2 rounded-xl border p-2",
