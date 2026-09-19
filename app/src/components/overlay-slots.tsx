@@ -16,8 +16,7 @@ import type {
 
 const EMPTY_SCREEN: RewardScreen = {
   ranked: [],
-  account_plat: 0,
-  account_ducats: 0,
+  account: null,
 };
 
 export function RewardSlot({

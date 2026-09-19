@@ -325,8 +325,14 @@ impl Core {
         ))
     }
 
-    pub fn recommend(&self, rewards: &[String]) -> Option<RewardScreen> {
-        Some(relic_planner::recommend(&self.view()?, rewards))
+    pub fn recommend(&self, rewards: &[String]) -> RewardScreen {
+        relic_planner::recommend(
+            self.inventory.as_ref(),
+            &self.catalog,
+            self.prices.as_ref(),
+            &self.favourites,
+            rewards,
+        )
     }
 
     fn grader(&self) -> Grader<'_> {
@@ -825,12 +831,11 @@ mod tests {
         );
         assert!(stats.summary.is_none());
 
-        assert!(
-            core.recommend(&[
-                "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint".to_owned()
-            ])
-            .is_none()
-        );
+        let screen = core.recommend(&[
+            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint".to_owned(),
+        ]);
+        assert!(screen.account.is_none());
+        assert!(screen.ranked[0].ownership.is_none());
     }
 
     #[test]

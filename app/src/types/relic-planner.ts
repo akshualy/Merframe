@@ -120,7 +120,7 @@ export interface Ranked {
   plat: number | null;
   ducats: number | null;
   set_plat: number | null;
-  ownership: RewardOwnership;
+  ownership: RewardOwnership | null;
   vaulted: boolean;
   favourite: boolean;
   best: boolean;
@@ -131,7 +131,7 @@ export interface RankedComponent {
   unique_name: string;
   name: string;
   image_name: string | null;
-  owned: number;
+  owned: number | null;
   needed: number;
   enough: boolean;
   this_reward: boolean;
@@ -140,6 +140,10 @@ export interface RankedComponent {
 
 export interface RewardScreen {
   ranked: Ranked[];
-  account_plat: number;
-  account_ducats: number;
+  account: AccountBalance | null;
+}
+
+export interface AccountBalance {
+  plat: number;
+  ducats: number;
 }

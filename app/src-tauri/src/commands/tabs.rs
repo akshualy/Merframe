@@ -123,5 +123,5 @@ pub async fn relics_for(
 #[tauri::command]
 pub async fn recommend(state: Shared<'_>, rewards: Vec<String>) -> CommandResult<RewardScreen> {
     let state = ready(&state)?;
-    compute(state, move |core| core.recommend(&rewards)).await
+    Ok(tauri::async_runtime::spawn_blocking(move || lock(&state.core).recommend(&rewards)).await?)
 }
