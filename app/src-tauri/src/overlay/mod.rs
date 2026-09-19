@@ -556,6 +556,26 @@ pub fn on_page_ready<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, labe
     }
 }
 
+pub fn on_content_shrank<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, label: &str) {
+    if !session::keeps_vacated_pixels() {
+        return;
+    }
+    let Some(kind) = KINDS.into_iter().find(|kind| kind.label() == label) else {
+        return;
+    };
+    let settings = read(&state.settings);
+    let due = enabled(&settings, kind) && lock(&state.overlays.state).occupied(kind);
+    if window_shows(
+        settings.overlays.overlay_only_while_game_active,
+        state.focus.focused(),
+        due,
+    ) {
+        debug!(label, "Overlay window remapped after its content shrank");
+        park(app, kind);
+        reveal(app, kind);
+    }
+}
+
 fn hide<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
     {
         let mut slots = lock(&state.overlays.state);

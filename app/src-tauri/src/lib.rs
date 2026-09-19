@@ -134,6 +134,7 @@ pub fn run() {
             commands::app::game_status,
             commands::app::overlay_state,
             commands::app::overlay_page_ready,
+            commands::app::overlay_content_shrank,
             commands::app::rescan_inventory,
             commands::app::export,
             commands::app::settings_get,

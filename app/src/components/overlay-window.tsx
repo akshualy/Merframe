@@ -63,6 +63,21 @@ export function OverlayWindow() {
     report();
   }, [loaded]);
 
+  const comparing = overlays.riven?.before?.pending != null;
+
+  useEffect(() => {
+    if (!comparing) {
+      return;
+    }
+    return () => {
+      api
+        .overlayContentShrank()
+        .catch((error) =>
+          logError("Reporting the smaller overlay content failed", error),
+        );
+    };
+  }, [comparing]);
+
   return (
     <div className="h-screen w-full p-2">
       <Routes>

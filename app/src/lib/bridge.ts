@@ -132,6 +132,7 @@ export const api = {
   gameStatus: () => call<GameStatus>("game_status"),
   overlayState: () => call<OverlayState>("overlay_state"),
   overlayPageReady: () => call<void>("overlay_page_ready"),
+  overlayContentShrank: () => call<void>("overlay_content_shrank"),
   rescanInventory: () => call<GameStatus>("rescan_inventory"),
   exportBundle: () => call<string | null>("export"),
   settingsGet: () => call<Settings>("settings_get"),
