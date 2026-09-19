@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -115,6 +116,32 @@ pub async fn open_url<R: Runtime>(app: AppHandle<R>, url: String) -> CommandResu
         .opener()
         .open_url(url, None::<&str>)
         .context("Opening the URL")?)
+}
+
+#[tauri::command]
+pub async fn open_data_folder<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+) -> CommandResult<()> {
+    let state = ready(&state)?;
+    Ok(app
+        .opener()
+        .open_path(state.data_dir.display().to_string(), None::<&str>)
+        .context("Opening the data folder")?)
+}
+
+#[tauri::command]
+pub async fn open_game_log_folder<R: Runtime>(app: AppHandle<R>) -> CommandResult<()> {
+    let folder = wf_log::default_log_path()
+        .as_deref()
+        .and_then(Path::parent)
+        .context("EE.log not found on this machine")?
+        .display()
+        .to_string();
+    Ok(app
+        .opener()
+        .open_path(folder, None::<&str>)
+        .context("Opening the EE.log folder")?)
 }
 
 #[tauri::command]

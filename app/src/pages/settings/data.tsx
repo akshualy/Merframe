@@ -1,4 +1,4 @@
-import { Download } from "lucide-react";
+import { Download, FolderOpen } from "lucide-react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { Section } from "@/components/page";
@@ -85,6 +85,22 @@ export function PricesAndData({
     }
   }, []);
 
+  const handleOpenDataFolder = useCallback(async () => {
+    try {
+      await api.openDataFolder();
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
+  const handleOpenGameLogFolder = useCallback(async () => {
+    try {
+      await api.openGameLogFolder();
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
   return (
     <Section title="Prices and Data">
       <div className="flex flex-col gap-4">
@@ -146,6 +162,18 @@ export function PricesAndData({
           </Button>
           <Button variant="outline" onClick={handleRefreshPrices}>
             Refresh Prices Now
+          </Button>
+          <Button variant="outline" onClick={handleOpenDataFolder}>
+            <FolderOpen className="size-4" />
+            Open Merframe Data Folder
+          </Button>
+          <Button
+            variant="outline"
+            disabled={!status?.log_file}
+            onClick={handleOpenGameLogFolder}
+          >
+            <FolderOpen className="size-4" />
+            Open EE.log Folder
           </Button>
         </div>
         <Hint className={cn(!status?.price_table_at && "italic")}>

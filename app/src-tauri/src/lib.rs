@@ -162,6 +162,8 @@ pub fn run() {
             commands::world::worldstate,
             commands::app::refresh_prices,
             commands::app::open_url,
+            commands::app::open_data_folder,
+            commands::app::open_game_log_folder,
             commands::app::item_image,
             commands::app::prefetch_images,
         ])
