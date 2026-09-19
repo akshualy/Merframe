@@ -173,6 +173,8 @@ export const api = {
   worldstate: () => call<WorldStateView>("worldstate"),
   refreshPrices: () => call<number>("refresh_prices"),
   openUrl: (url: string) => call<void>("open_url", { url }),
+  openDataFolder: () => call<void>("open_data_folder"),
+  openGameLogFolder: () => call<void>("open_game_log_folder"),
   itemImage: (imageName: string) => call<string>("item_image", { imageName }),
   prefetchImages: (names: string[]) =>
     call<number>("prefetch_images", { names }),
