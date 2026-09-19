@@ -556,23 +556,22 @@ pub fn on_page_ready<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, labe
     }
 }
 
-pub fn on_content_shrank<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, label: &str) {
+pub fn on_content_shrank<R: Runtime>(window: &tauri::WebviewWindow<R>) {
     if !session::keeps_vacated_pixels() {
         return;
     }
-    let Some(kind) = KINDS.into_iter().find(|kind| kind.label() == label) else {
-        return;
-    };
-    let settings = read(&state.settings);
-    let due = enabled(&settings, kind) && lock(&state.overlays.state).occupied(kind);
-    if window_shows(
-        settings.overlays.overlay_only_while_game_active,
-        state.focus.focused(),
-        due,
-    ) {
-        debug!(label, "Overlay window remapped after its content shrank");
-        park(app, kind);
-        reveal(app, kind);
+    let label = window.label();
+    let nudged = window.outer_size().and_then(|size| {
+        let height = if size.height % 2 == 0 {
+            size.height + 1
+        } else {
+            size.height - 1
+        };
+        window.set_size(tauri::PhysicalSize::new(size.width, height))
+    });
+    match nudged {
+        Ok(()) => debug!(label, "Overlay window resized after its content shrank"),
+        Err(error) => warn!(label, %error, "Overlay window resize failed"),
     }
 }
 

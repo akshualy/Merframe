@@ -141,7 +141,7 @@ pub(super) fn open<R: Runtime>(app: &AppHandle<R>, kind: Kind, bounds: Bounds, s
     .always_on_top(true)
     .skip_taskbar(true)
     .focusable(false)
-    .resizable(false)
+    .resizable(cfg!(target_os = "linux"))
     .shadow(false)
     .visible(true)
     .build();
