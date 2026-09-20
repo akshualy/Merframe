@@ -19,6 +19,7 @@ use crate::favourites::Favourites;
 use crate::foundry::{self, FoundryTab};
 use crate::inventory_view::{self, InventoryTab};
 use crate::listings::MarketListings;
+use crate::market_stock::MarketStock;
 use crate::mastery::{self, MasteryOptions, MasteryTab};
 use crate::prices::PriceSource;
 use crate::relic_planner::{self, MissingPart, RelicPlan, RelicSource, RewardScreen};
@@ -249,6 +250,13 @@ impl Core {
             prices: self.prices.as_ref(),
             favourites: &self.favourites,
             listings: &self.listings,
+        })
+    }
+
+    pub fn market_stock(&self) -> Option<MarketStock<'_>> {
+        Some(MarketStock {
+            inventory: self.inventory.as_ref()?,
+            catalog: &self.catalog,
         })
     }
 

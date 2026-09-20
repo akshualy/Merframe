@@ -9,6 +9,7 @@ mod favourites;
 mod foundry;
 mod inventory_view;
 mod listings;
+mod market_stock;
 mod mastery;
 mod prices;
 mod relic_planner;
@@ -38,6 +39,7 @@ pub use inventory_view::{
     SetRow, TabTotals, UpgradePrices,
 };
 pub use listings::MarketListings;
+pub use market_stock::MarketStock;
 pub use mastery::{
     Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryComponent, MasteryGroup, MasteryItem,
     MasteryOptions, MasteryOrdering, MasterySummary, MasteryTab, RouteMember,
