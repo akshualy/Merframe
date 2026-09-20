@@ -1588,5 +1588,85 @@
    {},
    {}
   ]
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "CatbrowLuckPrecept.jpg",
+  "name": "Charm",
+  "rarity": "Rare",
+  "tradable": true,
+  "type": "Companion Mod",
+  "uniqueName": "/Lotus/Types/Friendly/Pets/CatbrowPetPrecepts/CatbrowLuckPrecept"
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "RegorSwordShieldMeleeTree.jpg",
+  "name": "Final Harbinger",
+  "rarity": "Uncommon",
+  "tradable": true,
+  "type": "Stance Mod",
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/MeleeTrees/RegorSwordShieldMeleeTree"
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "GaiasTragedy.jpg",
+  "name": "Gaia's Tragedy",
+  "rarity": "Rare",
+  "tradable": true,
+  "type": "Stance Mod",
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/MeleeTrees/FistCmbThreeMeleeTree"
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "ImmortalRuneForm.png",
+  "name": "Jahu Canticle",
+  "rarity": "Rare",
+  "tradable": true,
+  "type": "Secondary Mod",
+  "uniqueName": "/Lotus/Upgrades/Grimoire/JahuAuraMod"
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "MiragePrismAugment.jpg",
+  "name": "Prism Guard",
+  "rarity": "Rare",
+  "tradable": true,
+  "type": "Warframe Mod",
+  "uniqueName": "/Lotus/Powersuits/Harlequin/PrismPvPAugmentCard"
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "PolearmCombo1a.jpg",
+  "name": "Shimmering Blight",
+  "rarity": "Uncommon",
+  "tradable": true,
+  "type": "Stance Mod",
+  "uniqueName": "/Lotus/Weapons/Tenno/Melee/MeleeTrees/PolearmCmbOneMeleeTree"
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "InfestedKavtViralQuillsPrecept.jpg",
+  "name": "Viral Quills",
+  "rarity": "Rare",
+  "tradable": true,
+  "type": "Companion Mod",
+  "uniqueName": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePrecepts/InfestedKavatViralQuillsPrecept"
+ },
+ {
+  "category": "Mods",
+  "fusionLimit": 3,
+  "imageName": "QorvexConcreteWallAugment.jpg",
+  "name": "Wrecking Wall",
+  "rarity": "Rare",
+  "tradable": true,
+  "type": "Warframe Mod",
+  "uniqueName": "/Lotus/Powersuits/ConcreteFrame/ConcreteWallAugmentCard"
  }
 ]

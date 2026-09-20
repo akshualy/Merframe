@@ -7,7 +7,6 @@ use wf_data::{Component, GameData, Item, Refinement, Relic};
 use crate::error::Result;
 
 pub(crate) const RECIPE_PREFIX: &str = "/Lotus/Types/Recipes/";
-pub(crate) const MOD_PREFIX: &str = "/Lotus/Upgrades/Mods/";
 pub(crate) const ARCANE_PREFIX: &str = "/Lotus/Upgrades/CosmeticEnhancers/";
 pub(crate) const RELIC_PREFIX: &str = wf_inventory::RELIC_PREFIX;
 pub(crate) const DUCATS_ITEM: &str = "/Lotus/Types/Items/MiscItems/PrimeBucks";

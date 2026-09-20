@@ -4,7 +4,7 @@ use wf_data::{Item, Rarity};
 use wf_inventory::{EquipmentItem, Inventory, RIVEN_MARKER, RivenFingerprint, UpgradeSlot};
 
 use super::{ModHolder, ModRow, UpgradePrices, display_name};
-use crate::catalog::{ARCANE_PREFIX, Catalog, MOD_PREFIX, display_name_from_path};
+use crate::catalog::{ARCANE_PREFIX, Catalog, display_name_from_path};
 use crate::prices::{PriceSource, market_slug};
 use crate::view::View;
 
@@ -89,10 +89,7 @@ pub(super) fn upgrade_kind(item_type: &str) -> UpgradeKind {
     if item_type.contains("/Beginner/") {
         return UpgradeKind::Neither;
     }
-    if peculiar || item_type.starts_with(MOD_PREFIX) {
-        return UpgradeKind::Mod;
-    }
-    UpgradeKind::Neither
+    UpgradeKind::Mod
 }
 
 fn is_riven(item_type: &str) -> bool {
@@ -347,6 +344,25 @@ mod tests {
     }
 
     #[test]
+    fn stances_and_precepts_are_mods() {
+        let inventory = fixtures::inventory();
+        let catalog = upgrade_catalog();
+        let rows = mods(&View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &prices(),
+            favourites: &Favourites::default(),
+            listings: &no_listings(),
+        });
+        let stance = rows
+            .iter()
+            .find(|row| row.name == "Gaia's Tragedy")
+            .unwrap();
+        assert_eq!(stance.market_slug, "gaias_tragedy");
+        assert!(stance.count > 0);
+    }
+
+    #[test]
     fn starter_only_mods() {
         let inventory = fixtures::inventory();
         let catalog = upgrade_catalog();
@@ -541,8 +557,12 @@ mod tests {
             UpgradeKind::Mod
         );
         assert_eq!(
-            upgrade_kind("/Lotus/Types/Items/MiscItems/Ferrite"),
-            UpgradeKind::Neither
+            upgrade_kind("/Lotus/Weapons/Tenno/Melee/MeleeTrees/FistCmbThreeMeleeTree"),
+            UpgradeKind::Mod
+        );
+        assert_eq!(
+            upgrade_kind("/Lotus/Types/Sentinels/SentinelPrecepts/BeastUniversalVacuum"),
+            UpgradeKind::Mod
         );
         assert_eq!(
             upgrade_kind("/Lotus/Upgrades/Mods/Beginner/BeginnerAmmoMod"),

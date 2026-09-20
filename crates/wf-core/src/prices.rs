@@ -161,7 +161,7 @@ pub(crate) fn market_slug(display_name: &str) -> String {
             }
             pending_separator = false;
             slug.push(ch.to_ascii_lowercase());
-        } else {
+        } else if ch != '\'' {
             pending_separator = true;
         }
     }
@@ -194,6 +194,7 @@ mod tests {
             "trinity_prime_systems"
         );
         assert_eq!(market_slug("Axi A1 Relic"), "axi_a1_relic");
+        assert_eq!(market_slug("Gaia's Tragedy"), "gaias_tragedy");
         assert_eq!(set_slug("Braton Prime"), "braton_prime_set");
         assert_eq!(
             market_slug("Zephyr Prime  Blueprint"),
