@@ -286,7 +286,27 @@ export function OverlaysPage() {
           onPlacement={(value) =>
             update({ overlay_relic_reward_placement: value })
           }
-        />
+        >
+          <Field id="reward-balance" label="Show your Platinum and Ducats">
+            <Switch
+              id="reward-balance"
+              checked={settings.overlay_account_balance}
+              disabled={!master}
+              onCheckedChange={(checked) =>
+                update({ overlay_account_balance: checked })
+              }
+            />
+          </Field>
+          <Field id="reward-copy" label="Copy the rewards to the clipboard">
+            <Switch
+              id="reward-copy"
+              checked={settings.copy_relic_rewards}
+              onCheckedChange={(checked) =>
+                update({ copy_relic_rewards: checked })
+              }
+            />
+          </Field>
+        </CardControls>
         <Focused trigger={reward ? overlays.reward : null}>
           <RewardSlot trigger={reward ? overlays.reward : null} />
         </Focused>

@@ -1,8 +1,6 @@
 import { Section } from "@/components/page";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { CyclePhase, Settings } from "@/types";
-import { CheckboxRow, type PatchAlerts } from "./row";
+import { CheckboxRow, MinutesSlider, type PatchAlerts } from "./row";
 
 const TIMERS: {
   world: string;
@@ -67,46 +65,43 @@ export function CycleTimers({
       title="Cycle Timers"
       description="Notifies once per cycle, before the phase you pick begins."
     >
-      <div className="flex flex-col gap-4">
-        {TIMERS.map(({ world, phases }) => (
-          <div key={world} className="flex flex-col gap-2">
-            <span className="text-sm font-semibold">{world}</span>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {phases.map(({ value, label }) => (
-                <CheckboxRow
-                  key={value}
-                  checked={draft.alerts.timers.includes(value)}
-                  onChange={(checked) =>
-                    patchAlerts({
-                      timers: checked
-                        ? [...draft.alerts.timers, value]
-                        : draft.alerts.timers.filter(
-                            (phase) => phase !== value,
-                          ),
-                    })
-                  }
-                >
-                  {label}
-                </CheckboxRow>
-              ))}
+      <div className="flex flex-col gap-6">
+        <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          {TIMERS.map(({ world, phases }) => (
+            <div key={world} className="flex flex-col gap-2">
+              <span className="text-sm font-semibold">{world}</span>
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                {phases.map(({ value, label }) => (
+                  <CheckboxRow
+                    key={value}
+                    checked={draft.alerts.timers.includes(value)}
+                    onChange={(checked) =>
+                      patchAlerts({
+                        timers: checked
+                          ? [...draft.alerts.timers, value]
+                          : draft.alerts.timers.filter(
+                              (phase) => phase !== value,
+                            ),
+                      })
+                    }
+                  >
+                    {label}
+                  </CheckboxRow>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-        <div className="flex max-w-64 flex-col gap-2">
-          <Label htmlFor="lead">Notify this many minutes ahead</Label>
-          <Input
-            id="lead"
-            type="number"
-            min={1}
-            max={60}
-            value={Math.round(draft.alerts.timer_lead_secs / 60)}
-            onChange={(e) =>
-              patchAlerts({
-                timer_lead_secs: Math.max(1, Number(e.target.value) || 1) * 60,
-              })
-            }
-          />
+          ))}
         </div>
+        <MinutesSlider
+          className="max-w-64"
+          id="lead"
+          label="Notify ahead of the phase"
+          value={Math.round(draft.alerts.timer_lead_secs / 60)}
+          min={1}
+          max={30}
+          step={1}
+          onChange={(minutes) => patchAlerts({ timer_lead_secs: minutes * 60 })}
+        />
       </div>
     </Section>
   );

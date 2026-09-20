@@ -138,6 +138,7 @@ export const api = {
   overlayContentShrank: () => call<void>("overlay_content_shrank"),
   rescanInventory: () => call<GameStatus>("rescan_inventory"),
   exportBundle: () => call<string | null>("export"),
+  pickLogFile: () => call<string | null>("pick_log_file"),
   settingsGet: () => call<Settings>("settings_get"),
   settingsSet: (settings: Settings) =>
     call<Settings>("settings_set", { settings }),

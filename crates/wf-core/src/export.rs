@@ -8,6 +8,7 @@ use crate::inventory_view::InventoryTab;
 use crate::rivens::RivensTab;
 
 pub(crate) struct ExportBundle<'a> {
+    pub document: &'a str,
     pub inventory: &'a InventoryTab,
     pub rivens: &'a RivensTab,
     pub foundry: &'a FoundryTab,
@@ -18,6 +19,8 @@ pub(crate) fn export(dir: &Path, bundle: &ExportBundle<'_>) -> Result<()> {
         path: dir.to_path_buf(),
         source,
     })?;
+    let path = dir.join("inventory.json");
+    std::fs::write(&path, bundle.document).map_err(|source| CoreError::Io { path, source })?;
     write(dir, "parts.json", &bundle.inventory.parts)?;
     write(dir, "mods.json", &bundle.inventory.mods)?;
     write(dir, "arcanes.json", &bundle.inventory.arcanes)?;
@@ -69,6 +72,7 @@ mod tests {
         export(
             &dir,
             &ExportBundle {
+                document: fixtures::INVENTORY,
                 inventory: &inventory_tab,
                 rivens: &rivens_tab,
                 foundry: &foundry_tab,
@@ -94,6 +98,10 @@ mod tests {
             );
         }
 
+        assert_eq!(
+            std::fs::read_to_string(dir.join("inventory.json")).unwrap(),
+            fixtures::INVENTORY
+        );
         let relics: Vec<serde_json::Value> =
             serde_json::from_str(&std::fs::read_to_string(dir.join("relics.json")).unwrap())
                 .unwrap();

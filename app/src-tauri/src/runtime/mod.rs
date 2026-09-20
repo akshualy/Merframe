@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use tauri::{AppHandle, Emitter, Runtime};
+use tauri_plugin_clipboard_manager::ClipboardExt;
 #[cfg(not(target_os = "linux"))]
 use tauri_plugin_notification::NotificationExt;
 use tracing::{debug, error, info, warn};
@@ -159,19 +160,56 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
                 post_webhook(state, settings.discord.discord_webhook.as_deref(), message).await;
             }
         }
+        CoreEvent::RelicRewardScreen { rewards, .. } => {
+            if settings.copy_relic_rewards {
+                let line = lock(&state.core).recommend(rewards).chat_line();
+                if !line.is_empty()
+                    && let Err(error) = app.clipboard().write_text(line)
+                {
+                    warn!(%error, "Relic rewards not copied to the clipboard");
+                }
+            }
+        }
         CoreEvent::TradeCompleted { trade, .. } => {
             if settings.market.market_auto_close {
                 auto_close(app, state, trade).await;
             }
         }
-        _ => {
-            if settings.notifications.windows_notifications_enabled
-                && let Some(body) = notification_text(event)
-                && let Err(error) = show(app, &body, &settings).await
-            {
-                warn!(?error, body, "Game event notification not shown");
-            }
+        CoreEvent::FissureAlert { fissure } => {
+            let mirrored = settings.discord.discord_fissure_alerts;
+            alert(app, state, &settings, fissure_text(fissure), mirrored).await;
         }
+        CoreEvent::TimerAlert {
+            name,
+            next_state,
+            remaining_secs,
+            ..
+        } => {
+            let body = format!(
+                "{name} turns {next_state} in {} minutes",
+                remaining_secs / 60
+            );
+            let mirrored = settings.discord.discord_timer_alerts;
+            alert(app, state, &settings, body, mirrored).await;
+        }
+        CoreEvent::InventoryUpdated(_) => {}
+    }
+}
+
+async fn alert<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    settings: &Settings,
+    body: String,
+    mirrored: bool,
+) {
+    if settings.notifications.windows_notifications_enabled
+        && let Err(error) = show(app, &body, settings).await
+    {
+        warn!(?error, body, "Game event notification not shown");
+    }
+    if mirrored {
+        post_webhook(state, settings.discord.discord_webhook.as_deref(), body).await;
     }
 }
 
@@ -214,7 +252,11 @@ pub async fn test_notifications<R: Runtime>(
     state: &Arc<AppState>,
     settings: &Settings,
 ) -> anyhow::Result<()> {
-    let webhook = if settings.discord.discord_notifications_enabled {
+    let discord = &settings.discord;
+    let webhook = if discord.discord_notifications_enabled
+        || discord.discord_fissure_alerts
+        || discord.discord_timer_alerts
+    {
         Some(
             settings
                 .discord
@@ -260,22 +302,6 @@ pub fn fissure_text(fissure: &wf_core::FissureInfo) -> String {
         fissure.remaining_secs / 60,
         steel_path
     )
-}
-
-fn notification_text(event: &CoreEvent) -> Option<String> {
-    match event {
-        CoreEvent::FissureAlert { fissure } => Some(fissure_text(fissure)),
-        CoreEvent::TimerAlert {
-            name,
-            next_state,
-            remaining_secs,
-            ..
-        } => Some(format!(
-            "{name} turns {next_state} in {} minutes",
-            remaining_secs / 60
-        )),
-        _ => None,
-    }
 }
 
 async fn post_webhook(state: &Arc<AppState>, url: Option<&str>, message: String) {

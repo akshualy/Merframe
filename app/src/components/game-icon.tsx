@@ -60,6 +60,35 @@ export const ARCANE_BACKDROP: Record<ArcaneRarity, GameIconName> = {
   Legendary: "arcane-legendary",
 };
 
+const MONOCHROME: ReadonlySet<GameIconName> = new Set([
+  "day",
+  "night",
+  "warm",
+  "cold",
+  "baro",
+  "sortie",
+  "archon",
+  "archon-amar",
+  "archon-boreal",
+  "archon-nira",
+  "archon-shard",
+  "relic",
+  "relic-lith",
+  "relic-meso",
+  "relic-neo",
+  "relic-axi",
+  "relic-requiem",
+  "mastered",
+  "polarity-madurai",
+  "polarity-vazarin",
+  "polarity-naramon",
+  "polarity-zenurik",
+  "polarity-unairu",
+  "polarity-penjaga",
+  "polarity-umbra",
+  "polarity-any",
+]);
+
 const CYCLE_STATES: Record<string, GameIconName> = {
   day: "day",
   night: "night",
@@ -147,7 +176,11 @@ export function GameIcon({
       width={size}
       height={size}
       draggable={false}
-      className={cn("shrink-0 object-contain select-none", className)}
+      className={cn(
+        "shrink-0 object-contain select-none",
+        MONOCHROME.has(name) && "invert dark:invert-0",
+        className,
+      )}
       style={{ width: size, height: size }}
     />
   );

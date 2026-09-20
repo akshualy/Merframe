@@ -133,5 +133,11 @@ pub async fn relics_for(
 #[tauri::command]
 pub async fn recommend(state: Shared<'_>, rewards: Vec<String>) -> CommandResult<RewardScreen> {
     let state = ready(&state)?;
-    Ok(tauri::async_runtime::spawn_blocking(move || lock(&state.core).recommend(&rewards)).await?)
+    let balance_shown = read(&state.settings).overlays.overlay_account_balance;
+    let mut screen =
+        tauri::async_runtime::spawn_blocking(move || lock(&state.core).recommend(&rewards)).await?;
+    if !balance_shown {
+        screen.account = None;
+    }
+    Ok(screen)
 }

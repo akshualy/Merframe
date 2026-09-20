@@ -456,7 +456,8 @@ impl Core {
     }
 
     pub fn export(&self, dir: &Path, now: DateTime<Utc>) -> Result<()> {
-        let (Some(inventory), Some(rivens), Some(foundry)) = (
+        let (Some(document), Some(inventory), Some(rivens), Some(foundry)) = (
+            self.store.cached_inventory()?,
             self.inventory_tab(),
             self.rivens_tab(),
             self.foundry_tab(None, now),
@@ -466,6 +467,7 @@ impl Core {
         export(
             dir,
             &ExportBundle {
+                document: &document,
                 inventory: &inventory,
                 rivens: &rivens,
                 foundry: &foundry,
@@ -906,6 +908,10 @@ mod tests {
             .unwrap();
         core.export(&dir, at(1_000_000)).unwrap();
         assert!(dir.join("parts.json").exists());
+        assert_eq!(
+            std::fs::read_to_string(dir.join("inventory.json")).unwrap(),
+            fixtures::INVENTORY
+        );
         std::fs::remove_dir_all(&dir).unwrap();
     }
 }

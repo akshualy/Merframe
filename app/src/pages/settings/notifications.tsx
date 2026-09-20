@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, reportError } from "@/lib/bridge";
 import type { Settings } from "@/types";
-import { CheckboxRow, type Patch } from "./row";
+import { CheckboxRow, type Patch, SwitchRow } from "./row";
 
 export function NotificationChannels({
   draft,
@@ -33,74 +33,92 @@ export function NotificationChannels({
     <Section
       title="Notification Channels"
       description="In-app toasts always stay on."
-      action={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleTest}
-          disabled={testing}
-        >
-          <BellRing className="size-4" />
-          Test Notifications
-        </Button>
-      }
     >
-      <div className="flex flex-col gap-4">
-        <CheckboxRow
-          checked={draft.windows_notifications_enabled}
-          onChange={(checked) =>
-            patch({ windows_notifications_enabled: checked })
-          }
-        >
-          Desktop notifications
-        </CheckboxRow>
-        <CheckboxRow
-          checked={draft.sound_notifications_enabled}
-          disabled={!draft.windows_notifications_enabled}
-          onChange={(checked) =>
-            patch({ sound_notifications_enabled: checked })
-          }
-          hint="Uses your desktop's notification sound."
-        >
-          Play a sound with them
-        </CheckboxRow>
-        <CheckboxRow
-          checked={draft.notification_only_background}
-          onChange={(checked) =>
-            patch({ notification_only_background: checked })
-          }
-        >
-          Only notify while Warframe is in the background
-        </CheckboxRow>
-        <CheckboxRow
-          checked={draft.discord_notifications_enabled}
-          onChange={(checked) =>
-            patch({ discord_notifications_enabled: checked })
-          }
-        >
-          Mirror new conversations to Discord
-        </CheckboxRow>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="webhook">Discord webhook URL</Label>
-          <Input
-            id="webhook"
-            value={draft.discord_webhook ?? ""}
-            onChange={(e) => patch({ discord_webhook: e.target.value || null })}
-            placeholder="https://discord.com/api/webhooks/"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="template">
-            Discord message, <span className="text-accent">{"{tenno}"}</span> is
-            the sender's name
-          </Label>
-          <Input
-            id="template"
-            value={draft.discord_message_template}
-            onChange={(e) =>
-              patch({ discord_message_template: e.target.value })
+      <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-4">
+          <SwitchRow
+            checked={draft.windows_notifications_enabled}
+            onChange={(checked) =>
+              patch({ windows_notifications_enabled: checked })
             }
-          />
+          >
+            Desktop notifications
+          </SwitchRow>
+          <CheckboxRow
+            checked={draft.sound_notifications_enabled}
+            disabled={!draft.windows_notifications_enabled}
+            onChange={(checked) =>
+              patch({ sound_notifications_enabled: checked })
+            }
+            hint="Uses your desktop's notification sound."
+          >
+            Play a sound with them
+          </CheckboxRow>
+          <CheckboxRow
+            checked={draft.notification_only_background}
+            onChange={(checked) =>
+              patch({ notification_only_background: checked })
+            }
+          >
+            Only notify while Warframe is in the background
+          </CheckboxRow>
+          <Button
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={handleTest}
+            disabled={testing}
+          >
+            <BellRing className="size-4" />
+            Test Notifications
+          </Button>
+        </div>
+        <div className="flex flex-col gap-4">
+          <SwitchRow
+            checked={draft.discord_notifications_enabled}
+            onChange={(checked) =>
+              patch({ discord_notifications_enabled: checked })
+            }
+          >
+            Mirror new conversations to Discord
+          </SwitchRow>
+          <SwitchRow
+            checked={draft.discord_fissure_alerts}
+            onChange={(checked) => patch({ discord_fissure_alerts: checked })}
+          >
+            Mirror fissure alerts to Discord
+          </SwitchRow>
+          <SwitchRow
+            checked={draft.discord_timer_alerts}
+            onChange={(checked) => patch({ discord_timer_alerts: checked })}
+          >
+            Mirror cycle timers to Discord
+          </SwitchRow>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="webhook">Discord webhook URL</Label>
+            <Input
+              id="webhook"
+              value={draft.discord_webhook ?? ""}
+              onChange={(e) =>
+                patch({ discord_webhook: e.target.value || null })
+              }
+              placeholder="https://discord.com/api/webhooks/"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="template">
+              Conversation notification,{" "}
+              <span className="text-accent">{"{tenno}"}</span> is the sender's
+              name
+            </Label>
+            <Input
+              id="template"
+              value={draft.discord_message_template}
+              onChange={(e) =>
+                patch({ discord_message_template: e.target.value })
+              }
+            />
+          </div>
         </div>
       </div>
     </Section>

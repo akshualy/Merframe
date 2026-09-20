@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
-import { EmptyNote, Section } from "@/components/page";
+import { Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,7 +12,7 @@ import {
 import { occurrenceKeys } from "@/lib/keys";
 import { RELIC_TIERS } from "@/lib/relics";
 import type { FissureFilter, Settings, SteelPathFilter } from "@/types";
-import { CheckboxRow, type PatchAlerts } from "./row";
+import { type PatchAlerts, SwitchRow } from "./row";
 
 const ANY = "all";
 
@@ -115,39 +115,16 @@ export function FissureAlerts({
     <Section
       title="Fissure Alerts"
       description="A fissure notifies when it matches any one of these rows."
-      action={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            patchAlerts({
-              fissure_filters: [
-                ...filters,
-                { tier: ANY, mission: ANY, location: ANY, steel_path: "all" },
-              ],
-            })
-          }
-        >
-          <Plus className="size-4" />
-          Add Row
-        </Button>
-      }
     >
       <div className="flex flex-col gap-4">
-        <CheckboxRow
+        <SwitchRow
           checked={draft.alerts.fissure_notifications_enabled}
           onChange={(checked) =>
             patchAlerts({ fissure_notifications_enabled: checked })
           }
         >
           Notify about relic fissures
-        </CheckboxRow>
-
-        {filters.length === 0 && (
-          <EmptyNote>
-            No rows yet. A column left on &quot;Any&quot; accepts everything.
-          </EmptyNote>
-        )}
+        </SwitchRow>
 
         {filters.map((row, index) => (
           <div
@@ -225,6 +202,24 @@ export function FissureAlerts({
             </Button>
           </div>
         ))}
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-start"
+          disabled={!draft.alerts.fissure_notifications_enabled}
+          onClick={() =>
+            patchAlerts({
+              fissure_filters: [
+                ...filters,
+                { tier: ANY, mission: ANY, location: ANY, steel_path: "all" },
+              ],
+            })
+          }
+        >
+          <Plus className="size-4" />
+          Add Row
+        </Button>
       </div>
     </Section>
   );

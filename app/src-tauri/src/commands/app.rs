@@ -75,6 +75,20 @@ pub async fn export<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn pick_log_file<R: Runtime>(app: AppHandle<R>) -> CommandResult<Option<String>> {
+    let picked = app
+        .dialog()
+        .file()
+        .set_title("Choose EE.log")
+        .add_filter("Warframe log", &["log"])
+        .blocking_pick_file();
+    Ok(picked
+        .as_ref()
+        .and_then(FilePath::as_path)
+        .map(|path| path.display().to_string()))
+}
+
+#[tauri::command]
 pub async fn settings_get(state: Shared<'_>) -> CommandResult<Settings> {
     let state = ready(&state)?;
     Ok(read(&state.settings).clone())
@@ -135,8 +149,14 @@ pub async fn open_data_folder<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn open_game_log_folder<R: Runtime>(app: AppHandle<R>) -> CommandResult<()> {
-    let log = wf_log::default_log_path().context("EE.log not found on this machine")?;
+pub async fn open_game_log_folder<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+) -> CommandResult<()> {
+    let state = ready(&state)?;
+    let log = read(&state.settings)
+        .log_path()
+        .context("EE.log not found on this machine")?;
     Ok(app
         .opener()
         .reveal_item_in_dir(log)

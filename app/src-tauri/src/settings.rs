@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
 use wf_core::{AlertSettings, MasteryOptions, MasteryOrdering};
+use wf_market::{Reach, TraderStatus};
 
 pub const STORE_FILE: &str = "merframe.json";
 const TOKEN_FILE: &str = "market_token";
@@ -61,7 +62,9 @@ pub struct Settings {
     pub inventory: InventorySettings,
     #[serde(flatten)]
     pub overlays: OverlaySettings,
+    pub copy_relic_rewards: bool,
     pub force_log_file: bool,
+    pub log_file_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -78,6 +81,8 @@ pub struct DiscordSettings {
     pub discord_notifications_enabled: bool,
     pub discord_webhook: Option<String>,
     pub discord_message_template: String,
+    pub discord_fissure_alerts: bool,
+    pub discord_timer_alerts: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -87,6 +92,8 @@ pub struct MarketSettings {
     pub market_poll_minutes: u32,
     pub market_auto_close: bool,
     pub take_rank_into_account: bool,
+    pub market_trader_status: TraderStatus,
+    pub market_trader_locale: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -113,6 +120,7 @@ pub struct OverlaySettings {
     pub overlay_recommendation_count: u8,
     pub overlay_mode: OverlayMode,
     pub overlay_only_while_game_active: bool,
+    pub overlay_account_balance: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -141,7 +149,9 @@ impl Default for Settings {
             world_state_interval_minutes: 5,
             inventory: InventorySettings::default(),
             overlays: OverlaySettings::default(),
+            copy_relic_rewards: false,
             force_log_file: false,
+            log_file_path: None,
         }
     }
 }
@@ -162,6 +172,8 @@ impl Default for DiscordSettings {
             discord_notifications_enabled: false,
             discord_webhook: None,
             discord_message_template: DISCORD_TEMPLATE.to_owned(),
+            discord_fissure_alerts: false,
+            discord_timer_alerts: false,
         }
     }
 }
@@ -173,6 +185,8 @@ impl Default for MarketSettings {
             market_poll_minutes: 5,
             market_auto_close: false,
             take_rank_into_account: true,
+            market_trader_status: TraderStatus::Ingame,
+            market_trader_locale: Some("en".to_owned()),
         }
     }
 }
@@ -200,6 +214,7 @@ impl Default for OverlaySettings {
             overlay_recommendation_count: RECOMMENDATION_COUNT_DEFAULT,
             overlay_mode: OverlayMode::Auto,
             overlay_only_while_game_active: true,
+            overlay_account_balance: true,
         }
     }
 }
@@ -225,6 +240,17 @@ impl Default for OverlayPlacements {
 }
 
 impl Settings {
+    pub fn log_path(&self) -> Option<PathBuf> {
+        self.log_file_path.clone().or_else(wf_log::default_log_path)
+    }
+
+    pub fn trader_reach(&self) -> Reach {
+        Reach {
+            status: self.market.market_trader_status,
+            locale: self.market.market_trader_locale.clone(),
+        }
+    }
+
     pub fn log_selection(&self) -> wf_log::Selection {
         if self.force_log_file {
             wf_log::Selection::File
@@ -434,6 +460,20 @@ mod tests {
         assert_eq!(settings.overlays.overlay_recommendation_count, 6);
         assert_eq!(settings.overlays.overlay_mode, OverlayMode::Auto);
         assert!(settings.overlays.overlay_only_while_game_active);
+        assert!(settings.overlays.overlay_account_balance);
+        assert!(!settings.copy_relic_rewards);
+        assert!(!settings.discord.discord_fissure_alerts);
+        assert!(!settings.discord.discord_timer_alerts);
+        assert_eq!(settings.market.market_trader_status, TraderStatus::Ingame);
+        assert_eq!(settings.market.market_trader_locale.as_deref(), Some("en"));
+        assert_eq!(settings.log_file_path, None);
+        assert_eq!(
+            settings.trader_reach(),
+            Reach {
+                status: TraderStatus::Ingame,
+                locale: Some("en".to_owned()),
+            }
+        );
         assert!(!settings.alerts.fissure_notifications_enabled);
         assert!(settings.alerts.fissure_filters.is_empty());
         assert_eq!(settings.alerts.timers, TimerAlerts::default());

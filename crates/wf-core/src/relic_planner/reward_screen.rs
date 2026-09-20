@@ -48,6 +48,20 @@ pub struct RewardScreen {
     pub account: Option<AccountBalance>,
 }
 
+impl RewardScreen {
+    #[must_use]
+    pub fn chat_line(&self) -> String {
+        self.ranked
+            .iter()
+            .filter_map(|reward| {
+                let name = reward.name.trim_end_matches(" Blueprint");
+                Some(format!("[{name}] {}:platinum:", reward.plat?.round()))
+            })
+            .collect::<Vec<_>>()
+            .join(" | ")
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct AccountBalance {
     pub plat: i64,
@@ -251,6 +265,29 @@ mod tests {
         assert_eq!(
             band.image_name.as_deref(),
             Some("GenericComponentPrimeLatch.png")
+        );
+    }
+
+    #[test]
+    fn chat_line_priced_rewards() {
+        let inventory = fixtures::inventory();
+        let catalog = fixtures::catalog();
+        let rewards = vec![
+            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint".to_owned(),
+            "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint".to_owned(),
+            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint"
+                .to_owned(),
+        ];
+        let screen = recommend(
+            Some(&inventory),
+            &catalog,
+            &prices(),
+            &Favourites::default(),
+            &rewards,
+        );
+        assert_eq!(
+            screen.chat_line(),
+            "[Styanax Prime] 100:platinum: | [Trinity Prime Systems] 12:platinum:"
         );
     }
 

@@ -7,7 +7,7 @@ mod parse;
 mod ratelimit;
 mod ws;
 
-pub use book::{OrderBook, order_book};
+pub use book::{OrderBook, Reach, TraderStatus, order_book};
 pub use bulk::{Etagged, bulk_prices, bulk_riven_data, riven_auctions};
 pub use client::Client;
 pub use error::{MarketError, Result};

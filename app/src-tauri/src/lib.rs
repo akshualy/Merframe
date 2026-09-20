@@ -114,10 +114,16 @@ pub fn run() {
     let startup = overlay::adopt_xwayland();
     let builder = tauri::Builder::default()
         .plugin(navigation_guard())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                .with_denylist(&overlay::KINDS.map(overlay::Kind::label))
+                .build(),
+        )
         .invoke_handler(tauri::generate_handler![
             commands::tabs::inventory_tab,
             commands::tabs::foundry_tab,
@@ -137,6 +143,7 @@ pub fn run() {
             commands::app::overlay_content_shrank,
             commands::app::rescan_inventory,
             commands::app::export,
+            commands::app::pick_log_file,
             commands::app::settings_get,
             commands::app::settings_set,
             commands::app::test_notifications,

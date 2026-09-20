@@ -298,7 +298,8 @@ pub async fn market_items(state: Shared<'_>) -> CommandResult<Vec<MarketItem>> {
 #[tauri::command]
 pub async fn market_item_orders(state: Shared<'_>, slug: String) -> CommandResult<OrderBook> {
     let state = ready(&state)?;
-    Ok(state.market().order_book(&slug).await?)
+    let reach = read(&state.settings).trader_reach();
+    Ok(state.market().order_book(&slug, &reach).await?)
 }
 
 #[tauri::command]

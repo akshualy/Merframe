@@ -22,15 +22,21 @@ const REWARD_TICK: Duration = Duration::from_millis(100);
 const REWARD_TICKS: usize = 50;
 
 pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
-    let Some(path) = wf_log::default_log_path() else {
-        warn!("No EE.log path on this platform");
-        return;
-    };
-    write(&state.status).log_file = Some(path.display().to_string());
-    emit(&app, STATUS_UPDATED, state.status_snapshot());
-
+    let mut missing_reported = false;
     loop {
-        let selection = read(&state.settings).log_selection();
+        let (path, selection) = {
+            let settings = read(&state.settings);
+            (settings.log_path(), settings.log_selection())
+        };
+        let Some(path) = path else {
+            if !std::mem::replace(&mut missing_reported, true) {
+                warn!("No EE.log found, looking again every 10 s");
+            }
+            tokio::time::sleep(Duration::from_secs(10)).await;
+            continue;
+        };
+        write(&state.status).log_file = Some(path.display().to_string());
+        emit(&app, STATUS_UPDATED, state.status_snapshot());
         match wf_log::lines(&path, selection) {
             Ok(stream) => {
                 write(&state.status).log_attached = true;

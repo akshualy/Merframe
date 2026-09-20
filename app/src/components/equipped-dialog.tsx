@@ -70,7 +70,6 @@ export function EquippedDialog({ row, label }: { row: Row; label: string }) {
                         name="archon-shard"
                         size={16}
                         alt="Archon Shards"
-                        className="invert dark:invert-0"
                       />
                       {holder.archon_shards}
                     </span>

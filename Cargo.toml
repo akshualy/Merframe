@@ -40,10 +40,12 @@ tokio-tungstenite = { version = "0.28", features = ["rustls-tls-webpki-roots"] }
 futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
 tauri = { version = "2", features = [] }
 tauri-build = { version = "2", features = [] }
+tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-store = "2"
+tauri-plugin-window-state = "2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 wf-mem = { path = "crates/wf-mem" }
 wf-scan = { path = "crates/wf-scan" }

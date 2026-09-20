@@ -1,4 +1,5 @@
 export type OverlayMode = "auto" | "windows" | "tab";
+export type TraderStatus = "ingame" | "online" | "any";
 
 export type OverlayPlacement =
   | "top_left"
@@ -49,12 +50,16 @@ export interface Settings {
   discord_notifications_enabled: boolean;
   discord_webhook: string | null;
   discord_message_template: string;
+  discord_fissure_alerts: boolean;
+  discord_timer_alerts: boolean;
   notification_only_background: boolean;
   price_ttl_minutes: number;
   world_state_interval_minutes: number;
   market_poll_minutes: number;
   market_auto_close: boolean;
   take_rank_into_account: boolean;
+  market_trader_status: TraderStatus;
+  market_trader_locale: string | null;
   include_founders_items: boolean | null;
   include_forma_ranks: boolean;
   show_full_inventory: boolean;
@@ -71,4 +76,7 @@ export interface Settings {
   overlay_recommendation_count: number;
   overlay_mode: OverlayMode;
   overlay_only_while_game_active: boolean;
+  overlay_account_balance: boolean;
+  copy_relic_rewards: boolean;
+  log_file_path: string | null;
 }

@@ -146,7 +146,7 @@ function MainWindow() {
     return (
       <>
         <StartupScreen error={bootError} onRetry={retry} />
-        <Toaster position="bottom-right" richColors />
+        <Toaster position="bottom-right" />
       </>
     );
   }
@@ -181,7 +181,7 @@ function MainWindow() {
         </main>
       </div>
       <EventBridge />
-      <Toaster position="bottom-right" richColors />
+      <Toaster position="bottom-right" />
     </div>
   );
 }

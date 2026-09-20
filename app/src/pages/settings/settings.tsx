@@ -78,6 +78,8 @@ export function SettingsPage() {
     }
   }, [draft, setStored]);
 
+  const dirty = JSON.stringify(draft) !== JSON.stringify(stored);
+
   if (!draft) {
     return (
       <Page title="Settings" description={<Quoted quote={quote} />}>
@@ -92,7 +94,7 @@ export function SettingsPage() {
       title="Settings"
       description={<Quoted quote={quote} />}
       actions={
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || !dirty}>
           <Save className="size-4" />
           Save
         </Button>
@@ -101,8 +103,10 @@ export function SettingsPage() {
       {error && <ErrorNote message={error} />}
 
       <NotificationChannels draft={draft} patch={patch} />
-      <FissureAlerts draft={draft} patchAlerts={patchAlerts} />
-      <CycleTimers draft={draft} patchAlerts={patchAlerts} />
+      <div className="grid items-start gap-6 2xl:grid-cols-2">
+        <FissureAlerts draft={draft} patchAlerts={patchAlerts} />
+        <CycleTimers draft={draft} patchAlerts={patchAlerts} />
+      </div>
       <PricesAndData draft={draft} patch={patch} />
       <StatsTabSetting draft={draft} patch={patch} />
     </Page>
