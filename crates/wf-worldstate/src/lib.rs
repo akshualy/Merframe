@@ -7,6 +7,7 @@ mod error;
 #[cfg(feature = "fetch")]
 mod fetch;
 mod fissure;
+mod flash_sale;
 mod manifest;
 mod mission_types;
 mod mongo_date;
@@ -27,6 +28,7 @@ pub use fetch::{fetch, fetch_body};
 
 pub const WORLD_STATE_URL: &str = "https://api.warframe.com/cdn/worldState.php";
 pub use fissure::{Fissure, FissureTier, RelicTier};
+pub use flash_sale::MarketSale;
 pub use manifest::ManifestItem;
 pub use mission_types::mission_type_name;
 pub use nodes::{
@@ -46,6 +48,7 @@ use archon::LiteSortie;
 use circuit::EndlessXpWeek;
 use daily_deal::RawDailyDeal;
 use fissure::{ActiveMission, VoidStorm};
+use flash_sale::RawFlashSale;
 use prime::{PrimeVaultTrader, RawPrimeAccessAvailability};
 use season::SeasonInfo;
 use sortie::RawSortie;
@@ -67,6 +70,8 @@ struct RawWorldState {
     lite_sorties: Vec<LiteSortie>,
     #[serde(default)]
     daily_deals: Vec<RawDailyDeal>,
+    #[serde(default)]
+    flash_sales: Vec<RawFlashSale>,
     #[serde(default)]
     season_info: Option<SeasonInfo>,
     #[serde(default)]
@@ -112,6 +117,10 @@ impl WorldState {
 
     pub fn daily_deals(&self, now: DateTime<Utc>) -> Vec<DailyDeal> {
         daily_deal::daily_deals(&self.raw.daily_deals, now)
+    }
+
+    pub fn market_sales(&self, now: DateTime<Utc>) -> Vec<MarketSale> {
+        flash_sale::market_sales(&self.raw.flash_sales, now)
     }
 
     pub fn season(&self, now: DateTime<Utc>) -> Option<NightwaveSeason> {

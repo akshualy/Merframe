@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import type { FissurePath } from "@/types";
 import { FissuresByTier } from "./fissures";
+import { MarketSalesPanel } from "./market-sales";
 import {
   ArchonPanel,
   BaroPanel,
@@ -144,6 +145,7 @@ export function WorldPage() {
             resurgence={data?.prime_resurgence ?? null}
             now={now}
           />
+          <MarketSalesPanel sales={data?.market_sales ?? []} now={now} />
           <NightwavePanel nightwave={data?.nightwave ?? null} now={now} />
         </div>
       </div>

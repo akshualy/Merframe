@@ -44,7 +44,7 @@ const CHALLENGE_GROUPS: { value: ChallengeKind; label: string }[] = [
   { value: "eliteWeekly", label: "Elite weekly" },
 ];
 
-function InfoRow({
+export function InfoRow({
   label,
   hint,
   value,
@@ -91,7 +91,7 @@ function InfoRow({
   );
 }
 
-function Panel({
+export function Panel({
   icon,
   glyph,
   title,
@@ -115,12 +115,20 @@ function Panel({
   );
 }
 
-function Group({ label, children }: { label: string; children: ReactNode }) {
+export function Group({
+  label,
+  children,
+}: {
+  label?: string | undefined;
+  children: ReactNode;
+}) {
   return (
     <div className="mt-2 flex flex-col gap-1.5">
-      <Hint as="span" className="text-accent font-medium">
-        {label}
-      </Hint>
+      {label && (
+        <Hint as="span" className="text-accent font-medium">
+          {label}
+        </Hint>
+      )}
       {children}
     </div>
   );

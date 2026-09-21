@@ -56,7 +56,7 @@ pub struct NightwaveSeason {
     pub challenges: Vec<NightwaveChallenge>,
 }
 
-fn split_words(camel: &str) -> String {
+pub(crate) fn split_words(camel: &str) -> String {
     let mut words = String::with_capacity(camel.len() + 8);
     let mut previous: Option<char> = None;
     for ch in camel.chars() {

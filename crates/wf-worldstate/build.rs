@@ -143,11 +143,31 @@ fn emit_challenges(source: &mut String) -> Result<(), String> {
     Ok(())
 }
 
+fn emit_packages(source: &mut String) -> Result<(), String> {
+    let packages: BTreeMap<String, String> = table("data/store_packages.json")?;
+    if let Some(path) = packages
+        .keys()
+        .find(|path| path.starts_with('/') || **path != path.to_lowercase())
+    {
+        return Err(format!(
+            "data/store_packages.json: {path} is not a lowercase path below the store packages"
+        ));
+    }
+    if packages.values().any(String::is_empty) {
+        return Err("data/store_packages.json: a package has an empty name".to_owned());
+    }
+    emit(source, "STORE_PACKAGES", "&str", &packages, |name| {
+        format!("{name:?}")
+    });
+    Ok(())
+}
+
 fn generate() -> Result<String, String> {
     let mut source = String::new();
     emit_nodes(&mut source)?;
     emit_sorties(&mut source)?;
     emit_challenges(&mut source)?;
+    emit_packages(&mut source)?;
     Ok(source)
 }
 

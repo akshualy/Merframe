@@ -85,6 +85,15 @@ export interface DarvoDeal {
   expiry: string;
 }
 
+export interface MarketOffer {
+  name: string;
+  discount_percent: number;
+  platinum: number;
+  credits: number;
+  ends: string;
+  owned: boolean | null;
+}
+
 export type ChallengeKind = "daily" | "weekly" | "eliteWeekly";
 
 export interface NightwaveChallenge {
@@ -132,6 +141,7 @@ export interface WorldStateView {
   archon_hunt: ArchonHunt | null;
   timers: Timer[];
   daily_deals: DarvoDeal[];
+  market_sales: MarketOffer[];
   circuit: Circuit | null;
   prime_resurgence: PrimeResurgence | null;
   nightwave: NightwaveSeason | null;

@@ -6,8 +6,8 @@ use wf_core::Catalog;
 use wf_data::store_item_to_type;
 use wf_inventory::Inventory;
 use wf_worldstate::{
-    ArchonHunt, BaroStatus, Circuit, DailyDeal, Fissure, NightwaveSeason, Sortie, Timer, Varzia,
-    WorldState,
+    ArchonHunt, BaroStatus, Circuit, DailyDeal, Fissure, MarketSale, NightwaveSeason, Sortie,
+    Timer, Varzia, WorldState,
 };
 
 use super::{Shared, ready};
@@ -23,6 +23,7 @@ pub struct WorldStateView {
     pub archon_hunt: Option<ArchonHunt>,
     pub timers: Vec<Timer>,
     pub daily_deals: Vec<DarvoDeal>,
+    pub market_sales: Vec<MarketOffer>,
     pub circuit: Option<Circuit>,
     pub prime_resurgence: Option<PrimeResurgence>,
     pub nightwave: Option<NightwaveSeason>,
@@ -52,6 +53,16 @@ pub struct DarvoDeal {
     pub amount_total: u32,
     pub amount_sold: u32,
     pub expiry: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MarketOffer {
+    pub name: String,
+    pub discount_percent: u32,
+    pub platinum: u32,
+    pub credits: u32,
+    pub ends: DateTime<Utc>,
+    pub owned: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -183,6 +194,35 @@ fn darvo_deals(catalog: &Catalog, deals: Vec<DailyDeal>) -> Vec<DarvoDeal> {
         .collect()
 }
 
+fn market_offers(
+    catalog: &Catalog,
+    inventory: Option<&Inventory>,
+    sales: Vec<MarketSale>,
+) -> Vec<MarketOffer> {
+    let mut offers: Vec<MarketOffer> = sales
+        .into_iter()
+        .filter_map(|sale| {
+            let owned = match sale.package_name {
+                Some(_) => None,
+                None => inventory.map(|inventory| inventory.owns(&sale.type_name)),
+            };
+            let name = sale
+                .package_name
+                .or_else(|| catalog.item(&sale.type_name).map(|item| item.name.clone()))?;
+            Some(MarketOffer {
+                name,
+                discount_percent: sale.discount_percent,
+                platinum: sale.platinum,
+                credits: sale.credits,
+                ends: sale.ends,
+                owned,
+            })
+        })
+        .collect();
+    offers.sort_by(|a, b| a.ends.cmp(&b.ends).then_with(|| a.name.cmp(&b.name)));
+    offers
+}
+
 fn prime_resurgence(catalog: &Catalog, varzia: Varzia) -> PrimeResurgence {
     let mut offerings: Vec<ResurgenceOffering> = varzia
         .items
@@ -222,6 +262,7 @@ impl WorldStateView {
                 archon_hunt: None,
                 timers: Vec::new(),
                 daily_deals: Vec::new(),
+                market_sales: Vec::new(),
                 circuit: None,
                 prime_resurgence: None,
                 nightwave: None,
@@ -237,6 +278,7 @@ impl WorldStateView {
             archon_hunt: world.archon_hunt(now),
             timers: world.timers(now),
             daily_deals: darvo_deals(catalog, world.daily_deals(now)),
+            market_sales: market_offers(catalog, inventory, world.market_sales(now)),
             circuit: world
                 .circuit(now)
                 .map(|circuit| named_circuit(catalog, &circuit)),
@@ -328,6 +370,72 @@ mod tests {
         assert_eq!(deal.discount_percent, 20);
         assert_eq!(deal.amount_total, 165);
         assert_eq!(deal.expiry.timestamp_millis(), 1_788_814_800_000);
+    }
+
+    #[test]
+    fn market_sale_offers() {
+        const CATALOG: &str = r#"[
+            {"uniqueName":"/Lotus/Upgrades/Skins/Sigils/BossSigilJackal","name":"Jackal Sigil",
+             "category":"Sigils","type":"Sigil","tradable":false},
+            {"uniqueName":"/Lotus/Upgrades/Skins/Necro/NecroDangles","name":"Mortos Binds",
+             "category":"Skins","type":"Skin","tradable":false}
+        ]"#;
+        const SALES: &str = r#"{"FlashSales":[
+            {"TypeName":"/Lotus/Upgrades/Skins/Necro/NecroDangles","Discount":20,"PremiumOverride":40,
+             "StartDate":{"$date":{"$numberLong":"1788800000000"}},
+             "EndDate":{"$date":{"$numberLong":"1788900000000"}}},
+            {"TypeName":"/Lotus/Upgrades/Skins/Sigils/BossSigilJackal","RegularOverride":1,
+             "ProductExpiryOverride":{"$date":{"$numberLong":"1788880000000"}},
+             "StartDate":{"$date":{"$numberLong":"1788800000000"}},
+             "EndDate":{"$date":{"$numberLong":"1788880000000"}}},
+            {"TypeName":"/Lotus/Types/StoreItems/Packages/CrpIndexTwoArmorPack","Discount":20,"PremiumOverride":80,
+             "StartDate":{"$date":{"$numberLong":"1788800000000"}},
+             "EndDate":{"$date":{"$numberLong":"1788890000000"}}},
+            {"TypeName":"/Lotus/Upgrades/Skins/Unlisted/UnlistedSkin","Discount":20,"PremiumOverride":60,
+             "StartDate":{"$date":{"$numberLong":"1788800000000"}},
+             "EndDate":{"$date":{"$numberLong":"1788900000000"}}}
+        ]}"#;
+
+        let world = WorldState::parse(SALES).unwrap();
+        let catalog = Catalog::from_json(CATALOG, "[]").unwrap();
+        let inventory = Inventory::parse(INVENTORY).unwrap();
+        let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
+        let view = WorldStateView::build(Some(&world), &catalog, Some(&inventory), now, None);
+        let offers: Vec<(&str, u32, Option<bool>)> = view
+            .market_sales
+            .iter()
+            .map(|offer| (offer.name.as_str(), offer.discount_percent, offer.owned))
+            .collect();
+        assert_eq!(
+            offers,
+            vec![
+                ("Jackal Sigil", 0, Some(true)),
+                ("Quaro Armor Collection", 20, None),
+                ("Mortos Binds", 20, Some(false)),
+            ]
+        );
+        assert_eq!(view.market_sales[0].credits, 1);
+        assert_eq!(view.market_sales[2].platinum, 40);
+    }
+
+    #[test]
+    fn fixture_market_sales() {
+        let named: Vec<String> = view()
+            .market_sales
+            .into_iter()
+            .map(|offer| offer.name)
+            .collect();
+        assert_eq!(
+            named,
+            vec![
+                "Halloween 2023 Sentinel Bundle",
+                "Dog Days Noggle Pack",
+                "Quaro Armor Collection"
+            ]
+        );
+        let world = WorldState::parse(FIXTURE).unwrap();
+        let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
+        assert_eq!(world.market_sales(now).len(), 17);
     }
 
     #[test]
@@ -449,6 +557,7 @@ mod tests {
         assert!(view.fissures.is_empty());
         assert!(view.timers.is_empty());
         assert!(view.daily_deals.is_empty());
+        assert!(view.market_sales.is_empty());
         assert!(view.nightwave.is_none());
         assert!(view.fetched_at.is_none());
     }
