@@ -23,6 +23,15 @@ pub enum ResourceScope {
     Starred,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct ResourceQuery {
+    pub source: ResourceSource,
+    pub scope: ResourceScope,
+    pub kind: Option<String>,
+    pub prime: Option<bool>,
+    pub owned: Option<bool>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ResourceUse {
     pub unique_name: String,
@@ -54,8 +63,7 @@ pub struct ResourcesTab {
 
 pub(crate) fn tab(
     view: &View<'_>,
-    source: ResourceSource,
-    scope: ResourceScope,
+    query: &ResourceQuery,
     include_founders: Option<bool>,
     now: DateTime<Utc>,
 ) -> ResourcesTab {
@@ -72,10 +80,7 @@ pub(crate) fn tab(
     let mut rows: BTreeMap<String, ResourceRow> = BTreeMap::new();
     let mut counted = 0;
     let mut credits = 0;
-    for item in items
-        .iter()
-        .filter(|item| selected(item, &held, source, scope))
-    {
+    for item in items.iter().filter(|item| selected(item, &held, query)) {
         let Some(details) =
             foundry::details(view.inventory, view.catalog, view.prices, &item.unique_name)
         else {
@@ -167,21 +172,22 @@ fn held_recipes(inventory: &Inventory) -> HashSet<&str> {
         .collect()
 }
 
-fn selected(
-    item: &FoundryItem,
-    held: &HashSet<&str>,
-    source: ResourceSource,
-    scope: ResourceScope,
-) -> bool {
+fn selected(item: &FoundryItem, held: &HashSet<&str>, query: &ResourceQuery) -> bool {
     if item.progress.pending {
         return false;
     }
-    let in_scope = match scope {
+    let in_scope = match query.scope {
         ResourceScope::Mastery => !item.progress.owned && !item.mastered,
         ResourceScope::All => true,
         ResourceScope::Starred => item.favourite,
     };
-    in_scope && (source == ResourceSource::Craftable || holds_a_recipe(held, item))
+    in_scope
+        && query.kind.as_deref().is_none_or(|kind| item.kind == kind)
+        && query
+            .prime
+            .is_none_or(|prime| item.prime.is_some() == prime)
+        && query.owned.is_none_or(|owned| item.progress.owned == owned)
+        && (query.source == ResourceSource::Craftable || holds_a_recipe(held, item))
 }
 
 fn holds_a_recipe(held: &HashSet<&str>, item: &FoundryItem) -> bool {
@@ -226,8 +232,13 @@ mod tests {
         };
         tab(
             &view,
-            source,
-            scope,
+            &ResourceQuery {
+                source,
+                scope,
+                kind: None,
+                prime: None,
+                owned: None,
+            },
             None,
             DateTime::from_timestamp_millis(NOW_MS).unwrap(),
         )
@@ -406,6 +417,57 @@ mod tests {
         assert_eq!(names(&starred), ["Excalibur"]);
         assert!(row(&starred, OROKIN_CELL).used_by[0].favourite);
         assert_eq!(row(&starred, OROKIN_CELL).required, 1);
+    }
+
+    #[test]
+    fn kind_prime_and_owned_filters() {
+        let inventory = Inventory::parse(&unbuilt_braton_prime()).unwrap();
+        let catalog = fixtures::catalog();
+        let view = View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &FixedPrices::default(),
+            favourites: &Favourites::default(),
+            listings: &MarketListings::default(),
+        };
+        let filtered = |kind: Option<&str>, prime, owned| {
+            tab(
+                &view,
+                &ResourceQuery {
+                    source: ResourceSource::Craftable,
+                    scope: ResourceScope::All,
+                    kind: kind.map(str::to_owned),
+                    prime,
+                    owned,
+                },
+                None,
+                DateTime::from_timestamp_millis(NOW_MS).unwrap(),
+            )
+        };
+
+        assert_eq!(
+            names(&filtered(None, None, None)),
+            ["Braton Prime", "Excalibur", "Trinity Prime"]
+        );
+        assert_eq!(
+            names(&filtered(Some("warframe"), None, None)),
+            ["Excalibur", "Trinity Prime"]
+        );
+        assert_eq!(
+            names(&filtered(Some("primary"), None, None)),
+            ["Braton Prime"]
+        );
+        assert_eq!(
+            names(&filtered(None, Some(true), None)),
+            ["Braton Prime", "Trinity Prime"]
+        );
+        assert_eq!(names(&filtered(None, Some(false), None)), ["Excalibur"]);
+        assert_eq!(names(&filtered(None, None, Some(false))), ["Braton Prime"]);
+        assert_eq!(
+            names(&filtered(None, None, Some(true))),
+            ["Excalibur", "Trinity Prime"]
+        );
+        assert!(names(&filtered(Some("warframe"), Some(true), Some(false))).is_empty());
     }
 
     #[test]
