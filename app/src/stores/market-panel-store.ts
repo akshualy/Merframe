@@ -6,7 +6,6 @@ export interface ListingRequest {
   slug: string;
   side: OrderType;
   rank: number | null;
-  nonce: number;
 }
 
 interface MarketPanelState {
@@ -17,6 +16,7 @@ interface MarketPanelState {
   hide: () => void;
   setItems: (items: MarketItem[]) => void;
   openListing: (slug: string, side: OrderType, rank?: number | null) => void;
+  takeRequest: () => void;
 }
 
 export const useMarketPanelStore = create<MarketPanelState>()(
@@ -29,7 +29,8 @@ export const useMarketPanelStore = create<MarketPanelState>()(
       hide: () => set({ open: false }),
       setItems: (items) => set({ items }),
       openListing: (slug, side, rank = null) =>
-        set({ open: true, request: { slug, side, rank, nonce: Date.now() } }),
+        set({ open: true, request: { slug, side, rank } }),
+      takeRequest: () => set({ request: null }),
     }),
     {
       name: "merframe.marketPanel",

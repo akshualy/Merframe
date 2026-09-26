@@ -302,7 +302,9 @@ export function FoundryTreeDialog({
                 selected={selected}
                 onSelect={setSelected}
               />
-              {selectedNode && <NodeDetails node={selectedNode} />}
+              {selectedNode && (
+                <NodeDetails node={selectedNode} onListing={onClose} />
+              )}
               <ShoppingList
                 label="Blueprints still to craft"
                 items={details.summary.blueprints_needed}

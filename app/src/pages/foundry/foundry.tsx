@@ -100,7 +100,7 @@ export function FoundryPage() {
             </span>
             <SearchInput
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onValueChange={setQuery}
               placeholder="Search"
             />
           </div>

@@ -148,7 +148,7 @@ export function DataTable<TData, TValue>({
       <div className="flex flex-wrap items-center gap-3">
         <SearchInput
           value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          onValueChange={setGlobalFilter}
           placeholder={searchPlaceholder}
         />
         {toolbar}

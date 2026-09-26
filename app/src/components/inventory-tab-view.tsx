@@ -103,7 +103,7 @@ export function InventoryTabView({
       <div className="flex flex-wrap items-center gap-2">
         <SearchInput
           value={filters.search}
-          onChange={(e) => update({ search: e.target.value })}
+          onValueChange={(search) => update({ search })}
           placeholder="Search"
         />
 

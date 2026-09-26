@@ -1,10 +1,11 @@
-import { ExternalLink, Search, X } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ItemImage } from "@/components/item-image";
 import { OrderList } from "@/components/market-order-list";
 import { EmptyNote } from "@/components/page";
+import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, reportError } from "@/lib/bridge";
 import { marketUrl } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/world";
 import { useAppStore } from "@/stores/app-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
@@ -80,11 +82,10 @@ function ItemSearch({
 
   return (
     <div className="relative">
-      <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-      <Input
+      <SearchInput
         value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
+        onValueChange={(next) => {
+          setQuery(next);
           setOpen(true);
         }}
         onFocus={() => setOpen(query.trim().length > 0)}
@@ -95,7 +96,7 @@ function ItemSearch({
           }
         }}
         placeholder="Search warframe.market items"
-        className="pl-9"
+        className="w-full"
       />
       {open && matches.length > 0 && (
         <ul
@@ -129,7 +130,7 @@ function ItemSearch({
 }
 
 export function MarketPanel() {
-  const { items, request, hide } = useMarketPanelStore();
+  const { open, items, request, takeRequest, hide } = useMarketPanelStore();
   const signedIn = useAppStore((state) => state.status?.market_account) != null;
   const navigate = useNavigate();
   const [selected, setSelected] = useState<MarketItem | null>(null);
@@ -182,13 +183,14 @@ export function MarketPanel() {
     if (!request) {
       return;
     }
+    takeRequest();
     const item = items.find((candidate) => candidate.slug === request.slug);
     if (item) {
       handlePick(item, request.side, request.rank);
     } else {
       toast.error("warframe.market does not list this item any more");
     }
-  }, [request, items, handlePick]);
+  }, [request, items, takeRequest, handlePick]);
 
   const handleOpenMarket = useCallback(async () => {
     if (!selected) {
@@ -272,7 +274,12 @@ export function MarketPanel() {
   const lowestSell = listings?.sell[0]?.platinum ?? null;
 
   return (
-    <aside className="bg-card flex w-96 shrink-0 flex-col border-l">
+    <aside
+      className={cn(
+        "bg-card flex w-96 shrink-0 flex-col border-l",
+        !open && "hidden",
+      )}
+    >
       <div className="flex h-14 shrink-0 items-center justify-between border-b px-4">
         <span className="text-foreground font-bold">warframe.market</span>
         <Button variant="ghost" size="icon" onClick={hide} title="Close">

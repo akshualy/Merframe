@@ -144,7 +144,7 @@ function useBoot() {
 function MainWindow() {
   const retry = useBoot();
   const { ready, bootError, settings, setUpdate } = useAppStore();
-  const { open: panelOpen, setItems } = useMarketPanelStore();
+  const setItems = useMarketPanelStore((state) => state.setItems);
   const statsTab = settings?.stats_tab_enabled ?? true;
   const checkForUpdates = settings?.check_for_updates ?? true;
 
@@ -205,7 +205,7 @@ function MainWindow() {
           </Routes>
         </main>
       </div>
-      {panelOpen && <MarketPanel />}
+      <MarketPanel />
       <EventBridge />
       <UpdateDialog />
       <Toaster position="bottom-right" />

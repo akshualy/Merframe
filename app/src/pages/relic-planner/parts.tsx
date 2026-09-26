@@ -2,9 +2,9 @@ import { X } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { ItemImage, prefetchImages } from "@/components/item-image";
 import { Section } from "@/components/page";
+import { SearchInput } from "@/components/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useLoaded } from "@/hooks/use-loaded";
 import { api, reportError } from "@/lib/bridge";
 import { displayNameFromPath, num, percent } from "@/lib/format";
@@ -44,9 +44,9 @@ export function WantedParts({
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Input
+          <SearchInput
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onValueChange={setQuery}
             placeholder="Search missing parts"
             className="min-w-48 flex-1"
           />
