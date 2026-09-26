@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 
 use chrono::{DateTime, Duration, Utc};
 use serde::Serialize;
-use wf_core::{InventoryTab, MarketListings, MarketStock, ModRow, PriceSource, SetRow};
+use wf_core::{Catalog, InventoryTab, MarketListings, MarketStock, ModRow, PriceSource, SetRow};
 use wf_market::{Auction, Item, Order, OrderType, UserStatus};
 
 use crate::state::{AppState, lock, read, write};
@@ -134,13 +134,6 @@ pub fn english_name(item: &Item) -> String {
     }
 }
 
-pub fn english_thumb(item: &Item) -> String {
-    item.i18n
-        .get("en")
-        .map(|entry| entry.thumb.clone())
-        .unwrap_or_default()
-}
-
 #[derive(Default)]
 pub struct Holdings<'a> {
     stock: Option<MarketStock<'a>>,
@@ -219,7 +212,7 @@ pub struct OrderRow {
     pub item_id: String,
     pub slug: String,
     pub name: String,
-    pub thumb: String,
+    pub image_name: Option<String>,
     pub category: MarketCategory,
     pub platinum: u32,
     pub quantity: u32,
@@ -237,6 +230,7 @@ pub struct OrderRow {
 pub fn order_row(
     order: &Order,
     item: &Item,
+    catalog: &Catalog,
     holdings: &Holdings,
     prices: &dyn PriceSource,
     take_rank_into_account: bool,
@@ -267,7 +261,7 @@ pub fn order_row(
         item_id: order.item_id.clone(),
         slug: item.slug.clone(),
         name,
-        thumb: english_thumb(item),
+        image_name: catalog.icon_for(&item.game_ref),
         category,
         platinum: order.platinum,
         quantity: order.quantity,
@@ -340,6 +334,7 @@ pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Vec<O
                 Some(order_row(
                     order,
                     item,
+                    core.catalog(),
                     &holdings,
                     state.prices.as_ref(),
                     take_rank_into_account,
@@ -416,6 +411,10 @@ mod tests {
         }
     }
 
+    fn empty_catalog() -> Catalog {
+        Catalog::from_json("[]", "[]", "[]").unwrap()
+    }
+
     fn moment() -> DateTime<Utc> {
         DateTime::from_timestamp(1_757_410_800, 0).unwrap()
     }
@@ -447,7 +446,6 @@ mod tests {
             name: name.to_owned(),
             unique_name: unique_name.to_owned(),
             image_name: None,
-            market_thumb: None,
             count,
             rank,
             max_rank: None,
@@ -630,6 +628,7 @@ mod tests {
         let row = order_row(
             &order(&set.id, 1, None, None),
             &set,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -640,6 +639,7 @@ mod tests {
         let row = order_row(
             &order(&set.id, 2, None, None),
             &set,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -656,7 +656,7 @@ mod tests {
         let set = item("mirage_prime_set", "Mirage Prime Set", &["set"], None);
         let mut wanted = order(&set.id, 9, None, None);
         wanted.order_type = OrderType::Buy;
-        let row = order_row(&wanted, &set, &holdings, &prices, true);
+        let row = order_row(&wanted, &set, &empty_catalog(), &holdings, &prices, true);
         assert_eq!(row.owned, 1);
         assert!(!row.show_warning);
     }
@@ -667,6 +667,7 @@ mod tests {
         let row = order_row(
             &order(&set.id, 1, None, None),
             &set,
+            &empty_catalog(),
             &Holdings::default(),
             &TestPrices,
             true,
@@ -687,6 +688,7 @@ mod tests {
         let row = order_row(
             &order(&barrel.id, 1, None, None),
             &barrel,
+            &empty_catalog(),
             &holdings,
             &TestPrices,
             true,
@@ -705,6 +707,7 @@ mod tests {
         let ranked = order_row(
             &order(&mod_item.id, 1, Some(10), None),
             &mod_item,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -713,6 +716,7 @@ mod tests {
         let unranked = order_row(
             &order(&mod_item.id, 1, Some(0), None),
             &mod_item,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -722,6 +726,7 @@ mod tests {
         let pooled = order_row(
             &order(&mod_item.id, 1, Some(10), None),
             &mod_item,
+            &empty_catalog(),
             &holdings,
             &prices,
             false,
@@ -733,6 +738,7 @@ mod tests {
         order_row(
             &order(&item.id, 1, rank, None),
             item,
+            &empty_catalog(),
             &Holdings::of(None, &tab()),
             &TestPrices,
             true,
@@ -780,6 +786,7 @@ mod tests {
         let maxed = order_row(
             &order(&arcane.id, 1, Some(5), None),
             &arcane,
+            &empty_catalog(),
             &holdings,
             &prices,
             false,
@@ -788,6 +795,7 @@ mod tests {
         let unranked = order_row(
             &order(&arcane.id, 1, None, None),
             &arcane,
+            &empty_catalog(),
             &holdings,
             &prices,
             false,
@@ -804,6 +812,7 @@ mod tests {
         let row = order_row(
             &order(&set.id, 1, None, None),
             &set,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -822,6 +831,7 @@ mod tests {
         let unranked = order_row(
             &order(&mod_item.id, 1, Some(0), None),
             &mod_item,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -832,6 +842,7 @@ mod tests {
         let maxed = order_row(
             &order(&mod_item.id, 1, Some(10), None),
             &mod_item,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -842,6 +853,7 @@ mod tests {
         let halfway = order_row(
             &order(&mod_item.id, 1, Some(5), None),
             &mod_item,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -859,6 +871,7 @@ mod tests {
         let row = order_row(
             &order(&set.id, 1, None, None),
             &set,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,
@@ -888,6 +901,7 @@ mod tests {
         let rows = vec![order_row(
             &order(&barrel.id, 1, None, None),
             &barrel,
+            &empty_catalog(),
             &holdings,
             &prices,
             true,

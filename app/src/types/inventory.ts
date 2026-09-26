@@ -58,7 +58,6 @@ export interface ModRow {
   name: string;
   unique_name: string;
   image_name: string | null;
-  market_thumb: string | null;
   count: number;
   rank: number | null;
   max_rank: number | null;
