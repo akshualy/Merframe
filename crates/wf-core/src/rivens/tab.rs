@@ -12,6 +12,10 @@ pub(super) fn weapon_class(name: &str) -> String {
         .to_owned()
 }
 
+fn veiled_market_slug(name: &str) -> String {
+    format!("{}_(veiled)", market_slug(name))
+}
+
 fn veiled(inventory: &Inventory, catalog: &Catalog) -> Vec<VeiledGroup> {
     let mut groups: Vec<VeiledGroup> = Vec::new();
     let mut push = |challenge_id: String, complication: Option<String>, riven: VeiledRiven| {
@@ -48,6 +52,7 @@ fn veiled(inventory: &Inventory, catalog: &Catalog) -> Vec<VeiledGroup> {
                 riven_id: upgrade.item_id.as_str().to_owned(),
                 item_type: upgrade.item_type.clone(),
                 weapon_class: name.as_deref().map(weapon_class),
+                market_slug: name.as_deref().map(veiled_market_slug),
                 image_name: item.and_then(|item| item.image_name.clone()),
                 count: 1,
                 progress: challenge.progress,
@@ -67,6 +72,7 @@ fn veiled(inventory: &Inventory, catalog: &Catalog) -> Vec<VeiledGroup> {
                 riven_id: format!("{}#unrevealed", stack.item_type),
                 item_type: stack.item_type.clone(),
                 weapon_class: name.as_deref().map(weapon_class),
+                market_slug: name.as_deref().map(veiled_market_slug),
                 image_name: item.and_then(|item| item.image_name.clone()),
                 count: stack.item_count,
                 progress: -1,
@@ -291,6 +297,10 @@ mod tests {
         assert!(!kills.rivens[0].pre_veiled);
         assert_eq!(kills.rivens[0].weapon_class.as_deref(), Some("Kitgun"));
         assert_eq!(kills.rivens[0].name.as_deref(), Some("Kitgun Riven Mod"));
+        assert_eq!(
+            kills.rivens[0].market_slug.as_deref(),
+            Some("kitgun_riven_mod_(veiled)")
+        );
 
         let unrevealed = tab
             .veiled

@@ -113,4 +113,16 @@ export function marketUrl(slug: string): string {
   return `https://warframe.market/items/${slug}`;
 }
 
+export function marketListingPath(
+  slug: string,
+  side: "sell" | "buy",
+  rank: number | null = null,
+): string {
+  const params = new URLSearchParams({ item: slug, side });
+  if (rank !== null) {
+    params.set("rank", String(rank));
+  }
+  return `/market?${params}`;
+}
+
 export const MARKET_CHATS_URL = "https://warframe.market/im/chats";

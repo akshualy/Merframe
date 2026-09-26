@@ -8,6 +8,7 @@ import type {
   FoundryTab,
   GameStatus,
   InventoryTab,
+  ItemListings,
   ListingChoices,
   MarketAccount,
   MarketItem,
@@ -17,7 +18,6 @@ import type {
   MasteryTab,
   NewOrder,
   Order,
-  OrderBook,
   OrderPatch,
   OrderRow,
   OverlayState,
@@ -165,7 +165,7 @@ export const api = {
     call<number>("market_set_visibility", { visible }),
   marketItems: () => call<MarketItem[]>("market_items"),
   marketItemOrders: (slug: string) =>
-    call<OrderBook>("market_item_orders", { slug }),
+    call<ItemListings>("market_item_orders", { slug }),
   marketPostRiven: (itemId: string, choices: ListingChoices) =>
     call<string>("market_post_riven", { itemId, choices }),
   marketMyAuctions: () => call<Auction[]>("market_my_auctions"),

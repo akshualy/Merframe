@@ -5,6 +5,7 @@ import {
   dateTime,
   dayLabel,
   displayNameFromPath,
+  marketListingPath,
   marketUrl,
   monthLabel,
   num,
@@ -170,6 +171,20 @@ describe("marketUrl", () => {
   it("item page for a slug", () => {
     expect(marketUrl("axi_a20_relic")).toBe(
       "https://warframe.market/items/axi_a20_relic",
+    );
+  });
+});
+
+describe("marketListingPath", () => {
+  it("opens the market page on the item and side", () => {
+    expect(marketListingPath("axi_a20_relic", "sell")).toBe(
+      "/market?item=axi_a20_relic&side=sell",
+    );
+  });
+
+  it("carries the rank of a mod", () => {
+    expect(marketListingPath("serration", "buy", 10)).toBe(
+      "/market?item=serration&side=buy&rank=10",
     );
   });
 });

@@ -17,7 +17,7 @@ export function FilterGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border p-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+        "grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
         className,
       )}
     >

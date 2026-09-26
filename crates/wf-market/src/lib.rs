@@ -1,16 +1,16 @@
-mod book;
 mod bulk;
 mod client;
 mod error;
+mod listings;
 mod models;
 mod parse;
 mod ratelimit;
 mod ws;
 
-pub use book::{OrderBook, Reach, TraderStatus, order_book};
 pub use bulk::{Etagged, bulk_prices, bulk_riven_data, riven_auctions};
 pub use client::Client;
 pub use error::{MarketError, Result};
+pub use listings::{ItemListings, Reach, TraderStatus, item_listings};
 pub use models::{
     Auction, AuctionItem, Chat, CloseOrderRequest, CreateAuctionItem, CreateAuctionRequest,
     CreateOrderRequest, GoodRoll, GoodRollAlternative, Item, ItemLocalization, Order, OrderType,

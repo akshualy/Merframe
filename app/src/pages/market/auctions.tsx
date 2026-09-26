@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, RefreshCw, Wrench } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -48,10 +48,14 @@ function auctionName(auction: Auction, items: MarketItem[]): string {
 export function AuctionsTable({
   auctions,
   items,
+  onRefresh,
+  onSetVisibility,
   runMarketAction,
 }: {
   auctions: Auction[];
   items: MarketItem[];
+  onRefresh: () => void;
+  onSetVisibility: (visible: boolean) => void;
   runMarketAction: (promise: Promise<unknown>, message: string) => void;
 }) {
   const [editing, setEditing] = useState<Auction | null>(null);
@@ -234,6 +238,36 @@ export function AuctionsTable({
         tableId="marketAuctions"
         columns={columns}
         data={auctions}
+        toolbar={
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Wrench className="size-4" />
+                  Bulk Actions
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  disabled={auctions.length === 0}
+                  onSelect={() => onSetVisibility(true)}
+                >
+                  Show all auctions
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={auctions.length === 0}
+                  onSelect={() => onSetVisibility(false)}
+                >
+                  Hide all auctions
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={onRefresh}>
+              <RefreshCw className="size-4" />
+              Refresh
+            </Button>
+          </>
+        }
         searchPlaceholder="Filter auctions"
         initialSorting={[{ id: "updated", desc: true }]}
         rowKey={(row) => row.id}

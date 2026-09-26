@@ -95,6 +95,7 @@ pub struct VeiledRiven {
     pub item_type: String,
     pub name: Option<String>,
     pub weapon_class: Option<String>,
+    pub market_slug: Option<String>,
     pub image_name: Option<String>,
     pub count: i64,
     pub progress: i64,

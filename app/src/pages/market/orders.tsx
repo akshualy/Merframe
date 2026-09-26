@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Ellipsis, TriangleAlert, Wrench } from "lucide-react";
+import { Ellipsis, RefreshCw, TriangleAlert, Wrench } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { FilterGrid } from "@/components/filter-grid";
@@ -55,10 +55,14 @@ function detail(row: OrderRow) {
 export function OrdersTable({
   rows,
   onCompare,
+  onRefresh,
+  onSetVisibility,
   runMarketAction,
 }: {
   rows: OrderRow[];
   onCompare: (slug: string) => void;
+  onRefresh: () => void;
+  onSetVisibility: (visible: boolean) => void;
   runMarketAction: (promise: Promise<unknown>, message: string) => void;
 }) {
   const [confirming, setConfirming] = useState<"fix" | "remove" | null>(null);
@@ -338,30 +342,48 @@ export function OrdersTable({
         pageSize={25}
         emptyMessage="No order matches these filters."
         toolbar={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Wrench className="size-4" />
-                Bulk Actions
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem
-                disabled={missingCount === 0}
-                onSelect={() => setConfirming("fix")}
-              >
-                Fix all missing items ({num(missingCount)})
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={rows.length === 0}
-                variant="destructive"
-                onSelect={() => setConfirming("remove")}
-              >
-                Remove all orders
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Wrench className="size-4" />
+                  Bulk Actions
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  disabled={rows.length === 0}
+                  onSelect={() => onSetVisibility(true)}
+                >
+                  Show all orders
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={rows.length === 0}
+                  onSelect={() => onSetVisibility(false)}
+                >
+                  Hide all orders
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={missingCount === 0}
+                  onSelect={() => setConfirming("fix")}
+                >
+                  Fix all missing items ({num(missingCount)})
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={rows.length === 0}
+                  variant="destructive"
+                  onSelect={() => setConfirming("remove")}
+                >
+                  Remove all orders
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={onRefresh}>
+              <RefreshCw className="size-4" />
+              Refresh
+            </Button>
+          </>
         }
         filters={
           <FilterGrid

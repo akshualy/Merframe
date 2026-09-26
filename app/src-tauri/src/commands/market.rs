@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use wf_core::{ListingChoices, riven_listing_payload};
 use wf_market::{
-    Auction, CreateOrderRequest, Order, OrderBook, OrderType, Platform, UpdateAuctionRequest,
+    Auction, CreateOrderRequest, ItemListings, Order, OrderType, Platform, UpdateAuctionRequest,
     UpdateOrderRequest, UserStatus,
 };
 
@@ -297,10 +297,10 @@ pub async fn market_items(state: Shared<'_>) -> CommandResult<Vec<MarketItem>> {
 }
 
 #[tauri::command]
-pub async fn market_item_orders(state: Shared<'_>, slug: String) -> CommandResult<OrderBook> {
+pub async fn market_item_orders(state: Shared<'_>, slug: String) -> CommandResult<ItemListings> {
     let state = ready(&state)?;
     let reach = read(&state.settings).trader_reach();
-    Ok(state.market().order_book(&slug, &reach).await?)
+    Ok(state.market().item_listings(&slug, &reach).await?)
 }
 
 #[tauri::command]
