@@ -37,11 +37,13 @@ Warframe and the game artwork under `app/public/game/` are the property of Digit
 
 ## Running the app
 
-Releases are provided as an `.msi` installer (Windows), `.deb` and `.rpm` packages, and an `AppImage`.
+Releases are provided as an `.exe` or `.msi` installer (Windows), `.deb`, `.rpm`, Arch `.pkg.tar.zst` packages, and an `AppImage`.
 
 Windows may warn you on install that the application is not known. This is normal, and I'm not willing to pay Microsoft to make it go away.
 
-`AppImage` is the preferred way of running the application on Linux.  
+`AppImage` is the preferred way of running the application on Linux.
+
+On Arch, install the `.pkg.tar.zst` with `pacman -U`, or build it from source with `makepkg` in `packaging/arch/`.
 
 ## Running the app from source
 

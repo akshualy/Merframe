@@ -34,8 +34,6 @@ jobs:
   build:
     needs: version
     if: needs.version.outputs.release == 'true'
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -59,12 +57,58 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
         working-directory: app
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm tauri build
+        working-directory: app
+      - if: runner.os == 'Linux'
+        run: .github/scripts/repack-appimage.sh
+      - uses: actions/upload-artifact@v4
         with:
-          projectPath: app
-          tagName: v${{ needs.version.outputs.version }}
-          releaseName: Merframe ${{ needs.version.outputs.version }}
-          releaseDraft: true
-          prerelease: false
+          name: bundle-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            target/release/bundle/deb/*.deb
+            target/release/bundle/rpm/*.rpm
+            target/release/bundle/appimage/*.AppImage
+            target/release/bundle/msi/*.msi
+            target/release/bundle/nsis/*.exe
+
+  arch:
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - run: pacman -Syu --noconfirm git webkit2gtk-4.1 gtk3 hicolor-icon-theme cargo nodejs pnpm
+      - uses: actions/checkout@v4
+      - run: |
+          useradd -m builder
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git archive --format=tar.gz --prefix="Merframe-$VERSION/" -o "packaging/arch/Merframe-$VERSION.tar.gz" HEAD
+          chown -R builder packaging/arch
+          cd packaging/arch
+          sed -i "s/^pkgver=.*/pkgver=$VERSION/" PKGBUILD
+          su builder -c "makepkg --noconfirm"
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-arch
+          if-no-files-found: error
+          path: packaging/arch/*.pkg.tar.zst
+
+  release:
+    needs: [version, build, arch]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: bundles
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: Merframe ${{ needs.version.outputs.version }}
+          draft: true
+          files: bundles/**

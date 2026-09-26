@@ -1,0 +1,41 @@
+pkgname=merframe
+pkgver=0.1.7
+pkgrel=1
+pkgdesc="Companion app for Warframe: inventory, foundry, mastery, relics, rivens, warframe.market and world timers"
+arch=('x86_64')
+url="https://github.com/akshualy/Merframe"
+license=('GPL-3.0-or-later')
+depends=('webkit2gtk-4.1' 'gtk3' 'hicolor-icon-theme')
+makedepends=('cargo' 'nodejs' 'pnpm')
+source=("Merframe-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+prepare() {
+  cd "Merframe-$pkgver/app"
+  pnpm install --frozen-lockfile
+}
+
+build() {
+  cd "Merframe-$pkgver/app"
+  pnpm tauri build --no-bundle
+}
+
+package() {
+  cd "Merframe-$pkgver"
+  install -Dm755 target/release/merframe "$pkgdir/usr/bin/merframe"
+  install -Dm644 app/src-tauri/icons/32x32.png "$pkgdir/usr/share/icons/hicolor/32x32/apps/merframe.png"
+  install -Dm644 app/src-tauri/icons/128x128.png "$pkgdir/usr/share/icons/hicolor/128x128/apps/merframe.png"
+  install -Dm644 app/src-tauri/icons/128x128@2x.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/merframe.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/merframe.desktop" <<'DESKTOP'
+[Desktop Entry]
+Type=Application
+Name=Merframe
+Comment=Companion app for Warframe
+Exec=merframe
+Icon=merframe
+Terminal=false
+Categories=Game;Utility;
+StartupWMClass=merframe
+DESKTOP
+}
