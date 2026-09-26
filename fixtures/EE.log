@@ -20,6 +20,7 @@
 0.108 Sys [Info]: Found 34 cache blocks...
 0.469 Sys [Info]: Loaded TOC for Windows/H.Misc (took 190ms, loaded 247372 entries, found 426 deleted)
 0.537 Sys [Info]: Loaded TOC for Windows/B.Misc (took 60.3ms, loaded 151840 entries, found 24 deleted)
+2.227 Sys [Info]: Monitor Info (0, 1920, 0, 1080).
 4.405 Sys [Info]: Steam active. IsBicPic=0 IsSteamDeck=0
 4.647 Sys [Info]: Server ready for load [Heap: 220,134,512/240,189,440 Footprint: 641,036,288 Handles: 0], sessionPlayers=1
 2.740 Input [Info]: Enumerated STEAM controller: 0

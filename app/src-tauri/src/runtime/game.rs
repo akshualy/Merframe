@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
@@ -39,6 +40,7 @@ pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>
         emit(&app, STATUS_UPDATED, state.status_snapshot());
         match wf_log::lines(&path, selection) {
             Ok(stream) => {
+                replay_game_monitor(&app, &state, &path);
                 write(&state.status).log_attached = true;
                 emit(&app, STATUS_UPDATED, state.status_snapshot());
                 pin_mut!(stream);
@@ -110,6 +112,27 @@ pub(super) async fn process_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSt
             }
         }
         tokio::time::sleep(PROCESS_POLL).await;
+    }
+}
+
+fn replay_game_monitor<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, path: &Path) {
+    let lines = match wf_log::read_all(path) {
+        Ok(lines) => lines,
+        Err(error) => {
+            warn!(%error, "Reading the existing EE.log for the game monitor failed");
+            return;
+        }
+    };
+    let monitor = lines
+        .iter()
+        .rev()
+        .filter(|line| line.message.starts_with("Monitor Info ("))
+        .find_map(|line| match wf_log::classify(line) {
+            Some(event @ LogEvent::GameMonitor(_)) => Some((event, line.time)),
+            _ => None,
+        });
+    if let Some((event, at)) = monitor {
+        overlay::on_log_event(app, state, &event, at);
     }
 }
 

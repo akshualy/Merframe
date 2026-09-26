@@ -8,7 +8,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tracing::{debug, info, warn};
 use wf_core::{CoreEvent, RivenRow};
-use wf_log::Event as LogEvent;
+use wf_log::{Event as LogEvent, MonitorRect};
 use wf_worldstate::RelicTier;
 
 use crate::runtime::emit;
@@ -198,6 +198,7 @@ pub struct Overlays {
     riven_ticket: AtomicU64,
     marks: Mutex<Marks>,
     windows: Mutex<HashMap<&'static str, WindowLife>>,
+    game_monitor: Mutex<Option<MonitorRect>>,
 }
 
 const IDLE_LIFETIME: Duration = Duration::from_secs(300);
@@ -320,6 +321,7 @@ pub fn on_log_event<R: Runtime>(
             lock(&state.overlays.marks).pending = Some((PendingAnswer::KeepRoll, at));
         }
         LogEvent::WindowFocus { focused } => follow_game_window(app, state, *focused),
+        LogEvent::GameMonitor(rect) => follow_game_monitor(app, state, *rect),
         LogEvent::DialogAccepted => on_dialog_answer(app, state, at),
         LogEvent::SceneTornDown => {
             let closed = station_closes(&mut lock(&state.overlays.marks), at);
@@ -378,7 +380,7 @@ pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
             settings.overlays.overlay_only_while_game_active,
         )
     };
-    let screen = screen_of(app);
+    let screen = screen_of(app, *lock(&state.overlays.game_monitor));
     for (kind, (keep, placement, rows)) in KINDS.into_iter().zip(wanted) {
         let bounds = logical(bounds_for(kind, placement, rows, screen), screen.scale);
         match (app.get_webview_window(kind.label()), keep) {
@@ -462,7 +464,7 @@ fn load<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
             settings.overlays.overlay_recommendation_count,
         )
     };
-    let screen = screen_of(app);
+    let screen = screen_of(app, *lock(&state.overlays.game_monitor));
     let bounds = logical(bounds_for(kind, placement, rows, screen), screen.scale);
     lock(&state.overlays.windows).insert(
         kind.label(),
@@ -608,6 +610,20 @@ fn follow_game_window<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, foc
             rest(app, state, kind);
         }
     }
+}
+
+fn follow_game_monitor<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, rect: MonitorRect) {
+    if lock(&state.overlays.game_monitor).replace(rect) == Some(rect) {
+        return;
+    }
+    info!(
+        left = rect.left,
+        top = rect.top,
+        width = rect.width,
+        height = rect.height,
+        "Game monitor read from EE.log"
+    );
+    apply_from(app, state);
 }
 
 fn broadcast<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {

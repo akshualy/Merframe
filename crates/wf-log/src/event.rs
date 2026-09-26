@@ -66,6 +66,15 @@ pub enum Event {
     WindowFocus {
         focused: bool,
     },
+    GameMonitor(MonitorRect),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MonitorRect {
+    pub left: i32,
+    pub top: i32,
+    pub width: u32,
+    pub height: u32,
 }
 
 impl Event {
@@ -103,6 +112,7 @@ impl Event {
             Self::InventoryCommitted => "InventoryCommitted",
             Self::InventorySynced => "InventorySynced",
             Self::WindowFocus { .. } => "WindowFocus",
+            Self::GameMonitor(_) => "GameMonitor",
         }
     }
 }
@@ -130,6 +140,8 @@ static RIVEN_CYCLE_DIALOG: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"want to cycle (.+) for \D*(\d+(?:[,.\u{a0}]\d{3})*)\?"));
 static PURCHASE_DIALOG_HUD_VIS: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"ThemedDetailedPurchaseDialog\.lua: DBG: HudVis (\d+)$"));
+static MONITOR_INFO: LazyLock<Regex> =
+    LazyLock::new(|| compiled(r"^Monitor Info \((-?\d+), (-?\d+), (-?\d+), (-?\d+)\)\.$"));
 static TRADE_DIALOG_DESCRIPTION: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"description=(.+?), title="));
 
@@ -195,6 +207,23 @@ fn riven_station(message: &str) -> Option<Event> {
         return Some(Event::RivenRerollScreenLoaded);
     }
     None
+}
+
+fn game_monitor(message: &str) -> Option<Event> {
+    let captures = MONITOR_INFO.captures(message)?;
+    let edge = |index: usize| captures[index].parse::<i32>().ok();
+    let (left, right, top, bottom) = (edge(1)?, edge(2)?, edge(3)?, edge(4)?);
+    let width = u32::try_from(right - left).ok()?;
+    let height = u32::try_from(bottom - top).ok()?;
+    if width == 0 || height == 0 {
+        return None;
+    }
+    Some(Event::GameMonitor(MonitorRect {
+        left,
+        top,
+        width,
+        height,
+    }))
 }
 
 fn interface_state(message: &str) -> Option<Event> {
@@ -330,6 +359,9 @@ pub fn classify(line: &LogLine) -> Option<Event> {
         return Some(event);
     }
     if let Some(event) = interface_state(message) {
+        return Some(event);
+    }
+    if let Some(event) = game_monitor(message) {
         return Some(event);
     }
     if message.ends_with("CommitInventoryChangesToDB") {
@@ -784,6 +816,33 @@ mod tests {
         );
         assert_eq!(classify(&log_line("WM_ACTIVATEAPP")), None);
         assert_eq!(classify(&log_line("WM_ACTIVATEAPP 2")), None);
+    }
+
+    #[test]
+    fn game_monitor_rectangle() {
+        assert_eq!(
+            classify(&log_line("Monitor Info (0, 1920, 0, 1080).")),
+            Some(Event::GameMonitor(MonitorRect {
+                left: 0,
+                top: 0,
+                width: 1920,
+                height: 1080,
+            }))
+        );
+        assert_eq!(
+            classify(&log_line("Monitor Info (1920, 4480, -360, 1080).")),
+            Some(Event::GameMonitor(MonitorRect {
+                left: 1920,
+                top: -360,
+                width: 2560,
+                height: 1440,
+            }))
+        );
+        assert_eq!(classify(&log_line("Monitor Info (0, 0, 0, 1080).")), None);
+        assert_eq!(
+            classify(&log_line("Monitor Work Area (0, 1920, 32, 1080).")),
+            None
+        );
     }
 
     #[test]
