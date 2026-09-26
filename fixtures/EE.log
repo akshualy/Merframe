@@ -1370,3 +1370,16 @@
 12303.545 Script [Info]: MapRedux.lua: MapRedux::NodeRollOver ClanNode1 - MALVA
 12304.177 Sys [Info]: WM_ACTIVATEAPP 0
 12306.027 Net [Info]: NAT bound for server to 203.0.113.116:4950
+12347.038 Script [Info]: Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to accept this trade? You are offering:
+Goopolla (L)
+Goopolla (M)
+Platinum x 12
+Goopolla (S)
+
+and will receive from TestSquadA the following:
+Noctua Swarm (RARE RANK 0), title= leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)
+12350.471 Script [Info]: Dialog.lua: SendResult_MENU_SELECT()
+12350.471 Script [Info]: Dialog.lua: Dialog::SendResult(4)
+12351.305 Sys [Info]: Created /Lotus/Interface/Dialog.swf
+12351.305 Script [Info]: Dialog.lua: Dialog::CreateOk(description=The trade was successful!, title= leftItem=/Menu/Confirm_Item_Ok)
+12352.242 Script [Info]: Trade.lua: DBG: HudVis 0

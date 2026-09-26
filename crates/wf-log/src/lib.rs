@@ -54,6 +54,30 @@ mod ee_log_fixture_tests {
     }
 
     #[test]
+    fn fixture_trade_block() {
+        let lines = read_all(&fixture_path()).unwrap();
+        let events: Vec<Event> = lines
+            .iter()
+            .filter_map(classify)
+            .filter(|event| {
+                matches!(
+                    event,
+                    Event::TradeDialogOpened { .. } | Event::TradeSuccessful
+                )
+            })
+            .collect();
+        assert_eq!(
+            events,
+            [
+                Event::TradeDialogOpened {
+                    description: "Are you sure you want to accept this trade? You are offering:\nGoopolla (L)\nGoopolla (M)\nPlatinum x 12\nGoopolla (S)\n\nand will receive from TestSquadA the following:\nNoctua Swarm (RARE RANK 0)".to_owned()
+                },
+                Event::TradeSuccessful,
+            ]
+        );
+    }
+
+    #[test]
     fn fixture_relic_missions() {
         let lines = read_all(&fixture_path()).unwrap();
         let events: Vec<Event> = lines.iter().filter_map(classify).collect();

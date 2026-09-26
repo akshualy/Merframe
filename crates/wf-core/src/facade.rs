@@ -826,7 +826,7 @@ mod tests {
 
         core.handle_log_event(
             &LogEvent::TradeDialogOpened {
-                description: "Are you sure you want to accept this trade? You are offering Styanax Prime Blueprint in exchange for 90 Platinum.".to_owned(),
+                description: "Are you sure you want to accept this trade? You are offering\nStyanax Prime Blueprint\nand will receive from TestSquadA the following:\nPlatinum x 90\n".to_owned(),
             },
             now,
         )

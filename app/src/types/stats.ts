@@ -12,6 +12,7 @@ export interface StatPoint {
 export interface TradeItem {
   name: string;
   count: number;
+  rank: number | null;
 }
 
 export interface Trade {

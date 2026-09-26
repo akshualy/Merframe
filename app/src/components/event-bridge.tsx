@@ -46,14 +46,19 @@ export function EventBridge() {
   useListen<MarketAutoClose>(events.marketAutoClosed, (closed) => {
     const item =
       closed.quantity > 1 ? `${closed.quantity} x ${closed.item}` : closed.item;
-    toast.success(
-      closed.auction ? "Riven auction closed" : "Sell order closed",
-      {
-        description: closed.auction
-          ? `Closed the auction for ${item}`
-          : `Closed the sell order for ${item}`,
-      },
-    );
+    const titles = {
+      auction: "Riven auction closed",
+      sell: "Sell order closed",
+      buy: "Buy order closed",
+    };
+    const what = {
+      auction: "auction",
+      sell: "sell order",
+      buy: "buy order",
+    };
+    toast.success(titles[closed.kind], {
+      description: `Closed the ${what[closed.kind]} for ${item}`,
+    });
   });
 
   const show = (event: CoreEvent) => {

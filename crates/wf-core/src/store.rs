@@ -741,12 +741,12 @@ mod tests {
     #[test]
     fn trades_and_relic_openings() {
         let store = Store::in_memory().unwrap();
-        let trade = crate::trade::parse_trade_description(
-            "Are you sure you want to accept this trade? You are offering 2 x Forma Blueprint in exchange for 45 Platinum.",
+        let (partner, trade) = crate::trade::parse_trade_description(
+            "Are you sure you want to accept this trade? You are offering\nForma Blueprint x 2\nand will receive from SomePlayer the following:\nPlatinum x 45\n",
         )
         .unwrap();
         store
-            .record_trade(at(5_000_000), Some("SomePlayer"), &trade)
+            .record_trade(at(5_000_000), partner.as_deref(), &trade)
             .unwrap();
         let trades = store.trades(TimeRange::all()).unwrap();
         assert_eq!(trades.len(), 1);
