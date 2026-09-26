@@ -23,135 +23,23 @@
     "components": [
       {
         "uniqueName": "/Lotus/Types/Recipes/Helmets/BrawlerAltHelmetBlueprint",
-        "name": "Blueprint",
-        "description": "A uniquely-styled alternate helmet for Atlas.",
-        "itemCount": 1,
-        "imageName": "blueprint.png",
-        "tradable": false,
-        "masterable": false
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
-        "name": "Neurodes",
-        "description": "Biotech sensor organ harvested from Infested entities.\n\nLocation: Earth, Lua, Eris, and Deimos",
-        "codexSecret": false,
-        "itemCount": 2,
-        "imageName": "ComponentNeurode.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "Neurodes",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Annihilation (Conclave), Rotation B",
-            "type": "Neurodes",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
-            "type": "Neurodes",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          }
-        ],
-        "tradable": false,
-        "masterable": false
+        "itemCount": 2
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
-        "name": "Orokin Cell",
-        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
-        "codexSecret": false,
-        "itemCount": 1,
-        "imageName": "ComponentCell.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Annihilation (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/OxiumAlloy",
-        "name": "Oxium",
-        "description": "Oxium is a rare lighter than air alloy of Orokin origin, used in certain Corpus Robotics.\n\nLocation: Venus, Jupiter, Mars, Neptune, Pluto, Eris, Europa, and Lua.",
-        "codexSecret": false,
-        "itemCount": 400,
-        "imageName": "ComponentOxium.png",
-        "drops": [
-          {
-            "location": "Carrypod",
-            "type": "Oxium",
-            "chance": 0.5,
-            "rarity": "Rare"
-          },
-          {
-            "location": "Common Corpus Storage Container",
-            "type": "Oxium",
-            "chance": 0.5,
-            "rarity": "Rare"
-          },
-          {
-            "location": "Dusty Storage Crate",
-            "type": "Oxium",
-            "chance": 0.5,
-            "rarity": "Rare"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 400
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
-        "name": "Salvage",
-        "description": "High value metals collected from war salvage.\n\nLocation: Mars, Jupiter, and Sedna",
-        "codexSecret": false,
-        "itemCount": 1200,
-        "imageName": "ComponentSalvage.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "600X Salvage",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          },
-          {
-            "location": "Saturn/Annihilation (Conclave), Rotation B",
-            "type": "600X Salvage",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          },
-          {
-            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
-            "type": "600X Salvage",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 1200
       }
     ],
     "type": "Skin",
@@ -173,135 +61,23 @@
     "components": [
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
-        "name": "Alloy Plate",
-        "description": "Carbon steel plates used to reinforce Grineer armor.\n\nLocation: Venus, Phobos, Ceres, Jupiter, Pluto, and Sedna.",
-        "codexSecret": false,
-        "itemCount": 350,
-        "imageName": "AlloyPlate.png",
-        "drops": [
-          {
-            "location": "Mars/Gradivus (Caches), Rotation B",
-            "type": "750X Alloy Plate",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          },
-          {
-            "location": "Mercury/Neruda (Caches), Rotation B",
-            "type": "750X Alloy Plate",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          },
-          {
-            "location": "Mercury/Terminus (Caches), Rotation B",
-            "type": "750X Alloy Plate",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 350
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/Helmets/TrinityAltHelmetBlueprint",
-        "name": "Blueprint",
-        "description": "This helmet is worn by Trinity, and increases the Ability Duration, but adversely affects Health.",
-        "itemCount": 1,
-        "imageName": "blueprint.png",
-        "tradable": false,
-        "masterable": false
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
-        "name": "Neurodes",
-        "description": "Biotech sensor organ harvested from Infested entities.\n\nLocation: Earth, Lua, Eris, and Deimos",
-        "codexSecret": false,
-        "itemCount": 2,
-        "imageName": "ComponentNeurode.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "Neurodes",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Annihilation (Conclave), Rotation B",
-            "type": "Neurodes",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
-            "type": "Neurodes",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          }
-        ],
-        "tradable": false,
-        "masterable": false
+        "itemCount": 2
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
-        "name": "Orokin Cell",
-        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
-        "codexSecret": false,
-        "itemCount": 1,
-        "imageName": "ComponentCell.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Annihilation (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
-        "name": "Salvage",
-        "description": "High value metals collected from war salvage.\n\nLocation: Mars, Jupiter, and Sedna",
-        "codexSecret": false,
-        "itemCount": 500,
-        "imageName": "ComponentSalvage.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "600X Salvage",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          },
-          {
-            "location": "Saturn/Annihilation (Conclave), Rotation B",
-            "type": "600X Salvage",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          },
-          {
-            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
-            "type": "600X Salvage",
-            "chance": 12.65,
-            "rarity": "Uncommon"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 500
       }
     ],
     "type": "Skin",
@@ -718,112 +494,145 @@
     "components": [
       {
         "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABlueprint",
-        "name": "Blueprint",
-        "description": "A collar used to honor especially loyal Kubrows in the Orokin era.",
-        "itemCount": 1,
-        "primeSellingPrice": 45,
-        "imageName": "blueprint.png",
-        "drops": [
-          {
-            "location": "Axi G1 Relic",
-            "type": "Kavasa Prime Kubrow Collar Blueprint",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionKBronze"
-          },
-          {
-            "location": "Axi S7 Relic",
-            "type": "Kavasa Prime Kubrow Collar Blueprint",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionNovaTrinityVaultABronze"
-          },
-          {
-            "location": "Lith S4 Relic",
-            "type": "Kavasa Prime Kubrow Collar Blueprint",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNBronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 45
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent",
-        "name": "Kavasa Prime Band",
-        "description": "A prime companion accessory-crafting component.",
-        "codexSecret": false,
-        "primeSellingPrice": 45,
-        "itemCount": 1,
-        "imageName": "GenericComponentPrimeLatch.png",
-        "drops": [
-          {
-            "location": "Lith C1 Relic",
-            "type": "Kavasa Prime Band",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionJBronze"
-          },
-          {
-            "location": "Lith L3 Relic",
-            "type": "Kavasa Prime Band",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionLimboTrinityVaultABronze"
-          },
-          {
-            "location": "Lith N2 Relic",
-            "type": "Kavasa Prime Band",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionRBronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 45
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABuckleComponent",
-        "name": "Kavasa Prime Buckle",
-        "description": "A prime companion accessory-crafting component.",
-        "codexSecret": false,
-        "primeSellingPrice": 65,
-        "itemCount": 1,
-        "imageName": "GenericComponentPrimePlug.png",
-        "drops": [
-          {
-            "location": "Axi K1 Relic (Radiant)",
-            "type": "Kavasa Prime Buckle",
-            "chance": 10,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionCBronze"
-          },
-          {
-            "location": "Lith K1 Relic (Radiant)",
-            "type": "Kavasa Prime Buckle",
-            "chance": 10,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionKBronze"
-          },
-          {
-            "location": "Lith K4 Relic (Radiant)",
-            "type": "Kavasa Prime Buckle",
-            "chance": 10,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNovaTrinityVaultABronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 65
+        "itemCount": 1
       }
     ],
     "type": "Skin",
     "imageName": "KubrowCollarPrimeA.png",
     "category": "Skins",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
+    "name": "Neurodes",
+    "codexSecret": false,
+    "itemCount": 1,
+    "buildPrice": 15000,
+    "buildTime": 3600,
+    "skipBuildTimePrice": 2,
+    "buildQuantity": 1,
+    "consumeOnBuild": false,
+    "type": "Misc",
+    "imageName": "ComponentNeurode.png",
+    "category": "Misc",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+    "name": "Orokin Cell",
+    "codexSecret": false,
+    "itemCount": 1,
+    "buildPrice": 15000,
+    "buildTime": 3600,
+    "skipBuildTimePrice": 2,
+    "buildQuantity": 1,
+    "consumeOnBuild": false,
+    "type": "Resource",
+    "imageName": "ComponentCell.png",
+    "category": "Misc",
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OxiumAlloy",
+    "name": "Oxium",
+    "codexSecret": false,
+    "itemCount": 600,
+    "type": "Resource",
+    "imageName": "ComponentOxium.png",
+    "category": "Misc",
+    "drops": [
+      {
+        "location": "Carrypod",
+        "type": "Oxium",
+        "chance": 0.5,
+        "rarity": "Rare"
+      },
+      {
+        "location": "Common Corpus Storage Container",
+        "type": "Oxium",
+        "chance": 0.5,
+        "rarity": "Rare"
+      },
+      {
+        "location": "Dusty Storage Crate",
+        "type": "Oxium",
+        "chance": 0.5,
+        "rarity": "Rare"
+      }
+    ],
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "name": "Salvage",
+    "codexSecret": false,
+    "itemCount": 25000,
+    "type": "Resource",
+    "imageName": "ComponentSalvage.png",
+    "category": "Misc",
+    "drops": [
+      {
+        "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+        "type": "600X Salvage",
+        "chance": 12.65,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Saturn/Annihilation (Conclave), Rotation B",
+        "type": "600X Salvage",
+        "chance": 12.65,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+        "type": "600X Salvage",
+        "chance": 12.65,
+        "rarity": "Uncommon"
+      }
+    ],
+    "tradable": false,
+    "masterable": false
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/AlloyPlate",
+    "name": "Alloy Plate",
+    "codexSecret": false,
+    "itemCount": 1700,
+    "type": "Resource",
+    "imageName": "AlloyPlate.png",
+    "category": "Misc",
+    "drops": [
+      {
+        "location": "Mars/Gradivus (Caches), Rotation B",
+        "type": "750X Alloy Plate",
+        "chance": 12.65,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Mercury/Neruda (Caches), Rotation B",
+        "type": "750X Alloy Plate",
+        "chance": 12.65,
+        "rarity": "Uncommon"
+      },
+      {
+        "location": "Mercury/Terminus (Caches), Rotation B",
+        "type": "750X Alloy Plate",
+        "chance": 12.65,
+        "rarity": "Uncommon"
+      }
+    ],
     "tradable": false,
     "masterable": false
   }

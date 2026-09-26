@@ -4,6 +4,8 @@ pub type Result<T> = std::result::Result<T, DataError>;
 pub enum DataError {
     #[error("{0} json: {1}")]
     Parse(&'static str, #[source] serde_json::Error),
+    #[error("{item} needs a part the game data does not describe: {component}")]
+    UnknownComponent { item: String, component: String },
     #[cfg(feature = "fetch")]
     #[error("Download: {0}")]
     Network(#[source] reqwest::Error),

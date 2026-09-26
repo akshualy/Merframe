@@ -327,7 +327,7 @@ mod tests {
 
     fn view() -> WorldStateView {
         let world = WorldState::parse(FIXTURE).unwrap();
-        let catalog = Catalog::from_json(ITEMS, "[]").unwrap();
+        let catalog = Catalog::from_json(ITEMS, "[]", "[]").unwrap();
         let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
         WorldStateView::build(Some(&world), &catalog, None, now, Some(now))
     }
@@ -397,7 +397,7 @@ mod tests {
         ]}"#;
 
         let world = WorldState::parse(SALES).unwrap();
-        let catalog = Catalog::from_json(CATALOG, "[]").unwrap();
+        let catalog = Catalog::from_json(CATALOG, "[]", "[]").unwrap();
         let inventory = Inventory::parse(INVENTORY).unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
         let view = WorldStateView::build(Some(&world), &catalog, Some(&inventory), now, None);
@@ -472,7 +472,7 @@ mod tests {
             "name":"Axi A1 Intact","category":"Relics","type":"Relic","tradable":true,"rewards":[]}]"#;
 
         let world = WorldState::parse(PRESENT).expect("world state");
-        let catalog = Catalog::from_json(CATALOG, RELICS).unwrap();
+        let catalog = Catalog::from_json(CATALOG, RELICS, "[]").unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
         let view = WorldStateView::build(Some(&world), &catalog, None, now, Some(now));
         let groups: Vec<(&str, Vec<&str>)> = view
@@ -524,7 +524,7 @@ mod tests {
             ]}]}"#;
 
         let world = WorldState::parse(PRESENT).unwrap();
-        let catalog = Catalog::from_json("[]", "[]").unwrap();
+        let catalog = Catalog::from_json("[]", "[]", "[]").unwrap();
         let inventory = Inventory::parse(INVENTORY).unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
         let view = WorldStateView::build(Some(&world), &catalog, Some(&inventory), now, None);
@@ -551,7 +551,7 @@ mod tests {
 
     #[test]
     fn empty_view_before_fetch() {
-        let catalog = Catalog::from_json(ITEMS, "[]").unwrap();
+        let catalog = Catalog::from_json(ITEMS, "[]", "[]").unwrap();
         let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
         let view = WorldStateView::build(None, &catalog, None, now, None);
         assert!(view.fissures.is_empty());

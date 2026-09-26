@@ -1419,6 +1419,17 @@
   "masteryReq": 14
  },
  {
+  "uniqueName": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetHeadMelee",
+  "name": "Nychus Moa",
+  "category": "Pets",
+  "type": "Pets",
+  "productCategory": "Pistols",
+  "tradable": false,
+  "masterable": true,
+  "imageName": "PetMoaMeleeHead.png",
+  "masteryReq": 0
+ },
+ {
   "uniqueName": "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetMeleeWeaponIP",
   "name": "Batoten",
   "category": "Primary",
@@ -1438,6 +1449,17 @@
   "tradable": false,
   "masterable": true,
   "imageName": "ZanukaPetMeleeWeaponPS.png",
+  "masteryReq": 0
+ },
+ {
+  "uniqueName": "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts/ZanukaPetPartHeadA",
+  "name": "Dorma Hound",
+  "category": "Pets",
+  "type": "Pets",
+  "productCategory": "Pistols",
+  "tradable": false,
+  "masterable": true,
+  "imageName": "ZanukaPetHeadA.png",
   "masteryReq": 0
  },
  {
@@ -1625,6 +1647,17 @@
   "tradable": false,
   "masterable": true,
   "imageName": "Sweeper.png",
+  "masteryReq": 0
+ },
+ {
+  "uniqueName": "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusC/HoverboardCorpusCDeck",
+  "name": "Runway",
+  "category": "Misc",
+  "type": "K-Drive Component",
+  "productCategory": "Pistols",
+  "tradable": false,
+  "masterable": true,
+  "imageName": "HoverboardCorpusCDeck.png",
   "masteryReq": 0
  },
  {
@@ -2214,6 +2247,17 @@
   "masteryReq": 0
  },
  {
+  "uniqueName": "/Lotus/Weapons/Ostron/Melee/ModularMelee02/Tip/TipNine",
+  "name": "Sepfahn",
+  "category": "Melee",
+  "type": "Zaw Component",
+  "productCategory": "Pistols",
+  "tradable": false,
+  "masterable": true,
+  "imageName": "TipNine.png",
+  "masteryReq": 0
+ },
+ {
   "uniqueName": "/Lotus/Weapons/Sentients/SentRifleNewWar/SentRifleNewWarGun",
   "name": "Basmu",
   "category": "Primary",
@@ -2480,210 +2524,23 @@
   "components": [
    {
     "uniqueName": "/Lotus/Types/Recipes/Weapons/GrimoireBlueprint",
-    "name": "Blueprint",
-    "description": "Claim the power of Albrecht Entrati's knowledge. Customize the Grimoire with Tome Mods that enhance Warframe Abilities and reward strategic combat. Its alternate attack releases a voltaic orb with guaranteed <DT_ELECTRICITY_COLOR>Electricity Status.",
-    "itemCount": 1,
-    "imageName": "blueprint.png",
-    "tradable": false,
-    "masterable": false
+    "itemCount": 1
    },
    {
     "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabDogTagRare",
-    "name": "Echo Voca",
-    "description": "The quietest and most elusive of Voidtongue utterances. Sought after but never found by Albrecht.\n\nLocation: Albrecht's Laboratories (Deimos)",
-    "codexSecret": false,
-    "itemCount": 15,
-    "imageName": "EntratiLabDogTagRare.png",
-    "drops": [
-     {
-      "location": "Deimos/Albrecht's Laboratories (Level  115 - 120 Entrati Lab Bounty), Rotation C",
-      "type": "Echo Voca",
-      "chance": 14.71,
-      "rarity": "Uncommon"
-     }
-    ],
-    "tradable": false,
-    "masterable": false
+    "itemCount": 15
    },
    {
     "uniqueName": "/Lotus/Types/Gameplay/Zariman/Resources/ZarimanMiscItemB",
-    "name": "Entrati Lanthorn",
-    "description": "A ceremonial beacon used to map Void locations on to real space.\n\nLocation: Albrecht's Laboratories (Deimos) and Zariman",
-    "codexSecret": false,
-    "itemCount": 10,
-    "imageName": "ZarimanMiscItemB.png",
-    "drops": [
-     {
-      "location": "Entrati Netracell Coffer",
-      "type": "Entrati Lanthorn",
-      "chance": 100,
-      "rarity": "Common"
-     },
-     {
-      "location": "Zariman Ten Zero (Level  60 - 65 Zariman Bounty), Rotation C",
-      "type": "3X Entrati Lanthorn",
-      "chance": 3.39,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Zariman Ten Zero (Level  50 - 55 Zariman Bounty), Rotation C",
-      "type": "Entrati Lanthorn",
-      "chance": 4.35,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Cambire (Alchemy), Rotation B",
-      "type": "Entrati Lanthorn",
-      "chance": 5,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Munio (Defense), Rotation B",
-      "type": "Entrati Lanthorn",
-      "chance": 5,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Persto (Survival), Rotation B",
-      "type": "Entrati Lanthorn",
-      "chance": 5,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Zariman/Everview Arc (Void Flood), Rotation B",
-      "type": "Entrati Lanthorn",
-      "chance": 6.67,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Zariman/Oro Works (Void Armageddon), Rotation B",
-      "type": "Entrati Lanthorn",
-      "chance": 6.67,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Zariman/Tuvul Commons (Void Cascade), Rotation B",
-      "type": "Entrati Lanthorn",
-      "chance": 6.67,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Zariman Ten Zero (Level  70 - 75 Zariman Bounty), Rotation C",
-      "type": "3X Entrati Lanthorn",
-      "chance": 7.94,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Zariman/Halako Perimeter (Exterminate)",
-      "type": "Entrati Lanthorn",
-      "chance": 9.76,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Zariman/The Greenway (Mobile Defense)",
-      "type": "Entrati Lanthorn",
-      "chance": 9.76,
-      "rarity": "Rare"
-     }
-    ],
-    "tradable": false,
-    "masterable": false
+    "itemCount": 10
    },
    {
     "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabMiscItemA",
-    "name": "Entrati Obols",
-    "description": "During the Orokin era, these obols were a commonly recognized mark of the Entrati family. Some Archimedeans even used them as good luck talismans.\n\nLocation: Albrecht's Laboratories (Deimos)",
-    "codexSecret": false,
-    "itemCount": 2000,
-    "imageName": "EntratiLabMiscItemA.png",
-    "drops": [
-     {
-      "location": "Deimos/Cambire (Alchemy), Rotation A",
-      "type": "150X Entrati Obols",
-      "chance": 14.29,
-      "rarity": "Uncommon"
-     },
-     {
-      "location": "Deimos/Munio (Defense), Rotation A",
-      "type": "150X Entrati Obols",
-      "chance": 14.29,
-      "rarity": "Uncommon"
-     },
-     {
-      "location": "Deimos/Albrecht's Laboratories (Level  65 - 70 Entrati Lab Bounty), Rotation C",
-      "type": "150X Entrati Obols",
-      "chance": 6.78,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Effervo (Assassination)",
-      "type": "150X Entrati Obols",
-      "chance": 9.09,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Nex (Exterminate)",
-      "type": "150X Entrati Obols",
-      "chance": 9.09,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Persto (Survival), Rotation A",
-      "type": "150X Entrati Obols",
-      "chance": 9.68,
-      "rarity": "Rare"
-     }
-    ],
-    "tradable": false,
-    "masterable": false
+    "itemCount": 2000
    },
    {
     "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabMiscItemB",
-    "name": "Necracoil",
-    "description": "This experimental array transmutes Void energy into high voltages with low currents.\n\nLocation: Albrecht's Laboratories (Deimos)",
-    "codexSecret": false,
-    "itemCount": 50,
-    "imageName": "EntratiLabMiscItemB.png",
-    "drops": [
-     {
-      "location": "Deimos/Effervo (Assassination)",
-      "type": "15X Necracoil",
-      "chance": 6.06,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Nex (Exterminate)",
-      "type": "15X Necracoil",
-      "chance": 6.06,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Persto (Survival), Rotation A",
-      "type": "15X Necracoil",
-      "chance": 6.45,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Albrecht's Laboratories (Level  75 - 80 Entrati Lab Bounty), Rotation C",
-      "type": "15X Necracoil",
-      "chance": 8.26,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Cambire (Alchemy), Rotation A",
-      "type": "15X Necracoil",
-      "chance": 9.52,
-      "rarity": "Rare"
-     },
-     {
-      "location": "Deimos/Munio (Defense), Rotation A",
-      "type": "15X Necracoil",
-      "chance": 9.52,
-      "rarity": "Rare"
-     }
-    ],
-    "tradable": false,
-    "masterable": false
+    "itemCount": 50
    }
   ]
  },
@@ -3302,5 +3159,117 @@
   "masterable": true,
   "imageName": "MaraDetron.png",
   "masteryReq": 9
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabDogTagRare",
+  "name": "Echo Voca",
+  "codexSecret": false,
+  "itemCount": 2,
+  "type": "Resource",
+  "imageName": "EntratiLabDogTagRare.png",
+  "category": "Resources",
+  "drops": [
+   {
+    "location": "Deimos/Albrecht's Laboratories (Level  115 - 120 Entrati Lab Bounty), Rotation C",
+    "type": "Echo Voca",
+    "chance": 14.71,
+    "rarity": "Uncommon"
+   }
+  ],
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/Zariman/Resources/ZarimanMiscItemB",
+  "name": "Entrati Lanthorn",
+  "codexSecret": false,
+  "itemCount": 10,
+  "type": "Resource",
+  "imageName": "ZarimanMiscItemB.png",
+  "category": "Resources",
+  "drops": [
+   {
+    "location": "Entrati Netracell Coffer",
+    "type": "Entrati Lanthorn",
+    "chance": 100,
+    "rarity": "Common"
+   },
+   {
+    "location": "Zariman Ten Zero (Level  60 - 65 Zariman Bounty), Rotation C",
+    "type": "3X Entrati Lanthorn",
+    "chance": 3.39,
+    "rarity": "Rare"
+   },
+   {
+    "location": "Zariman Ten Zero (Level  50 - 55 Zariman Bounty), Rotation C",
+    "type": "Entrati Lanthorn",
+    "chance": 4.35,
+    "rarity": "Rare"
+   }
+  ],
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabMiscItemA",
+  "name": "Entrati Obols",
+  "codexSecret": false,
+  "itemCount": 2000,
+  "type": "Resource",
+  "imageName": "EntratiLabMiscItemA.png",
+  "category": "Resources",
+  "drops": [
+   {
+    "location": "Deimos/Cambire (Alchemy), Rotation A",
+    "type": "150X Entrati Obols",
+    "chance": 14.29,
+    "rarity": "Uncommon"
+   },
+   {
+    "location": "Deimos/Munio (Defense), Rotation A",
+    "type": "150X Entrati Obols",
+    "chance": 14.29,
+    "rarity": "Uncommon"
+   },
+   {
+    "location": "Deimos/Albrecht's Laboratories (Level  65 - 70 Entrati Lab Bounty), Rotation C",
+    "type": "150X Entrati Obols",
+    "chance": 6.78,
+    "rarity": "Rare"
+   }
+  ],
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabMiscItemB",
+  "name": "Necracoil",
+  "codexSecret": false,
+  "itemCount": 50,
+  "type": "Resource",
+  "imageName": "EntratiLabMiscItemB.png",
+  "category": "Resources",
+  "drops": [
+   {
+    "location": "Deimos/Effervo (Assassination)",
+    "type": "15X Necracoil",
+    "chance": 6.06,
+    "rarity": "Rare"
+   },
+   {
+    "location": "Deimos/Nex (Exterminate)",
+    "type": "15X Necracoil",
+    "chance": 6.06,
+    "rarity": "Rare"
+   },
+   {
+    "location": "Deimos/Persto (Survival), Rotation A",
+    "type": "15X Necracoil",
+    "chance": 6.45,
+    "rarity": "Rare"
+   }
+  ],
+  "tradable": false,
+  "masterable": false
  }
 ]

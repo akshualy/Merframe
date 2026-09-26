@@ -45,7 +45,7 @@ mod tests {
         let bratons: Vec<serde_json::Value> = serde_json::from_str(BRATONS).unwrap();
         items.extend(bratons);
         let json = serde_json::to_string(&items).unwrap();
-        Catalog::from_json(&json, fixtures::RELICS).unwrap()
+        Catalog::from_json(&json, fixtures::RELICS, fixtures::COMPONENTS).unwrap()
     }
 
     fn generated_name(catalog: &Catalog, mod_type: &str, weapon: &str, roll: &str) -> String {

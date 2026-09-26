@@ -1,0 +1,771 @@
+[
+  {
+    "uniqueName": "/Lotus/Types/Items/Research/ChemComponentBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Components/ControlModuleResourceBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Components/FormaBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [
+      {
+        "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+        "type": "Forma Blueprint",
+        "chance": 0.25,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Saturn/Annihilation (Conclave), Rotation B",
+        "type": "Forma Blueprint",
+        "chance": 0.25,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+        "type": "Forma Blueprint",
+        "chance": 0.25,
+        "rarity": "Legendary"
+      },
+      {
+        "location": "Axi A22 Relic",
+        "type": "2X Forma Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeCBronze"
+      },
+      {
+        "location": "Axi A7 Relic",
+        "type": "2X Forma Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionAshVaubanVaultABronze"
+      },
+      {
+        "location": "Axi A8 Relic",
+        "type": "2X Forma Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionIvaraPrimeABronze"
+      },
+      {
+        "location": "Axi A21 Relic (Radiant)",
+        "type": "Forma Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeABronze"
+      },
+      {
+        "location": "Axi A21 Relic (Flawless)",
+        "type": "Forma Blueprint",
+        "chance": 20,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeABronze"
+      },
+      {
+        "location": "Axi A21 Relic (Exceptional)",
+        "type": "Forma Blueprint",
+        "chance": 23.33,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeABronze"
+      },
+      {
+        "location": "Axi A21 Relic",
+        "type": "Forma Blueprint",
+        "chance": 25.33,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeABronze"
+      }
+    ],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Components/MorphicsResourceBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Components/NeuralSensorResourceBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Components/NeurodeResourceBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Components/OrokinCellResourceBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Helmets/BrawlerAltHelmetBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Helmets/ConversionRhinoHelmetAltBBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Helmets/TrinityAltHelmetBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent",
+    "name": "Kavasa Prime Band",
+    "tradable": true,
+    "ducats": 45,
+    "drops": [
+      {
+        "location": "Lith C1 Relic",
+        "type": "Kavasa Prime Band",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionJBronze"
+      },
+      {
+        "location": "Lith L3 Relic",
+        "type": "Kavasa Prime Band",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionLimboTrinityVaultABronze"
+      },
+      {
+        "location": "Lith N2 Relic",
+        "type": "Kavasa Prime Band",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionRBronze"
+      }
+    ],
+    "imageName": "GenericComponentPrimeLatch.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABlueprint",
+    "name": "Blueprint",
+    "tradable": true,
+    "ducats": 45,
+    "drops": [
+      {
+        "location": "Axi G1 Relic",
+        "type": "Kavasa Prime Kubrow Collar Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionKBronze"
+      },
+      {
+        "location": "Axi S7 Relic",
+        "type": "Kavasa Prime Kubrow Collar Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionNovaTrinityVaultABronze"
+      },
+      {
+        "location": "Lith S4 Relic",
+        "type": "Kavasa Prime Kubrow Collar Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNBronze"
+      }
+    ],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABuckleComponent",
+    "name": "Kavasa Prime Buckle",
+    "tradable": true,
+    "ducats": 65,
+    "drops": [
+      {
+        "location": "Axi K1 Relic (Radiant)",
+        "type": "Kavasa Prime Buckle",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionCBronze"
+      },
+      {
+        "location": "Lith K1 Relic (Radiant)",
+        "type": "Kavasa Prime Buckle",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionKBronze"
+      },
+      {
+        "location": "Lith K4 Relic (Radiant)",
+        "type": "Kavasa Prime Buckle",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNovaTrinityVaultABronze"
+      }
+    ],
+    "imageName": "GenericComponentPrimePlug.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Lens/PowerLensGreaterBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Lens/PowerLensLuaBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Lens/PowerLensOstronBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeBlueprint",
+    "name": "Blueprint",
+    "tradable": true,
+    "ducats": 45,
+    "drops": [
+      {
+        "location": "Axi A12 Relic",
+        "type": "Banshee Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionBansheeMirageVaultBBronze"
+      },
+      {
+        "location": "Axi C3 Relic",
+        "type": "Banshee Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionChromaPrimeABronze"
+      },
+      {
+        "location": "Axi K3 Relic",
+        "type": "Banshee Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionLimboPrimeABronze"
+      }
+    ],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeChassisComponent",
+    "name": "Chassis",
+    "tradable": true,
+    "ducats": 100,
+    "drops": [
+      {
+        "location": "Meso B2 Relic (Radiant)",
+        "type": "Banshee Prime Chassis Blueprint",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T2VoidProjectionLimboPrimeCBronze"
+      },
+      {
+        "location": "Neo B1 Relic (Radiant)",
+        "type": "Banshee Prime Chassis Blueprint",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionTBronze"
+      },
+      {
+        "location": "Neo B2 Relic (Radiant)",
+        "type": "Banshee Prime Chassis Blueprint",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionWBronze"
+      }
+    ],
+    "imageName": "GenericWarframePrimeChassis.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeHelmetComponent",
+    "name": "Neuroptics",
+    "tradable": true,
+    "ducats": 15,
+    "drops": [
+      {
+        "location": "Axi H5 Relic (Radiant)",
+        "type": "Banshee Prime Neuroptics Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionBansheeMirageVaultABronze"
+      },
+      {
+        "location": "Lith B5 Relic (Radiant)",
+        "type": "Banshee Prime Neuroptics Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionChromaPrimeDBronze"
+      },
+      {
+        "location": "Lith M7 Relic (Radiant)",
+        "type": "Banshee Prime Neuroptics Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionBansheeMirageVaultBBronze"
+      }
+    ],
+    "imageName": "GenericWarframePrimeHelmet.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/BansheePrimeSystemsComponent",
+    "name": "Systems",
+    "tradable": true,
+    "ducats": 65,
+    "drops": [
+      {
+        "location": "Axi B1 Relic (Radiant)",
+        "type": "Banshee Prime Systems Blueprint",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionRBronze"
+      },
+      {
+        "location": "Axi B2 Relic (Radiant)",
+        "type": "Banshee Prime Systems Blueprint",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionXBronze"
+      },
+      {
+        "location": "Neo B4 Relic (Radiant)",
+        "type": "Banshee Prime Systems Blueprint",
+        "chance": 10,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionZephyrPrimeBBronze"
+      }
+    ],
+    "imageName": "GenericWarframePrimeSystem.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburChassisComponent",
+    "name": "Chassis",
+    "tradable": false,
+    "drops": [
+      {
+        "location": "Mars/War (Assassination)",
+        "type": "Excalibur Chassis Blueprint",
+        "chance": 38.72,
+        "rarity": "Common"
+      }
+    ],
+    "imageName": "GenericWarframeChassis.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetComponent",
+    "name": "Neuroptics",
+    "tradable": false,
+    "drops": [
+      {
+        "location": "Mars/War (Assassination)",
+        "type": "Excalibur Neuroptics Blueprint",
+        "chance": 38.72,
+        "rarity": "Common"
+      }
+    ],
+    "imageName": "GenericWarframeHelmet.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburSystemsComponent",
+    "name": "Systems",
+    "tradable": false,
+    "drops": [
+      {
+        "location": "Mars/War (Assassination)",
+        "type": "Excalibur Systems Blueprint",
+        "chance": 22.56,
+        "rarity": "Uncommon"
+      }
+    ],
+    "imageName": "GenericWarframeSystem.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeBlueprint",
+    "name": "Blueprint",
+    "tradable": true,
+    "ducats": 45,
+    "drops": [
+      {
+        "location": "Axi S1 Relic",
+        "type": "Trinity Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionABronze"
+      },
+      {
+        "location": "Lith K1 Relic",
+        "type": "Trinity Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionKBronze"
+      },
+      {
+        "location": "Lith K4 Relic",
+        "type": "Trinity Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNovaTrinityVaultABronze"
+      }
+    ],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeChassisComponent",
+    "name": "Chassis",
+    "tradable": true,
+    "ducats": 45,
+    "drops": [
+      {
+        "location": "Axi H1 Relic",
+        "type": "Trinity Prime Chassis Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionTBronze"
+      },
+      {
+        "location": "Axi H2 Relic",
+        "type": "Trinity Prime Chassis Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionVBronze"
+      },
+      {
+        "location": "Axi S7 Relic",
+        "type": "Trinity Prime Chassis Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionNovaTrinityVaultABronze"
+      }
+    ],
+    "imageName": "GenericWarframePrimeChassis.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeHelmetComponent",
+    "name": "Neuroptics",
+    "tradable": true,
+    "ducats": 25,
+    "drops": [
+      {
+        "location": "Lith K8 Relic",
+        "type": "Trinity Prime Neuroptics Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionLimboTrinityVaultBBronze"
+      },
+      {
+        "location": "Neo D1 Relic",
+        "type": "Trinity Prime Neuroptics Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T3VoidProjectionFBronze"
+      },
+      {
+        "location": "Lith K8 Relic (Exceptional)",
+        "type": "Trinity Prime Neuroptics Blueprint",
+        "chance": 13,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionLimboTrinityVaultBBronze"
+      }
+    ],
+    "imageName": "GenericWarframePrimeHelmet.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent",
+    "name": "Systems",
+    "tradable": true,
+    "ducats": 15,
+    "drops": [
+      {
+        "location": "Axi A1 Relic (Radiant)",
+        "type": "Trinity Prime Systems Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      },
+      {
+        "location": "Axi C2 Relic (Radiant)",
+        "type": "Trinity Prime Systems Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionUBronze"
+      },
+      {
+        "location": "Axi V2 Relic (Radiant)",
+        "type": "Trinity Prime Systems Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionFBronze"
+      },
+      {
+        "location": "Axi V3 Relic (Radiant)",
+        "type": "Trinity Prime Systems Blueprint",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionHBronze"
+      },
+      {
+        "location": "Axi A1 Relic (Flawless)",
+        "type": "Trinity Prime Systems Blueprint",
+        "chance": 20,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      },
+      {
+        "location": "Axi A1 Relic (Exceptional)",
+        "type": "Trinity Prime Systems Blueprint",
+        "chance": 23.33,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      },
+      {
+        "location": "Axi A1 Relic",
+        "type": "Trinity Prime Systems Blueprint",
+        "chance": 25.33,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      }
+    ],
+    "imageName": "GenericWarframePrimeSystem.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint",
+    "name": "Blueprint",
+    "tradable": true,
+    "ducats": 25,
+    "drops": [
+      {
+        "location": "Axi G11 Relic",
+        "type": "Braton Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGrendelPrimeABronze"
+      },
+      {
+        "location": "Lith B11 Relic",
+        "type": "Braton Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionHildrynPrimeCBronze"
+      },
+      {
+        "location": "Lith C3 Relic",
+        "type": "Braton Prime Blueprint",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionChromaPrimeCBronze"
+      }
+    ],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/DualKamasBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/GrimoireBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/SingleKamaBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/SkanaSwordBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [
+      {
+        "location": "Duviri/Endless: Tier 6 (Normal)",
+        "type": "Dual Skana Blueprint",
+        "chance": 1.03,
+        "rarity": "Rare"
+      }
+    ],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/StrunShotgunBlueprint",
+    "name": "Blueprint",
+    "tradable": false,
+    "drops": [
+      {
+        "location": "Drekar Trooper",
+        "type": "Boar Blueprint",
+        "chance": 0.5,
+        "rarity": "Common"
+      },
+      {
+        "location": "Duviri/Endless: Tier 6 (Normal)",
+        "type": "Boar Blueprint",
+        "chance": 1.03,
+        "rarity": "Rare"
+      }
+    ],
+    "imageName": "blueprint.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+    "name": "Barrel",
+    "tradable": true,
+    "ducats": 15,
+    "drops": [
+      {
+        "location": "Axi A17 Relic (Radiant)",
+        "type": "Braton Prime Barrel",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGrendelPrimeDBronze"
+      },
+      {
+        "location": "Axi A3 Relic (Radiant)",
+        "type": "Braton Prime Barrel",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionMiragePrimeBBronze"
+      },
+      {
+        "location": "Axi C11 Relic (Radiant)",
+        "type": "Braton Prime Barrel",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionVorunaPrimeCBronze"
+      }
+    ],
+    "imageName": "GenericGunPrimeBarrel.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeReceiver",
+    "name": "Receiver",
+    "tradable": true,
+    "ducats": 45,
+    "drops": [
+      {
+        "location": "Axi H6 Relic",
+        "type": "Braton Prime Receiver",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionHildrynPrimeABronze"
+      },
+      {
+        "location": "Axi K10 Relic",
+        "type": "Braton Prime Receiver",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionKhoraPrimeEBronze"
+      },
+      {
+        "location": "Axi N6 Relic",
+        "type": "Braton Prime Receiver",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionAlertSarynPrimeBronze"
+      }
+    ],
+    "imageName": "GenericGunPrimeReceiver.png"
+  },
+  {
+    "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+    "name": "Stock",
+    "tradable": true,
+    "ducats": 25,
+    "drops": [
+      {
+        "location": "Axi G6 Relic",
+        "type": "Braton Prime Stock",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGaraPrimeCBronze"
+      },
+      {
+        "location": "Axi P7 Relic",
+        "type": "Braton Prime Stock",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionProteaPrimeABronze"
+      },
+      {
+        "location": "Lith C4 Relic",
+        "type": "Braton Prime Stock",
+        "chance": 11,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionMesaPrimeABronze"
+      },
+      {
+        "location": "Axi A1 Relic (Radiant)",
+        "type": "Braton Prime Stock",
+        "chance": 16.67,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      },
+      {
+        "location": "Axi A1 Relic (Flawless)",
+        "type": "Braton Prime Stock",
+        "chance": 20,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      },
+      {
+        "location": "Axi A1 Relic (Exceptional)",
+        "type": "Braton Prime Stock",
+        "chance": 23.33,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      },
+      {
+        "location": "Axi A1 Relic",
+        "type": "Braton Prime Stock",
+        "chance": 25.33,
+        "rarity": "Uncommon",
+        "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
+      }
+    ],
+    "imageName": "GenericGunPrimeStock.png"
+  }
+]

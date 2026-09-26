@@ -775,6 +775,16 @@
    "mastery_rank": 8
   },
   {
+   "game_ref": "/Lotus/Weapons/Ostron/Melee/ModularMelee02/Tip/TipNine",
+   "slug": "sepfahn",
+   "name": "Sepfahn",
+   "group": "zaw",
+   "riven_type": "zaw",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusModularMeleeRandomModRare",
+   "disposition": 0.7,
+   "mastery_rank": 0
+  },
+  {
    "game_ref": "/Lotus/Weapons/Tenno/Melee/LongSword/LongSword",
    "slug": "skana",
    "name": "Skana",
@@ -813,6 +823,16 @@
    "mod_type": "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare",
    "disposition": 0.75,
    "mastery_rank": 12
+  },
+  {
+   "game_ref": "/Lotus/Weapons/Infested/Pistols/InfKitGun/Barrels/InfBarrelEgg/InfModularBarrelEggPart",
+   "slug": "sporelacer",
+   "name": "Sporelacer",
+   "group": "kitgun",
+   "riven_type": "kitgun",
+   "mod_type": "/Lotus/Upgrades/Mods/Randomized/LotusModularPistolRandomModRare",
+   "disposition": 0.6,
+   "mastery_rank": 0
   },
   {
    "game_ref": "/Lotus/Weapons/Corpus/LongGuns/CrpRubanRifle/CrpRubanRifle",
@@ -3795,6 +3815,76 @@
    ],
    "note": null
   },
+  "sporelacer": {
+   "weapon": "sporelacer",
+   "weapon_class": "secondary",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "MS",
+       "tags": [
+        "WeaponFireIterationsMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponDamageAmountMod"
+       ]
+      },
+      {
+       "abbr": "FR",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      }
+     ],
+     "optional_needed": 2
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "ZOOM",
+     "tags": [
+      "WeaponZoomFovMod"
+     ]
+    },
+    {
+     "abbr": "REC",
+     "tags": [
+      "WeaponRecoilReductionMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
   "stug": {
    "weapon": "stug",
    "weapon_class": "secondary",
@@ -6363,6 +6453,131 @@
      "abbr": "SLASH",
      "tags": [
       "WeaponSlashDamageMod"
+     ]
+    }
+   ],
+   "note": null
+  },
+  "sepfahn": {
+   "weapon": "sepfahn",
+   "weapon_class": "melee",
+   "alternatives": [
+    {
+     "mandatory": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional": [],
+     "optional_needed": 0
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "AS",
+       "tags": [
+        "WeaponFireRateMod"
+       ]
+      },
+      {
+       "abbr": "ELEC",
+       "tags": [
+        "WeaponElectricityDamageMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "RANGE",
+       "tags": [
+        "WeaponMeleeRangeIncMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    },
+    {
+     "mandatory": [
+      {
+       "abbr": "CC",
+       "tags": [
+        "WeaponCritChanceMod"
+       ]
+      },
+      {
+       "abbr": "IC",
+       "tags": [
+        "WeaponMeleeComboInitialBonusMod"
+       ]
+      }
+     ],
+     "optional": [
+      {
+       "abbr": "CD",
+       "tags": [
+        "WeaponCritDamageMod"
+       ]
+      },
+      {
+       "abbr": "DMG",
+       "tags": [
+        "WeaponMeleeDamageMod"
+       ]
+      }
+     ],
+     "optional_needed": 1
+    }
+   ],
+   "accepted_bad": [
+    {
+     "abbr": "SLIDE",
+     "tags": [
+      "SlideAttackCritChanceMod"
+     ]
+    },
+    {
+     "abbr": "FIN",
+     "tags": [
+      "WeaponMeleeFinisherDamageMod"
+     ]
+    },
+    {
+     "abbr": "IMP",
+     "tags": [
+      "WeaponImpactDamageMod"
+     ]
+    },
+    {
+     "abbr": "PUNC",
+     "tags": [
+      "WeaponArmorPiercingDamageMod"
+     ]
+    },
+    {
+     "abbr": "EFF",
+     "tags": [
+      "WeaponMeleeComboEfficiencyMod"
      ]
     }
    ],

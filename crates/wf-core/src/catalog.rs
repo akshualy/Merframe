@@ -37,8 +37,12 @@ impl Catalog {
         Self { data }
     }
 
-    pub fn from_json(items_json: &str, relics_json: &str) -> Result<Self> {
-        Ok(Self::new(GameData::from_json(items_json, relics_json)?))
+    pub fn from_json(items_json: &str, relics_json: &str, components_json: &str) -> Result<Self> {
+        Ok(Self::new(GameData::from_json(
+            items_json,
+            relics_json,
+            components_json,
+        )?))
     }
 
     pub fn data(&self) -> &GameData {
@@ -268,9 +272,10 @@ pub mod fixtures {
     pub const FOUNDRY_ITEMS: &str = include_str!("../../wf-data/tests/fixtures/foundry_items.json");
     pub const RIVEN_ITEMS: &str = include_str!("../../wf-data/tests/fixtures/riven_items.json");
     pub const SKINS: &str = include_str!("../../wf-data/tests/fixtures/skins.json");
+    pub const COMPONENTS: &str = include_str!("../../wf-data/tests/fixtures/components.json");
 
     pub fn catalog() -> Catalog {
-        Catalog::from_json(ITEMS, RELICS).unwrap()
+        Catalog::from_json(ITEMS, RELICS, COMPONENTS).unwrap()
     }
 
     pub fn with_skins(items_json: &str) -> Catalog {
@@ -278,11 +283,11 @@ pub mod fixtures {
         let mut skins: Vec<serde_json::Value> = serde_json::from_str(SKINS).unwrap();
         merged.append(&mut skins);
         let merged = serde_json::to_string(&merged).unwrap();
-        Catalog::from_json(&merged, RELICS).unwrap()
+        Catalog::from_json(&merged, RELICS, COMPONENTS).unwrap()
     }
 
     pub fn foundry_catalog() -> Catalog {
-        Catalog::from_json(FOUNDRY_ITEMS, RELICS).unwrap()
+        Catalog::from_json(FOUNDRY_ITEMS, RELICS, COMPONENTS).unwrap()
     }
 
     pub fn inventory_stocked(
@@ -325,7 +330,7 @@ pub mod fixtures {
     }
 
     pub fn mastery_catalog() -> Catalog {
-        Catalog::from_json(MASTERY_ITEMS, RELICS).unwrap()
+        Catalog::from_json(MASTERY_ITEMS, RELICS, COMPONENTS).unwrap()
     }
 
     pub fn inventory() -> wf_inventory::Inventory {
@@ -365,7 +370,7 @@ mod tests {
     #[test]
     fn fixture_counts() {
         let catalog = fixtures::catalog();
-        assert_eq!(catalog.items().count(), 3);
+        assert_eq!(catalog.items().count(), 4);
         assert_eq!(catalog.relics().count(), 2);
         assert_eq!(catalog.skins().count(), 0);
     }
@@ -373,7 +378,7 @@ mod tests {
     #[test]
     fn skins_kept_apart() {
         let catalog = fixtures::with_skins(fixtures::ITEMS);
-        assert_eq!(catalog.items().count(), 3);
+        assert_eq!(catalog.items().count(), 9);
         assert_eq!(catalog.skins().count(), 13);
         assert!(catalog.items().all(|item| !item.is_skin()));
         assert!(
@@ -489,12 +494,9 @@ mod tests {
              "category": "Misc", "type": "Misc", "tradable": false, "imageName": "forma.png"},
             {"uniqueName": "/Lotus/Types/Items/MiscItems/FormaUmbra", "name": "Umbra Forma",
              "category": "Misc", "type": "Misc", "tradable": false,
-             "components": [
-                {"uniqueName": "/Lotus/Types/Items/MiscItems/Forma", "name": "Forma",
-                 "itemCount": 1, "tradable": false}
-             ]}
+             "components": [{"uniqueName": "/Lotus/Types/Items/MiscItems/Forma", "itemCount": 1}]}
         ]"#;
-        let catalog = Catalog::from_json(items, fixtures::RELICS).unwrap();
+        let catalog = Catalog::from_json(items, fixtures::RELICS, "[]").unwrap();
         let forma = "/Lotus/Types/Items/MiscItems/Forma";
         assert!(catalog.component(forma).is_some());
         assert!(catalog.component_for_reward(forma).is_none());

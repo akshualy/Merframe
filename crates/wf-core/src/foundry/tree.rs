@@ -119,17 +119,10 @@ struct BuildCost {
 }
 
 fn build_cost(catalog: &Catalog, unique_name: &str) -> BuildCost {
-    let component = catalog.component(unique_name).map(|(_, part)| part);
     let item = catalog.item(unique_name);
     BuildCost {
-        credits: component
-            .and_then(|part| part.build_price)
-            .or_else(|| item.and_then(|item| item.build_price))
-            .map_or(0, i64::from),
-        secs: component
-            .and_then(|part| part.build_time)
-            .or_else(|| item.and_then(|item| item.build_time))
-            .map_or(0, i64::from),
+        credits: item.and_then(|item| item.build_price).map_or(0, i64::from),
+        secs: item.and_then(|item| item.build_time).map_or(0, i64::from),
     }
 }
 
@@ -621,16 +614,9 @@ mod tests {
         let cell = child(&tree, "/Lotus/Types/Items/MiscItems/OrokinCell");
         assert_eq!(
             cell.wiki_url.as_deref(),
-            Some(BRATON_PRIME_WIKI),
-            "a component the catalog has no item for links to the set it belongs to"
+            Some("https://wiki.warframe.com/w/Orokin_Cell")
         );
-        assert_eq!(
-            cell.drops,
-            [NodeDrop::Location {
-                location: "Neptune/Cephalon Capture (Conclave), Rotation B".to_owned(),
-                chance: 0.25,
-            }]
-        );
+        assert!(cell.drops.is_empty());
     }
 
     #[test]

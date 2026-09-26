@@ -56,10 +56,11 @@ pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameD
         item_bodies.push(fetch_or_use_cache(dir, &file_name, client, &mut meta).await?);
     }
     let relics_body = fetch_or_use_cache(dir, "Relics.json", client, &mut meta).await?;
+    let components_body = fetch_or_use_cache(dir, "Components.json", client, &mut meta).await?;
 
     write_meta(&meta_path, &meta).await?;
 
-    GameData::from_json_parts(&item_bodies, &relics_body)
+    GameData::from_json_parts(&item_bodies, &relics_body, &components_body)
 }
 
 async fn read_meta(path: &Path) -> CacheMeta {

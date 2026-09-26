@@ -244,7 +244,7 @@ pub(crate) mod support {
         let stacks: Vec<serde_json::Value> = serde_json::from_str(PRE_VEILED_ITEMS).unwrap();
         items.extend(stacks);
         let json = serde_json::to_string(&items).unwrap();
-        Catalog::from_json(&json, fixtures::RELICS).unwrap()
+        Catalog::from_json(&json, fixtures::RELICS, fixtures::COMPONENTS).unwrap()
     }
 
     pub(crate) struct Fixture {

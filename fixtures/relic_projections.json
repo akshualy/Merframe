@@ -16,6 +16,32 @@
   "tradable": false
  },
  {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionBansheeMirageVaultBBronze",
+  "name": "Lith M7 Intact",
+  "type": "Relic",
+  "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "6054de5b5221e30057501064",
+   "urlName": "lith_m7_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionHildrynPrimeCBronze",
+  "name": "Lith B11 Intact",
+  "type": "Relic",
+  "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "641264a47d179f02190e41e8",
+   "urlName": "lith_b11_relic"
+  }
+ },
+ {
   "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionNovaTrinityVaultABronze",
   "name": "Lith K4 Intact",
   "type": "Relic",
@@ -33,6 +59,19 @@
   "name": "Lith G12 Intact",
   "type": "Relic",
   "imageName": "RelicLithD.png",
+  "category": "Relics",
+  "tradable": true,
+  "vaulted": true,
+  "marketInfo": {
+   "id": "66c6098866bbb2aedca6959b",
+   "urlName": "lith_g12_relic"
+  }
+ },
+ {
+  "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionSevagothPrimeDPlatinum",
+  "name": "Lith G12 Radiant",
+  "type": "Relic",
+  "imageName": "RelicLithC.png",
   "category": "Relics",
   "tradable": true,
   "vaulted": true,

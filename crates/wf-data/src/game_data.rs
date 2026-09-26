@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::error::{DataError, Result};
-use crate::item::{Component, Item, Rarity};
+use crate::item::{Component, Item, ItemRecord, Rarity};
 use crate::relic::{Refinement, Relic, parse_relics};
 use crate::riven::RivenData;
 
@@ -17,25 +17,29 @@ pub struct GameData {
 }
 
 impl GameData {
-    pub fn from_json(items: &str, relics: &str) -> Result<Self> {
+    pub fn from_json(items: &str, relics: &str, components: &str) -> Result<Self> {
         Self::build(
             serde_json::from_str(items).map_err(|source| DataError::Parse("item", source))?,
             relics,
+            components,
         )
     }
 
-    pub fn from_json_parts(items: &[String], relics: &str) -> Result<Self> {
-        let mut parsed = Vec::new();
+    pub fn from_json_parts(items: &[String], relics: &str, components: &str) -> Result<Self> {
+        let mut records = Vec::new();
         for part in items {
-            parsed.append(
+            records.append(
                 &mut serde_json::from_str(part)
                     .map_err(|source| DataError::Parse("item", source))?,
             );
         }
-        Self::build(parsed, relics)
+        Self::build(records, relics, components)
     }
 
-    fn build(parsed: Vec<Item>, relics: &str) -> Result<Self> {
+    fn build(records: Vec<ItemRecord>, relics: &str, components: &str) -> Result<Self> {
+        let components: Vec<Component> = serde_json::from_str(components)
+            .map_err(|source| DataError::Parse("component", source))?;
+        let parsed = resolve_components(records, components)?;
         let parsed: Vec<Item> = parsed
             .into_iter()
             .filter(|item| !item.is_alternate_suit_body())
@@ -179,6 +183,49 @@ impl GameData {
     }
 }
 
+fn resolve_components(records: Vec<ItemRecord>, components: Vec<Component>) -> Result<Vec<Item>> {
+    let mut described: HashMap<String, Component> = components
+        .into_iter()
+        .map(|component| (component.unique_name.clone(), component))
+        .collect();
+    let ingredients: HashMap<&str, &Item> = records
+        .iter()
+        .map(|record| (record.item.unique_name.as_str(), &record.item))
+        .collect();
+    for record in &records {
+        for component_ref in record.components.iter().flatten() {
+            if described.contains_key(&component_ref.unique_name) {
+                continue;
+            }
+            let ingredient = ingredients
+                .get(component_ref.unique_name.as_str())
+                .ok_or_else(|| DataError::UnknownComponent {
+                    item: record.item.name.clone(),
+                    component: component_ref.unique_name.clone(),
+                })?;
+            described.insert(
+                component_ref.unique_name.clone(),
+                Component::of_item(ingredient),
+            );
+        }
+    }
+    Ok(records
+        .into_iter()
+        .map(|record| {
+            let mut item = record.item;
+            item.components = record.components.map(|refs| {
+                refs.into_iter()
+                    .map(|component_ref| Component {
+                        item_count: component_ref.item_count,
+                        ..described[&component_ref.unique_name].clone()
+                    })
+                    .collect()
+            });
+            item
+        })
+        .collect())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -189,18 +236,20 @@ mod tests {
     const RELICS: &str = include_str!("../tests/fixtures/relics.json");
     const MASTERY_ITEMS: &str = include_str!("../../../fixtures/mastery_items.json");
     const MISC_ITEMS: &str = include_str!("../../../fixtures/misc_items.json");
+    const COMPONENTS: &str = include_str!("../tests/fixtures/components.json");
 
     fn fixture() -> GameData {
-        GameData::from_json(ITEMS, RELICS).unwrap()
+        GameData::from_json(ITEMS, RELICS, COMPONENTS).unwrap()
     }
 
     fn fixture_with_skins() -> GameData {
-        GameData::from_json_parts(&[ITEMS.to_owned(), SKINS.to_owned()], RELICS).unwrap()
+        GameData::from_json_parts(&[ITEMS.to_owned(), SKINS.to_owned()], RELICS, COMPONENTS)
+            .unwrap()
     }
 
     #[test]
     fn doppelganger_grimoire_dropped() {
-        let data = GameData::from_json(MASTERY_ITEMS, RELICS).unwrap();
+        let data = GameData::from_json(MASTERY_ITEMS, RELICS, COMPONENTS).unwrap();
         let grimoire = data
             .by_unique_name("/Lotus/Weapons/Tenno/Grimoire/TnGrimoire")
             .unwrap();
@@ -220,7 +269,7 @@ mod tests {
 
     #[test]
     fn dual_warframe_single_suit() {
-        let data = GameData::from_json(MASTERY_ITEMS, RELICS).unwrap();
+        let data = GameData::from_json(MASTERY_ITEMS, RELICS, COMPONENTS).unwrap();
         let sirius = data
             .by_unique_name("/Lotus/Powersuits/SiriusOrion/SiriusSuit")
             .unwrap();
@@ -243,7 +292,7 @@ mod tests {
     #[test]
     fn parses_fixtures() {
         let data = fixture();
-        assert_eq!(data.items.len(), 3);
+        assert_eq!(data.items.len(), 4);
         assert!(!data.relics.is_empty());
     }
 
@@ -259,7 +308,7 @@ mod tests {
     #[test]
     fn skins_by_unique_name_only() {
         let data = fixture_with_skins();
-        assert_eq!(data.items().len(), 16);
+        assert_eq!(data.items().len(), 22);
         let helmet = data
             .by_unique_name("/Lotus/Upgrades/Skins/Excalibur/ExcaliburHelmet")
             .unwrap();
@@ -275,7 +324,7 @@ mod tests {
 
     #[test]
     fn catches_and_glyphs_by_unique_name_only() {
-        let data = GameData::from_json(MISC_ITEMS, RELICS).unwrap();
+        let data = GameData::from_json(MISC_ITEMS, RELICS, COMPONENTS).unwrap();
         let fish = data
             .by_unique_name("/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItem")
             .unwrap();
@@ -289,6 +338,57 @@ mod tests {
         assert_eq!(glyph.name, "Corpus Glyph");
         assert!(glyph.is_glyph());
         assert!(data.by_name("Corpus Glyph").is_none());
+    }
+
+    #[test]
+    fn component_described_by_the_component_file() {
+        const ITEMS: &str = r#"[
+            {"uniqueName":"/Lotus/Weapons/Tenno/Rifle/BratonPrime","name":"Braton Prime",
+             "category":"Primary","type":"LongGuns","tradable":true,
+             "components":[
+                {"uniqueName":"/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel","itemCount":1},
+                {"uniqueName":"/Lotus/Types/Items/MiscItems/OrokinCell","itemCount":10}
+             ]},
+            {"uniqueName":"/Lotus/Types/Items/MiscItems/OrokinCell","name":"Orokin Cell",
+             "category":"Misc","type":"Resource","tradable":false,"imageName":"cell.png",
+             "drops":[{"location":"Saturn/Helene (Defense), Rotation C","type":"Orokin Cell",
+                       "chance":null,"rarity":"Rare"}]}
+        ]"#;
+        const COMPONENTS: &str = r#"[
+            {"uniqueName":"/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+             "name":"Barrel","tradable":true,"ducats":45,"imageName":"barrel.png"}
+        ]"#;
+        let data = GameData::from_json(ITEMS, RELICS, COMPONENTS).unwrap();
+        let (_, barrel) = data
+            .component_by_unique_name("/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel")
+            .unwrap();
+        assert_eq!(barrel.name, "Barrel");
+        assert_eq!(barrel.item_count, 1);
+        assert_eq!(barrel.ducats, Some(45));
+        let (_, cell) = data
+            .component_by_unique_name("/Lotus/Types/Items/MiscItems/OrokinCell")
+            .unwrap();
+        assert_eq!(cell.name, "Orokin Cell");
+        assert_eq!(cell.item_count, 10);
+        assert_eq!(cell.image_name.as_deref(), Some("cell.png"));
+        assert_eq!(cell.drops.as_ref().map(Vec::len), Some(1));
+        assert_eq!(cell.drops.as_ref().unwrap()[0].chance, None);
+    }
+
+    #[test]
+    fn undescribed_component_fails_to_load() {
+        const ITEMS: &str = r#"[
+            {"uniqueName":"/Lotus/Weapons/Tenno/Rifle/BratonPrime","name":"Braton Prime",
+             "category":"Primary","type":"LongGuns","tradable":true,
+             "components":[{"uniqueName":"/Lotus/Types/Items/MiscItems/Alertium","itemCount":1}]}
+        ]"#;
+        let Err(error) = GameData::from_json(ITEMS, RELICS, "[]") else {
+            panic!("an undescribed component must not load");
+        };
+        assert_eq!(
+            error.to_string(),
+            "Braton Prime needs a part the game data does not describe: /Lotus/Types/Items/MiscItems/Alertium"
+        );
     }
 
     #[test]

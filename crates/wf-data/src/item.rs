@@ -22,7 +22,7 @@ pub struct MarketSlug {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Drop {
-    pub chance: f64,
+    pub chance: Option<f64>,
     pub location: String,
     pub rarity: Rarity,
     #[serde(rename = "type")]
@@ -44,17 +44,42 @@ pub struct Component {
     #[serde(rename = "uniqueName")]
     pub unique_name: String,
     pub name: String,
-    #[serde(rename = "itemCount")]
+    #[serde(skip_deserializing)]
     pub item_count: u32,
     pub tradable: bool,
     pub ducats: Option<u32>,
     pub drops: Option<Vec<Drop>>,
     #[serde(rename = "imageName")]
     pub image_name: Option<String>,
-    #[serde(rename = "buildPrice")]
-    pub build_price: Option<u32>,
-    #[serde(rename = "buildTime")]
-    pub build_time: Option<u32>,
+}
+
+impl Component {
+    pub(crate) fn of_item(item: &Item) -> Self {
+        Self {
+            unique_name: item.unique_name.clone(),
+            name: item.name.clone(),
+            item_count: 0,
+            tradable: item.tradable,
+            ducats: None,
+            drops: item.drops.clone(),
+            image_name: item.image_name.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct ComponentRef {
+    #[serde(rename = "uniqueName")]
+    pub(crate) unique_name: String,
+    #[serde(rename = "itemCount")]
+    pub(crate) item_count: u32,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct ItemRecord {
+    pub(crate) components: Option<Vec<ComponentRef>>,
+    #[serde(flatten)]
+    pub(crate) item: Item,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -70,11 +95,13 @@ pub struct Item {
     pub mastery_req: Option<u32>,
     #[serde(rename = "productCategory")]
     pub product_category: Option<String>,
+    #[serde(skip_deserializing)]
     pub components: Option<Vec<Component>>,
     #[serde(rename = "warframeMarket")]
     pub warframe_market: Option<MarketSlug>,
     #[serde(rename = "imageName")]
     pub image_name: Option<String>,
+    pub drops: Option<Vec<Drop>>,
     #[serde(rename = "wikiaUrl")]
     pub wikia_url: Option<String>,
     pub masterable: Option<bool>,
@@ -225,6 +252,7 @@ mod tests {
             components: None,
             warframe_market: None,
             image_name: None,
+            drops: None,
             wikia_url: None,
             masterable: Some(true),
             rarity: None,
@@ -405,11 +433,11 @@ mod tests {
 
     #[test]
     fn skins_grant_no_mastery() {
-        let skins: Vec<Item> =
+        let items: Vec<Item> =
             serde_json::from_str(include_str!("../tests/fixtures/skins.json")).unwrap();
+        let skins: Vec<&Item> = items.iter().filter(|item| item.is_skin()).collect();
         assert_eq!(skins.len(), 13);
-        assert!(skins.iter().all(Item::is_skin));
-        assert!(!skins.iter().any(Item::masterable));
+        assert!(!skins.iter().any(|skin| skin.masterable()));
         assert!(skins.iter().all(|skin| skin.image_name.is_some()));
         assert!(skins.iter().all(|skin| skin.warframe_market.is_none()));
         assert!(!item("Warframes", "Suits").is_skin());

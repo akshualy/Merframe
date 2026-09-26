@@ -106,7 +106,7 @@ mod tests {
     const RELIC_PROJECTIONS: &str = include_str!("../../../../fixtures/relic_projections.json");
 
     fn projection_catalog() -> Catalog {
-        Catalog::from_json(fixtures::ITEMS, RELIC_PROJECTIONS).unwrap()
+        Catalog::from_json(fixtures::ITEMS, RELIC_PROJECTIONS, fixtures::COMPONENTS).unwrap()
     }
 
     #[test]

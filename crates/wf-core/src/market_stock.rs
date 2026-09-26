@@ -303,6 +303,7 @@ mod tests {
                "name":"Tink","category":"Fish","type":"Fish","tradable":true}
             ]"#,
             fixtures::RELICS,
+            "[]",
         )
         .unwrap();
         let inventory = fixtures::inventory();

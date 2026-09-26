@@ -292,38 +292,23 @@
   "components": [
    {
     "uniqueName": "/Lotus/Types/Recipes/Helmets/BrawlerAltHelmetBlueprint",
-    "name": "Blueprint",
-    "itemCount": 1,
-    "imageName": "blueprint.png",
-    "tradable": false
+    "itemCount": 1
    },
    {
     "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
-    "name": "Neurodes",
-    "itemCount": 2,
-    "imageName": "ComponentNeurode.png",
-    "tradable": false
+    "itemCount": 2
    },
    {
     "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
-    "name": "Orokin Cell",
-    "itemCount": 1,
-    "imageName": "ComponentCell.png",
-    "tradable": false
+    "itemCount": 1
    },
    {
     "uniqueName": "/Lotus/Types/Items/MiscItems/OxiumAlloy",
-    "name": "Oxium",
-    "itemCount": 400,
-    "imageName": "ComponentOxium.png",
-    "tradable": false
+    "itemCount": 400
    },
    {
     "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
-    "name": "Salvage",
-    "itemCount": 1200,
-    "imageName": "ComponentSalvage.png",
-    "tradable": false
+    "itemCount": 1200
    }
   ]
  },
@@ -890,27 +875,15 @@
   "components": [
    {
     "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABlueprint",
-    "name": "Blueprint",
-    "itemCount": 1,
-    "imageName": "blueprint.png",
-    "tradable": true,
-    "ducats": 45
+    "itemCount": 1
    },
    {
     "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent",
-    "name": "Kavasa Prime Band",
-    "itemCount": 1,
-    "imageName": "GenericComponentPrimeLatch.png",
-    "tradable": true,
-    "ducats": 45
+    "itemCount": 1
    },
    {
     "uniqueName": "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABuckleComponent",
-    "name": "Kavasa Prime Buckle",
-    "itemCount": 1,
-    "imageName": "GenericComponentPrimePlug.png",
-    "tradable": true,
-    "ducats": 65
+    "itemCount": 1
    }
   ]
  },
@@ -973,19 +946,11 @@
   "components": [
    {
     "uniqueName": "/Lotus/Upgrades/Skins/Rhino/RhinoHelmetAltB",
-    "name": "Arcane Vanguard Helmet",
-    "buildPrice": 20000,
-    "buildTime": 43200,
-    "itemCount": 1,
-    "imageName": "RhinoSeries3Helmet.png",
-    "tradable": false
+    "itemCount": 1
    },
    {
     "uniqueName": "/Lotus/Types/Recipes/Helmets/ConversionRhinoHelmetAltBBlueprint",
-    "name": "Blueprint",
-    "itemCount": 1,
-    "imageName": "blueprint.png",
-    "tradable": false
+    "itemCount": 1
    }
   ]
  },
@@ -1197,6 +1162,15 @@
   "masterable": false
  },
  {
+  "uniqueName": "/Lotus/Types/Items/Fish/Solaris/SolarisCoolCommonFishALargeItem",
+  "name": "Tink",
+  "type": "Fish",
+  "imageName": "SolarisStormUncommonFishALarge.png",
+  "category": "Fish",
+  "tradable": true,
+  "masterable": false
+ },
+ {
   "uniqueName": "/Lotus/Types/Items/Fish/Solaris/SolarisCoolCommonFishAMediumItem",
   "name": "Tink",
   "type": "Fish",
@@ -1274,6 +1248,115 @@
   "type": "Glyph",
   "imageName": "Icon02.png",
   "category": "Glyphs",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
+  "name": "Neurodes",
+  "codexSecret": false,
+  "itemCount": 1,
+  "buildPrice": 15000,
+  "buildTime": 3600,
+  "skipBuildTimePrice": 2,
+  "buildQuantity": 1,
+  "consumeOnBuild": false,
+  "type": "Misc",
+  "imageName": "ComponentNeurode.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+  "name": "Orokin Cell",
+  "codexSecret": false,
+  "itemCount": 1,
+  "buildPrice": 15000,
+  "buildTime": 3600,
+  "skipBuildTimePrice": 2,
+  "buildQuantity": 1,
+  "consumeOnBuild": false,
+  "type": "Resource",
+  "imageName": "ComponentCell.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/OxiumAlloy",
+  "name": "Oxium",
+  "codexSecret": false,
+  "itemCount": 600,
+  "type": "Resource",
+  "imageName": "ComponentOxium.png",
+  "category": "Misc",
+  "drops": [
+   {
+    "location": "Carrypod",
+    "type": "Oxium",
+    "chance": 0.5,
+    "rarity": "Rare"
+   },
+   {
+    "location": "Common Corpus Storage Container",
+    "type": "Oxium",
+    "chance": 0.5,
+    "rarity": "Rare"
+   },
+   {
+    "location": "Dusty Storage Crate",
+    "type": "Oxium",
+    "chance": 0.5,
+    "rarity": "Rare"
+   }
+  ],
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+  "name": "Salvage",
+  "codexSecret": false,
+  "itemCount": 25000,
+  "type": "Resource",
+  "imageName": "ComponentSalvage.png",
+  "category": "Misc",
+  "drops": [
+   {
+    "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
+    "type": "600X Salvage",
+    "chance": 12.65,
+    "rarity": "Uncommon"
+   },
+   {
+    "location": "Saturn/Annihilation (Conclave), Rotation B",
+    "type": "600X Salvage",
+    "chance": 12.65,
+    "rarity": "Uncommon"
+   },
+   {
+    "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
+    "type": "600X Salvage",
+    "chance": 12.65,
+    "rarity": "Uncommon"
+   }
+  ],
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Upgrades/Skins/Rhino/RhinoHelmetAltB",
+  "name": "Arcane Vanguard Helmet",
+  "codexSecret": false,
+  "buildPrice": 20000,
+  "buildTime": 43200,
+  "skipBuildTimePrice": 25,
+  "buildQuantity": 1,
+  "consumeOnBuild": true,
+  "type": "Skin",
+  "imageName": "RhinoSeries3Helmet.png",
+  "category": "Skins",
   "tradable": false,
   "masterable": false
  }

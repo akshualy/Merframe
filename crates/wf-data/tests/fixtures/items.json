@@ -50,97 +50,23 @@
     "components": [
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburBlueprint",
-        "name": "Blueprint",
-        "description": "Excalibur epitomizes the warrior spirit. His master swordsmanship deals high damage. He is the embodiment of martial excellence.",
-        "itemCount": 1,
-        "imageName": "blueprint.png",
-        "tradable": false,
-        "masterable": false
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburChassisComponent",
-        "name": "Chassis",
-        "description": "Chassis component of the Excalibur Warframe.",
-        "codexSecret": false,
-        "itemCount": 1,
-        "imageName": "GenericWarframeChassis.png",
-        "drops": [
-          {
-            "location": "Mars/War (Assassination)",
-            "type": "Excalibur Chassis Blueprint",
-            "chance": 38.72,
-            "rarity": "Common"
-          }
-        ],
-        "tradable": false,
-        "masterable": false
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetComponent",
-        "name": "Neuroptics",
-        "description": "Neuroptics component of the Excalibur Warframe.",
-        "codexSecret": false,
-        "itemCount": 1,
-        "imageName": "GenericWarframeHelmet.png",
-        "drops": [
-          {
-            "location": "Mars/War (Assassination)",
-            "type": "Excalibur Neuroptics Blueprint",
-            "chance": 38.72,
-            "rarity": "Common"
-          }
-        ],
-        "tradable": false,
-        "masterable": false
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
-        "name": "Orokin Cell",
-        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
-        "codexSecret": false,
-        "itemCount": 1,
-        "imageName": "ComponentCell.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Annihilation (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          },
-          {
-            "location": "Saturn/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburSystemsComponent",
-        "name": "Systems",
-        "description": "Systems component of the Excalibur Warframe.",
-        "codexSecret": false,
-        "itemCount": 1,
-        "imageName": "GenericWarframeSystem.png",
-        "drops": [
-          {
-            "location": "Mars/War (Assassination)",
-            "type": "Excalibur Systems Blueprint",
-            "chance": 22.56,
-            "rarity": "Uncommon"
-          }
-        ],
-        "tradable": false,
-        "masterable": false
+        "itemCount": 1
       }
     ],
     "type": "Warframe",
@@ -221,126 +147,23 @@
     "components": [
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeBlueprint",
-        "name": "Blueprint",
-        "description": "Become the bastion that defends allies using powerful healing abilities with Trinity Prime. Featuring altered mod polarities for greater customization.",
-        "itemCount": 1,
-        "primeSellingPrice": 45,
-        "imageName": "blueprint.png",
-        "drops": [
-          {
-            "location": "Axi S1 Relic",
-            "type": "Trinity Prime Blueprint",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionABronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 45
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeChassisComponent",
-        "name": "Chassis",
-        "description": "Chassis component of the Trinity Prime Warframe.",
-        "codexSecret": false,
-        "primeSellingPrice": 45,
-        "itemCount": 1,
-        "imageName": "GenericWarframePrimeChassis.png",
-        "drops": [
-          {
-            "location": "Axi H1 Relic",
-            "type": "Trinity Prime Chassis Blueprint",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionTBronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 45
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeHelmetComponent",
-        "name": "Neuroptics",
-        "description": "Neuroptics component of the Trinity Prime Warframe.",
-        "codexSecret": false,
-        "primeSellingPrice": 25,
-        "itemCount": 1,
-        "imageName": "GenericWarframePrimeHelmet.png",
-        "drops": [
-          {
-            "location": "Lith K8 Relic",
-            "type": "Trinity Prime Neuroptics Blueprint",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T1VoidProjectionLimboTrinityVaultBBronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 25
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
-        "name": "Orokin Cell",
-        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
-        "codexSecret": false,
-        "itemCount": 1,
-        "imageName": "ComponentCell.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent",
-        "name": "Systems",
-        "description": "Systems component of the Trinity Prime Warframe.",
-        "codexSecret": false,
-        "primeSellingPrice": 15,
-        "itemCount": 1,
-        "imageName": "GenericWarframePrimeSystem.png",
-        "drops": [
-          {
-            "location": "Axi A1 Relic (Radiant)",
-            "type": "Trinity Prime Systems Blueprint",
-            "chance": 16.67,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          },
-          {
-            "location": "Axi A1 Relic (Flawless)",
-            "type": "Trinity Prime Systems Blueprint",
-            "chance": 20,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          },
-          {
-            "location": "Axi A1 Relic (Exceptional)",
-            "type": "Trinity Prime Systems Blueprint",
-            "chance": 23.33,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          },
-          {
-            "location": "Axi A1 Relic",
-            "type": "Trinity Prime Systems Blueprint",
-            "chance": 25.33,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 15
+        "itemCount": 1
       }
     ],
     "type": "Warframe",
@@ -427,126 +250,23 @@
     "components": [
       {
         "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-        "name": "Barrel",
-        "description": "A prime weapon-crafting component.",
-        "codexSecret": false,
-        "primeSellingPrice": 15,
-        "itemCount": 1,
-        "imageName": "GenericGunPrimeBarrel.png",
-        "drops": [
-          {
-            "location": "Axi A17 Relic (Radiant)",
-            "type": "Braton Prime Barrel",
-            "chance": 16.67,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGrendelPrimeDBronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 15
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint",
-        "name": "Blueprint",
-        "description": "A classic Orokin weapon, Braton Prime features modified damage levels and a larger magazine over the standard model.",
-        "itemCount": 1,
-        "primeSellingPrice": 25,
-        "imageName": "blueprint.png",
-        "drops": [
-          {
-            "location": "Axi G11 Relic",
-            "type": "Braton Prime Blueprint",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionGrendelPrimeABronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 25
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
-        "name": "Orokin Cell",
-        "description": "Ancient energy cell from the Orokin era.\n\nLocation: Ceres, Saturn, and Deimos",
-        "codexSecret": false,
-        "itemCount": 10,
-        "imageName": "ComponentCell.png",
-        "drops": [
-          {
-            "location": "Neptune/Cephalon Capture (Conclave), Rotation B",
-            "type": "Orokin Cell",
-            "chance": 0.25,
-            "rarity": "Legendary"
-          }
-        ],
-        "tradable": false,
-        "masterable": false,
-        "type": "Resource"
+        "itemCount": 10
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeReceiver",
-        "name": "Receiver",
-        "description": "A prime weapon-crafting component.",
-        "codexSecret": false,
-        "primeSellingPrice": 45,
-        "itemCount": 1,
-        "imageName": "GenericGunPrimeReceiver.png",
-        "drops": [
-          {
-            "location": "Axi H6 Relic",
-            "type": "Braton Prime Receiver",
-            "chance": 11,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionHildrynPrimeABronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 45
+        "itemCount": 1
       },
       {
         "uniqueName": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-        "name": "Stock",
-        "description": "A prime weapon-crafting component.",
-        "codexSecret": false,
-        "primeSellingPrice": 25,
-        "itemCount": 1,
-        "imageName": "GenericGunPrimeStock.png",
-        "drops": [
-          {
-            "location": "Axi A1 Relic (Radiant)",
-            "type": "Braton Prime Stock",
-            "chance": 16.67,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          },
-          {
-            "location": "Axi A1 Relic (Flawless)",
-            "type": "Braton Prime Stock",
-            "chance": 20,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          },
-          {
-            "location": "Axi A1 Relic (Exceptional)",
-            "type": "Braton Prime Stock",
-            "chance": 23.33,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          },
-          {
-            "location": "Axi A1 Relic",
-            "type": "Braton Prime Stock",
-            "chance": 25.33,
-            "rarity": "Uncommon",
-            "uniqueName": "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
-          }
-        ],
-        "tradable": true,
-        "masterable": false,
-        "ducats": 25
+        "itemCount": 1
       }
     ],
     "type": "Rifle",
@@ -645,5 +365,21 @@
     "vaulted": false,
     "estimatedVaultDate": "2015-04-13",
     "masterable": true
+  },
+  {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/OrokinCell",
+    "name": "Orokin Cell",
+    "codexSecret": false,
+    "itemCount": 1,
+    "buildPrice": 15000,
+    "buildTime": 3600,
+    "skipBuildTimePrice": 2,
+    "buildQuantity": 1,
+    "consumeOnBuild": false,
+    "type": "Resource",
+    "imageName": "ComponentCell.png",
+    "category": "Misc",
+    "tradable": false,
+    "masterable": false
   }
 ]

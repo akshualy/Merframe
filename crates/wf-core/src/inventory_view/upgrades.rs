@@ -307,7 +307,7 @@ mod tests {
     const UPGRADE_ITEMS: &str = include_str!("../../../../fixtures/upgrade_items.json");
 
     fn upgrade_catalog() -> Catalog {
-        Catalog::from_json(UPGRADE_ITEMS, fixtures::RELICS).unwrap()
+        Catalog::from_json(UPGRADE_ITEMS, fixtures::RELICS, "[]").unwrap()
     }
 
     #[test]

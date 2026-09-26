@@ -55,6 +55,9 @@ pub(super) fn node_drops(catalog: &Catalog, stock: &Stock<'_>, drops: &[Drop]) -
     let mut listed: HashSet<&str> = HashSet::new();
     let mut rows: Vec<NodeDrop> = Vec::new();
     for drop in drops {
+        let Some(chance) = drop.chance else {
+            continue;
+        };
         match relic_refinement(&drop.location) {
             Some(Refinement::Intact) => {
                 let Some(unique_name) = drop.unique_name.as_deref() else {
@@ -71,14 +74,14 @@ pub(super) fn node_drops(catalog: &Catalog, stock: &Stock<'_>, drops: &[Drop]) -
                     name: relic.name.clone(),
                     image_name: relic.image_name.clone(),
                     owned: owned_relic_count(stock, relic),
-                    chance: drop.chance,
+                    chance,
                     vaulted: relic.vaulted,
                 });
             }
             Some(_) => {}
             None => rows.push(NodeDrop::Location {
                 location: drop.location.clone(),
-                chance: drop.chance,
+                chance,
             }),
         }
     }
@@ -135,6 +138,9 @@ pub(super) fn owned_relics(
     let mut listed: HashSet<&str> = HashSet::new();
     let mut rows: Vec<OwnedRelic> = Vec::new();
     for drop in drops {
+        let Some(chance) = drop.chance else {
+            continue;
+        };
         let Some(refinement) = relic_refinement(&drop.location) else {
             continue;
         };
@@ -157,7 +163,7 @@ pub(super) fn owned_relics(
             name: format!("{} {}", relic.name, refinement_name(refinement)),
             image_name: relic.image_names.get(&refinement).cloned(),
             owned,
-            chance: drop.chance,
+            chance,
         });
     }
     rows.sort_by_key(|row| Reverse(row.owned));
@@ -197,7 +203,7 @@ mod tests {
 
     fn drop_row(location: &str, chance: f64, unique_name: Option<&str>) -> Drop {
         Drop {
-            chance,
+            chance: Some(chance),
             location: location.to_owned(),
             rarity: Rarity::Uncommon,
             drop_type: "Braton Prime Stock".to_owned(),
@@ -223,7 +229,7 @@ mod tests {
         assert_eq!(wiki_url(&catalog, "/Lotus/Nope"), None);
 
         let fandom = fixtures::ITEMS.replace(WIKI, "https://warframe.fandom.com/wiki/");
-        let moved = Catalog::from_json(&fandom, fixtures::RELICS).unwrap();
+        let moved = Catalog::from_json(&fandom, fixtures::RELICS, fixtures::COMPONENTS).unwrap();
         assert_eq!(
             wiki_url(&moved, EXCALIBUR).as_deref(),
             Some("https://wiki.warframe.com/w/Excalibur")
