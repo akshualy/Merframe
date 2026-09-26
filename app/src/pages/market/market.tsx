@@ -1,9 +1,15 @@
-import { Eye, EyeOff, LogOut, Mail, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { LogOut, Mail } from "lucide-react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { GameIcon } from "@/components/game-icon";
-import { ErrorNote, Page, Quoted, Section, Stat } from "@/components/page";
+import { ErrorNote, Page, Quoted, Section } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +20,13 @@ import { ago, MARKET_CHATS_URL, num } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
-import type { Auction, MarketItem, MarketSnapshot, OrderRow } from "@/types";
+import type {
+  Auction,
+  MarketItem,
+  MarketSnapshot,
+  OrderRow,
+  OrderType,
+} from "@/types";
 import { AuctionsTable } from "./auctions";
 import { BuySellPanel, type CompareRequest } from "./buy-sell";
 import { LoginCard } from "./login-card";
@@ -128,16 +140,38 @@ export function MarketPage() {
   );
 
   const compareSlug = useCallback(
-    (slug: string) => {
+    (slug: string, side: OrderType = "sell", rank: number | null = null) => {
       const item = items.find((candidate) => candidate.slug === slug);
       if (item) {
-        setCompare({ item, nonce: Date.now() });
+        setCompare({ item, side, rank, nonce: Date.now() });
       } else {
         toast.error("warframe.market does not list this item any more");
       }
     },
     [items],
   );
+
+  const requestedItem = params.get("item");
+  useEffect(() => {
+    if (!requestedItem || items.length === 0) {
+      return;
+    }
+    const rank = Number.parseInt(params.get("rank") ?? "", 10);
+    compareSlug(
+      requestedItem,
+      params.get("side") === "buy" ? "buy" : "sell",
+      Number.isFinite(rank) ? rank : null,
+    );
+    setParams(
+      (next) => {
+        next.delete("item");
+        next.delete("side");
+        next.delete("rank");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [requestedItem, items, params, compareSlug, setParams]);
 
   const handleSignedIn = useCallback(async () => {
     setSignedOut(false);
@@ -148,21 +182,22 @@ export function MarketPage() {
     }
   }, [setStatus]);
 
-  const handleShowAll = useCallback(
-    (visible: boolean) => {
-      if (tab === "auctions") {
-        runMarketAction(
-          api.marketSetAuctionsVisibility(visible),
-          visible ? "All auctions visible" : "All auctions hidden",
-        );
-        return;
-      }
+  const setOrdersVisibility = useCallback(
+    (visible: boolean) =>
       runMarketAction(
         api.marketSetVisibility(visible),
         visible ? "All orders visible" : "All orders hidden",
-      );
-    },
-    [tab, runMarketAction],
+      ),
+    [runMarketAction],
+  );
+
+  const setAuctionsVisibility = useCallback(
+    (visible: boolean) =>
+      runMarketAction(
+        api.marketSetAuctionsVisibility(visible),
+        visible ? "All auctions visible" : "All auctions hidden",
+      ),
+    [runMarketAction],
   );
 
   const handleOpenMessages = useCallback(async () => {
@@ -222,19 +257,7 @@ export function MarketPage() {
             Messages
             {unread > 0 && <Badge variant="accent">{num(unread)}</Badge>}
           </Button>
-          <Button variant="outline" onClick={reload}>
-            <RefreshCw className="size-4" />
-            Refresh
-          </Button>
-          <Button variant="outline" onClick={() => handleShowAll(true)}>
-            <Eye className="size-4" />
-            Show All
-          </Button>
-          <Button variant="outline" onClick={() => handleShowAll(false)}>
-            <EyeOff className="size-4" />
-            Hide All
-          </Button>
-          <Button variant="ghost" onClick={handleSignOut}>
+          <Button variant="outline" onClick={handleSignOut}>
             <LogOut className="size-4" />
             Sign Out
           </Button>
@@ -243,33 +266,35 @@ export function MarketPage() {
     >
       {error && <ErrorNote message={error} />}
 
-      <div className="grid gap-4 sm:grid-cols-5">
-        <Stat label="Sell orders" value={num(totals.sell)} />
-        <Stat label="Buy orders" value={num(totals.buy)} />
-        <Stat label="Open auctions" value={num(openAuctions)} />
-        <Stat
-          label="Listed value"
-          value={
-            <span className="flex items-center gap-1">
-              {num(totals.plat)}
-              <GameIcon name="platinum" size={18} alt="Platinum" />
-            </span>
-          }
-        />
-        <Stat
-          label="Missing items"
-          value={num(totals.missing)}
-          hint={
-            totals.missing > 0
-              ? "Sell orders above what the account holds"
-              : undefined
-          }
-        />
-      </div>
-
       <Section
         title="My Listings"
         description={refreshedAt ? `Refreshed ${ago(refreshedAt)}` : undefined}
+        action={
+          <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+            <Figure label="Sell orders" value={num(totals.sell)} />
+            <Figure label="Buy orders" value={num(totals.buy)} />
+            <Figure label="Open auctions" value={num(openAuctions)} />
+            <Figure
+              label="Listed value"
+              value={
+                <span className="flex items-center gap-1">
+                  {num(totals.plat)}
+                  <GameIcon name="platinum" size={16} alt="Platinum" />
+                </span>
+              }
+            />
+            <Figure
+              label="Missing items"
+              value={num(totals.missing)}
+              tone={totals.missing > 0 ? "text-warning" : undefined}
+              title={
+                totals.missing > 0
+                  ? "Sell orders above what the account holds"
+                  : undefined
+              }
+            />
+          </dl>
+        }
       >
         {loading && orders.length === 0 && auctions.length === 0 ? (
           <Skeleton className="h-48 w-full" />
@@ -293,6 +318,8 @@ export function MarketPage() {
                 <OrdersTable
                   rows={orders}
                   onCompare={compareSlug}
+                  onRefresh={reload}
+                  onSetVisibility={setOrdersVisibility}
                   runMarketAction={runMarketAction}
                 />
               </TabsContent>
@@ -300,6 +327,8 @@ export function MarketPage() {
                 <AuctionsTable
                   auctions={auctions}
                   items={items}
+                  onRefresh={reload}
+                  onSetVisibility={setAuctionsVisibility}
                   runMarketAction={runMarketAction}
                 />
               </TabsContent>
@@ -310,5 +339,24 @@ export function MarketPage() {
 
       <BuySellPanel items={items} compare={compare} />
     </Page>
+  );
+}
+
+function Figure({
+  label,
+  value,
+  tone,
+  title,
+}: {
+  label: string;
+  value: ReactNode;
+  tone?: string;
+  title?: string;
+}) {
+  return (
+    <div className="flex items-baseline gap-1.5" title={title}>
+      <dt className="text-muted-foreground text-xs">{label}</dt>
+      <dd className={cn("font-semibold tabular-nums", tone)}>{value}</dd>
+    </div>
   );
 }

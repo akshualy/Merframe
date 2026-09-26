@@ -24,7 +24,7 @@ export interface Order {
   user?: MarketUser;
 }
 
-export interface OrderBook {
+export interface ItemListings {
   sell: Order[];
   buy: Order[];
 }

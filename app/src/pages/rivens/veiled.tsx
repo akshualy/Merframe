@@ -1,7 +1,9 @@
+import { Link } from "react-router";
 import { ItemImage } from "@/components/item-image";
 import { Surface } from "@/components/page";
+import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { displayNameFromPath, num } from "@/lib/format";
+import { displayNameFromPath, marketListingPath, num } from "@/lib/format";
 import type { VeiledGroup } from "@/types";
 
 export function VeiledChallenge({ group }: { group: VeiledGroup }) {
@@ -37,6 +39,13 @@ export function VeiledChallenge({ group }: { group: VeiledGroup }) {
                   ` ${num(riven.progress)} of ${num(riven.required)}`}
               </Hint>
             </span>
+            {riven.market_slug && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to={marketListingPath(riven.market_slug, "sell")}>
+                  Sell
+                </Link>
+              </Button>
+            )}
           </span>
         ))}
       </div>

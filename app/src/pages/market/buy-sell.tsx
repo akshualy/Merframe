@@ -21,10 +21,12 @@ import { api, reportError } from "@/lib/bridge";
 import { marketUrl } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
-import type { MarketItem, Order, OrderBook, OrderType } from "@/types";
+import type { ItemListings, MarketItem, Order, OrderType } from "@/types";
 
 export interface CompareRequest {
   item: MarketItem;
+  side: OrderType;
+  rank: number | null;
   nonce: number;
 }
 
@@ -153,13 +155,13 @@ export function BuySellPanel({
   items: MarketItem[];
   compare: CompareRequest | null;
 }) {
-  const quote = usePageQuote("marketBook");
+  const quote = usePageQuote("marketListings");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<MarketItem | null>(null);
-  const [book, setBook] = useState<OrderBook | null>(null);
+  const [listings, setListings] = useState<ItemListings | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [platinum, setPlatinum] = useState("");
   const [quantity, setQuantity] = useState("1");
@@ -186,27 +188,35 @@ export function BuySellPanel({
   const hasAmberStars = selected?.max_amber_stars != null;
   const hasCyanStars = selected?.max_cyan_stars != null;
 
-  const handlePick = useCallback(async (item: MarketItem) => {
-    setSelected(item);
-    setQuery(item.name);
-    setOpen(false);
-    setLoadingOrders(true);
-    setRank("0");
-    setSubtype(item.subtypes?.[0] ?? "");
-    setAmberStars("0");
-    setCyanStars("0");
-    try {
-      const next = await api.marketItemOrders(item.slug);
-      setBook(next);
-      const lowest = next.sell[0]?.platinum;
-      setPlatinum(lowest === undefined ? "" : String(Math.max(1, lowest)));
-    } catch (error) {
-      setBook(null);
-      reportError(error);
-    } finally {
-      setLoadingOrders(false);
-    }
-  }, []);
+  const handlePick = useCallback(
+    async (
+      item: MarketItem,
+      side: OrderType = "sell",
+      rank: number | null = null,
+    ) => {
+      setSelected(item);
+      setQuery(item.name);
+      setOpen(false);
+      setLoadingOrders(true);
+      setSide(side);
+      setRank(String(rank ?? 0));
+      setSubtype(item.subtypes?.[0] ?? "");
+      setAmberStars("0");
+      setCyanStars("0");
+      try {
+        const next = await api.marketItemOrders(item.slug);
+        setListings(next);
+        const lowest = next.sell[0]?.platinum;
+        setPlatinum(lowest === undefined ? "" : String(Math.max(1, lowest)));
+      } catch (error) {
+        setListings(null);
+        reportError(error);
+      } finally {
+        setLoadingOrders(false);
+      }
+    },
+    [],
+  );
 
   const handleOpenMarket = useCallback(async () => {
     if (!selected) {
@@ -223,7 +233,7 @@ export function BuySellPanel({
     if (!compare) {
       return;
     }
-    handlePick(compare.item);
+    handlePick(compare.item, compare.side, compare.rank);
     panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [compare, handlePick]);
 
@@ -291,7 +301,7 @@ export function BuySellPanel({
     hasCyanStars,
   ]);
 
-  const lowestSell = book?.sell[0]?.platinum ?? null;
+  const lowestSell = listings?.sell[0]?.platinum ?? null;
 
   return (
     <div ref={panelRef} className="scroll-mt-6">
@@ -344,7 +354,7 @@ export function BuySellPanel({
                 </span>
                 <OrderList
                   item={selected}
-                  orders={book?.sell ?? []}
+                  orders={listings?.sell ?? []}
                   loading={loadingOrders}
                   side="sell"
                   best={null}
@@ -356,7 +366,7 @@ export function BuySellPanel({
                 </span>
                 <OrderList
                   item={selected}
-                  orders={book?.buy ?? []}
+                  orders={listings?.buy ?? []}
                   loading={loadingOrders}
                   side="buy"
                   best={lowestSell}
@@ -459,7 +469,9 @@ export function BuySellPanel({
               </div>
             </div>
           ) : (
-            <EmptyNote>Pick an item to see the order book.</EmptyNote>
+            <EmptyNote>
+              Pick an item to see its warframe.market listings.
+            </EmptyNote>
           )}
         </div>
       </Section>

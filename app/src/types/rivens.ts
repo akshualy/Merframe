@@ -85,6 +85,7 @@ export interface VeiledRiven {
   item_type: string;
   name: string | null;
   weapon_class: string | null;
+  market_slug: string | null;
   image_name: string | null;
   count: number;
   progress: number;

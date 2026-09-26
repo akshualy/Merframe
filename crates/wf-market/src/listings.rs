@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::models::{Order, OrderType, UserStatus};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OrderBook {
+pub struct ItemListings {
     pub sell: Vec<Order>,
     pub buy: Vec<Order>,
 }
@@ -53,14 +53,14 @@ fn by_unit_price(left: &Order, right: &Order) -> Ordering {
         .cmp(&(u64::from(right.platinum) * per_trade(left)))
 }
 
-pub fn order_book(orders: Vec<Order>, reach: &Reach) -> OrderBook {
+pub fn item_listings(orders: Vec<Order>, reach: &Reach) -> ItemListings {
     let (mut sell, mut buy): (Vec<Order>, Vec<Order>) = orders
         .into_iter()
         .filter(|order| reach.covers(order))
         .partition(|order| order.order_type == OrderType::Sell);
     sell.sort_by(by_unit_price);
     buy.sort_by(|left, right| by_unit_price(right, left));
-    OrderBook { sell, buy }
+    ItemListings { sell, buy }
 }
 
 #[cfg(test)]
@@ -69,7 +69,7 @@ mod tests {
     use crate::models::Order;
     use crate::parse::envelope;
 
-    const BOOK: &str = include_str!("../tests/fixtures/orders_item_book.json");
+    const LISTINGS: &str = include_str!("../tests/fixtures/orders_item_listings.json");
 
     fn names(orders: &[crate::models::Order]) -> Vec<String> {
         orders
@@ -94,14 +94,14 @@ mod tests {
     #[test]
     fn wider_reach() {
         let listed = |status, locale: Option<&str>| {
-            let book = order_book(
-                envelope::<Vec<Order>>(BOOK).unwrap(),
+            let listings = item_listings(
+                envelope::<Vec<Order>>(LISTINGS).unwrap(),
                 &Reach {
                     status,
                     locale: locale.map(str::to_owned),
                 },
             );
-            [names(&book.sell), names(&book.buy)].concat()
+            [names(&listings.sell), names(&listings.buy)].concat()
         };
         let online = listed(TraderStatus::Online, Some("en"));
         assert!(online.iter().any(|name| name == "online_seller"));
@@ -114,10 +114,10 @@ mod tests {
 
     #[test]
     fn reachable_traders_only() {
-        let orders = envelope::<Vec<Order>>(BOOK).unwrap();
+        let orders = envelope::<Vec<Order>>(LISTINGS).unwrap();
         assert_eq!(orders.len(), 11);
-        let book = order_book(orders, &ingame_english());
-        let listed = [names(&book.sell), names(&book.buy)].concat();
+        let listings = item_listings(orders, &ingame_english());
+        let listed = [names(&listings.sell), names(&listings.buy)].concat();
         assert!(!listed.iter().any(|name| name == "offline_seller"));
         assert!(!listed.iter().any(|name| name == "online_seller"));
         assert!(!listed.iter().any(|name| name == "invisible_seller"));
@@ -127,11 +127,11 @@ mod tests {
     }
 
     #[test]
-    fn book_sort_order() {
-        let orders = envelope::<Vec<Order>>(BOOK).unwrap();
-        let book = order_book(orders, &ingame_english());
+    fn listings_sort_order() {
+        let orders = envelope::<Vec<Order>>(LISTINGS).unwrap();
+        let listings = item_listings(orders, &ingame_english());
         assert_eq!(
-            names(&book.sell),
+            names(&listings.sell),
             [
                 "bulk_seller",
                 "cheap_seller",
@@ -139,13 +139,13 @@ mod tests {
                 "bundle_seller"
             ]
         );
-        assert_eq!(names(&book.buy), ["rich_buyer", "thrifty_buyer"]);
+        assert_eq!(names(&listings.buy), ["rich_buyer", "thrifty_buyer"]);
     }
 
     #[test]
-    fn empty_book() {
-        let book = order_book(Vec::new(), &ingame_english());
-        assert!(book.sell.is_empty());
-        assert!(book.buy.is_empty());
+    fn empty_listings() {
+        let listings = item_listings(Vec::new(), &ingame_english());
+        assert!(listings.sell.is_empty());
+        assert!(listings.buy.is_empty());
     }
 }

@@ -3,8 +3,8 @@ use std::time::Duration;
 use reqwest::header::{HeaderMap, HeaderValue, RETRY_AFTER};
 use reqwest::{Request, StatusCode};
 
-use crate::book::{OrderBook, Reach, order_book};
 use crate::error::{MarketError, Result};
+use crate::listings::{ItemListings, Reach, item_listings};
 use crate::models::{
     Auction, Chat, CloseOrderRequest, CreateAuctionRequest, CreateOrderRequest, Item, Order,
     OrdersGroupUpdate, Platform, RivenAttribute, Session, SetAuctionsVisibilityRequest,
@@ -140,8 +140,8 @@ impl Client {
         self.execute(request, parse::envelope::<Vec<Order>>).await
     }
 
-    pub async fn order_book(&self, slug: &str, reach: &Reach) -> Result<OrderBook> {
-        Ok(order_book(self.orders_for_item(slug).await?, reach))
+    pub async fn item_listings(&self, slug: &str, reach: &Reach) -> Result<ItemListings> {
+        Ok(item_listings(self.orders_for_item(slug).await?, reach))
     }
 
     pub fn orders_my_request(&self) -> Result<Request> {

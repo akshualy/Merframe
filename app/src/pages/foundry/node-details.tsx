@@ -1,13 +1,13 @@
 import { Archive, ExternalLink } from "lucide-react";
 import { useCallback } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { api, reportError } from "@/lib/bridge";
-import { marketUrl, num, percent } from "@/lib/format";
+import { marketListingPath, num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
 import { cn } from "@/lib/utils";
 import type { CraftNode, NodeDrop, NodeMarket } from "@/types";
@@ -101,19 +101,19 @@ function DropLocations({ drops }: { drops: NodeDrop[] }) {
   );
 }
 
-function MarketButton({ market }: { market: NodeMarket }) {
-  const handleOpen = useCallback(async () => {
-    try {
-      await api.openUrl(marketUrl(market.slug));
-    } catch (error) {
-      reportError(error);
-    }
-  }, [market.slug]);
+function MarketButtons({ market }: { market: NodeMarket }) {
   return (
-    <Button variant="outline" size="sm" onClick={handleOpen}>
-      Buy {num(market.sell)}
-      <GameIcon name="platinum" size={16} alt="Platinum" />
-    </Button>
+    <>
+      <Button variant="outline" size="sm" asChild>
+        <Link to={marketListingPath(market.slug, "sell")}>Sell</Link>
+      </Button>
+      <Button variant="outline" size="sm" asChild>
+        <Link to={marketListingPath(market.slug, "buy")}>
+          Buy {num(market.sell)}
+          <GameIcon name="platinum" size={16} alt="Platinum" />
+        </Link>
+      </Button>
+    </>
   );
 }
 
@@ -147,7 +147,7 @@ export function NodeDetails({ node }: { node: CraftNode }) {
         </Hint>
         <Counts node={node} />
         <span className="ml-auto flex items-center gap-1">
-          {node.market && <MarketButton market={node.market} />}
+          {node.market && <MarketButtons market={node.market} />}
           {node.wiki_url && <WikiButton url={node.wiki_url} />}
         </span>
       </div>

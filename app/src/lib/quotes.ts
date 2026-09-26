@@ -204,7 +204,7 @@ export const QUOTES = {
       speaker: "Ergo Glast",
     },
   ],
-  marketBook: [
+  marketListings: [
     {
       line: "Browsing is always free. How fortunate for you.",
       speaker: "Baro Ki'Teer",

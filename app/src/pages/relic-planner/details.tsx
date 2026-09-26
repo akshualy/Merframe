@@ -1,12 +1,11 @@
-import { useCallback } from "react";
+import { Link } from "react-router";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { api, reportError } from "@/lib/bridge";
-import { marketUrl, num, percent, plat } from "@/lib/format";
+import { marketListingPath, num, percent, plat } from "@/lib/format";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import type { RelicPlan } from "@/types";
@@ -68,36 +67,23 @@ function RewardRow({ view }: { view: RewardView }) {
 
 function RelicMarket({ plan }: { plan: RelicPlan }) {
   const market = plan.market;
-  const handleOpen = useCallback(async () => {
-    if (!market) {
-      return;
-    }
-    try {
-      await api.openUrl(marketUrl(market.slug));
-    } catch (error) {
-      reportError(error);
-    }
-  }, [market]);
+  if (!market) {
+    return null;
+  }
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
       <span className="text-muted-foreground">{plan.relic} Relic</span>
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!market}
-        onClick={handleOpen}
-      >
-        Sell {num(market?.sell)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
+      <Button variant="outline" size="sm" asChild>
+        <Link to={marketListingPath(market.slug, "sell")}>
+          Sell {num(market.sell)}
+          <GameIcon name="platinum" size={16} alt="Platinum" />
+        </Link>
       </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!market}
-        onClick={handleOpen}
-      >
-        Buy {num(market?.buy)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
+      <Button variant="outline" size="sm" asChild>
+        <Link to={marketListingPath(market.slug, "buy")}>
+          Buy {num(market.buy)}
+          <GameIcon name="platinum" size={16} alt="Platinum" />
+        </Link>
       </Button>
     </div>
   );
