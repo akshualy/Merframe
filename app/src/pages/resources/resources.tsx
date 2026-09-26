@@ -1,7 +1,7 @@
 import { LoaderCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FilterGrid } from "@/components/filter-grid";
-import { FilterSingleSelect } from "@/components/filter-select";
+import { FilterSelect, FilterSingleSelect } from "@/components/filter-select";
 import { GameIcon } from "@/components/game-icon";
 import { prefetchImages } from "@/components/item-image";
 import {
@@ -18,7 +18,9 @@ import { SearchInput } from "@/components/search-input";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
+import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
+import { CATEGORIES } from "@/lib/foundry-filters";
 import { usePageQuote } from "@/lib/quotes";
 import { type ShowFilter, visibleResources } from "@/lib/resource-filters";
 import { cn } from "@/lib/utils";
@@ -44,6 +46,12 @@ const SHOWN: readonly { value: ShowFilter; label: string }[] = [
   { value: "short", label: "Only shortfalls" },
 ];
 
+const KINDS = CATEGORIES.filter(([key]) => key !== "all").map(
+  ([value, label]) => ({ value, label }),
+);
+const PRIME = yesNoOptions("Prime", "Normal");
+const OWNED = yesNoOptions("Yes", "No");
+
 const NO_DEMAND: Record<ResourceSource, Record<ResourceScope, string>> = {
   held: {
     mastery:
@@ -66,14 +74,24 @@ export function ResourcesPage() {
     setResourceSource,
     setResourceScope,
   } = usePreferencesStore();
+  const [kind, setKind] = useState<string | null>(null);
+  const [prime, setPrime] = useState<YesNo | null>(null);
+  const [owned, setOwned] = useState<YesNo | null>(null);
   const [show, setShow] = useState<ShowFilter>("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [opened, setOpened] = useState<string | null>(null);
 
   const load = useCallback(
-    () => api.resourcesTab(source, scope),
-    [source, scope],
+    () =>
+      api.resourcesTab({
+        source,
+        scope,
+        kind,
+        prime: prime === null ? null : prime === "yes",
+        owned: owned === null ? null : owned === "yes",
+      }),
+    [source, scope, kind, prime, owned],
   );
   const { data, error, loading, reload } = useAsyncData(load);
 
@@ -118,6 +136,14 @@ export function ResourcesPage() {
   }
 
   const short = data?.resources.filter((row) => row.deficit > 0).length ?? 0;
+  const activeFilters = [kind, prime, owned].filter(
+    (value) => value !== null,
+  ).length;
+  const clearFilters = () => {
+    setKind(null);
+    setPrime(null);
+    setOwned(null);
+  };
 
   return (
     <Page title="Resources" description={<Quoted quote={quote} />}>
@@ -184,9 +210,34 @@ export function ResourcesPage() {
               />
             </FilterGrid>
 
+            <FilterGrid
+              className="border-t pt-3"
+              activeFilters={activeFilters}
+              onClear={clearFilters}
+            >
+              <FilterSelect
+                label="Category"
+                value={kind}
+                options={KINDS}
+                onChange={setKind}
+              />
+              <FilterSelect
+                label="Type"
+                value={prime}
+                options={PRIME}
+                onChange={(value) => setPrime(value as YesNo | null)}
+              />
+              <FilterSelect
+                label="Owned"
+                value={owned}
+                options={OWNED}
+                onChange={(value) => setOwned(value as YesNo | null)}
+              />
+            </FilterGrid>
+
             {resources.length === 0 ? (
               <EmptyPanel>
-                {data?.resources.length === 0
+                {data?.resources.length === 0 && activeFilters === 0
                   ? NO_DEMAND[source][scope]
                   : "Nothing matches these filters."}
               </EmptyPanel>

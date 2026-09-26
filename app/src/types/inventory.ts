@@ -139,6 +139,14 @@ export interface InventoryTab {
 export type ResourceSource = "held" | "craftable";
 export type ResourceScope = "mastery" | "all" | "starred";
 
+export interface ResourceQuery {
+  source: ResourceSource;
+  scope: ResourceScope;
+  kind: string | null;
+  prime: boolean | null;
+  owned: boolean | null;
+}
+
 export interface ResourceUse {
   unique_name: string;
   name: string;

@@ -25,8 +25,7 @@ import type {
   OverlayState,
   RelicPlannerTab,
   RelicSource,
-  ResourceScope,
-  ResourceSource,
+  ResourceQuery,
   ResourcesTab,
   RewardScreen,
   RivenComparables,
@@ -114,8 +113,8 @@ export const api = {
       includeFounders: includeFounders ?? null,
       includeFormaRanks: includeFormaRanks ?? null,
     }),
-  resourcesTab: (source: ResourceSource, scope: ResourceScope) =>
-    call<ResourcesTab>("resources_tab", { source, scope }),
+  resourcesTab: (query: ResourceQuery) =>
+    call<ResourcesTab>("resources_tab", { query }),
   relicPlannerTab: (squadSize?: number, onlyOwned?: boolean) =>
     call<RelicPlannerTab>("relic_planner_tab", {
       squadSize: squadSize ?? null,

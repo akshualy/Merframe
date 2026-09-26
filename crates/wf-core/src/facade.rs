@@ -23,7 +23,7 @@ use crate::market_stock::MarketStock;
 use crate::mastery::{self, MasteryOptions, MasteryTab};
 use crate::prices::PriceSource;
 use crate::relic_planner::{self, MissingPart, RelicPlan, RelicSource, RewardScreen};
-use crate::resources::{self, ResourceScope, ResourceSource, ResourcesTab};
+use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
 use crate::stats::{self, DailyCount, StatsSummary};
 use crate::store::{
@@ -291,18 +291,11 @@ impl Core {
 
     pub fn resources_tab(
         &self,
-        source: ResourceSource,
-        scope: ResourceScope,
+        query: &ResourceQuery,
         include_founders: Option<bool>,
         now: DateTime<Utc>,
     ) -> Option<ResourcesTab> {
-        Some(resources::tab(
-            &self.view()?,
-            source,
-            scope,
-            include_founders,
-            now,
-        ))
+        Some(resources::tab(&self.view()?, query, include_founders, now))
     }
 
     pub fn relic_planner_tab(&self, squad_size: u32, only_owned: bool) -> Option<RelicPlannerTab> {
@@ -490,6 +483,7 @@ mod tests {
     use crate::catalog::fixtures;
     use crate::events::{CyclePhase, FissureFilter, InventorySummary, TimerAlerts};
     use crate::prices::FixedPrices;
+    use crate::resources::{ResourceScope, ResourceSource};
 
     fn at(millis: i64) -> DateTime<Utc> {
         DateTime::from_timestamp_millis(millis).unwrap()
@@ -659,8 +653,13 @@ mod tests {
         );
         assert!(
             core.resources_tab(
-                ResourceSource::Held,
-                ResourceScope::Mastery,
+                &ResourceQuery {
+                    source: ResourceSource::Held,
+                    scope: ResourceScope::Mastery,
+                    kind: None,
+                    prime: None,
+                    owned: None,
+                },
                 None,
                 Utc::now()
             )
