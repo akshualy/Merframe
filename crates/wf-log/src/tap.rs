@@ -5,7 +5,7 @@ use wf_mem::MemoryReader;
 use wf_scan::{LogBuffer, find_log_buffer, is_line_head, read_pending};
 
 use crate::error::Result;
-use crate::line::{LogLine, drain_lines, parse_line};
+use crate::line::{LogLine, drain_lines, parse_lines};
 
 const FLUSH_SPAN: u64 = 0x1_0000;
 
@@ -87,12 +87,10 @@ impl LogTap {
             self.cursor.restart();
             return Ok(Vec::new());
         };
-        Ok(self
+        let lines = self
             .cursor
-            .advance(&pending, || unterminated_tail(&self.log_file))?
-            .iter()
-            .filter_map(|line| parse_line(line))
-            .collect())
+            .advance(&pending, || unterminated_tail(&self.log_file))?;
+        Ok(parse_lines(lines.iter().map(String::as_str)))
     }
 
     fn located(&mut self) -> Result<Option<LogBuffer>> {

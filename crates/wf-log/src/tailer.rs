@@ -7,7 +7,7 @@ use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tokio::sync::mpsc;
 
 use crate::error::Result;
-use crate::line::{LogLine, drain_lines, parse_line};
+use crate::line::{LogLine, drain_lines, parse_lines};
 
 struct Cursor {
     path: PathBuf,
@@ -45,9 +45,10 @@ impl Cursor {
         if let Err(error) = self.read_into_buffer().await {
             return vec![Err(error)];
         }
-        drain_lines(&mut self.buffer)
-            .iter()
-            .filter_map(|line| parse_line(line).map(Ok))
+        let lines = drain_lines(&mut self.buffer);
+        parse_lines(lines.iter().map(String::as_str))
+            .into_iter()
+            .map(Ok)
             .collect()
     }
 }
@@ -98,7 +99,7 @@ pub fn tail(path: &Path, from_start: bool) -> Result<impl Stream<Item = Result<L
 pub fn read_all(path: &Path) -> Result<Vec<LogLine>> {
     let content = std::fs::read(path)?;
     let text = String::from_utf8_lossy(&content);
-    Ok(text.lines().filter_map(parse_line).collect())
+    Ok(parse_lines(text.lines()))
 }
 
 #[cfg(test)]

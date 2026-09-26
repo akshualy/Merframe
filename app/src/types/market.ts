@@ -132,7 +132,7 @@ export interface Auction {
 export interface MarketAutoClose {
   item: string;
   quantity: number;
-  auction: boolean;
+  kind: "auction" | "sell" | "buy";
 }
 
 export interface MarketSnapshot {

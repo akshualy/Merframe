@@ -91,6 +91,14 @@ impl ItemTable {
     pub fn items(&self) -> &[Item] {
         &self.items
     }
+
+    pub fn by_name(&self, name: &str) -> Option<&Item> {
+        self.items.iter().find(|item| {
+            item.i18n
+                .get("en")
+                .is_some_and(|localized| wf_core::same_part(name, &localized.name))
+        })
+    }
 }
 
 pub async fn item_table(state: &Arc<AppState>) -> Option<Arc<ItemTable>> {

@@ -61,4 +61,4 @@ pub use stats::{DailyCount, StatsSummary, daily_counts, daily_series, day_span, 
 pub use store::{
     RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
 };
-pub use trade::{Trade, TradeItem};
+pub use trade::{Trade, TradeItem, relic_refinement, same_part, traded_set};
