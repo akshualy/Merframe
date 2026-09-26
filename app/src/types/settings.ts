@@ -78,5 +78,6 @@ export interface Settings {
   overlay_only_while_game_active: boolean;
   overlay_account_balance: boolean;
   copy_relic_rewards: boolean;
+  check_for_updates: boolean;
   log_file_path: string | null;
 }

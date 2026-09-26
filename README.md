@@ -13,7 +13,7 @@ Displays information about:
 
 In-game overlays are available on Windows, X11 and XWayland (This includes Wayland since Proton uses XWayland).
 
-While I have tested the app on Linux and Windows 10, consider the app in Beta until this line disappears from this document. There are currently no automatic updates of the app, patches breaking the app is expected and untested so far.
+While I have tested the app on Linux and Windows 10, consider the app in Beta until this line disappears from this document. Patches breaking the app is expected and untested so far.
 
 Bug reports, feature requests, and contributions are welcome.
 
@@ -43,7 +43,13 @@ Windows may warn you on install that the application is not known. This is norma
 
 `AppImage` is the preferred way of running the application on Linux.
 
-On Arch, install the `.pkg.tar.zst` with `pacman -U`, or build it from source with `makepkg` in `packaging/arch/`.
+On Arch, you may install the `.pkg.tar.zst` with `pacman -U`, or build it from source with `makepkg` in `packaging/arch/`.
+
+### Updating
+
+The app will offer you a self-installing update when one is available. You may disable this in settings or at any update offer.
+
+The Arch package does not update itself. You'll have to install the next `.pkg.tar.zst` with `pacman -U` again.
 
 ## Running the app from source
 

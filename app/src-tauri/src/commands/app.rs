@@ -20,6 +20,11 @@ pub async fn game_status(state: Shared<'_>) -> CommandResult<GameStatus> {
 }
 
 #[tauri::command]
+pub fn updates_supported() -> bool {
+    tauri::utils::platform::bundle_type().is_some()
+}
+
+#[tauri::command]
 pub async fn overlay_state(state: Shared<'_>) -> CommandResult<overlay::OverlayState> {
     Ok(ready(&state)?.overlays.snapshot())
 }

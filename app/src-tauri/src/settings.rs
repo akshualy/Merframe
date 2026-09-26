@@ -63,6 +63,7 @@ pub struct Settings {
     #[serde(flatten)]
     pub overlays: OverlaySettings,
     pub copy_relic_rewards: bool,
+    pub check_for_updates: bool,
     pub force_log_file: bool,
     pub log_file_path: Option<PathBuf>,
 }
@@ -150,6 +151,7 @@ impl Default for Settings {
             inventory: InventorySettings::default(),
             overlays: OverlaySettings::default(),
             copy_relic_rewards: false,
+            check_for_updates: true,
             force_log_file: false,
             log_file_path: None,
         }
@@ -462,6 +464,7 @@ mod tests {
         assert!(settings.overlays.overlay_only_while_game_active);
         assert!(settings.overlays.overlay_account_balance);
         assert!(!settings.copy_relic_rewards);
+        assert!(settings.check_for_updates);
         assert!(!settings.discord.discord_fissure_alerts);
         assert!(!settings.discord.discord_timer_alerts);
         assert_eq!(settings.market.market_trader_status, TraderStatus::Ingame);

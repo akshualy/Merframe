@@ -1,3 +1,4 @@
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { ImageOff } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import {
@@ -13,15 +14,10 @@ type Resolved = { src: string } | { failed: true };
 const resolved = new Map<string, Resolved>();
 const pending = new Map<string, Promise<Resolved>>();
 
-async function convert(path: string): Promise<string> {
-  const { convertFileSrc } = await import("@tauri-apps/api/core");
-  return convertFileSrc(path);
-}
-
 async function resolve(imageName: string): Promise<Resolved> {
   let state: Resolved;
   try {
-    state = { src: await convert(await api.itemImage(imageName)) };
+    state = { src: convertFileSrc(await api.itemImage(imageName)) };
   } catch (error) {
     logError(`Loading image ${imageName}`, error);
     state = { failed: true };

@@ -1,3 +1,5 @@
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import type {
   Auction,
@@ -36,8 +38,7 @@ import type {
 
 type Args = Record<string, unknown> | undefined;
 
-async function call<T>(command: string, args?: Args): Promise<T> {
-  const { invoke } = await import("@tauri-apps/api/core");
+function call<T>(command: string, args?: Args): Promise<T> {
   return invoke<T>(command, args);
 }
 
@@ -61,11 +62,10 @@ export type AppEvent = (typeof events)[keyof typeof events];
 
 export type Unlisten = () => void;
 
-export async function listenTo<T>(
+export function listenTo<T>(
   event: AppEvent,
   handler: (payload: T) => void,
 ): Promise<Unlisten> {
-  const { listen } = await import("@tauri-apps/api/event");
   return listen<T>(event, (message) => handler(message.payload));
 }
 
@@ -133,6 +133,7 @@ export const api = {
   recommend: (rewards: string[]) =>
     call<RewardScreen>("recommend", { rewards }),
   gameStatus: () => call<GameStatus>("game_status"),
+  updatesSupported: () => call<boolean>("updates_supported"),
   overlayState: () => call<OverlayState>("overlay_state"),
   overlayPageReady: () => call<void>("overlay_page_ready"),
   overlayContentShrank: () => call<void>("overlay_content_shrank"),

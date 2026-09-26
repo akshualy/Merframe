@@ -247,6 +247,15 @@ export function PricesAndData({
             Open EE.log Folder
           </Button>
         </div>
+        <div className="lg:col-span-2">
+          <SwitchRow
+            checked={draft.check_for_updates}
+            onChange={(checked) => patch({ check_for_updates: checked })}
+            hint="The About page checks on request either way."
+          >
+            Check for updates on start
+          </SwitchRow>
+        </div>
         <div className="flex flex-col gap-1 lg:col-span-2">
           <Hint className={cn(!status?.price_table_at && "italic")}>
             {status?.price_table_at
