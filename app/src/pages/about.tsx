@@ -1,6 +1,8 @@
 import { getVersion } from "@tauri-apps/api/app";
-import { ExternalLink } from "lucide-react";
+import { check } from "@tauri-apps/plugin-updater";
+import { ExternalLink, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import Merframe from "@/components/icons/merframe";
 import { Page, Quoted, Section } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -22,12 +24,31 @@ const LINKS = [
 
 export function AboutPage() {
   const quote = usePageQuote("about");
-  const { status } = useAppStore();
+  const { status, setUpdate } = useAppStore();
   const [version, setVersion] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [updatable, setUpdatable] = useState(false);
 
   useEffect(() => {
     getVersion().then(setVersion, reportError);
+    api.updatesSupported().then(setUpdatable, reportError);
   }, []);
+
+  const handleCheck = useCallback(async () => {
+    setChecking(true);
+    try {
+      const update = await check();
+      if (update) {
+        setUpdate(update);
+      } else {
+        toast.success("Merframe is up to date");
+      }
+    } catch (error) {
+      reportError(error);
+    } finally {
+      setChecking(false);
+    }
+  }, [setUpdate]);
 
   const handleOpen = useCallback(async (url: string) => {
     try {
@@ -54,6 +75,19 @@ export function AboutPage() {
               <Badge variant="secondary">React 19</Badge>
               <Badge variant="secondary">Rust 2024</Badge>
             </div>
+            {updatable && (
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={checking}
+                  onClick={handleCheck}
+                >
+                  <RefreshCw className="size-3.5" />
+                  Check for Updates
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </Section>

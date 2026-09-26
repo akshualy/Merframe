@@ -39,6 +39,8 @@ jobs:
       matrix:
         os: [ubuntu-22.04, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - if: runner.os == 'Linux'
@@ -57,7 +59,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
         working-directory: app
-      - run: pnpm tauri build
+      - run: pnpm tauri build --config src-tauri/tauri.release.conf.json
         working-directory: app
       - if: runner.os == 'Linux'
         run: .github/scripts/repack-appimage.sh
@@ -67,10 +69,15 @@ jobs:
           if-no-files-found: error
           path: |
             target/release/bundle/deb/*.deb
+            target/release/bundle/deb/*.deb.sig
             target/release/bundle/rpm/*.rpm
+            target/release/bundle/rpm/*.rpm.sig
             target/release/bundle/appimage/*.AppImage
+            target/release/bundle/appimage/*.AppImage.sig
             target/release/bundle/msi/*.msi
+            target/release/bundle/msi/*.msi.sig
             target/release/bundle/nsis/*.exe
+            target/release/bundle/nsis/*.exe.sig
 
   arch:
     needs: version
@@ -102,10 +109,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: bundles
           merge-multiple: true
+      - run: .github/scripts/latest-json.sh ${{ needs.version.outputs.version }} > bundles/latest.json
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.version.outputs.version }}

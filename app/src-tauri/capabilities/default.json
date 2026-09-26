@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capabilities the Merframe main window needs: Core defaults, opening a link in the desktop browser.",
+  "description": "Capabilities the Merframe main window needs: Core defaults, opening a link in the desktop browser, checking for and installing updates.",
   "windows": ["main"],
-  "permissions": ["core:default", "opener:default"]
+  "permissions": ["core:default", "opener:default", "updater:default", "process:allow-restart"]
 }

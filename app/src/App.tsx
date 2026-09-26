@@ -1,3 +1,4 @@
+import { check } from "@tauri-apps/plugin-updater";
 import { useCallback, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { toast } from "sonner";
@@ -7,8 +8,9 @@ import { OverlayWindow } from "@/components/overlay-window";
 import { StartupScreen } from "@/components/startup-screen";
 import { StatusBar } from "@/components/status-bar";
 import { Toaster } from "@/components/ui/sonner";
+import { UpdateDialog } from "@/components/update-dialog";
 import { useListen } from "@/hooks/use-listen";
-import { api, errorMessage, events, isStarting } from "@/lib/bridge";
+import { api, errorMessage, events, isStarting, logError } from "@/lib/bridge";
 import { AboutPage } from "@/pages/about";
 import { FoundryPage } from "@/pages/foundry/foundry";
 import { InventoryPage } from "@/pages/inventory";
@@ -139,8 +141,19 @@ function useBoot() {
 
 function MainWindow() {
   const retry = useBoot();
-  const { ready, bootError, settings } = useAppStore();
+  const { ready, bootError, settings, setUpdate } = useAppStore();
   const statsTab = settings?.stats_tab_enabled ?? true;
+  const checkForUpdates = settings?.check_for_updates ?? true;
+
+  useEffect(() => {
+    if (!ready || !checkForUpdates) {
+      return;
+    }
+    api
+      .updatesSupported()
+      .then((supported) => (supported ? check() : null))
+      .then(setUpdate, (error) => logError("Update check", error));
+  }, [ready, checkForUpdates, setUpdate]);
 
   if (!ready) {
     return (
@@ -181,6 +194,7 @@ function MainWindow() {
         </main>
       </div>
       <EventBridge />
+      <UpdateDialog />
       <Toaster position="bottom-right" />
     </div>
   );

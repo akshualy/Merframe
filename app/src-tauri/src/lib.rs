@@ -118,6 +118,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(
             tauri_plugin_window_state::Builder::default()
@@ -138,6 +140,7 @@ pub fn run() {
             commands::tabs::relics_for,
             commands::tabs::recommend,
             commands::app::game_status,
+            commands::app::updates_supported,
             commands::app::overlay_state,
             commands::app::overlay_page_ready,
             commands::app::overlay_content_shrank,
