@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FavouriteStar } from "@/components/favourite-star";
+import { GameIcon } from "@/components/game-icon";
 import { ItemImage, prefetchImages } from "@/components/item-image";
 import {
   CardGrid,
@@ -10,7 +11,6 @@ import {
   Page,
   Quoted,
   Section,
-  Stat,
   Surface,
   TableSkeleton,
 } from "@/components/page";
@@ -78,7 +78,7 @@ function Line({ label, totals }: { label: string; totals?: CategoryTotals }) {
   return (
     <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 text-sm">
       <span className="text-muted-foreground">{label}</span>
-      <span>{percent((totals?.percent ?? 0) / 100, 0)}</span>
+      <span>{percent((totals?.percent ?? 0) / 100)}</span>
       <span className="text-foreground w-20 text-right font-medium">
         {num(totals?.current)}/{num(totals?.max)}
       </span>
@@ -100,7 +100,7 @@ function Tile({
       <div className="flex items-baseline justify-between">
         <span className="font-semibold">{title}</span>
         <span className="text-primary text-lg font-bold">
-          {percent(progress / 100, 0)}
+          {percent(progress / 100)}
         </span>
       </div>
       <Progress value={progress} />
@@ -253,26 +253,33 @@ export function MasteryPage() {
     >
       {problem && <ErrorNote message={problem} />}
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Mastery rank" value={num(data?.rank)} />
-        <Stat
-          label="Into this rank"
-          value={`${num(data?.rank_xp_earned)} / ${num(data?.rank_xp_span)} XP`}
-        />
-        <Stat
-          label="Rank progress"
-          value={percent((data?.percent ?? 0) / 100, 0)}
-          hint={
-            <RankBar
-              percent={data?.percent ?? 0}
-              favouritePercent={data?.favourite_percent ?? 0}
-              favouriteXp={data?.favourite_xp ?? 0}
-            />
-          }
-        />
-      </div>
+      <Surface className="w-fit flex-row items-center gap-6 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <GameIcon name="mastered" size={40} alt="Mastery rank" />
+          <span className="flex flex-col">
+            <span className="text-foreground text-4xl leading-none font-bold tabular-nums">
+              {num(data?.rank)}
+            </span>
+          </span>
+        </div>
+        <div className="flex w-80 flex-col gap-2">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-foreground text-lg font-semibold tabular-nums">
+              {num(data?.rank_xp_earned)} / {num(data?.rank_xp_span)} XP
+            </span>
+            <span className="text-primary text-lg font-bold tabular-nums">
+              {percent((data?.percent ?? 0) / 100, 2)}
+            </span>
+          </div>
+          <RankBar
+            percent={data?.percent ?? 0}
+            favouritePercent={data?.favourite_percent ?? 0}
+            favouriteXp={data?.favourite_xp ?? 0}
+          />
+        </div>
+      </Surface>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 @4xl:grid-cols-3">
         <Tile title="Game content" progress={summary?.content_percent ?? 0}>
           <Line label="Warframes / Archwings" totals={summary?.warframes} />
           <Line label="Weapons" totals={summary?.weapons} />
@@ -299,7 +306,7 @@ export function MasteryPage() {
         ) : (
           <div
             className={cn(
-              "grid items-start gap-2 transition-opacity sm:grid-cols-2 xl:grid-cols-3",
+              "grid items-start gap-2 transition-opacity @sm:grid-cols-2 @5xl:grid-cols-3",
               loading && "opacity-60",
             )}
           >

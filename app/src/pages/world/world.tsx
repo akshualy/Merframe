@@ -127,8 +127,8 @@ export function WorldPage() {
 
       <div
         className={cn(
-          "grid items-start gap-4 md:grid-cols-2",
-          baroPresent && "xl:grid-cols-3",
+          "grid items-start gap-4 @lg:grid-cols-2",
+          baroPresent && "@5xl:grid-cols-3",
         )}
       >
         {baroPresent && baroPanel}

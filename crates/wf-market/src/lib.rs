@@ -9,7 +9,7 @@ mod ws;
 
 pub use bulk::{Etagged, bulk_prices, bulk_riven_data, riven_auctions};
 pub use client::Client;
-pub use error::{MarketError, Result};
+pub use error::{MarketError, Result, order_rejection};
 pub use listings::{ItemListings, Reach, TraderStatus, item_listings};
 pub use models::{
     Auction, AuctionItem, Chat, CloseOrderRequest, CreateAuctionItem, CreateAuctionRequest,

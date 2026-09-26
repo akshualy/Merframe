@@ -66,7 +66,7 @@ export function CycleTimers({
       description="Notifies once per cycle, before the phase you pick begins."
     >
       <div className="flex flex-col gap-6">
-        <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+        <div className="grid gap-x-8 gap-y-4 @sm:grid-cols-2">
           {TIMERS.map(({ world, phases }) => (
             <div key={world} className="flex flex-col gap-2">
               <span className="text-sm font-semibold">{world}</span>

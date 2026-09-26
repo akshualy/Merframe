@@ -1,13 +1,13 @@
-import { Link } from "react-router";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { marketListingPath, num, percent, plat } from "@/lib/format";
+import { num, percent, plat } from "@/lib/format";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
+import { useMarketPanelStore } from "@/stores/market-panel-store";
 import type { RelicPlan } from "@/types";
 import type { PlannerRow, RewardView } from "./columns";
 
@@ -66,6 +66,7 @@ function RewardRow({ view }: { view: RewardView }) {
 }
 
 function RelicMarket({ plan }: { plan: RelicPlan }) {
+  const openListing = useMarketPanelStore((state) => state.openListing);
   const market = plan.market;
   if (!market) {
     return null;
@@ -73,17 +74,21 @@ function RelicMarket({ plan }: { plan: RelicPlan }) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
       <span className="text-muted-foreground">{plan.relic} Relic</span>
-      <Button variant="outline" size="sm" asChild>
-        <Link to={marketListingPath(market.slug, "sell")}>
-          Sell {num(market.sell)}
-          <GameIcon name="platinum" size={16} alt="Platinum" />
-        </Link>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => openListing(market.slug, "sell")}
+      >
+        Sell {num(market.sell)}
+        <GameIcon name="platinum" size={16} alt="Platinum" />
       </Button>
-      <Button variant="outline" size="sm" asChild>
-        <Link to={marketListingPath(market.slug, "buy")}>
-          Buy {num(market.buy)}
-          <GameIcon name="platinum" size={16} alt="Platinum" />
-        </Link>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => openListing(market.slug, "buy")}
+      >
+        Buy {num(market.buy)}
+        <GameIcon name="platinum" size={16} alt="Platinum" />
       </Button>
     </div>
   );

@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/app-sidebar";
 import { EventBridge } from "@/components/event-bridge";
+import { MarketPanel } from "@/components/market-panel";
 import { OverlayWindow } from "@/components/overlay-window";
 import { StartupScreen } from "@/components/startup-screen";
 import { StatusBar } from "@/components/status-bar";
@@ -24,6 +25,7 @@ import { SettingsPage } from "@/pages/settings/settings";
 import { StatsPage } from "@/pages/stats";
 import { WorldPage } from "@/pages/world/world";
 import { useAppStore } from "@/stores/app-store";
+import { useMarketPanelStore } from "@/stores/market-panel-store";
 
 function retryDelay(attempt: number, jitter: number): number {
   const ceiling = Math.min(250 * 2 ** attempt, 4_000);
@@ -142,8 +144,18 @@ function useBoot() {
 function MainWindow() {
   const retry = useBoot();
   const { ready, bootError, settings, setUpdate } = useAppStore();
+  const { open: panelOpen, setItems } = useMarketPanelStore();
   const statsTab = settings?.stats_tab_enabled ?? true;
   const checkForUpdates = settings?.check_for_updates ?? true;
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    api
+      .marketItems()
+      .then(setItems, (error) => logError("Market items", error));
+  }, [ready, setItems]);
 
   useEffect(() => {
     if (!ready || !checkForUpdates) {
@@ -169,7 +181,7 @@ function MainWindow() {
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <StatusBar />
-        <main className="min-h-0 flex-1 overflow-y-auto">
+        <main className="@container min-h-0 flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Navigate to="/world" replace />} />
             <Route path="/world" element={<WorldPage />} />
@@ -193,6 +205,7 @@ function MainWindow() {
           </Routes>
         </main>
       </div>
+      {panelOpen && <MarketPanel />}
       <EventBridge />
       <UpdateDialog />
       <Toaster position="bottom-right" />

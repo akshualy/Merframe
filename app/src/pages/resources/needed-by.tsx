@@ -15,7 +15,7 @@ export function NeededBy({
     <Section
       title="Needed By"
       description={`${num(row.used_by.length)} ${row.used_by.length === 1 ? "item needs" : "items need"} ${row.name}`}
-      className="self-start lg:sticky lg:top-4"
+      className="self-start @3xl:sticky @3xl:top-4"
     >
       <ul className="flex max-h-128 flex-col gap-1 overflow-y-auto">
         {row.used_by.map((use) => (

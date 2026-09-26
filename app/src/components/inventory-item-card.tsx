@@ -1,6 +1,5 @@
 import { ExternalLink } from "lucide-react";
 import { memo } from "react";
-import { Link } from "react-router";
 import { EquippedDialog } from "@/components/equipped-dialog";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
@@ -10,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
 import { api, reportError } from "@/lib/bridge";
-import { marketListingPath, marketUrl, num } from "@/lib/format";
+import { marketUrl, num } from "@/lib/format";
 import type { InventoryTabKey } from "@/lib/inventory-filters";
 import { equippedLabel, type Row } from "@/lib/inventory-rows";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
+import { useMarketPanelStore } from "@/stores/market-panel-store";
 import type { SetRow } from "@/types";
 
 function Ducats({ ducats }: { ducats: number | null }) {
@@ -34,13 +34,13 @@ function RankedPlat({
   value,
   floor,
   tone,
-  to,
+  onOpen,
 }: {
   label: string;
   value: number | null;
   floor?: boolean;
   tone?: string;
-  to?: string;
+  onOpen?: () => void;
 }) {
   const body = (
     <>
@@ -61,15 +61,16 @@ function RankedPlat({
       )}
     </>
   );
-  if (to) {
+  if (onOpen) {
     return (
-      <Button variant="outline" size="sm" className="h-7 gap-1 px-2" asChild>
-        <Link
-          to={to}
-          title={`${label === "WTB" ? "Buy" : "Sell"} on warframe.market`}
-        >
-          {body}
-        </Link>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 gap-1 px-2"
+        onClick={onOpen}
+        title={`${label === "WTB" ? "Buy" : "Sell"} on warframe.market`}
+      >
+        {body}
       </Button>
     );
   }
@@ -110,6 +111,7 @@ function SetParts({ set }: { set: SetRow }) {
 }
 
 function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
+  const openListing = useMarketPanelStore((state) => state.openListing);
   const isSet = tab === "sets" && row.set;
   const equipped = equippedLabel(row);
   return (
@@ -127,7 +129,10 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-start justify-between gap-2">
           <span className="flex min-w-0 items-start gap-1.5">
-            <span className="line-clamp-2 text-sm leading-tight font-semibold">
+            <span
+              className="truncate text-sm leading-tight font-semibold"
+              title={row.name}
+            >
               {row.name}
             </span>
             {isSet && row.mastered && (
@@ -213,13 +218,15 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
                 label="R0"
                 value={row.plat}
                 floor={row.platIsFloor}
-                to={marketListingPath(row.marketSlug, "sell", 0)}
+                onOpen={() => openListing(row.marketSlug, "sell", 0)}
               />
               {(row.maxRank ?? 0) > 0 && (
                 <RankedPlat
                   label={`R${row.maxRank}`}
                   value={row.platMaxRank}
-                  to={marketListingPath(row.marketSlug, "sell", row.maxRank)}
+                  onOpen={() =>
+                    openListing(row.marketSlug, "sell", row.maxRank)
+                  }
                 />
               )}
             </span>
@@ -233,13 +240,13 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
                     label="WTS"
                     value={row.plat}
                     floor={row.platIsFloor}
-                    to={marketListingPath(row.marketSlug, "sell", row.rank)}
+                    onOpen={() => openListing(row.marketSlug, "sell", row.rank)}
                   />
                   <RankedPlat
                     label="WTB"
                     value={row.buyPlat}
                     tone="text-accent"
-                    to={marketListingPath(row.marketSlug, "buy", row.rank)}
+                    onOpen={() => openListing(row.marketSlug, "buy", row.rank)}
                   />
                 </>
               )}

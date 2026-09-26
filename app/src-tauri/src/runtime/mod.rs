@@ -29,6 +29,7 @@ pub use market_loop::{MarketAutoClose, MarketSnapshot};
 pub const INVENTORY_UPDATED: &str = "inventory-updated";
 pub const STATUS_UPDATED: &str = "status-updated";
 pub const MARKET_AUTO_CLOSED: &str = "market-auto-closed";
+pub const MARKET_UPDATED: &str = "market-updated";
 
 const RIVEN_DATA_KEY: &str = "riven_data";
 const NOTIFICATION_SOUND: &str = if cfg!(windows) {

@@ -33,7 +33,9 @@ export function Page({
           <h1 className="text-primary text-2xl font-bold">{title}</h1>
           <p className="text-muted-foreground text-sm">{description}</p>
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && (
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        )}
       </header>
       {children}
     </div>
@@ -56,7 +58,7 @@ export function Section({
   return (
     <Card className={cn("gap-4", className)}>
       {(title || description || action) && (
-        <CardHeader className="grid-cols-[1fr_auto] items-center">
+        <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-1">
             {title && <CardTitle>{title}</CardTitle>}
             {description && (
@@ -103,7 +105,7 @@ export function CardGrid({
   return (
     <div
       className={cn(
-        "grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4",
+        "grid gap-3 @sm:grid-cols-2 @5xl:grid-cols-3 @7xl:grid-cols-4",
         className,
       )}
     >

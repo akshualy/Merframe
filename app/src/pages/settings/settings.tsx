@@ -103,7 +103,7 @@ export function SettingsPage() {
       {error && <ErrorNote message={error} />}
 
       <NotificationChannels draft={draft} patch={patch} />
-      <div className="grid items-start gap-6 2xl:grid-cols-2">
+      <div className="grid items-start gap-6 @7xl:grid-cols-2">
         <FissureAlerts draft={draft} patchAlerts={patchAlerts} />
         <CycleTimers draft={draft} patchAlerts={patchAlerts} />
       </div>

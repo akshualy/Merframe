@@ -61,7 +61,7 @@ export function AboutPage() {
   return (
     <Page title="About" description={<Quoted quote={quote} />}>
       <Section>
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-6 @sm:flex-row @sm:items-center">
           <Merframe className="text-primary size-24 shrink-0" />
           <div className="flex flex-col gap-3 text-sm">
             <p className="text-muted-foreground max-w-2xl">
@@ -93,7 +93,7 @@ export function AboutPage() {
       </Section>
 
       <Section title="This Machine">
-        <dl className="grid gap-3 sm:grid-cols-2">
+        <dl className="grid gap-3 @sm:grid-cols-2">
           <div className="flex flex-col">
             <Hint as="dt">Game process</Hint>
             <dd className="text-sm">
@@ -110,7 +110,7 @@ export function AboutPage() {
             <Hint as="dt">World state</Hint>
             <dd className="text-sm">{ago(status?.world_state_at)}</dd>
           </div>
-          <div className="flex flex-col sm:col-span-2">
+          <div className="flex flex-col @sm:col-span-2">
             <Hint as="dt">EE.log</Hint>
             <dd className="text-sm break-all">
               {status?.log_file ?? "not found"}

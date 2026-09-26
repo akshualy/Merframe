@@ -420,7 +420,7 @@ pub(super) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
                 auctions = snapshot.auctions.as_ref().map(Vec::len),
                 "Market listings refreshed"
             );
-            emit(&app, "market-updated", snapshot);
+            emit(&app, super::MARKET_UPDATED, snapshot);
         }
         tokio::time::sleep(poll_backoff(interval, failures)).await;
     }

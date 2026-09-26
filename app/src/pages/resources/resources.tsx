@@ -149,7 +149,7 @@ export function ResourcesPage() {
     <Page title="Resources" description={<Quoted quote={quote} />}>
       {error && <ErrorNote message={error} />}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 @sm:grid-cols-3">
         <Stat label="Short resources" value={num(short)} />
         <Stat label="Items to build" value={num(data?.items)} />
         <Stat
@@ -163,10 +163,10 @@ export function ResourcesPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 @3xl:grid-cols-3">
         <Section
           title="Stockpile"
-          className={selectedRow ? "lg:col-span-2" : "lg:col-span-3"}
+          className={selectedRow ? "@3xl:col-span-2" : "@3xl:col-span-3"}
           action={
             <div className="flex items-center gap-3">
               {loading && (
@@ -244,7 +244,7 @@ export function ResourcesPage() {
             ) : (
               <CardGrid
                 className={cn(
-                  "transition-opacity xl:grid-cols-2 2xl:grid-cols-3",
+                  "transition-opacity @5xl:grid-cols-2 @7xl:grid-cols-3",
                   loading && "opacity-60",
                 )}
               >

@@ -59,7 +59,7 @@ export function FissuresByTier({
     return <EmptyNote>No fissures match this filter right now.</EmptyNote>;
   }
   return (
-    <div className="grid items-start gap-3 xl:grid-cols-2">
+    <div className="grid items-start gap-3 @5xl:grid-cols-2">
       {grouped.map(([tier, list]) => (
         <div
           key={tier}

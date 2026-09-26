@@ -22,7 +22,9 @@ export function percent(value: number | null | undefined, digits = 1): string {
   if (value === null || value === undefined) {
     return "-";
   }
-  return `${(value * 100).toFixed(digits)}%`;
+  const scale = 10 ** digits;
+  const truncated = Math.floor(value * 100 * scale) / scale;
+  return `${truncated}%`;
 }
 
 export function countdown(seconds: number): string {
@@ -111,18 +113,6 @@ export function displayNameFromPath(path: string): string {
 
 export function marketUrl(slug: string): string {
   return `https://warframe.market/items/${slug}`;
-}
-
-export function marketListingPath(
-  slug: string,
-  side: "sell" | "buy",
-  rank: number | null = null,
-): string {
-  const params = new URLSearchParams({ item: slug, side });
-  if (rank !== null) {
-    params.set("rank", String(rank));
-  }
-  return `/market?${params}`;
 }
 
 export const MARKET_CHATS_URL = "https://warframe.market/im/chats";

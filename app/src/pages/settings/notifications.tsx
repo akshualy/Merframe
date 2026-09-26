@@ -34,7 +34,7 @@ export function NotificationChannels({
       title="Notification Channels"
       description="In-app toasts always stay on."
     >
-      <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
+      <div className="grid gap-x-8 gap-y-6 @3xl:grid-cols-2">
         <div className="flex flex-col gap-4">
           <SwitchRow
             checked={draft.windows_notifications_enabled}

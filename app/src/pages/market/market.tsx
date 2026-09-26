@@ -1,4 +1,4 @@
-import { LogOut, Mail } from "lucide-react";
+import { LogOut, Mail, Store } from "lucide-react";
 import {
   type ReactNode,
   useCallback,
@@ -20,15 +20,9 @@ import { ago, MARKET_CHATS_URL, num } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
-import type {
-  Auction,
-  MarketItem,
-  MarketSnapshot,
-  OrderRow,
-  OrderType,
-} from "@/types";
+import { useMarketPanelStore } from "@/stores/market-panel-store";
+import type { Auction, MarketSnapshot, OrderRow } from "@/types";
 import { AuctionsTable } from "./auctions";
-import { BuySellPanel, type CompareRequest } from "./buy-sell";
 import { LoginCard } from "./login-card";
 import { OrdersTable } from "./orders";
 import { PresenceControl } from "./presence";
@@ -40,8 +34,7 @@ export function MarketPage() {
   const { status, setStatus } = useAppStore();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [items, setItems] = useState<MarketItem[]>([]);
-  const [compare, setCompare] = useState<CompareRequest | null>(null);
+  const { items, openListing, show: showPanel } = useMarketPanelStore();
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as MarketTab | null) ?? "orders";
   const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
@@ -49,18 +42,6 @@ export function MarketPage() {
   const [error, setError] = useState<string | null>(null);
   const [signedOut, setSignedOut] = useState(false);
   const account = status?.market_account ?? null;
-
-  useEffect(() => {
-    async function load() {
-      try {
-        setItems(await api.marketItems());
-      } catch (error) {
-        setItems([]);
-        reportError(error);
-      }
-    }
-    load();
-  }, []);
 
   useEffect(() => {
     let last = 0;
@@ -139,40 +120,6 @@ export function MarketPage() {
     [reload],
   );
 
-  const compareSlug = useCallback(
-    (slug: string, side: OrderType = "sell", rank: number | null = null) => {
-      const item = items.find((candidate) => candidate.slug === slug);
-      if (item) {
-        setCompare({ item, side, rank, nonce: Date.now() });
-      } else {
-        toast.error("warframe.market does not list this item any more");
-      }
-    },
-    [items],
-  );
-
-  const requestedItem = params.get("item");
-  useEffect(() => {
-    if (!requestedItem || items.length === 0) {
-      return;
-    }
-    const rank = Number.parseInt(params.get("rank") ?? "", 10);
-    compareSlug(
-      requestedItem,
-      params.get("side") === "buy" ? "buy" : "sell",
-      Number.isFinite(rank) ? rank : null,
-    );
-    setParams(
-      (next) => {
-        next.delete("item");
-        next.delete("side");
-        next.delete("rank");
-        return next;
-      },
-      { replace: true },
-    );
-  }, [requestedItem, items, params, compareSlug, setParams]);
-
   const handleSignedIn = useCallback(async () => {
     setSignedOut(false);
     try {
@@ -232,12 +179,20 @@ export function MarketPage() {
 
   if (!account) {
     return (
-      <Page title="warframe.market" description={<Quoted quote={quote} />}>
+      <Page
+        title="warframe.market"
+        description={<Quoted quote={quote} />}
+        actions={
+          <Button variant="outline" onClick={showPanel}>
+            <Store className="size-4" />
+            Buy / Sell
+          </Button>
+        }
+      >
         {signedOut && (
           <ErrorNote message="warframe.market rejected the stored session" />
         )}
         <LoginCard onDone={handleSignedIn} />
-        <BuySellPanel items={items} compare={compare} />
       </Page>
     );
   }
@@ -252,6 +207,10 @@ export function MarketPage() {
       actions={
         <>
           <PresenceControl />
+          <Button variant="outline" onClick={showPanel}>
+            <Store className="size-4" />
+            Buy / Sell
+          </Button>
           <Button variant="outline" onClick={handleOpenMessages}>
             <Mail className="size-4" />
             Messages
@@ -317,7 +276,7 @@ export function MarketPage() {
               <TabsContent value="orders">
                 <OrdersTable
                   rows={orders}
-                  onCompare={compareSlug}
+                  onCompare={openListing}
                   onRefresh={reload}
                   onSetVisibility={setOrdersVisibility}
                   runMarketAction={runMarketAction}
@@ -336,8 +295,6 @@ export function MarketPage() {
           </div>
         )}
       </Section>
-
-      <BuySellPanel items={items} compare={compare} />
     </Page>
   );
 }

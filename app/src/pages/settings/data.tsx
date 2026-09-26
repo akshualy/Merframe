@@ -104,7 +104,7 @@ export function PricesAndData({
 
   return (
     <Section title="Prices and Data">
-      <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
+      <div className="grid gap-x-8 gap-y-6 @3xl:grid-cols-2">
         <div className="flex flex-col gap-4">
           <MinutesSlider
             id="ttl"
@@ -159,7 +159,7 @@ export function PricesAndData({
           >
             Show every inventory row
           </CheckboxRow>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 @sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <Label htmlFor="trader-status">Trader order</Label>
               <Select
@@ -205,7 +205,7 @@ export function PricesAndData({
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-2 lg:col-span-2">
+        <div className="flex flex-col gap-2 @3xl:col-span-2">
           <span className="text-sm font-medium">EE.log</span>
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="outline" onClick={handlePickLogFile}>
@@ -226,7 +226,7 @@ export function PricesAndData({
               : "EE.log not found on this machine"}
           </Hint>
         </div>
-        <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
+        <div className="flex flex-wrap items-center gap-3 @3xl:col-span-2">
           <Button variant="outline" onClick={handleExport}>
             <Download className="size-4" />
             Export Inventory JSON
@@ -247,7 +247,7 @@ export function PricesAndData({
             Open EE.log Folder
           </Button>
         </div>
-        <div className="lg:col-span-2">
+        <div className="@3xl:col-span-2">
           <SwitchRow
             checked={draft.check_for_updates}
             onChange={(checked) => patch({ check_for_updates: checked })}
@@ -256,7 +256,7 @@ export function PricesAndData({
             Check for updates on start
           </SwitchRow>
         </div>
-        <div className="flex flex-col gap-1 lg:col-span-2">
+        <div className="flex flex-col gap-1 @3xl:col-span-2">
           <Hint className={cn(!status?.price_table_at && "italic")}>
             {status?.price_table_at
               ? `Price table checked ${dateTime(status.price_table_at)}`

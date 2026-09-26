@@ -305,7 +305,7 @@ export function StatsPage() {
     >
       {error && <ErrorNote message={error} />}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 @sm:grid-cols-2 @3xl:grid-cols-4">
         <Stat
           label="Prime collection"
           value={summary ? percent(summary.prime_percent / 100, 0) : "-"}
@@ -340,7 +340,7 @@ export function StatsPage() {
         title="History"
         description={`One point per UTC day. ${num(playedDays)} of ${num(days.length)} days have data, ${windowLabel}.`}
       >
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-6 @lg:grid-cols-2 @5xl:grid-cols-3">
           {metrics.map((metric) => (
             <LineChart
               key={metric.key}
@@ -371,7 +371,7 @@ export function StatsPage() {
         </div>
       </Section>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-4 @5xl:grid-cols-2">
         <Section title="Latest Delta">
           <DataTable
             tableId="statsDeltas"

@@ -1,12 +1,13 @@
-import { Link } from "react-router";
 import { ItemImage } from "@/components/item-image";
 import { Surface } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { displayNameFromPath, marketListingPath, num } from "@/lib/format";
+import { displayNameFromPath, num } from "@/lib/format";
+import { useMarketPanelStore } from "@/stores/market-panel-store";
 import type { VeiledGroup } from "@/types";
 
 export function VeiledChallenge({ group }: { group: VeiledGroup }) {
+  const openListing = useMarketPanelStore((state) => state.openListing);
   return (
     <Surface className="p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -19,35 +20,40 @@ export function VeiledChallenge({ group }: { group: VeiledGroup }) {
         <Hint as="span">Complication: {group.complication}</Hint>
       )}
       <div className="flex flex-wrap gap-2">
-        {group.rivens.map((riven) => (
-          <span
-            key={riven.riven_id}
-            className="flex items-center gap-2 rounded-lg border px-2 py-1"
-          >
-            <ItemImage
-              imageName={riven.image_name}
-              size={26}
-              alt={riven.weapon_class ?? "Veiled riven"}
-            />
-            <span className="flex flex-col">
-              <span className="text-xs font-medium">
-                {riven.weapon_class ?? displayNameFromPath(riven.item_type)}
+        {group.rivens.map((riven) => {
+          const slug = riven.market_slug;
+          return (
+            <span
+              key={riven.riven_id}
+              className="flex items-center gap-2 rounded-lg border px-2 py-1"
+            >
+              <ItemImage
+                imageName={riven.image_name}
+                size={26}
+                alt={riven.weapon_class ?? "Veiled riven"}
+              />
+              <span className="flex flex-col">
+                <span className="text-xs font-medium">
+                  {riven.weapon_class ?? displayNameFromPath(riven.item_type)}
+                </span>
+                <Hint as="span" className="tabular-nums">
+                  {riven.count > 1 && `x${num(riven.count)}`}
+                  {riven.required > 0 &&
+                    ` ${num(riven.progress)} of ${num(riven.required)}`}
+                </Hint>
               </span>
-              <Hint as="span" className="tabular-nums">
-                {riven.count > 1 && `x${num(riven.count)}`}
-                {riven.required > 0 &&
-                  ` ${num(riven.progress)} of ${num(riven.required)}`}
-              </Hint>
-            </span>
-            {riven.market_slug && (
-              <Button variant="outline" size="sm" asChild>
-                <Link to={marketListingPath(riven.market_slug, "sell")}>
+              {slug && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openListing(slug, "sell")}
+                >
                   Sell
-                </Link>
-              </Button>
-            )}
-          </span>
-        ))}
+                </Button>
+              )}
+            </span>
+          );
+        })}
       </div>
     </Surface>
   );

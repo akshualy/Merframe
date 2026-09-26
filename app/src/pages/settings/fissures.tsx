@@ -129,7 +129,7 @@ export function FissureAlerts({
         {filters.map((row, index) => (
           <div
             key={filterKeys[index]}
-            className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto]"
+            className="grid items-end gap-3 @sm:grid-cols-[1fr_1fr_1fr_1fr_auto]"
           >
             <div className="flex flex-col gap-1">
               <Label className="text-xs">Tier</Label>

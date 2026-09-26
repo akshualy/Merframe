@@ -60,7 +60,7 @@ export function OrdersTable({
   runMarketAction,
 }: {
   rows: OrderRow[];
-  onCompare: (slug: string) => void;
+  onCompare: (slug: string, side: OrderType, rank: number | null) => void;
   onRefresh: () => void;
   onSetVisibility: (visible: boolean) => void;
   runMarketAction: (promise: Promise<unknown>, message: string) => void;
@@ -208,7 +208,15 @@ export function OrdersTable({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => onCompare(row.original.slug)}>
+              <DropdownMenuItem
+                onSelect={() =>
+                  onCompare(
+                    row.original.slug,
+                    row.original.order_type,
+                    row.original.rank,
+                  )
+                }
+              >
                 Compare on the market
               </DropdownMenuItem>
               {row.original.show_warning && (

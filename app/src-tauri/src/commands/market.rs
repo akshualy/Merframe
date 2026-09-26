@@ -6,7 +6,7 @@ use tauri::{AppHandle, Runtime};
 use wf_core::{ListingChoices, riven_listing_payload};
 use wf_market::{
     Auction, CreateOrderRequest, ItemListings, Order, OrderType, Platform, UpdateAuctionRequest,
-    UpdateOrderRequest, UserStatus,
+    UpdateOrderRequest, UserStatus, order_rejection,
 };
 
 use super::{Shared, missing_inventory, ready};
@@ -126,7 +126,11 @@ pub async fn market_my_orders(state: Shared<'_>) -> CommandResult<Vec<OrderRow>>
 }
 
 #[tauri::command]
-pub async fn market_post_order(state: Shared<'_>, order: NewOrder) -> CommandResult<Order> {
+pub async fn market_post_order<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+    order: NewOrder,
+) -> CommandResult<Order> {
     let state = ready(&state)?;
     let body = CreateOrderRequest {
         item_id: order.item_id,
@@ -140,7 +144,26 @@ pub async fn market_post_order(state: Shared<'_>, order: NewOrder) -> CommandRes
         amber_stars: order.amber_stars,
         cyan_stars: order.cyan_stars,
     };
-    Ok(state.market().create_order(&body).await?)
+    let posted =
+        state.market().create_order(&body).await.map_err(|error| {
+            match order_rejection(&error) {
+                Some(cause) => CommandError::from(cause),
+                None => error.into(),
+            }
+        })?;
+    let orders = state.market().orders_my().await?;
+    let rows = market::order_rows(&state, &orders).await;
+    market::remember_listings(&state, rows.clone(), None);
+    runtime::emit(
+        &app,
+        runtime::MARKET_UPDATED,
+        runtime::MarketSnapshot {
+            orders: rows,
+            auctions: None,
+            at: chrono::Utc::now(),
+        },
+    );
+    Ok(posted)
 }
 
 #[tauri::command]

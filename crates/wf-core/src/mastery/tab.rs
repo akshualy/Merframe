@@ -106,12 +106,12 @@ fn order_items(
     clippy::cast_precision_loss,
     reason = "mastery XP stays far below 2^53"
 )]
-fn favourite_percent(favourite_xp: u64, span: u64, percent: u32) -> f64 {
+fn favourite_percent(favourite_xp: u64, span: u64, percent: f64) -> f64 {
     if span == 0 {
         return 0.0;
     }
     let share = 100.0 * (favourite_xp as f64 / span as f64);
-    share.min(100.0 - f64::from(percent))
+    share.min(100.0 - percent)
 }
 
 fn summary(inventory: &Inventory, all: &[MasteryItem]) -> MasterySummary {
@@ -189,8 +189,7 @@ pub(crate) fn tab(view: &View, options: MasteryOptions) -> MasteryTab {
     let span = next.saturating_sub(current);
     let earned = total.saturating_sub(current);
 
-    let percent = (earned * 100).checked_div(span).unwrap_or_default();
-    let percent = u32::try_from(percent).unwrap_or(100).min(100);
+    let percent = percent(earned, span).min(100.0);
     let favourite_xp = recommended
         .iter()
         .filter(|item| item.favourite)
@@ -240,7 +239,7 @@ mod tests {
         assert_eq!(tab.rank, 14);
         assert_eq!(tab.rank_xp_earned, 45_138);
         assert_eq!(tab.rank_xp_span, 72_500);
-        assert_eq!(tab.percent, 62);
+        assert!((tab.percent - 62.259_310).abs() < 1e-6);
         assert!((tab.summary.star_percent - 100.0).abs() < f64::EPSILON);
         assert!((tab.summary.intrinsic_percent - 100.0).abs() < f64::EPSILON);
     }
@@ -291,16 +290,16 @@ mod tests {
         );
         assert_eq!(marked.favourite_xp, first.level.xp_remaining);
         let expected = (100.0 * (first.level.xp_remaining as f64 / marked.rank_xp_span as f64))
-            .min(100.0 - f64::from(marked.percent));
+            .min(100.0 - marked.percent);
         assert!((marked.favourite_percent - expected).abs() < 0.001);
     }
 
     #[test]
     fn favourite_percent_clamps() {
-        assert!((favourite_percent(0, 100, 27) - 0.0).abs() < f64::EPSILON);
-        assert!((favourite_percent(10, 100, 27) - 10.0).abs() < f64::EPSILON);
-        assert!((favourite_percent(900, 100, 27) - 73.0).abs() < f64::EPSILON);
-        assert!((favourite_percent(10, 0, 0) - 0.0).abs() < f64::EPSILON);
+        assert!((favourite_percent(0, 100, 27.0) - 0.0).abs() < f64::EPSILON);
+        assert!((favourite_percent(10, 100, 27.0) - 10.0).abs() < f64::EPSILON);
+        assert!((favourite_percent(900, 100, 27.0) - 73.0).abs() < f64::EPSILON);
+        assert!((favourite_percent(10, 0, 0.0) - 0.0).abs() < f64::EPSILON);
     }
 
     #[test]

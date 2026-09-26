@@ -35,9 +35,58 @@ impl MarketError {
 
 pub type Result<T> = std::result::Result<T, MarketError>;
 
+const ORDER_REJECTIONS: [(&str, &str); 5] = [
+    (
+        "app.order.error.exceededOrderLimitSameItem",
+        "An order for this item already exists",
+    ),
+    (
+        "app.order.error.exceededOrderLimitSamePrice",
+        "An order for this item already exists",
+    ),
+    (
+        "app.order.error.exceededOrderLimit",
+        "The account has reached its order limit",
+    ),
+    ("app.form.field_required", "A required field was left empty"),
+    ("app.form.invalid", "A value in the order was rejected"),
+];
+
+pub fn order_rejection(error: &MarketError) -> Option<&'static str> {
+    let MarketError::Http(_, body) = error else {
+        return None;
+    };
+    ORDER_REJECTIONS
+        .iter()
+        .find(|(code, _)| body.contains(code))
+        .map(|(_, cause)| *cause)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn order_rejection_reads_the_error_code() {
+        let rejected = |body: &str| MarketError::Http(StatusCode::BAD_REQUEST, body.to_owned());
+        assert_eq!(
+            order_rejection(&rejected(
+                r#"{"error":{"itemId":["app.order.error.exceededOrderLimitSameItem"]}}"#
+            )),
+            Some("An order for this item already exists")
+        );
+        assert_eq!(
+            order_rejection(&rejected(
+                r#"{"error":"app.order.error.exceededOrderLimit"}"#
+            )),
+            Some("The account has reached its order limit")
+        );
+        assert_eq!(
+            order_rejection(&rejected(r#"{"error":"app.errors.banned"}"#)),
+            None
+        );
+        assert_eq!(order_rejection(&MarketError::Unauthorized), None);
+    }
 
     #[test]
     fn brief_error() {

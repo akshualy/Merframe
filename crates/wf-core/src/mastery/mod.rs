@@ -148,7 +148,7 @@ pub struct MasteryTab {
     pub rank: u32,
     pub founder: bool,
     pub include_founders: bool,
-    pub percent: u32,
+    pub percent: f64,
     pub rank_xp_earned: u64,
     pub rank_xp_span: u64,
     pub summary: MasterySummary,
@@ -167,7 +167,7 @@ fn percent(numerator: u64, denominator: u64) -> f64 {
     if denominator == 0 {
         return 0.0;
     }
-    (100.0 * (numerator as f64 / denominator as f64)).round()
+    100.0 * (numerator as f64 / denominator as f64)
 }
 
 #[cfg(test)]
@@ -240,10 +240,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn whole_percentages() {
+    fn exact_percentages() {
         assert!((percent(0, 0) - 0.0).abs() < f64::EPSILON);
         assert!((percent(1, 2) - 50.0).abs() < f64::EPSILON);
-        assert!((percent(1, 3) - 33.0).abs() < f64::EPSILON);
-        assert!((percent(2, 3) - 67.0).abs() < f64::EPSILON);
+        assert!((percent(604, 607) - 99.505_766).abs() < 1e-6);
     }
 }

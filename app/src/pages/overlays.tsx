@@ -187,8 +187,9 @@ export function OverlaysPage() {
       <Section
         title="Overlay Settings"
         description={renderNote(settings.overlay_mode, status?.overlay_support)}
-        action={
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <Field id="overlays-enabled" label="Enable overlays">
               <Switch
                 id="overlays-enabled"
@@ -212,9 +213,6 @@ export function OverlaysPage() {
               />
             </Field>
           </div>
-        }
-      >
-        <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <Field id="overlay-mode" label="Where an overlay renders">
               <Select
