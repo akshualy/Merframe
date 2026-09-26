@@ -34,7 +34,7 @@ const THREAD_FIELDS: usize = 0x100;
 const GLOBAL_STATE_FIELDS: usize = 0x1000;
 const POINTER: usize = 8;
 const SHARED_KEY_TAG: u32 = 1;
-const SHARED_KEY: u32 = 0x7a3b_1179;
+const SHARED_KEY: u32 = 0x9828_c6d9;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LuaTable(u64);
