@@ -13,7 +13,7 @@ Displays information about:
 
 In-game overlays are available on Windows, X11 and XWayland (This includes Wayland since Proton uses XWayland).
 
-While I have tested the app on Linux and Windows 10, consider the app in Beta until this line disappears from this document. Patches breaking the app is expected and untested so far.
+Big Warframe script updates (usually big content drops) will break the overlays until Merframe is updated as well. Changes in data structures from content we get from Warframe Community Developers (WFCD) may break the app. Please create an issue if either of these go unnoticed for a day.
 
 Bug reports, feature requests, and contributions are welcome.
 
