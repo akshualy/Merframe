@@ -86,7 +86,7 @@ pub(super) fn upgrade_kind(item_type: &str) -> UpgradeKind {
     if item_type.starts_with(ARCANE_PREFIX) && !peculiar {
         return UpgradeKind::Arcane;
     }
-    if item_type.contains("/Beginner/") {
+    if item_type.contains("/Beginner/") || item_type.starts_with("/Lotus/Upgrades/Stickers/") {
         return UpgradeKind::Neither;
     }
     UpgradeKind::Mod
@@ -565,7 +565,7 @@ mod tests {
             UpgradeKind::Mod
         );
         assert_eq!(
-            upgrade_kind("/Lotus/Upgrades/Mods/Beginner/BeginnerAmmoMod"),
+            upgrade_kind("/Lotus/Upgrades/Stickers/WeaponColdDamageSticker"),
             UpgradeKind::Neither
         );
     }
