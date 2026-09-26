@@ -74,7 +74,6 @@ pub struct ModRow {
     pub name: String,
     pub unique_name: String,
     pub image_name: Option<String>,
-    pub market_thumb: Option<String>,
     pub count: i64,
     pub rank: Option<u32>,
     pub max_rank: Option<u32>,

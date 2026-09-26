@@ -50,7 +50,7 @@ export interface OrderRow {
   item_id: string;
   slug: string;
   name: string;
-  thumb: string;
+  image_name: string | null;
   category: MarketCategory;
   platinum: number;
   quantity: number;
@@ -69,7 +69,7 @@ export interface MarketItem {
   id: string;
   slug: string;
   name: string;
-  thumb: string;
+  image_name: string | null;
   ducats: number | null;
   tradable: boolean | null;
   bulk_tradable: boolean | null;

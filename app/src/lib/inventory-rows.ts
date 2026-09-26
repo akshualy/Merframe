@@ -23,7 +23,6 @@ export interface Row extends SortableRow {
   favourite: boolean;
   orderPlaced: boolean;
   imageName: string | null;
-  marketThumb: string | null;
   marketSlug: string;
   prime: boolean;
   vault: VaultStatus | null;
@@ -56,7 +55,6 @@ function partRows(rows: PartRow[]): Row[] {
     ducats: row.prices.ducats,
     completion: row.set.complete ? 1 : 0,
     imageName: row.image_name,
-    marketThumb: null,
     marketSlug: row.market_slug,
     prime: row.prime,
     vault: row.vault,
@@ -90,7 +88,6 @@ function setRows(rows: SetRow[]): Row[] {
     ducats: row.prices.ducats,
     completion: row.owned_parts / Math.max(row.total_parts, 1),
     imageName: row.image_name,
-    marketThumb: null,
     marketSlug: row.market_slug,
     prime: row.set_name.includes("Prime"),
     vault: row.vault,
@@ -128,7 +125,6 @@ function modRows(rows: ModRow[]): Row[] {
     ducats: null,
     completion: 0,
     imageName: row.image_name,
-    marketThumb: row.market_thumb,
     marketSlug: row.market_slug,
     prime: row.prime,
     vault: null,
@@ -162,7 +158,6 @@ function relicRows(rows: RelicRow[]): Row[] {
     ducats: null,
     completion: 0,
     imageName: row.image_name,
-    marketThumb: null,
     marketSlug: "",
     prime: false,
     vault: row.vault,
@@ -196,7 +191,6 @@ function miscRows(rows: MiscRow[]): Row[] {
     ducats: row.ducats,
     completion: 0,
     imageName: row.image_name,
-    marketThumb: null,
     marketSlug: row.market_slug,
     prime: row.name.includes("Prime"),
     vault: null,

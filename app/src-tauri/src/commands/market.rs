@@ -26,7 +26,7 @@ pub struct MarketItem {
     pub id: String,
     pub slug: String,
     pub name: String,
-    pub thumb: String,
+    pub image_name: Option<String>,
     pub ducats: Option<u32>,
     pub tradable: Option<bool>,
     pub bulk_tradable: Option<bool>,
@@ -273,12 +273,13 @@ pub async fn market_items(state: Shared<'_>) -> CommandResult<Vec<MarketItem>> {
     let table = market::item_table(&state)
         .await
         .ok_or_else(unlisted_items)?;
+    let core = lock(&state.core);
     let mut items: Vec<MarketItem> = table
         .items()
         .iter()
         .map(|item| MarketItem {
             name: market::english_name(item),
-            thumb: market::english_thumb(item),
+            image_name: core.catalog().icon_for(&item.game_ref),
             id: item.id.clone(),
             slug: item.slug.clone(),
             ducats: item.ducats,

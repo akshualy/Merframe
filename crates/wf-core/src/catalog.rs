@@ -96,8 +96,11 @@ impl Catalog {
         if let Some(item) = self.item(unique_name) {
             return item.image_name.clone();
         }
-        let (item, component) = self.component_for_stock(unique_name)?;
-        component_image(item, component)
+        if let Some((item, component)) = self.component_for_stock(unique_name) {
+            return component_image(item, component);
+        }
+        let (relic, refinement) = self.relic_by_unique_name(&format!("{unique_name}Bronze"))?;
+        relic.image_names.get(&refinement).cloned()
     }
 
     pub fn prime_parts(&self) -> impl Iterator<Item = (&Item, &Component)> {
@@ -578,6 +581,12 @@ mod tests {
             catalog
                 .item("/Lotus/Weapons/Tenno/Rifle/BratonPrime")
                 .and_then(|item| item.image_name.clone())
+        );
+        assert_eq!(
+            catalog
+                .icon_for("/Lotus/Types/Game/Projections/T4VoidProjectionE")
+                .as_deref(),
+            Some("RelicAxiD.png")
         );
         assert_eq!(catalog.icon_for("/Lotus/Nope"), None);
     }

@@ -4,7 +4,6 @@ import { EquippedDialog } from "@/components/equipped-dialog";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { ArcaneImage, ItemImage } from "@/components/item-image";
-import { marketAssetUrl } from "@/components/market-thumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
@@ -102,9 +101,6 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
       <div className="relative shrink-0 self-start">
         <ArcaneImage
           imageName={row.imageName}
-          fallbackSrc={
-            row.marketThumb ? marketAssetUrl(row.marketThumb) : undefined
-          }
           rarity={tab === "arcanes" ? row.rarity : null}
           size={isSet ? 88 : 72}
           alt={row.name}

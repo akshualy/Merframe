@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect } from "@/components/filter-select";
-import { MarketThumb } from "@/components/market-thumb";
+import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -108,7 +108,11 @@ export function OrdersTable({
         meta: { wrap: true },
         cell: ({ row }) => (
           <>
-            <MarketThumb thumb={row.original.thumb} name={row.original.name} />
+            <ItemImage
+              imageName={row.original.image_name}
+              size={24}
+              alt={row.original.name}
+            />
             <span className="font-medium">{row.original.name}</span>
             {detail(row.original) && (
               <Badge variant="muted">{detail(row.original)}</Badge>

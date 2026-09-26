@@ -66,7 +66,6 @@ export async function prefetchImages(names: (string | null | undefined)[]) {
 
 interface ItemImageProps {
   imageName?: string | null;
-  fallbackSrc?: string | null;
   size?: number;
   alt?: string;
   className?: string;
@@ -74,21 +73,20 @@ interface ItemImageProps {
 
 function ItemImageInner({
   imageName,
-  fallbackSrc,
   size = 32,
   alt = "",
   className,
 }: ItemImageProps) {
   const [state, setState] = useState<Resolved | null>(() => {
     if (!imageName) {
-      return fallbackSrc ? { src: fallbackSrc } : { failed: true };
+      return { failed: true };
     }
     return resolved.get(imageName) ?? null;
   });
 
   useEffect(() => {
     if (!imageName) {
-      setState(fallbackSrc ? { src: fallbackSrc } : { failed: true });
+      setState({ failed: true });
       return;
     }
     const known = resolved.get(imageName);
@@ -104,14 +102,14 @@ function ItemImageInner({
       if (!active) {
         return;
       }
-      setState("failed" in next && fallbackSrc ? { src: fallbackSrc } : next);
+      setState(next);
     }
     show(imageName);
 
     return () => {
       active = false;
     };
-  }, [fallbackSrc, imageName]);
+  }, [imageName]);
 
   const box = cn(
     "bg-muted flex shrink-0 items-center justify-center overflow-hidden rounded-md",
@@ -129,13 +127,7 @@ function ItemImageInner({
         loading="lazy"
         className={cn(box, "object-contain")}
         style={style}
-        onError={() => {
-          if (fallbackSrc && state.src !== fallbackSrc) {
-            setState({ src: fallbackSrc });
-          } else {
-            setState({ failed: true });
-          }
-        }}
+        onError={() => setState({ failed: true })}
       />
     );
   }

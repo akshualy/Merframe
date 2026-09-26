@@ -2,7 +2,7 @@ import { ArrowDownRight, ArrowUpRight, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { GameIcon } from "@/components/game-icon";
-import { MarketThumb } from "@/components/market-thumb";
+import { ItemImage } from "@/components/item-image";
 import { EmptyNote, Quoted, Section } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -323,7 +323,11 @@ export function BuySellPanel({
                       onClick={() => handlePick(item)}
                       className="hover:bg-secondary flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-sm"
                     >
-                      <MarketThumb thumb={item.thumb} name={item.name} />
+                      <ItemImage
+                        imageName={item.image_name}
+                        size={24}
+                        alt={item.name}
+                      />
                       <span className="truncate">{item.name}</span>
                     </button>
                   </li>
