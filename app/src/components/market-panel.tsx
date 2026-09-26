@@ -1,5 +1,5 @@
 import { ExternalLink, Search, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ItemImage } from "@/components/item-image";
@@ -62,7 +62,6 @@ function ItemSearch({
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
 
   const matches = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -79,21 +78,8 @@ function ItemSearch({
       .slice(0, 20);
   }, [items, query]);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!searchRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
-
   return (
-    <div ref={searchRef} className="relative">
+    <div className="relative">
       <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
       <Input
         value={query}
@@ -102,6 +88,7 @@ function ItemSearch({
           setOpen(true);
         }}
         onFocus={() => setOpen(query.trim().length > 0)}
+        onBlur={() => setOpen(false)}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
             setOpen(false);
@@ -111,7 +98,10 @@ function ItemSearch({
         className="pl-9"
       />
       {open && matches.length > 0 && (
-        <ul className="bg-popover absolute top-full z-20 mt-1 max-h-80 w-full overflow-y-auto rounded-md border shadow-md">
+        <ul
+          onMouseDown={(e) => e.preventDefault()}
+          className="bg-popover absolute top-full z-20 mt-1 max-h-80 w-full overflow-y-auto rounded-md border shadow-md"
+        >
           {matches.map((item) => (
             <li key={item.id}>
               <button
