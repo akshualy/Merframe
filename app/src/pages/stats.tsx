@@ -383,7 +383,10 @@ export function StatsPage() {
             emptyMessage="No changes since the previous snapshot."
           />
         </Section>
-        <Section title="Relic Openings">
+        <Section
+          title="Relic Openings"
+          description="Shows what your own relic dropped, not the reward you picked."
+        >
           <DataTable
             tableId="statsOpenings"
             columns={OPENING_COLUMNS}

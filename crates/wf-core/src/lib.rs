@@ -26,7 +26,7 @@ pub use delta::ItemDelta;
 pub use error::{CoreError, Result};
 pub use events::{
     AlertSettings, CoreEvent, CyclePhase, FissureFilter, FissureInfo, InventorySummary,
-    SteelPathFilter, TimerAlerts, tier_name,
+    ScannedRewards, SteelPathFilter, TimerAlerts, tier_name,
 };
 pub use facade::{Core, RelicPlannerTab, StatsTab};
 pub use favourites::Favourites;

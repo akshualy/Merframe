@@ -114,9 +114,6 @@ mod ee_log_fixture_tests {
         assert!(events.contains(&Event::LoggedIn {
             name: "TestTenno".to_owned()
         }));
-        assert!(events.contains(&Event::RelicEquipDialog {
-            relic: "Lith K12".to_owned()
-        }));
         assert!(events.iter().any(|event| matches!(
             event,
             Event::MissionSet { void_tier: Some(tier), .. } if tier == "VoidT1"

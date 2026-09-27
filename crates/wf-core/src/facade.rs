@@ -13,7 +13,7 @@ use crate::catalog::{Catalog, REQUIEM_MARKER};
 use crate::comparables::{self, ComparedStat, RivenComparables};
 use crate::delta;
 use crate::error::Result;
-use crate::events::{self, AlertSettings, CoreEvent, Engine};
+use crate::events::{self, AlertSettings, CoreEvent, Engine, ScannedRewards};
 use crate::export::{ExportBundle, export};
 use crate::favourites::Favourites;
 use crate::foundry::{self, FoundryTab};
@@ -215,9 +215,15 @@ impl Core {
         &mut self,
         now: DateTime<Utc>,
         generation: u64,
-        rewards: Vec<String>,
+        screen: ScannedRewards,
     ) -> Result<Vec<CoreEvent>> {
-        let events = self.engine.handle_reward_screen(generation, rewards);
+        let relic = screen
+            .own_relic_type
+            .and_then(|relic_type| self.catalog.relic_by_unique_name(&relic_type))
+            .map(|(relic, _)| relic.name.clone());
+        let events = self
+            .engine
+            .handle_reward_screen(generation, relic, screen.rewards);
         self.record(&events, now)?;
         Ok(events)
     }
@@ -761,13 +767,6 @@ mod tests {
         let now = at(3_000_000);
 
         core.handle_log_event(
-            &LogEvent::RelicEquipDialog {
-                relic: "Requiem III".to_owned(),
-            },
-            now,
-        )
-        .unwrap();
-        core.handle_log_event(
             &LogEvent::OwnRelicReward {
                 account_id: "5f0a1b2c3d4e5f6a7b8c9d0e".to_owned(),
                 store_item: "/Lotus/StoreItems/Upgrades/Mods/Immortal/RequiemModA".to_owned(),
@@ -779,7 +778,15 @@ mod tests {
             .handle_reward_screen(
                 now,
                 core.reward_screen_generation(),
-                vec!["/Lotus/StoreItems/Upgrades/Mods/Immortal/RequiemModA".to_owned()],
+                ScannedRewards {
+                    own_relic_type: Some(
+                        "/Lotus/Types/Game/Projections/T5VoidProjectionImmortalCPlatinum"
+                            .to_owned(),
+                    ),
+                    rewards: vec![
+                        "/Lotus/StoreItems/Upgrades/Mods/Immortal/RequiemModA".to_owned(),
+                    ],
+                },
             )
             .unwrap();
         assert_eq!(events.len(), 1);
@@ -796,13 +803,6 @@ mod tests {
         let now = at(3_000_000);
 
         core.handle_log_event(
-            &LogEvent::RelicEquipDialog {
-                relic: "Axi A21".to_owned(),
-            },
-            now,
-        )
-        .unwrap();
-        core.handle_log_event(
             &LogEvent::OwnRelicReward {
                 account_id: "5f0a1b2c3d4e5f6a7b8c9d0e".to_owned(),
                 store_item: "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint"
@@ -815,10 +815,16 @@ mod tests {
             .handle_reward_screen(
                 now,
                 core.reward_screen_generation(),
-                vec![
-                    "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint"
-                        .to_owned(),
-                ],
+                ScannedRewards {
+                    own_relic_type: Some(
+                        "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeAGold"
+                            .to_owned(),
+                    ),
+                    rewards: vec![
+                        "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint"
+                            .to_owned(),
+                    ],
+                },
             )
             .unwrap();
         assert_eq!(events.len(), 1);

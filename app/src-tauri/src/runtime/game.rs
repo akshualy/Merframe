@@ -9,10 +9,10 @@ use futures_util::StreamExt;
 use futures_util::pin_mut;
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
-use wf_core::CoreEvent;
+use wf_core::{CoreEvent, ScannedRewards};
 use wf_log::Event as LogEvent;
 use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_game};
-use wf_scan::{HttpClients, InventoryBuffer};
+use wf_scan::{HttpClients, InventoryBuffer, LuaState};
 
 use super::{INVENTORY_UPDATED, STATUS_UPDATED, blocking, dispatch, emit};
 use crate::overlay;
@@ -21,6 +21,9 @@ use crate::state::{AppState, InventorySource, QueueSession, lock, read, write};
 const PROCESS_POLL: Duration = Duration::from_secs(5);
 const REWARD_TICK: Duration = Duration::from_millis(100);
 const REWARD_TICKS: usize = 50;
+const PICKER_TICK: Duration = Duration::from_millis(100);
+const PICKER_LIFETIME: Duration = Duration::from_secs(600);
+const PICKER_GRACE: Duration = Duration::from_secs(2);
 
 pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut missing_reported = false;
@@ -149,6 +152,9 @@ async fn handle_log_event<R: Runtime>(
     if matches!(event, LogEvent::InventorySynced) {
         capture(app, state);
     }
+    if matches!(event, LogEvent::RelicSelectScreenLoaded) {
+        watch_relic_picker(state);
+    }
     let scan_rewards = matches!(
         event,
         LogEvent::SquadRewardInfoComplete | LogEvent::RelicRewardsShown
@@ -174,12 +180,12 @@ async fn handle_log_event<R: Runtime>(
 
 async fn handle_reward_screen<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let generation = lock(&state.core).reward_screen_generation();
-    let Some(rewards) = scan_reward_screen().await else {
+    let Some(screen) = scan_reward_screen(state).await else {
         return;
     };
     let owned = Arc::clone(state);
     let handled = blocking("handle reward screen", move || {
-        lock(&owned.core).handle_reward_screen(Utc::now(), generation, rewards)
+        lock(&owned.core).handle_reward_screen(Utc::now(), generation, screen)
     })
     .await;
     match handled {
@@ -191,26 +197,84 @@ async fn handle_reward_screen<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSta
     }
 }
 
-fn reward_screen() -> anyhow::Result<Vec<String>> {
-    let reader = open_game().context("Attaching to the game process")?;
-    let tiles = wf_scan::reward_screen(reader.as_ref()).context("Reading the reward screen")?;
-    Ok(tiles.into_iter().map(|tile| tile.store_item).collect())
+fn watch_relic_picker(state: &Arc<AppState>) {
+    if state.watching_picker.swap(true, Ordering::SeqCst) {
+        return;
+    }
+    let state = Arc::clone(state);
+    tauri::async_runtime::spawn(async move {
+        let started = Instant::now();
+        let mut closed_since = None;
+        while started.elapsed() < PICKER_LIFETIME {
+            match blocking("read relic picker", relic_picker).await {
+                Some(Picker::Open(pick)) => {
+                    closed_since = None;
+                    if let Some(pick) = pick
+                        && lock(&state.relic_picks)
+                            .insert(pick.handle, pick.relic_type.clone())
+                            .is_none()
+                    {
+                        debug!(relic_type = pick.relic_type, "Relic selected in the picker");
+                    }
+                }
+                Some(Picker::Closed) | None => {
+                    let since = *closed_since.get_or_insert_with(Instant::now);
+                    if since.elapsed() >= PICKER_GRACE {
+                        break;
+                    }
+                }
+            }
+            tokio::time::sleep(PICKER_TICK).await;
+        }
+        state.watching_picker.store(false, Ordering::SeqCst);
+    });
 }
 
-async fn scan_reward_screen() -> Option<Vec<String>> {
-    let mut seen = Vec::new();
+enum Picker {
+    Closed,
+    Open(Option<wf_scan::RelicPick>),
+}
+
+fn relic_picker() -> Picker {
+    let open = open_game().ok().and_then(|reader| {
+        let state = LuaState::locate(reader.as_ref()).ok().flatten()?;
+        wf_scan::relic_picker_open(reader.as_ref(), &state)
+            .then(|| wf_scan::relic_pick(reader.as_ref(), &state))
+    });
+    open.map_or(Picker::Closed, Picker::Open)
+}
+
+fn reward_screen(state: &AppState) -> anyhow::Result<ScannedRewards> {
+    let reader = open_game().context("Attaching to the game process")?;
+    let tiles = wf_scan::reward_screen(reader.as_ref()).context("Reading the reward screen")?;
+    let own_relic_type = LuaState::locate(reader.as_ref())
+        .context("Locating the Lua state")?
+        .and_then(|state| wf_scan::confirmed_relic(reader.as_ref(), &state))
+        .and_then(|handle| lock(&state.relic_picks).get(&handle).cloned());
+    Ok(ScannedRewards {
+        own_relic_type,
+        rewards: tiles.into_iter().map(|tile| tile.store_item).collect(),
+    })
+}
+
+async fn scan_reward_screen(state: &Arc<AppState>) -> Option<ScannedRewards> {
+    let mut seen = ScannedRewards::default();
     for _ in 0..REWARD_TICKS {
-        let rewards = match blocking("read reward screen", reward_screen).await? {
-            Ok(rewards) => rewards,
+        let owned = Arc::clone(state);
+        let screen = match blocking("read reward screen", move || reward_screen(&owned)).await? {
+            Ok(screen) => screen,
             Err(error) => {
                 warn!(?error, "Reward screen read from game memory failed");
                 return None;
             }
         };
-        if !rewards.is_empty() && rewards == seen {
-            return Some(rewards);
+        if !screen.rewards.is_empty() && screen == seen {
+            if screen.own_relic_type.is_none() {
+                debug!("Reward screen settled without a known relic for the local player");
+            }
+            return Some(screen);
         }
-        seen = rewards;
+        seen = screen;
         tokio::time::sleep(REWARD_TICK).await;
     }
     debug!("Reward screen held no settled tiles");

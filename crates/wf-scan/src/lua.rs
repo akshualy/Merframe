@@ -8,6 +8,7 @@ const STRING_TAG: u8 = 6;
 const STRING_HEADER: usize = 24;
 const TABLE_TAG: u32 = 7;
 const FUNCTION_TAG: u32 = 8;
+const USERDATA_TAG: u32 = 9;
 const THREAD_TAG: u8 = 10;
 const UPVALUE_TAG: u32 = 13;
 const KEY_TAG_MASK: u32 = 0xF;
@@ -47,6 +48,7 @@ pub enum LuaValue {
     Text(String),
     Table(LuaTable),
     Function(LuaFunction),
+    Userdata(u64),
     Other,
 }
 
@@ -68,6 +70,13 @@ impl LuaValue {
     pub fn function(self) -> Option<LuaFunction> {
         match self {
             Self::Function(function) => Some(function),
+            _ => None,
+        }
+    }
+
+    pub fn userdata(self) -> Option<u64> {
+        match self {
+            Self::Userdata(object) => Some(object),
             _ => None,
         }
     }
@@ -100,6 +109,7 @@ fn value<R: MemoryReader + ?Sized>(reader: &R, slot: &[u8]) -> Option<LuaValue> 
         tag if tag == u32::from(STRING_TAG) => LuaValue::Text(read_text(reader, payload)?),
         TABLE_TAG => LuaValue::Table(LuaTable(payload)),
         FUNCTION_TAG => LuaValue::Function(LuaFunction(payload)),
+        USERDATA_TAG => LuaValue::Userdata(payload),
         UPVALUE_TAG => {
             let slot = reader.read_u64(payload + UPVALUE_SLOT).ok()?;
             return value(reader, &reader.read_vec(slot, NODE_KEY).ok()?);
@@ -307,6 +317,10 @@ impl LuaState {
         self.globals.shared(reader)
     }
 
+    pub fn global<R: MemoryReader + ?Sized>(&self, reader: &R, name: &str) -> Option<LuaValue> {
+        self.globals.field(reader, name)
+    }
+
     pub fn script<R: MemoryReader + ?Sized>(&self, reader: &R, owns: &str) -> Option<LuaTable> {
         self.scripts(reader)
             .into_iter()
@@ -341,6 +355,7 @@ pub(crate) mod tests {
     pub(crate) struct Heap {
         pub(crate) bytes: Vec<u8>,
         pub(crate) shared: Vec<Field>,
+        globals: Vec<Field>,
         next: usize,
     }
 
@@ -436,10 +451,19 @@ pub(crate) mod tests {
             (self.text(name), u32::from(STRING_TAG), table, TABLE_TAG)
         }
 
+        pub(crate) fn userdata_field(&mut self, name: &str, object: u64) -> Field {
+            (self.text(name), u32::from(STRING_TAG), object, USERDATA_TAG)
+        }
+
+        pub(crate) fn global(&mut self, field: Field) {
+            self.globals.push(field);
+        }
+
         pub(crate) fn with_scripts(scripts: impl FnOnce(&mut Self) -> Vec<u64>) -> FakeReader {
             let mut heap = Self {
                 bytes: vec![0u8; 0x4000],
                 shared: Vec::new(),
+                globals: Vec::new(),
                 next: FREE,
             };
             let scripts: Vec<(u64, u32)> = scripts(&mut heap)
@@ -457,7 +481,8 @@ pub(crate) mod tests {
                 address(SHARED),
                 TABLE_TAG,
             );
-            heap.table_at(GLOBALS, &[shared], &[]);
+            let globals: Vec<Field> = [shared].into_iter().chain(heap.globals.drain(..)).collect();
+            heap.table_at(GLOBALS, &globals, &[]);
             heap.table_at(REGISTRY, &[], &scripts);
             let sortie = heap.text_field("CachedSortieId", "6aac0afe0bb39ae78a6884e0");
             let shared: Vec<Field> = heap.shared.drain(..).chain([sortie]).collect();

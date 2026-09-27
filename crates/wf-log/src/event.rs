@@ -18,9 +18,6 @@ pub enum Event {
     MissionStart {
         level_path: String,
     },
-    RelicEquipDialog {
-        relic: String,
-    },
     MissionSucceeded,
     MissionRewardsGiven,
     ReturnedToShip,
@@ -87,7 +84,6 @@ impl Event {
             Self::LoggingIn => "LoggingIn",
             Self::MissionSet { .. } => "MissionSet",
             Self::MissionStart { .. } => "MissionStart",
-            Self::RelicEquipDialog { .. } => "RelicEquipDialog",
             Self::MissionSucceeded => "MissionSucceeded",
             Self::MissionRewardsGiven => "MissionRewardsGiven",
             Self::ReturnedToShip => "ReturnedToShip",
@@ -129,8 +125,6 @@ fn compiled(pattern: &str) -> Regex {
 }
 
 static LOGGED_IN: LazyLock<Regex> = LazyLock::new(|| compiled(r"Logged in\s+([^\s(]+)"));
-static RELIC_EQUIP: LazyLock<Regex> =
-    LazyLock::new(|| compiled(r"want to equip (.+) Relic for this mission\?"));
 static OWN_RELIC_REWARD: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"VoidProjections: ([0-9a-f]{24}) gets reward (\S+)$"));
 static SQUAD_REWARD_INFO_RECEIVED: LazyLock<Regex> = LazyLock::new(|| {
@@ -332,13 +326,6 @@ pub fn classify(line: &LogLine) -> Option<Event> {
     if message.starts_with("FrameworkCmd::OpenLevel - ") {
         return open_level_path(message).map(|level_path| Event::MissionStart { level_path });
     }
-    if message.contains("want to equip") && message.contains("Relic for this mission?") {
-        return RELIC_EQUIP
-            .captures(message)
-            .map(|captures| Event::RelicEquipDialog {
-                relic: captures[1].to_owned(),
-            });
-    }
     if let Some(event) = riven_station(message) {
         return Some(event);
     }
@@ -479,19 +466,6 @@ mod tests {
             event,
             Some(Event::MissionStart {
                 level_path: "/Lotus/Levels/Proc/Corpus/CorpusIcePlanetExterminateCaves".to_owned()
-            })
-        );
-    }
-
-    #[test]
-    fn relic_equip_dialog() {
-        let event = classify(&log_line(
-            "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to equip Lith K12 Relic for this mission? It will be consumed if you seal the Void Fissure and extract., title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
-        ));
-        assert_eq!(
-            event,
-            Some(Event::RelicEquipDialog {
-                relic: String::from("Lith K12")
             })
         );
     }

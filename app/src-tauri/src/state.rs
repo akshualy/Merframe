@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
@@ -131,6 +132,8 @@ pub struct AppState {
     pub rescan: Notify,
     pub http_clients: Mutex<Option<QueueSession>>,
     pub capturing: AtomicBool,
+    pub relic_picks: Mutex<HashMap<u64, String>>,
+    pub watching_picker: AtomicBool,
     pub prices_wake: Notify,
     pub overlays: Overlays,
     pub auctions: AuctionCache,
@@ -208,6 +211,8 @@ impl AppState {
             rescan: Notify::new(),
             http_clients: Mutex::new(None),
             capturing: AtomicBool::new(false),
+            relic_picks: Mutex::new(HashMap::new()),
+            watching_picker: AtomicBool::new(false),
             prices_wake: Notify::new(),
             overlays: Overlays::default(),
             auctions: AuctionCache::default(),

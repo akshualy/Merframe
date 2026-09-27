@@ -35,6 +35,12 @@ pub struct InventorySummary {
     pub changes: usize,
 }
 
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ScannedRewards {
+    pub own_relic_type: Option<String>,
+    pub rewards: Vec<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum CoreEvent {
     InventoryUpdated(InventorySummary),

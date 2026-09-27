@@ -17,7 +17,6 @@ fn conversation_player(channel: &str) -> Option<String> {
 
 pub(crate) struct Engine {
     settings: AlertSettings,
-    equipped_relic: Option<String>,
     pending_trade: Option<PendingTrade>,
     reward_screen: RewardScreenState,
     world_state_polled: bool,
@@ -56,7 +55,6 @@ impl Engine {
     pub fn new(settings: AlertSettings) -> Self {
         Self {
             settings,
-            equipped_relic: None,
             pending_trade: None,
             reward_screen: RewardScreenState::default(),
             world_state_polled: false,
@@ -72,10 +70,6 @@ impl Engine {
 
     pub fn handle_log_event(&mut self, event: &LogEvent, now: DateTime<Utc>) -> Vec<CoreEvent> {
         match event {
-            LogEvent::RelicEquipDialog { relic } => {
-                self.equipped_relic = Some(relic.clone());
-                Vec::new()
-            }
             LogEvent::RelicRewardScreenOpened => {
                 self.reward_screen = RewardScreenState {
                     generation: self.reward_screen.generation + 1,
@@ -176,6 +170,7 @@ impl Engine {
     pub fn handle_reward_screen(
         &mut self,
         generation: u64,
+        relic: Option<String>,
         rewards: Vec<String>,
     ) -> Vec<CoreEvent> {
         if generation != self.reward_screen.generation
@@ -184,10 +179,7 @@ impl Engine {
             return Vec::new();
         }
         self.reward_screen.announced = rewards.len();
-        vec![CoreEvent::RelicRewardScreen {
-            relic: self.equipped_relic.clone(),
-            rewards,
-        }]
+        vec![CoreEvent::RelicRewardScreen { relic, rewards }]
     }
 
     fn new_conversation(&mut self, channel: &str, now: DateTime<Utc>) -> Vec<CoreEvent> {
@@ -285,16 +277,6 @@ mod tests {
         let now = at(1_000_000);
         assert!(
             engine
-                .handle_log_event(
-                    &LogEvent::RelicEquipDialog {
-                        relic: "Lith K12".to_owned()
-                    },
-                    now
-                )
-                .is_empty()
-        );
-        assert!(
-            engine
                 .handle_log_event(&LogEvent::RelicRewardScreenOpened, now)
                 .is_empty()
         );
@@ -303,19 +285,27 @@ mod tests {
         assert!(engine.start_reward_scan());
         assert!(!engine.start_reward_scan());
         assert_eq!(
-            engine.handle_reward_screen(generation, screen()),
+            engine.handle_reward_screen(generation, Some("Lith K12".to_owned()), screen()),
             vec![CoreEvent::RelicRewardScreen {
                 relic: Some("Lith K12".to_owned()),
                 rewards: screen(),
             }]
         );
-        assert!(engine.handle_reward_screen(generation, screen()).is_empty());
+        assert!(
+            engine
+                .handle_reward_screen(generation, None, screen())
+                .is_empty()
+        );
 
         engine.handle_log_event(&LogEvent::RelicRewardScreenOpened, now);
         assert!(engine.start_reward_scan());
-        assert!(engine.handle_reward_screen(generation, screen()).is_empty());
+        assert!(
+            engine
+                .handle_reward_screen(generation, None, screen())
+                .is_empty()
+        );
         let next = engine.reward_screen_generation();
-        assert_eq!(engine.handle_reward_screen(next, screen()).len(), 1);
+        assert_eq!(engine.handle_reward_screen(next, None, screen()).len(), 1);
     }
 
     #[test]
@@ -324,9 +314,21 @@ mod tests {
         let generation = engine.reward_screen_generation();
         let mut partial = screen();
         partial.truncate(1);
-        assert_eq!(engine.handle_reward_screen(generation, partial).len(), 1);
-        assert_eq!(engine.handle_reward_screen(generation, screen()).len(), 1);
-        assert!(engine.handle_reward_screen(generation, screen()).is_empty());
+        assert_eq!(
+            engine.handle_reward_screen(generation, None, partial).len(),
+            1
+        );
+        assert_eq!(
+            engine
+                .handle_reward_screen(generation, None, screen())
+                .len(),
+            1
+        );
+        assert!(
+            engine
+                .handle_reward_screen(generation, None, screen())
+                .is_empty()
+        );
     }
 
     #[test]
@@ -335,7 +337,7 @@ mod tests {
         let generation = engine.reward_screen_generation();
         assert!(
             engine
-                .handle_reward_screen(generation, Vec::new())
+                .handle_reward_screen(generation, None, Vec::new())
                 .is_empty()
         );
     }
