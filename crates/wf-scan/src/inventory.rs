@@ -20,8 +20,6 @@ pub const REQUIRED_KEYS: [&str; 16] = [
     "XPInfo",
 ];
 
-const SYNC_KEY: &[u8] = b"\"LastInventorySync\":{\"$oid\":\"";
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InventoryBuffer {
     pub addr: u64,
@@ -54,7 +52,7 @@ pub(crate) fn accept(addr: u64, body: &[u8]) -> Option<InventoryBuffer> {
     }
     let text = str::from_utf8(body).ok()?;
     let value = serde_json::from_str::<serde_json::Value>(text).ok()?;
-    let (value, json) = if memmem::find(body, SYNC_KEY).is_some() {
+    let (value, json) = if memmem::find(body, b"\"LastInventorySync\":{\"$oid\":\"").is_some() {
         (value, text.to_owned())
     } else {
         unwrap_mission_end(&value)?
