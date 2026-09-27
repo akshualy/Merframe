@@ -3,6 +3,7 @@ use wf_data::Refinement;
 use crate::catalog::{
     VaultStatus, display_name_from_path, refinement_from_unique_name, refinement_name,
 };
+use crate::listings::PlacedOrders;
 use crate::view::View;
 
 use super::RelicRow;
@@ -80,7 +81,9 @@ pub(crate) fn relics(view: &View) -> Vec<RelicRow> {
                     vault: VaultStatus::from(known.map(|(relic, _)| relic.vaulted)),
                     plat: market_name.and_then(|url_name| prices.plat(url_name)),
                     favourite: favourites.contains(unique_name),
-                    order_placed: market_name.is_some_and(|url_name| listings.has_order(url_name)),
+                    orders: market_name.map_or_else(PlacedOrders::default, |url_name| {
+                        listings.orders_for(url_name)
+                    }),
                     unique_name: unique_name.to_owned(),
                 },
             ))

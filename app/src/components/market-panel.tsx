@@ -50,8 +50,11 @@ function NumberField({
   );
 }
 
-function defaultSubtype(item: MarketItem) {
+function defaultSubtype(item: MarketItem, wanted: string | null) {
   const subtypes = item.subtypes ?? [];
+  if (wanted && subtypes.includes(wanted)) {
+    return wanted;
+  }
   return subtypes.includes("revealed") ? "revealed" : (subtypes[0] ?? "");
 }
 
@@ -156,12 +159,13 @@ export function MarketPanel() {
       item: MarketItem,
       side: OrderType = "sell",
       rank: number | null = null,
+      subtype: string | null = null,
     ) => {
       setSelected(item);
       setLoadingOrders(true);
       setSide(side);
       setRank(String(rank ?? 0));
-      setSubtype(defaultSubtype(item));
+      setSubtype(defaultSubtype(item, subtype));
       setAmberStars("0");
       setCyanStars("0");
       try {
@@ -186,7 +190,7 @@ export function MarketPanel() {
     takeRequest();
     const item = items.find((candidate) => candidate.slug === request.slug);
     if (item) {
-      handlePick(item, request.side, request.rank);
+      handlePick(item, request.side, request.rank, request.subtype);
     } else {
       toast.error("warframe.market does not list this item any more");
     }

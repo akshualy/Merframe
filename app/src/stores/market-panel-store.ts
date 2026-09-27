@@ -6,6 +6,7 @@ export interface ListingRequest {
   slug: string;
   side: OrderType;
   rank: number | null;
+  subtype: string | null;
 }
 
 interface MarketPanelState {
@@ -15,7 +16,12 @@ interface MarketPanelState {
   show: () => void;
   hide: () => void;
   setItems: (items: MarketItem[]) => void;
-  openListing: (slug: string, side: OrderType, rank?: number | null) => void;
+  openListing: (
+    slug: string,
+    side: OrderType,
+    rank?: number | null,
+    subtype?: string | null,
+  ) => void;
   takeRequest: () => void;
 }
 
@@ -28,8 +34,8 @@ export const useMarketPanelStore = create<MarketPanelState>()(
       show: () => set({ open: true }),
       hide: () => set({ open: false }),
       setItems: (items) => set({ items }),
-      openListing: (slug, side, rank = null) =>
-        set({ open: true, request: { slug, side, rank } }),
+      openListing: (slug, side, rank = null, subtype = null) =>
+        set({ open: true, request: { slug, side, rank, subtype } }),
       takeRequest: () => set({ request: null }),
     }),
     {

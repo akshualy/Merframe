@@ -13,7 +13,8 @@ pub(super) struct UnlistedUpgrade {
     unique_name: &'static str,
     pub(super) name: &'static str,
     rarity: Rarity,
-    market_slug: Option<&'static str>,
+    pub(super) market_slug: Option<&'static str>,
+    pub(super) image_name: Option<&'static str>,
 }
 
 const UPGRADES_OUTSIDE_THE_EXPORT: [UnlistedUpgrade; 6] = [
@@ -22,36 +23,42 @@ const UPGRADES_OUTSIDE_THE_EXPORT: [UnlistedUpgrade; 6] = [
         name: "Zid-An Haras",
         rarity: Rarity::Rare,
         market_slug: Some("zid-an-haras"),
+        image_name: None,
     },
     UnlistedUpgrade {
         unique_name: "/Lotus/Upgrades/CosmeticEnhancers/Antiques/HeatStatusProcOnUltimateKill",
         name: "Zid-An Uskos",
         rarity: Rarity::Rare,
         market_slug: Some("zid-an-uskos"),
+        image_name: None,
     },
     UnlistedUpgrade {
         unique_name: "/Lotus/Upgrades/CosmeticEnhancers/Antiques/StatusChanceOnUltimateHit",
         name: "Zid-An Asheir",
         rarity: Rarity::Rare,
         market_slug: Some("zid-an-asheir"),
+        image_name: None,
     },
     UnlistedUpgrade {
         unique_name: "/Lotus/Upgrades/CosmeticEnhancers/Antiques/UltimateInvisibilty",
         name: "Zid-An Sek-Eel",
         rarity: Rarity::Rare,
         market_slug: Some("zid-an-sek-eel"),
+        image_name: None,
     },
     UnlistedUpgrade {
         unique_name: "/Lotus/Upgrades/CosmeticEnhancers/Antiques/VoidSlingsOverguardStrip",
         name: "Zid-An Osbok",
         rarity: Rarity::Rare,
         market_slug: Some("zid-an-osbok"),
+        image_name: None,
     },
     UnlistedUpgrade {
         unique_name: "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser",
         name: "Legendary Core",
         rarity: Rarity::Legendary,
         market_slug: Some("legendary_fusion_core"),
+        image_name: Some("game/legendary-core.png"),
     },
 ];
 
@@ -93,6 +100,16 @@ pub(super) fn upgrade_outside_the_export(unique_name: &str) -> Option<UnlistedUp
     UPGRADES_OUTSIDE_THE_EXPORT
         .into_iter()
         .find(|upgrade| upgrade.unique_name == unique_name)
+}
+
+pub fn market_icon(catalog: &Catalog, item: &wf_market::Item) -> Option<String> {
+    catalog.icon_for(&item.game_ref).or_else(|| {
+        UPGRADES_OUTSIDE_THE_EXPORT
+            .into_iter()
+            .find(|upgrade| upgrade.market_slug == Some(item.slug.as_str()))?
+            .image_name
+            .map(str::to_owned)
+    })
 }
 
 pub(crate) fn mods(view: &View) -> Vec<ModRow> {
@@ -257,13 +274,15 @@ fn upgrade_rows(view: &View, wanted: UpgradeKind) -> Vec<ModRow> {
                 max_rank,
                 prices: upgrade_prices(prices, &slug, rank, max_rank, wanted),
                 equipped_in: equipped_holders(catalog, &slots, &holders),
-                image_name: known.and_then(|item| item.image_name.clone()),
+                image_name: known
+                    .and_then(|item| item.image_name.clone())
+                    .or_else(|| listed.and_then(|upgrade| upgrade.image_name.map(str::to_owned))),
                 rarity: known
                     .and_then(|item| item.rarity)
                     .or_else(|| listed.map(|upgrade| upgrade.rarity)),
                 prime: name.contains("Prime"),
                 favourite: favourites.contains(unique_name),
-                order_placed: listings.has_order(&slug),
+                orders: listings.orders_for(&slug),
                 unique_name: unique_name.to_owned(),
                 market_slug: slug,
                 name,
@@ -403,6 +422,7 @@ mod tests {
         assert_eq!(core.name, "Legendary Core");
         assert_eq!(core.count, 6);
         assert_eq!(core.market_slug, "legendary_fusion_core");
+        assert_eq!(core.image_name.as_deref(), Some("game/legendary-core.png"));
     }
 
     #[test]

@@ -17,7 +17,9 @@ const pending = new Map<string, Promise<Resolved>>();
 async function resolve(imageName: string): Promise<Resolved> {
   let state: Resolved;
   try {
-    state = { src: convertFileSrc(await api.itemImage(imageName)) };
+    state = imageName.startsWith("game/")
+      ? { src: `/${imageName}` }
+      : { src: convertFileSrc(await api.itemImage(imageName)) };
   } catch (error) {
     logError(`Loading image ${imageName}`, error);
     state = { failed: true };

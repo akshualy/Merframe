@@ -3,7 +3,9 @@ use std::sync::{Arc, RwLock};
 
 use chrono::{DateTime, Duration, Utc};
 use serde::Serialize;
-use wf_core::{Catalog, InventoryTab, MarketListings, MarketStock, ModRow, PriceSource, SetRow};
+use wf_core::{
+    Catalog, InventoryTab, MarketListings, MarketStock, ModRow, PriceSource, SetRow, market_icon,
+};
 use wf_market::{Auction, Item, Order, OrderType, UserStatus};
 
 use crate::state::{AppState, lock, read, write};
@@ -261,7 +263,7 @@ pub fn order_row(
         item_id: order.item_id.clone(),
         slug: item.slug.clone(),
         name,
-        image_name: catalog.icon_for(&item.game_ref),
+        image_name: market_icon(catalog, item),
         category,
         platinum: order.platinum,
         quantity: order.quantity,
@@ -312,7 +314,9 @@ pub fn remember_listings(
 ) {
     let held = state.listings.remember(orders, auctions);
     lock(&state.core).set_market_listings(MarketListings::new(
-        held.orders.iter().map(|row| row.slug.as_str()),
+        held.orders
+            .iter()
+            .map(|row| (row.slug.as_str(), row.order_type)),
         &held.auctions,
     ));
 }
@@ -349,7 +353,9 @@ mod tests {
     use std::collections::{BTreeMap, HashMap};
 
     use chrono::{DateTime, Utc};
-    use wf_core::{InventoryTab, ItemStatus, ModRow, PriceSource, Prices, SetRow, UpgradePrices};
+    use wf_core::{
+        InventoryTab, ItemStatus, ModRow, PlacedOrders, PriceSource, Prices, SetRow, UpgradePrices,
+    };
     use wf_market::{Item, ItemLocalization, Order, OrderType};
 
     use super::*;
@@ -420,6 +426,19 @@ mod tests {
     }
 
     #[test]
+    fn market_icon_without_game_ref() {
+        let catalog = empty_catalog();
+        let core = item("legendary_fusion_core", "Legendary Fusion Core", &[], None);
+        assert_eq!(
+            market_icon(&catalog, &core).as_deref(),
+            Some("game/legendary-core.png"),
+            "the market record of the Legendary Core has no game reference"
+        );
+        let set = item("braton_prime_set", "Braton Prime Set", &["set"], None);
+        assert_eq!(market_icon(&catalog, &set), None);
+    }
+
+    #[test]
     fn item_table_lookup() {
         let first = item("braton_prime_set", "Braton Prime Set", &["set"], None);
         let second = item("primed_continuity", "Primed Continuity", &["mod"], Some(10));
@@ -460,7 +479,7 @@ mod tests {
             prime: false,
             market_slug: String::new(),
             favourite: false,
-            order_placed: false,
+            orders: PlacedOrders::default(),
         }
     }
 
@@ -531,7 +550,7 @@ mod tests {
                 prices: Prices::default(),
                 market_slug: "mirage_prime_set".to_owned(),
                 favourite: false,
-                order_placed: false,
+                orders: PlacedOrders::default(),
                 components: Vec::new(),
             }],
             totals: BTreeMap::new(),

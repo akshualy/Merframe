@@ -36,9 +36,9 @@ pub use foundry::{
 };
 pub use inventory_view::{
     InventoryTab, ItemStatus, MiscRow, ModHolder, ModRow, PartRow, PartSet, RelicRow, SetComponent,
-    SetRow, TabTotals, UpgradePrices,
+    SetRow, TabTotals, UpgradePrices, market_icon,
 };
-pub use listings::MarketListings;
+pub use listings::{MarketListings, PlacedOrders};
 pub use market_stock::MarketStock;
 pub use mastery::{
     Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryComponent, MasteryGroup, MasteryItem,

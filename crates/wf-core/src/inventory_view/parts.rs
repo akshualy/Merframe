@@ -108,7 +108,7 @@ pub(crate) fn parts(view: &View) -> Vec<PartRow> {
                     component.unique_name.as_str(),
                     item.unique_name.as_str(),
                 ]),
-                order_placed: listings.has_order(&slug),
+                orders: listings.orders_for(&slug),
                 unique_name: unique_name.to_owned(),
                 image_name: component_image(item, component),
                 market_slug: slug,
@@ -216,7 +216,7 @@ pub(crate) fn sets(view: &View) -> Vec<SetRow> {
                     buy: prices.buy_plat(&slug),
                     ducats: Some(set_ducats(catalog, &components)),
                 },
-                order_placed: listings.has_order(&slug),
+                orders: listings.orders_for(&slug),
                 market_slug: slug,
                 favourite: favourites.contains(&item.unique_name),
                 components,
@@ -233,7 +233,8 @@ mod tests {
     use super::*;
     use crate::catalog::fixtures;
     use crate::favourites::Favourites;
-    use crate::listings::MarketListings;
+    use crate::listings::{MarketListings, PlacedOrders};
+    use wf_market::OrderType;
 
     #[test]
     fn owned_parts_only() {
@@ -621,7 +622,13 @@ mod tests {
             ),
         ]);
         let catalog = fixtures::catalog();
-        let listings = MarketListings::new(["braton_prime_barrel", "trinity_prime_systems"], &[]);
+        let listings = MarketListings::new(
+            [
+                ("braton_prime_barrel", OrderType::Sell),
+                ("trinity_prime_systems", OrderType::Buy),
+            ],
+            &[],
+        );
         let rows = parts(&View {
             inventory: &inventory,
             catalog: &catalog,
@@ -629,15 +636,30 @@ mod tests {
             favourites: &Favourites::default(),
             listings: &listings,
         });
-        let ordered: Vec<&str> = rows
+        let ordered: Vec<(&str, PlacedOrders)> = rows
             .iter()
-            .filter(|row| row.order_placed)
-            .map(|row| row.market_slug.as_str())
+            .filter(|row| row.orders != PlacedOrders::default())
+            .map(|row| (row.market_slug.as_str(), row.orders))
             .collect();
         assert_eq!(
             ordered,
-            ["braton_prime_barrel", "trinity_prime_systems_blueprint"],
-            "an order on the part covers the row whose slug only differs by the blueprint suffix"
+            [
+                (
+                    "braton_prime_barrel",
+                    PlacedOrders {
+                        sell: true,
+                        buy: false
+                    }
+                ),
+                (
+                    "trinity_prime_systems_blueprint",
+                    PlacedOrders {
+                        sell: false,
+                        buy: true
+                    }
+                )
+            ],
+            "an order on the part covers the row whose slug only differs by the blueprint suffix and keeps its side"
         );
         assert!(
             parts(&View {
@@ -648,7 +670,7 @@ mod tests {
                 listings: &no_listings()
             })
             .iter()
-            .all(|row| !row.order_placed),
+            .all(|row| row.orders == PlacedOrders::default()),
             "without a market session no row claims an order"
         );
     }

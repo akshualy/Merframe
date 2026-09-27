@@ -1,5 +1,10 @@
 import type { ArcaneRarity } from "@/components/game-icon";
 
+export interface PlacedOrders {
+  sell: boolean;
+  buy: boolean;
+}
+
 export type VaultStatus = "vaulted" | "available" | "unknown";
 
 export interface Prices {
@@ -30,7 +35,7 @@ export interface PartRow {
   prime: boolean;
   market_slug: string;
   favourite: boolean;
-  order_placed: boolean;
+  orders: PlacedOrders;
 }
 
 export interface UpgradePrices {
@@ -67,7 +72,7 @@ export interface ModRow {
   equipped_in: ModHolder[];
   market_slug: string;
   favourite: boolean;
-  order_placed: boolean;
+  orders: PlacedOrders;
 }
 
 export interface RelicRow {
@@ -80,7 +85,7 @@ export interface RelicRow {
   unique_name: string;
   plat: number | null;
   favourite: boolean;
-  order_placed: boolean;
+  orders: PlacedOrders;
 }
 
 export interface MiscRow {
@@ -91,8 +96,9 @@ export interface MiscRow {
   ducats: number | null;
   plat: number | null;
   market_slug: string;
+  market_subtype: string | null;
   favourite: boolean;
-  order_placed: boolean;
+  orders: PlacedOrders;
 }
 
 export interface SetComponent {
@@ -117,7 +123,7 @@ export interface SetRow {
   prices: Prices;
   market_slug: string;
   favourite: boolean;
-  order_placed: boolean;
+  orders: PlacedOrders;
   components: SetComponent[];
 }
 

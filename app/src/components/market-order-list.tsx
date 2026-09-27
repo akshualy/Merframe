@@ -100,32 +100,40 @@ export function OrderList({
               type="button"
               onClick={() => handleCopy(order)}
               className={cn(
-                "hover:bg-secondary flex w-full cursor-pointer items-center gap-2 rounded-md border px-2 py-1 text-left text-sm",
+                "hover:bg-secondary flex w-full cursor-pointer flex-col gap-1 rounded-md border px-2 py-1 text-left text-sm",
                 good,
               )}
             >
               {copied === order.id ? (
-                <span className="text-muted-foreground flex-1">Copied!</span>
+                <span className="text-muted-foreground">Copied!</span>
               ) : (
                 <>
-                  <span className="flex-1 truncate">
-                    {order.user?.ingameName ?? ""}
+                  <span className="flex items-center gap-2">
+                    <span className="truncate">
+                      {order.user?.ingameName ?? ""}
+                    </span>
+                    <span className="text-muted-foreground flex-1 tabular-nums">
+                      x{order.quantity}
+                    </span>
+                    <span
+                      className={cn(
+                        "flex items-center justify-end gap-0.5 font-bold tabular-nums",
+                        side === "sell" ? "text-primary" : "text-accent",
+                      )}
+                    >
+                      {order.platinum}
+                      <GameIcon name="platinum" size={16} alt="Platinum" />
+                      {bundle > 1 ? ` (${unitPrice(order)})` : ""}
+                    </span>
                   </span>
-                  <Badge variant="muted">x{order.quantity}</Badge>
-                  {bundle > 1 && (
-                    <Badge variant="secondary">{bundle} per trade</Badge>
+                  {(bundle > 1 || detail) && (
+                    <span className="flex flex-wrap gap-1">
+                      {bundle > 1 && (
+                        <Badge variant="secondary">{bundle} per trade</Badge>
+                      )}
+                      {detail && <Badge variant="muted">{detail}</Badge>}
+                    </span>
                   )}
-                  {detail && <Badge variant="muted">{detail}</Badge>}
-                  <span
-                    className={cn(
-                      "flex items-center justify-end gap-0.5 font-bold tabular-nums",
-                      side === "sell" ? "text-primary" : "text-accent",
-                    )}
-                  >
-                    {order.platinum}
-                    <GameIcon name="platinum" size={16} alt="Platinum" />
-                    {bundle > 1 ? ` (${unitPrice(order)})` : ""}
-                  </span>
                 </>
               )}
             </button>

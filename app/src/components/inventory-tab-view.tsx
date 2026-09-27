@@ -189,7 +189,7 @@ export function InventoryTabView({
       {cappedRows.length === 0 ? (
         <EmptyPanel>Nothing matches these filters.</EmptyPanel>
       ) : (
-        <CardGrid>
+        <CardGrid className="@sm:grid-cols-1 @2xl:grid-cols-2 @6xl:grid-cols-3 @7xl:grid-cols-3">
           {cappedRows.map((row) => (
             <ItemCard key={row.key} row={row} tab={tab} />
           ))}

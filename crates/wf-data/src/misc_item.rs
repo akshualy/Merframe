@@ -1,13 +1,26 @@
-use crate::embedded::{CATCH_GRADES, MISC_ITEM_NAMES, lookup};
+use crate::embedded::{CATCH_GRADES, CatchGrades, MISC_ITEM_NAMES, lookup};
 
 pub fn misc_item_name(unique_name: &str) -> Option<&'static str> {
     lookup(MISC_ITEM_NAMES, unique_name).copied()
 }
 
-pub fn catch_grade(unique_name: &str) -> Option<(String, &'static str)> {
-    let grades = CATCH_GRADES
+fn catch_grades(unique_name: &str) -> Option<&'static CatchGrades> {
+    CATCH_GRADES
         .iter()
-        .find(|grades| unique_name.starts_with(grades.prefix))?;
+        .find(|grades| unique_name.starts_with(grades.prefix))
+}
+
+pub fn catch_size(unique_name: &str) -> Option<String> {
+    let grades = catch_grades(unique_name)?;
+    Some(match catch_grade(unique_name) {
+        Some((_, grade)) => grade.to_ascii_lowercase(),
+        None if grades.medium == "Medium" => "small".to_owned(),
+        None => "basic".to_owned(),
+    })
+}
+
+pub fn catch_grade(unique_name: &str) -> Option<(String, &'static str)> {
+    let grades = catch_grades(unique_name)?;
     for (marker, grade) in [("Large", grades.large), ("Medium", grades.medium)] {
         if let Some(base) = unique_name.strip_suffix(marker) {
             return Some((base.to_owned(), grade));
@@ -36,8 +49,8 @@ mod tests {
             Some("Enter Nihil's Oubliette")
         );
         assert_eq!(
-            misc_item_name("/Lotus/Types/Game/ShipScenes/NidusPrimeScene"),
-            Some("Infested Orbiter Decorations")
+            misc_item_name("/Lotus/Upgrades/Skins/Horse/HorseHelmetDrapery"),
+            Some("Aumen Chamfron")
         );
         assert_eq!(misc_item_name("/Lotus/Types/Items/MiscItems/Ferrite"), None);
     }
@@ -82,6 +95,38 @@ mod tests {
                 "/Lotus/Types/Items/Fish/Deimos/HybridRareAFishItem".to_owned(),
                 "Magnificent"
             ))
+        );
+    }
+
+    #[test]
+    fn catch_sizes_are_market_subtypes() {
+        assert_eq!(
+            catch_size("/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItem"),
+            Some("small".to_owned())
+        );
+        assert_eq!(
+            catch_size("/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItemMedium"),
+            Some("medium".to_owned())
+        );
+        assert_eq!(
+            catch_size("/Lotus/Types/Items/Fish/Deimos/InfestedCommonDFishItemLarge"),
+            Some("large".to_owned())
+        );
+        assert_eq!(
+            catch_size("/Lotus/Types/Items/Fish/Solaris/OrokinCoolRareFishAItem"),
+            Some("basic".to_owned())
+        );
+        assert_eq!(
+            catch_size("/Lotus/Types/Items/Fish/Solaris/OrokinCoolRareFishAMediumItem"),
+            Some("adorned".to_owned())
+        );
+        assert_eq!(
+            catch_size("/Lotus/Types/Items/Fish/Deimos/HybridRareAFishItemLarge"),
+            Some("magnificent".to_owned())
+        );
+        assert_eq!(
+            catch_size("/Lotus/Types/Items/Fish/Duviri/DuviriFishAItem"),
+            None
         );
     }
 

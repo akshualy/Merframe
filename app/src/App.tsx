@@ -108,28 +108,30 @@ function MainWindow() {
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <StatusBar />
-        <main className="@container min-h-0 flex-1 overflow-y-auto">
-          <Routes>
-            <Route path="/" element={<Navigate to="/world" replace />} />
-            <Route path="/world" element={<WorldPage />} />
-            <Route path="/foundry" element={<FoundryPage />} />
-            <Route path="/inventory" element={<InventoryPage />} />
-            <Route path="/relics" element={<RelicPlannerPage />} />
-            <Route path="/rivens" element={<RivensPage />} />
-            <Route path="/overlays" element={<OverlaysPage />} />
-            <Route path="/mastery" element={<MasteryPage />} />
-            <Route path="/resources" element={<ResourcesPage />} />
-            <Route path="/market" element={<MarketPage />} />
-            <Route
-              path="/stats"
-              element={
-                statsTab ? <StatsPage /> : <Navigate to="/world" replace />
-              }
-            />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="*" element={<Navigate to="/world" replace />} />
-          </Routes>
+        <main className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+          <div className="@container">
+            <Routes>
+              <Route path="/" element={<Navigate to="/world" replace />} />
+              <Route path="/world" element={<WorldPage />} />
+              <Route path="/foundry" element={<FoundryPage />} />
+              <Route path="/inventory" element={<InventoryPage />} />
+              <Route path="/relics" element={<RelicPlannerPage />} />
+              <Route path="/rivens" element={<RivensPage />} />
+              <Route path="/overlays" element={<OverlaysPage />} />
+              <Route path="/mastery" element={<MasteryPage />} />
+              <Route path="/resources" element={<ResourcesPage />} />
+              <Route path="/market" element={<MarketPage />} />
+              <Route
+                path="/stats"
+                element={
+                  statsTab ? <StatsPage /> : <Navigate to="/world" replace />
+                }
+              />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="*" element={<Navigate to="/world" replace />} />
+            </Routes>
+          </div>
         </main>
       </div>
       <MarketPanel />

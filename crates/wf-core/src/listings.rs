@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
-use wf_market::Auction;
+use serde::Serialize;
+use wf_market::{Auction, OrderType};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct ListedRiven {
@@ -10,9 +11,16 @@ struct ListedRiven {
     rerolls: u32,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct PlacedOrders {
+    pub sell: bool,
+    pub buy: bool,
+}
+
 #[derive(Debug, Default)]
 pub struct MarketListings {
-    orders: HashSet<String>,
+    selling: HashSet<String>,
+    buying: HashSet<String>,
     rivens: HashSet<ListedRiven>,
 }
 
@@ -28,12 +36,22 @@ fn ordered_item(market_slug: &str) -> String {
 }
 
 impl MarketListings {
-    pub fn new<I: IntoIterator<Item: AsRef<str>>>(order_slugs: I, auctions: &[Auction]) -> Self {
+    pub fn new<S: AsRef<str>, I: IntoIterator<Item = (S, OrderType)>>(
+        orders: I,
+        auctions: &[Auction],
+    ) -> Self {
+        let mut selling = HashSet::new();
+        let mut buying = HashSet::new();
+        for (slug, order_type) in orders {
+            let item = ordered_item(slug.as_ref());
+            match order_type {
+                OrderType::Sell => selling.insert(item),
+                OrderType::Buy => buying.insert(item),
+            };
+        }
         Self {
-            orders: order_slugs
-                .into_iter()
-                .map(|slug| ordered_item(slug.as_ref()))
-                .collect(),
+            selling,
+            buying,
             rivens: auctions
                 .iter()
                 .map(|auction| ListedRiven {
@@ -46,8 +64,15 @@ impl MarketListings {
         }
     }
 
-    pub fn has_order(&self, market_slug: &str) -> bool {
-        !market_slug.is_empty() && self.orders.contains(&ordered_item(market_slug))
+    pub fn orders_for(&self, market_slug: &str) -> PlacedOrders {
+        if market_slug.is_empty() {
+            return PlacedOrders::default();
+        }
+        let item = ordered_item(market_slug);
+        PlacedOrders {
+            sell: self.selling.contains(&item),
+            buy: self.buying.contains(&item),
+        }
     }
 
     pub fn lists_riven(&self, name: &str, weapon_slug: &str, mastery: u32, rerolls: u32) -> bool {
@@ -71,26 +96,42 @@ mod tests {
     }
 
     #[test]
-    fn has_order_blueprint_suffix() {
+    fn orders_for_blueprint_suffix_and_side() {
         let listings = MarketListings::new(
             [
-                "ash_prime_systems_blueprint",
-                "braton_prime_set",
-                "primed_continuity",
+                ("ash_prime_systems_blueprint", OrderType::Sell),
+                ("braton_prime_set", OrderType::Buy),
+                ("primed_continuity", OrderType::Sell),
+                ("primed_continuity", OrderType::Buy),
             ],
             &[],
         );
-        assert!(listings.has_order("ash_prime_systems"));
-        assert!(listings.has_order("ash_prime_systems_blueprint"));
-        assert!(listings.has_order("braton_prime_set"));
-        assert!(listings.has_order("primed_continuity"));
-        assert!(!listings.has_order("braton_prime_barrel"));
-        assert!(!listings.has_order(""));
+        let sell = PlacedOrders {
+            sell: true,
+            buy: false,
+        };
+        let buy = PlacedOrders {
+            sell: false,
+            buy: true,
+        };
+        let both = PlacedOrders {
+            sell: true,
+            buy: true,
+        };
+        assert_eq!(listings.orders_for("ash_prime_systems"), sell);
+        assert_eq!(listings.orders_for("ash_prime_systems_blueprint"), sell);
+        assert_eq!(listings.orders_for("braton_prime_set"), buy);
+        assert_eq!(listings.orders_for("primed_continuity"), both);
+        assert_eq!(
+            listings.orders_for("braton_prime_barrel"),
+            PlacedOrders::default()
+        );
+        assert_eq!(listings.orders_for(""), PlacedOrders::default());
     }
 
     #[test]
     fn lists_riven() {
-        let listings = MarketListings::new(Vec::<String>::new(), &auctions());
+        let listings = MarketListings::new(Vec::<(String, OrderType)>::new(), &auctions());
         assert!(listings.lists_riven("Acri-vexicak", "okina", 12, 86));
         assert!(listings.lists_riven("Acri-Vexicak ", "Okina", 12, 86));
         assert!(
@@ -111,7 +152,10 @@ mod tests {
     #[test]
     fn empty_listings() {
         let listings = MarketListings::default();
-        assert!(!listings.has_order("braton_prime_set"));
+        assert_eq!(
+            listings.orders_for("braton_prime_set"),
+            PlacedOrders::default()
+        );
         assert!(!listings.lists_riven("Acri-vexicak", "okina", 12, 86));
     }
 }

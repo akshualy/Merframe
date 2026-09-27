@@ -17,7 +17,7 @@ pub use item::{
     Attack, Component, DEFAULT_MAX_RANK, Drop, Item, LevelStat, MECH_MAX_RANK, MarketSlug, Rarity,
     mastery_level_from_affinity, store_item_to_type,
 };
-pub use misc_item::{catch_grade, misc_item_name};
+pub use misc_item::{catch_grade, catch_size, misc_item_name};
 pub use relic::{Refinement, Relic, RelicDrop, RelicReward};
 pub use riven::{
     COMBO_POINTS_TAG, MAX_RANK, RivenData, RivenStat, RivenType, TraitMultipliers, UpgradeEntry,

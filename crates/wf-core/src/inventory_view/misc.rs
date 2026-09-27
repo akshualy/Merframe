@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 
-use wf_data::{Item, catch_grade};
+use wf_data::{Item, catch_grade, catch_size};
 use wf_inventory::{EquipmentItem, Inventory};
 
+use super::upgrades::upgrade_outside_the_export;
 use super::{MiscRow, catalogued_name, display_name};
 use crate::catalog::{Catalog, RELIC_PREFIX};
 use crate::prices::market_slug;
@@ -34,9 +35,12 @@ fn is_emote(item_type: &str) -> bool {
     item_type.starts_with("/Lotus/Types/Items/Emotes")
 }
 
+fn is_syndicate_emote(item_type: &str) -> bool {
+    item_type.starts_with("/Lotus/Types/Items/Emotes/Syndicate/")
+}
+
 fn is_scene(item_type: &str) -> bool {
     item_type.starts_with("/Lotus/Types/Items/MiscItems/PhotoboothTile")
-        || item_type.starts_with("/Lotus/Types/Game/ShipScenes/")
 }
 
 pub(super) fn is_landing_craft_part(item_type: &str) -> bool {
@@ -55,12 +59,27 @@ fn misc_source_item<'a>(catalog: &'a Catalog, unique_name: &str) -> Option<&'a I
     catalog.item(&base)
 }
 
+fn misc_market_slug(catalog: &Catalog, unique_name: &str) -> String {
+    if let Some(slug) =
+        upgrade_outside_the_export(unique_name).and_then(|upgrade| upgrade.market_slug)
+    {
+        return slug.to_owned();
+    }
+    let name = match catch_grade(unique_name) {
+        Some((base, _)) => display_name(catalog, &base),
+        None => display_name(catalog, unique_name),
+    };
+    market_slug(&name)
+}
+
 fn is_tradable_misc(catalog: &Catalog, unique_name: &str) -> bool {
     if catalogued_name(catalog, unique_name).is_none() {
         return false;
     }
+    if is_emote(unique_name) {
+        return is_syndicate_emote(unique_name);
+    }
     if unique_name.contains("ModFuser")
-        || is_emote(unique_name)
         || is_oubliette_key(unique_name)
         || is_landing_craft_part(unique_name)
     {
@@ -138,22 +157,27 @@ fn counted_rows(view: &View) -> Vec<MiscRow> {
         .into_iter()
         .filter(|(_, count)| *count > 0)
         .map(|(unique_name, count)| {
-            let name = display_name(catalog, unique_name);
-            let slug = market_slug(&name);
+            let slug = misc_market_slug(catalog, unique_name);
             MiscRow {
+                name: display_name(catalog, unique_name),
                 image_name: catalog
                     .item(unique_name)
-                    .and_then(|item| item.image_name.clone()),
+                    .and_then(|item| item.image_name.clone())
+                    .or_else(|| {
+                        upgrade_outside_the_export(unique_name)?
+                            .image_name
+                            .map(str::to_owned)
+                    }),
                 ducats: catalog
                     .component(unique_name)
                     .and_then(|(_, component)| component.ducats),
                 plat: prices.plat(&slug),
                 favourite: favourites.contains(unique_name),
-                order_placed: listings.has_order(&slug),
+                orders: listings.orders_for(&slug),
+                market_subtype: catch_size(unique_name),
                 unique_name: unique_name.to_owned(),
                 count,
                 market_slug: slug,
-                name,
             }
         })
         .collect()
@@ -163,8 +187,9 @@ fn cosmetic_rows(view: &View) -> Vec<MiscRow> {
     let View {
         inventory,
         catalog,
+        prices,
         favourites,
-        ..
+        listings,
     } = *view;
     let mut counted: BTreeMap<&str, i64> = BTreeMap::new();
     for skin in &inventory.weapon_skins {
@@ -179,18 +204,23 @@ fn cosmetic_rows(view: &View) -> Vec<MiscRow> {
     }
     counted
         .into_iter()
-        .map(|(unique_name, count)| MiscRow {
-            name: display_name(catalog, unique_name),
-            image_name: catalog
-                .item(unique_name)
-                .and_then(|item| item.image_name.clone()),
-            count,
-            ducats: None,
-            plat: None,
-            market_slug: String::new(),
-            favourite: favourites.contains(unique_name),
-            order_placed: false,
-            unique_name: unique_name.to_owned(),
+        .map(|(unique_name, count)| {
+            let name = display_name(catalog, unique_name);
+            let slug = market_slug(&name);
+            MiscRow {
+                image_name: catalog
+                    .item(unique_name)
+                    .and_then(|item| item.image_name.clone()),
+                count,
+                ducats: None,
+                plat: prices.plat(&slug),
+                favourite: favourites.contains(unique_name),
+                orders: listings.orders_for(&slug),
+                market_subtype: None,
+                unique_name: unique_name.to_owned(),
+                market_slug: slug,
+                name,
+            }
         })
         .collect()
 }
@@ -223,7 +253,8 @@ fn pet_print_rows(view: &View) -> Vec<MiscRow> {
                 ducats: None,
                 plat: prices.plat(&slug),
                 favourite: favourites.contains(unique_name),
-                order_placed: listings.has_order(&slug),
+                orders: listings.orders_for(&slug),
+                market_subtype: None,
                 unique_name: unique_name.to_owned(),
                 market_slug: slug,
                 name,
@@ -262,7 +293,8 @@ fn spare_equipment_rows(view: &View) -> Vec<MiscRow> {
                 ducats: None,
                 plat: prices.plat(&slug),
                 favourite: favourites.contains(unique_name),
-                order_placed: listings.has_order(&slug),
+                orders: listings.orders_for(&slug),
+                market_subtype: None,
                 unique_name: unique_name.to_owned(),
                 market_slug: slug,
                 name,
@@ -319,6 +351,12 @@ mod tests {
       {"uniqueName":"/Lotus/Types/Items/Emotes/ShawzinEmote",
        "name":"Shawzin","category":"Skins","type":"Emotes","tradable":false,
        "imageName":"ShawzinEmote.png"},
+      {"uniqueName":"/Lotus/Types/Items/Emotes/Syndicate/AHCombatEmote",
+       "name":"Arbiters Combat Emote","category":"Skins","type":"Emotes","tradable":false,
+       "imageName":"AHCombatEmote.png"},
+      {"uniqueName":"/Lotus/Types/Items/Emotes/Interalpha/InteralphaPrimeNarta",
+       "name":"Interalpha Prime Narta","category":"Skins","type":"Emotes","tradable":true,
+       "imageName":"InteralphaPrimeNarta.png"},
       {"uniqueName":"/Lotus/Types/Items/MiscItems/PhotoboothTileDrifterCamp",
        "name":"The Drifter Camp Scene","category":"Misc","type":"Captura","tradable":true,
        "imageName":"DrifterCamp.png"}
@@ -383,10 +421,12 @@ mod tests {
             .find(|row| row.unique_name == "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser")
             .expect("Legendary Core");
         assert_eq!(core.name, "Legendary Core");
+        assert_eq!(core.image_name.as_deref(), Some("game/legendary-core.png"));
+        assert_eq!(core.market_slug, "legendary_fusion_core");
     }
 
     #[test]
-    fn cosmetics_unpriced() {
+    fn no_owned_cosmetic_is_tradable() {
         let inventory = fixtures::inventory();
         let catalog = misc_catalog();
         let rows = misc(&View {
@@ -418,12 +458,9 @@ mod tests {
                     || flavour.contains(row.unique_name.as_str())
             })
             .collect();
-        assert_eq!(cosmetics.len(), 8);
         assert!(
-            cosmetics
-                .iter()
-                .all(|row| row.plat.is_none() && row.market_slug.is_empty()),
-            "cosmetics are not traded on warframe.market"
+            cosmetics.is_empty(),
+            "the owned emotes are not syndicate emotes and the export names no other cosmetic"
         );
 
         let listed = |unique_name: &str| rows.iter().any(|row| row.unique_name == unique_name);
@@ -462,12 +499,6 @@ mod tests {
                 .unwrap()
         };
 
-        let emote = row("/Lotus/Types/Items/Emotes/ShawzinEmote");
-        assert_eq!(emote.name, "Shawzin");
-        assert_eq!(emote.image_name.as_deref(), Some("ShawzinEmote.png"));
-        assert!(emote.plat.is_none());
-        assert!(emote.market_slug.is_empty());
-
         let scene = row("/Lotus/Types/Items/MiscItems/PhotoboothTileDrifterCamp");
         assert_eq!(scene.name, "The Drifter Camp Scene");
         assert!(scene.image_name.is_some());
@@ -481,9 +512,8 @@ mod tests {
         let listed_emotes = rows.iter().filter(|row| is_emote(&row.unique_name)).count();
         assert_eq!(owned_emotes.len(), 4);
         assert_eq!(
-            listed_emotes,
-            owned_emotes.len(),
-            "an emote is tradable whatever the export says about it"
+            listed_emotes, 0,
+            "none of the owned emotes is a syndicate emote, so none is traded"
         );
     }
 
@@ -512,8 +542,16 @@ mod tests {
         assert!(tradable(
             "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey"
         ));
-        assert!(tradable("/Lotus/Types/Items/Emotes/ShawzinEmote"));
-        assert!(tradable("/Lotus/Types/Game/ShipScenes/CorpusShipScene"));
+        assert!(
+            tradable("/Lotus/Types/Items/Emotes/Syndicate/AHCombatEmote"),
+            "syndicate emotes are the traded ones although the export flags none of them"
+        );
+        assert!(!tradable("/Lotus/Types/Items/Emotes/ShawzinEmote"));
+        assert!(
+            !tradable("/Lotus/Types/Items/Emotes/Interalpha/InteralphaPrimeNarta"),
+            "the one emote the export flags tradable is not a syndicate emote"
+        );
+        assert!(!tradable("/Lotus/Types/Game/ShipScenes/CorpusShipScene"));
         assert!(tradable(
             "/Lotus/Types/Items/MiscItems/PhotoboothTileDrifterCamp"
         ));
@@ -703,6 +741,41 @@ mod tests {
     }
 
     #[test]
+    fn fish_sizes_share_one_market_item() {
+        let inventory = fixtures::inventory();
+        let catalog = misc_catalog();
+        let rows = misc(&View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &prices(),
+            favourites: &Favourites::default(),
+            listings: &no_listings(),
+        });
+        let market = |unique_name: &str| {
+            rows.iter()
+                .find(|row| row.unique_name == unique_name)
+                .map(|row| (row.market_slug.as_str(), row.market_subtype.as_deref()))
+        };
+        assert_eq!(
+            market("/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItem"),
+            Some(("mortus_lungfish", Some("small")))
+        );
+        assert_eq!(
+            market("/Lotus/Types/Items/Fish/Eidolon/DayUncommonFishBItemLarge"),
+            Some(("mortus_lungfish", Some("large")))
+        );
+        assert_eq!(
+            market("/Lotus/Types/Items/Fish/Deimos/HybridRareAFishItemLarge"),
+            Some(("aquapulmo", Some("magnificent")))
+        );
+        assert_eq!(
+            market("/Lotus/Types/Items/Fish/Duviri/DuviriFishAItem"),
+            Some(("inaak", None)),
+            "Duviri fish have one size and no subtype"
+        );
+    }
+
+    #[test]
     fn fish_names() {
         let inventory = fixtures::inventory();
         let catalog = misc_catalog();
@@ -762,36 +835,10 @@ mod tests {
             .collect();
         assert_eq!(
             without_image,
-            [
-                (
-                    "/Lotus/Types/Game/ShipScenes/CorpusShipScene",
-                    "Corpus Interior Decorations"
-                ),
-                (
-                    "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey",
-                    "Enter Nihil's Oubliette"
-                ),
-                (
-                    "/Lotus/Types/Game/ShipScenes/PrimeLisetFiligreeScene",
-                    "Filigree Prime Decoration"
-                ),
-                (
-                    "/Lotus/Types/Game/ShipScenes/HalloweenScene",
-                    "Haunted Interior Decorations"
-                ),
-                (
-                    "/Lotus/Types/Game/ShipScenes/NidusPrimeScene",
-                    "Infested Orbiter Decorations"
-                ),
-                (
-                    "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser",
-                    "Legendary Core"
-                ),
-                (
-                    "/Lotus/Types/Items/Emotes/GeminiEmote",
-                    "Universal Gemini Emote"
-                ),
-            ]
+            [(
+                "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey",
+                "Enter Nihil's Oubliette"
+            )]
         );
     }
 
@@ -880,16 +927,15 @@ mod tests {
             favourites: &Favourites::default(),
             listings: &no_listings(),
         });
-        assert_eq!(rows.len(), 50);
+        assert_eq!(rows.len(), 42);
         let expected: BTreeMap<&str, usize> = [
             ("faction weapons", 1),
             ("fish", 17),
-            ("flavour items", 4),
             ("fusers", 1),
             ("imprints", 3),
             ("keys", 1),
             ("necramech resources", 5),
-            ("scenes", 7),
+            ("scenes", 3),
             ("sculptures", 11),
         ]
         .into_iter()
@@ -897,7 +943,7 @@ mod tests {
         assert_eq!(
             misc_families(&inventory, &rows),
             expected,
-            "helmet skins and the flavour items outside the export stay out of the list"
+            "helmet skins, flavour items outside the export, non-syndicate emotes and orbiter decorations stay out"
         );
     }
 }

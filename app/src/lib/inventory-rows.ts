@@ -12,6 +12,7 @@ import type {
   ModHolder,
   ModRow,
   PartRow,
+  PlacedOrders,
   RelicRow,
   SetRow,
   VaultStatus,
@@ -21,9 +22,10 @@ export interface Row extends SortableRow {
   key: string;
   uniqueName: string;
   favourite: boolean;
-  orderPlaced: boolean;
+  orders: PlacedOrders;
   imageName: string | null;
   marketSlug: string;
+  marketSubtype: string | null;
   prime: boolean;
   vault: VaultStatus | null;
   itemOwned: boolean;
@@ -37,7 +39,7 @@ export interface Row extends SortableRow {
   buyPlat: number | null;
   rarity: ArcaneRarity | null;
   equippedIn: ModHolder[];
-  subtitle: string | null;
+  setName: string | null;
   refinement: string | null;
   tier: string | null;
   set: SetRow | null;
@@ -48,7 +50,7 @@ function partRows(rows: PartRow[]): Row[] {
     key: row.unique_name,
     uniqueName: row.unique_name,
     favourite: row.favourite,
-    orderPlaced: row.order_placed,
+    orders: row.orders,
     name: row.name,
     count: row.count,
     plat: row.prices.sell,
@@ -56,6 +58,7 @@ function partRows(rows: PartRow[]): Row[] {
     completion: row.set.complete ? 1 : 0,
     imageName: row.image_name,
     marketSlug: row.market_slug,
+    marketSubtype: null,
     prime: row.prime,
     vault: row.vault,
     itemOwned: row.item.built || row.item.mastered,
@@ -69,7 +72,7 @@ function partRows(rows: PartRow[]): Row[] {
     platIsFloor: false,
     rarity: null,
     equippedIn: [],
-    subtitle: row.set.name,
+    setName: row.set.name,
     refinement: null,
     tier: null,
     set: null,
@@ -81,7 +84,7 @@ function setRows(rows: SetRow[]): Row[] {
     key: row.unique_name,
     uniqueName: row.unique_name,
     favourite: row.favourite,
-    orderPlaced: row.order_placed,
+    orders: row.orders,
     name: row.set_name,
     count: row.count,
     plat: row.prices.sell,
@@ -89,6 +92,7 @@ function setRows(rows: SetRow[]): Row[] {
     completion: row.owned_parts / Math.max(row.total_parts, 1),
     imageName: row.image_name,
     marketSlug: row.market_slug,
+    marketSubtype: null,
     prime: row.set_name.includes("Prime"),
     vault: row.vault,
     itemOwned: row.item.built || row.item.mastered,
@@ -102,7 +106,7 @@ function setRows(rows: SetRow[]): Row[] {
     platIsFloor: false,
     rarity: null,
     equippedIn: [],
-    subtitle: null,
+    setName: null,
     refinement: null,
     tier: null,
     set: row,
@@ -118,7 +122,7 @@ function modRows(rows: ModRow[]): Row[] {
     key: `${row.unique_name}-${row.rank ?? "u"}-${index}`,
     uniqueName: row.unique_name,
     favourite: row.favourite,
-    orderPlaced: row.order_placed,
+    orders: row.orders,
     name: row.name,
     count: row.count,
     plat: row.prices.sell,
@@ -126,6 +130,7 @@ function modRows(rows: ModRow[]): Row[] {
     completion: 0,
     imageName: row.image_name,
     marketSlug: row.market_slug,
+    marketSubtype: null,
     prime: row.prime,
     vault: null,
     itemOwned: false,
@@ -139,7 +144,7 @@ function modRows(rows: ModRow[]): Row[] {
     platIsFloor: row.prices.is_floor,
     rarity: row.rarity,
     equippedIn: row.equipped_in,
-    subtitle: null,
+    setName: null,
     refinement: null,
     tier: null,
     set: null,
@@ -151,7 +156,7 @@ function relicRows(rows: RelicRow[]): Row[] {
     key: row.unique_name,
     uniqueName: row.unique_name,
     favourite: row.favourite,
-    orderPlaced: row.order_placed,
+    orders: row.orders,
     name: row.relic,
     count: row.count,
     plat: row.plat,
@@ -159,6 +164,7 @@ function relicRows(rows: RelicRow[]): Row[] {
     completion: 0,
     imageName: row.image_name,
     marketSlug: "",
+    marketSubtype: null,
     prime: false,
     vault: row.vault,
     itemOwned: false,
@@ -172,7 +178,7 @@ function relicRows(rows: RelicRow[]): Row[] {
     platIsFloor: false,
     rarity: null,
     equippedIn: [],
-    subtitle: null,
+    setName: null,
     refinement: row.refinement,
     tier: row.tier,
     set: null,
@@ -184,7 +190,7 @@ function miscRows(rows: MiscRow[]): Row[] {
     key: row.unique_name,
     uniqueName: row.unique_name,
     favourite: row.favourite,
-    orderPlaced: row.order_placed,
+    orders: row.orders,
     name: row.name,
     count: row.count,
     plat: row.plat,
@@ -192,6 +198,7 @@ function miscRows(rows: MiscRow[]): Row[] {
     completion: 0,
     imageName: row.image_name,
     marketSlug: row.market_slug,
+    marketSubtype: row.market_subtype,
     prime: row.name.includes("Prime"),
     vault: null,
     itemOwned: false,
@@ -205,7 +212,7 @@ function miscRows(rows: MiscRow[]): Row[] {
     platIsFloor: false,
     rarity: null,
     equippedIn: [],
-    subtitle: null,
+    setName: null,
     refinement: null,
     tier: null,
     set: null,
@@ -260,7 +267,7 @@ const TRAITS: Record<YesNoKey, (row: Row) => boolean> = {
   fullSet: (row) => row.setComplete === true,
   ranked: (row) => Boolean(row.rank),
   equipped: (row) => row.equippedIn.length > 0,
-  orderPlaced: (row) => row.orderPlaced,
+  orderPlaced: (row) => row.orders.sell || row.orders.buy,
   favourite: (row) => row.favourite,
 };
 
@@ -268,7 +275,7 @@ function matchesSearch(row: Row, search: string): boolean {
   if (!search) {
     return true;
   }
-  const haystack = `${row.name} ${row.subtitle ?? ""} ${row.refinement ?? ""}`;
+  const haystack = `${row.name} ${row.setName ?? ""} ${row.refinement ?? ""}`;
   return haystack.toLowerCase().includes(search.toLowerCase());
 }
 

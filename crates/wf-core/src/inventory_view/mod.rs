@@ -4,6 +4,7 @@ use serde::Serialize;
 use wf_data::{Rarity, catch_grade, misc_item_name};
 
 use crate::catalog::{Catalog, VaultStatus, display_name_from_path, part_name};
+use crate::listings::PlacedOrders;
 use crate::prices::Prices;
 use crate::view::View;
 
@@ -15,6 +16,7 @@ mod upgrades;
 pub(crate) use misc::misc;
 pub(crate) use parts::{parts, sets};
 pub(crate) use relics::relics;
+pub use upgrades::market_icon;
 use upgrades::upgrade_outside_the_export;
 pub(crate) use upgrades::{arcanes, mods};
 
@@ -43,7 +45,7 @@ pub struct PartRow {
     pub prime: bool,
     pub market_slug: String,
     pub favourite: bool,
-    pub order_placed: bool,
+    pub orders: PlacedOrders,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
@@ -83,7 +85,7 @@ pub struct ModRow {
     pub equipped_in: Vec<ModHolder>,
     pub market_slug: String,
     pub favourite: bool,
-    pub order_placed: bool,
+    pub orders: PlacedOrders,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -97,7 +99,7 @@ pub struct RelicRow {
     pub unique_name: String,
     pub plat: Option<f64>,
     pub favourite: bool,
-    pub order_placed: bool,
+    pub orders: PlacedOrders,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -109,8 +111,9 @@ pub struct MiscRow {
     pub ducats: Option<u32>,
     pub plat: Option<f64>,
     pub market_slug: String,
+    pub market_subtype: Option<String>,
     pub favourite: bool,
-    pub order_placed: bool,
+    pub orders: PlacedOrders,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -137,7 +140,7 @@ pub struct SetRow {
     pub prices: Prices,
     pub market_slug: String,
     pub favourite: bool,
-    pub order_placed: bool,
+    pub orders: PlacedOrders,
     pub components: Vec<SetComponent>,
 }
 

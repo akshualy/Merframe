@@ -185,6 +185,7 @@ mod tests {
     use crate::catalog::fixtures;
     use crate::rivens::listing::{ListingChoices, listing_payload};
     use crate::rivens::support::*;
+    use wf_market::OrderType;
 
     const MY_AUCTIONS: &str = include_str!("../../../wf-market/tests/fixtures/auctions_my.json");
 
@@ -208,7 +209,7 @@ mod tests {
 
         let marked = fixture.grader().rows(
             &inventory,
-            &MarketListings::new(Vec::<String>::new(), &auctions),
+            &MarketListings::new(Vec::<(String, OrderType)>::new(), &auctions),
         );
         let mine = marked
             .iter()
