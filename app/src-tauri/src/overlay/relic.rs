@@ -1,10 +1,11 @@
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
+use chrono::{DateTime, Utc};
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
 use wf_core::tier_name;
-use wf_worldstate::RelicTier;
+use wf_worldstate::{FissureTier, RelicTier, WorldState};
 
 use super::{Kind, Marks, RecommendationTrigger, attached_game, show, since};
 use crate::runtime::blocking;
@@ -38,6 +39,34 @@ pub(super) fn recommendation_after_relic(marks: &Marks, at: f64) -> bool {
 pub(super) fn recommendation_stays(marks: &Marks, at: f64) -> bool {
     since(marks.recommendation, at)
         .is_some_and(|elapsed| elapsed < 0.5 || (marks.after_relic && elapsed < 3.5))
+}
+
+pub(super) fn set_mission(marks: &mut Marks, node: Option<&str>, tier: Option<RelicTier>) {
+    marks.mission_node = node.map(str::to_owned);
+    marks.mission_tier = tier;
+}
+
+pub(super) fn suggest_mission(state: &AppState, node: &str) {
+    if lock(&state.overlays.marks).mission_node.as_deref() == Some(node) {
+        return;
+    }
+    let tier = read(&state.world)
+        .as_ref()
+        .and_then(|world| fissure_tier_at(world, node, Utc::now()));
+    debug!(node, ?tier, "Squad mission suggested");
+    set_mission(&mut lock(&state.overlays.marks), Some(node), tier);
+}
+
+fn fissure_tier_at(world: &WorldState, mission: &str, now: DateTime<Utc>) -> Option<RelicTier> {
+    let node = mission.split('_').next()?;
+    world
+        .fissures(now)
+        .into_iter()
+        .find(|fissure| fissure.node_id == node)
+        .and_then(|fissure| match fissure.tier {
+            FissureTier::Relic(tier) => Some(tier),
+            FissureTier::Unknown(_) => None,
+        })
 }
 
 pub(super) fn requiem_mission(marks: &Marks) -> bool {
@@ -140,6 +169,27 @@ mod tests {
         assert_eq!(of("VoidT5"), Recommendation::Hidden);
         assert_eq!(of("SolNode1"), Recommendation::Hidden);
         assert_eq!(Recommendation::of(None), Recommendation::Hidden);
+    }
+
+    #[test]
+    fn fissure_tier_of_suggested_mission() {
+        let world =
+            WorldState::parse(include_str!("../../../../fixtures/worldState.json")).unwrap();
+        let now = DateTime::<Utc>::from_timestamp_millis(1_788_804_000_000).unwrap();
+        assert_eq!(
+            fissure_tier_at(&world, "SolNode215_ActiveMission", now),
+            Some(RelicTier::Neo)
+        );
+        assert_eq!(
+            fissure_tier_at(&world, "SolNode403_Hard", now),
+            Some(RelicTier::Axi)
+        );
+        assert_eq!(fissure_tier_at(&world, "IceBladeHUB_HUB", now), None);
+        let expired = DateTime::<Utc>::from_timestamp_millis(1_800_000_000_000).unwrap();
+        assert_eq!(
+            fissure_tier_at(&world, "SolNode215_ActiveMission", expired),
+            None
+        );
     }
 
     #[test]

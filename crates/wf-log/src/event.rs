@@ -38,6 +38,9 @@ pub enum Event {
     StarChartOpened,
     StarChartHidden,
     MissionCleared,
+    SquadMissionPending {
+        node: String,
+    },
     TradeDialogOpened {
         description: String,
     },
@@ -97,6 +100,7 @@ impl Event {
             Self::StarChartOpened => "StarChartOpened",
             Self::StarChartHidden => "StarChartHidden",
             Self::MissionCleared => "MissionCleared",
+            Self::SquadMissionPending { .. } => "SquadMissionPending",
             Self::TradeDialogOpened { .. } => "TradeDialogOpened",
             Self::TradeSuccessful => "TradeSuccessful",
             Self::ChatTabAdded { .. } => "ChatTabAdded",
@@ -317,6 +321,11 @@ pub fn classify(line: &LogLine) -> Option<Event> {
     if message.starts_with("Set squad mission: ") {
         return mission_set(message);
     }
+    if let Some(node) = message.strip_prefix("ThemedSquadOverlay.lua: Pending mission: ") {
+        return Some(Event::SquadMissionPending {
+            node: node.to_owned(),
+        });
+    }
     if message.contains("Lobby::Host_StartMatch: launching level for") {
         return host_start_match_path(message).map(|level_path| Event::MissionStart { level_path });
     }
@@ -421,6 +430,19 @@ mod tests {
             Some(Event::MissionSet {
                 node: "SolNode14_ActiveMission".to_owned(),
                 void_tier: Some("VoidT1".to_owned()),
+            })
+        );
+    }
+
+    #[test]
+    fn squad_mission_pending() {
+        let event = classify(&log_line(
+            "ThemedSquadOverlay.lua: Pending mission: SolNode232_ActiveMission",
+        ));
+        assert_eq!(
+            event,
+            Some(Event::SquadMissionPending {
+                node: "SolNode232_ActiveMission".to_owned(),
             })
         );
     }

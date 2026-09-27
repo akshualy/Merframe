@@ -34,7 +34,7 @@ pub use session::{
 
 use relic::{
     recommendation_after_relic, recommendation_stays, recommendation_suppressed, requiem_mission,
-    reward_screen_closes, scan_recommendation,
+    reward_screen_closes, scan_recommendation, set_mission, suggest_mission,
 };
 use riven::{
     on_dialog_answer, purchase_dialog_closes, riven_shows, show_linked_riven,
@@ -179,6 +179,7 @@ struct Marks {
     star_chart: Option<f64>,
     star_chart_hidden: Option<f64>,
     mission_tier: Option<RelicTier>,
+    mission_node: Option<String>,
     hud_visibility: u32,
     reroll_screen: Option<f64>,
     pending: Option<(PendingAnswer, f64)>,
@@ -251,11 +252,13 @@ pub fn on_log_event<R: Runtime>(
             preload(app, state, Kind::RelicRecommendation);
         }
         LogEvent::StarChartHidden => lock(&state.overlays.marks).star_chart_hidden = Some(at),
-        LogEvent::MissionCleared => lock(&state.overlays.marks).mission_tier = None,
-        LogEvent::MissionSet { void_tier, .. } => {
-            lock(&state.overlays.marks).mission_tier =
-                void_tier.as_deref().and_then(RelicTier::from_modifier);
-        }
+        LogEvent::MissionCleared => set_mission(&mut lock(&state.overlays.marks), None, None),
+        LogEvent::MissionSet { node, void_tier } => set_mission(
+            &mut lock(&state.overlays.marks),
+            Some(node),
+            void_tier.as_deref().and_then(RelicTier::from_modifier),
+        ),
+        LogEvent::SquadMissionPending { node } => suggest_mission(state, node),
         LogEvent::RelicSelectScreenLoaded => {
             {
                 let mut marks = lock(&state.overlays.marks);
