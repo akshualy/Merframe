@@ -42,18 +42,29 @@ fn inventory_sync(value: &serde_json::Value) -> Option<String> {
         .map(str::to_owned)
 }
 
+fn unwrap_mission_end(value: &serde_json::Value) -> Option<(serde_json::Value, String)> {
+    let text = value.as_object()?.get("InventoryJson")?.as_str()?;
+    let inner = serde_json::from_str::<serde_json::Value>(text).ok()?;
+    Some((inner, text.to_owned()))
+}
+
 pub(crate) fn accept(addr: u64, body: &[u8]) -> Option<InventoryBuffer> {
-    if memmem::find(body, SYNC_KEY).is_none() || body.trim_ascii_end().last() != Some(&b'}') {
+    if body.trim_ascii_end().last() != Some(&b'}') {
         return None;
     }
     let text = str::from_utf8(body).ok()?;
     let value = serde_json::from_str::<serde_json::Value>(text).ok()?;
+    let (value, json) = if memmem::find(body, SYNC_KEY).is_some() {
+        (value, text.to_owned())
+    } else {
+        unwrap_mission_end(&value)?
+    };
     let last_sync = inventory_sync(&value)?;
     Some(InventoryBuffer {
         addr,
         len: body.len(),
         last_sync,
-        json: text.to_owned(),
+        json,
     })
 }
 
@@ -110,6 +121,27 @@ mod tests {
     }
 
     #[test]
+    fn mission_end_response_carries_the_inventory() {
+        let inventory = document(OID, &REQUIRED_KEYS);
+        let body = serde_json::json!({
+            "InventoryJson": inventory,
+            "MissionRewards": [{"StoreItem": "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint", "ItemCount": 2}],
+            "InventoryChanges": {"Recipes": [{"ItemType": "/Lotus/Types/Recipes/Components/FormaBlueprint", "ItemCount": 2}]}
+        })
+        .to_string();
+        let buffer = accept(ADDR, body.as_bytes()).unwrap();
+        assert_eq!(buffer.last_sync, OID);
+        assert_eq!(buffer.json, inventory);
+        assert_eq!(buffer.len, body.len());
+    }
+
+    #[test]
+    fn mission_end_response_without_inventory() {
+        let body = serde_json::json!({"InventoryJson": "", "MissionRewards": []}).to_string();
+        assert_eq!(accept(ADDR, body.as_bytes()), None);
+    }
+
+    #[test]
     fn non_inventory_response() {
         let body = b"{\"WorldSeed\":\"x\",\"Events\":[]}";
         assert_eq!(accept(ADDR, body), None);
@@ -127,16 +159,6 @@ mod tests {
         let body = document(OID, &REQUIRED_KEYS);
         let tail = &body.as_bytes()[20..];
         assert_eq!(accept(ADDR, tail), None);
-    }
-
-    #[test]
-    fn nested_inventory() {
-        let body = serde_json::json!({
-            "InventoryJson": document(OID, &REQUIRED_KEYS),
-            "MissionRewards": [],
-        })
-        .to_string();
-        assert_eq!(accept(ADDR, body.as_bytes()), None);
     }
 
     #[test]

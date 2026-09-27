@@ -149,7 +149,10 @@ async fn handle_log_event<R: Runtime>(
         state.focus.changed(*focused);
     }
     overlay::on_log_event(app, state, &event, at);
-    if matches!(event, LogEvent::InventorySynced) {
+    if matches!(
+        event,
+        LogEvent::InventorySynced | LogEvent::InventoryCommitted
+    ) {
         capture(app, state);
     }
     if matches!(event, LogEvent::RelicSelectScreenLoaded) {
