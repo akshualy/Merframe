@@ -79,7 +79,13 @@ pub(crate) fn items(
     let pending: HashSet<&str> = inventory
         .pending_recipes
         .iter()
-        .map(|recipe| recipe.item_type.as_str())
+        .map(|recipe| {
+            catalog
+                .component_for_stock(&recipe.item_type)
+                .map_or(recipe.item_type.as_str(), |(_, component)| {
+                    component.unique_name.as_str()
+                })
+        })
         .collect();
     let mut rows: Vec<FoundryItem> =
         masterable(catalog, includes_founders(inventory, include_founders))
@@ -241,7 +247,7 @@ pub(crate) fn timers(world: &WorldState, now: DateTime<Utc>) -> Vec<WorldTimer> 
 }
 
 fn recipe_image(catalog: &Catalog, unique_name: &str) -> Option<String> {
-    if let Some((item, component)) = catalog.component(unique_name) {
+    if let Some((item, component)) = catalog.component_for_stock(unique_name) {
         return component_image(item, component);
     }
     catalog
@@ -250,7 +256,7 @@ fn recipe_image(catalog: &Catalog, unique_name: &str) -> Option<String> {
 }
 
 fn recipe_name(catalog: &Catalog, unique_name: &str) -> String {
-    match catalog.component(unique_name) {
+    match catalog.component_for_stock(unique_name) {
         Some((item, component)) => part_name(item, component),
         None => item_name(catalog, unique_name),
     }
@@ -302,6 +308,38 @@ mod tests {
             .unwrap();
         assert_eq!(forma.completes_at, at(1_793_557_501_000));
         assert!(!forma.ready);
+    }
+
+    #[test]
+    fn pending_part_blueprint_resolves_to_its_component() {
+        let mut value = without_excalibur();
+        value["PendingRecipes"] = serde_json::json!([{
+            "ItemType": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetBlueprint",
+            "CompletionDate": { "$date": { "$numberLong": "1787000100000" } },
+            "ItemId": { "$oid": "0123456789abcdef01234567" }
+        }]);
+        let inventory = Inventory::parse(&value.to_string()).unwrap();
+        let catalog = fixtures::catalog();
+        let now = at(1_787_000_000_000);
+
+        let builds = pending(&inventory, &catalog, now);
+        assert_eq!(builds[0].name, "Excalibur Neuroptics");
+        assert_eq!(
+            builds[0].image_name.as_deref(),
+            Some("GenericWarframeHelmet.png")
+        );
+
+        let rows = items(
+            &inventory,
+            &catalog,
+            None,
+            None,
+            now,
+            &Favourites::default(),
+        );
+        let excalibur = row(&rows, "/Lotus/Powersuits/Excalibur/Excalibur");
+        assert!(excalibur.progress.pending);
+        assert!(excalibur.progress.owned);
     }
 
     #[test]
