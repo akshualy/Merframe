@@ -11,7 +11,7 @@ use wf_market::{
     StatusSetPayload, UserStatus,
 };
 
-use super::{MARKET_AUTO_CLOSED, STATUS_UPDATED, emit};
+use super::{MARKET_AUTO_CLOSED, MARKET_PRESENCE, STATUS_UPDATED, emit};
 use crate::market::{self, OrderRow};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, lock, read, write};
@@ -505,7 +505,9 @@ async fn presence_session<R: Runtime>(
                     }
                     Some(IncomingEvent::StatusSet { payload, .. }) => {
                         reported = Some(payload.status);
-                        emit(app, "market-presence", payload.status);
+                        let mut presence = write(&state.market_presence);
+                        presence.live = reported;
+                        emit(app, MARKET_PRESENCE, *presence);
                     }
                     Some(_) => {}
                     None => return Ok(()),
@@ -520,6 +522,21 @@ async fn presence_session<R: Runtime>(
             }
         }
     }
+}
+
+pub(super) fn offline_after_last_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    if !read(&state.settings).market.market_offline_after_last_trade {
+        return;
+    }
+    let mut presence = write(&state.market_presence);
+    if !presence.is_live_online() {
+        return;
+    }
+    *presence = presence.taken_offline();
+    let presence = *presence;
+    state.market_presence_wake.notify_one();
+    info!("Last trade of the day completed, warframe.market status set to offline");
+    emit(app, MARKET_PRESENCE, presence);
 }
 
 pub(super) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
@@ -542,6 +559,7 @@ pub(super) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: A
                 if let Err(error) = presence_session(&app, &state, &mut socket).await {
                     warn!(%error, "Market socket dropped");
                 }
+                write(&state.market_presence).live = None;
             }
             Handshake::Rejected => {
                 info!("Market socket rejected the stored token");

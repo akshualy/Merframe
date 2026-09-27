@@ -34,6 +34,7 @@ export type MarketStatus = "offline" | "online" | "ingame" | "invisible";
 export interface MarketPresence {
   status: MarketStatus | null;
   auto: boolean;
+  live: MarketStatus | null;
 }
 
 export type MarketCategory =

@@ -29,6 +29,7 @@ pub use market_loop::{MarketAutoClose, MarketSnapshot};
 pub const INVENTORY_UPDATED: &str = "inventory-updated";
 pub const STATUS_UPDATED: &str = "status-updated";
 pub const MARKET_AUTO_CLOSED: &str = "market-auto-closed";
+pub const MARKET_PRESENCE: &str = "market-presence";
 pub const MARKET_UPDATED: &str = "market-updated";
 
 const RIVEN_DATA_KEY: &str = "riven_data";
@@ -109,6 +110,9 @@ async fn load_cached_inventory<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSt
             status.source = InventorySource::Cached;
             status.last_sync_oid = Some(snapshot.last_sync_oid.clone());
             status.last_sync_at = Some(snapshot.taken_at);
+            status.trades_remaining = lock(&state.core)
+                .inventory()
+                .map(|inventory| inventory.trades_remaining);
             drop(status);
             info!(
                 snapshot = snapshot.id.0,

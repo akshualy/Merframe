@@ -45,9 +45,23 @@ impl MarketCategory {
 pub struct Presence {
     pub status: Option<UserStatus>,
     pub auto: bool,
+    pub live: Option<UserStatus>,
 }
 
 impl Presence {
+    pub fn is_live_online(self) -> bool {
+        matches!(self.live, Some(UserStatus::Online | UserStatus::Ingame))
+    }
+
+    #[must_use]
+    pub fn taken_offline(self) -> Self {
+        Self {
+            status: Some(UserStatus::Invisible),
+            auto: false,
+            live: self.live,
+        }
+    }
+
     pub fn wanted(self, game_detected: bool) -> Option<UserStatus> {
         if self.auto {
             return Some(if game_detected {
@@ -550,6 +564,7 @@ mod tests {
         let manual = Presence {
             status: Some(UserStatus::Online),
             auto: false,
+            live: None,
         };
         assert_eq!(manual.wanted(true), Some(UserStatus::Online));
         assert_eq!(manual.wanted(false), Some(UserStatus::Online));
@@ -557,9 +572,17 @@ mod tests {
         let automatic = Presence {
             status: Some(UserStatus::Online),
             auto: true,
+            live: Some(UserStatus::Ingame),
         };
         assert_eq!(automatic.wanted(true), Some(UserStatus::Ingame));
         assert_eq!(automatic.wanted(false), Some(UserStatus::Invisible));
+
+        assert!(!manual.is_live_online());
+        assert!(automatic.is_live_online());
+        let offline = automatic.taken_offline();
+        assert_eq!(offline.wanted(true), Some(UserStatus::Invisible));
+        assert!(!offline.auto);
+        assert!(offline.is_live_online());
     }
 
     #[test]

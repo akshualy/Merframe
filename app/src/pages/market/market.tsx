@@ -26,6 +26,7 @@ import { AuctionsTable } from "./auctions";
 import { LoginCard } from "./login-card";
 import { OrdersTable } from "./orders";
 import { PresenceControl } from "./presence";
+import { TradesLeft } from "./trades-left";
 
 type MarketTab = "orders" | "auctions";
 
@@ -199,6 +200,7 @@ export function MarketPage() {
 
   const openAuctions = auctions.filter((auction) => !auction.closed).length;
   const unread = status?.market_unread ?? 0;
+  const tradesLeft = status?.trades_remaining ?? null;
 
   return (
     <Page
@@ -224,6 +226,12 @@ export function MarketPage() {
       }
     >
       {error && <ErrorNote message={error} />}
+
+      {tradesLeft !== null && (
+        <div className="grid gap-3 @sm:grid-cols-2 @5xl:grid-cols-4">
+          <TradesLeft count={tradesLeft} />
+        </div>
+      )}
 
       <Section
         title="My Listings"

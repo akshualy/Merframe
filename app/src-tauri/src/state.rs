@@ -103,6 +103,7 @@ pub struct GameStatus {
     pub log_attached: bool,
     pub market_account: Option<MarketAccount>,
     pub market_unread: u32,
+    pub trades_remaining: Option<u32>,
     pub overlay_support: OverlaySupport,
 }
 

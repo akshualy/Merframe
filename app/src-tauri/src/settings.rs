@@ -92,6 +92,7 @@ pub struct MarketSettings {
     pub price_ttl_minutes: i64,
     pub market_poll_minutes: u32,
     pub market_auto_close: bool,
+    pub market_offline_after_last_trade: bool,
     pub take_rank_into_account: bool,
     pub market_trader_status: TraderStatus,
     pub market_trader_locale: Option<String>,
@@ -186,6 +187,7 @@ impl Default for MarketSettings {
             price_ttl_minutes: 15,
             market_poll_minutes: 5,
             market_auto_close: false,
+            market_offline_after_last_trade: false,
             take_rank_into_account: true,
             market_trader_status: TraderStatus::Ingame,
             market_trader_locale: Some("en".to_owned()),
@@ -431,6 +433,7 @@ mod tests {
         assert_eq!(settings.world_state_interval_minutes, 5);
         assert_eq!(settings.market.market_poll_minutes, 5);
         assert!(!settings.market.market_auto_close);
+        assert!(!settings.market.market_offline_after_last_trade);
         assert_eq!(settings.inventory.include_founders_items, None);
         assert!(settings.inventory.include_forma_ranks);
         assert!(!settings.inventory.show_full_inventory);

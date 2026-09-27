@@ -23,6 +23,7 @@ export function PresenceControl() {
   const [presence, setPresence] = useState<MarketPresence>({
     status: null,
     auto: false,
+    live: null,
   });
 
   useEffect(() => {
@@ -36,9 +37,7 @@ export function PresenceControl() {
     load();
   }, []);
 
-  useListen<MarketStatus>(events.marketPresence, (status) =>
-    setPresence((current) => ({ ...current, status })),
-  );
+  useListen<MarketPresence>(events.marketPresence, setPresence);
 
   const push = async (next: MarketPresence) => {
     setPresence(next);
@@ -61,7 +60,7 @@ export function PresenceControl() {
         Follow the game
       </label>
       <Select
-        value={presence.status ?? UNSET}
+        value={presence.live ?? presence.status ?? UNSET}
         disabled={presence.auto}
         onValueChange={(value) =>
           push({

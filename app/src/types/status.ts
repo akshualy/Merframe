@@ -28,6 +28,7 @@ export interface GameStatus {
   log_attached: boolean;
   market_account: MarketAccount | null;
   market_unread: number;
+  trades_remaining: number | null;
   overlay_support: OverlaySupport;
 }
 

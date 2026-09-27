@@ -206,8 +206,10 @@ pub async fn market_set_presence(
     auto: bool,
 ) -> CommandResult<Presence> {
     let state = ready(&state).await?;
-    let presence = Presence { status, auto };
-    *write(&state.market_presence) = presence;
+    let mut presence = write(&state.market_presence);
+    presence.status = status;
+    presence.auto = auto;
+    let presence = *presence;
     state.market_presence_wake.notify_one();
     Ok(presence)
 }

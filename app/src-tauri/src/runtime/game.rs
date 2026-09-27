@@ -14,7 +14,7 @@ use wf_log::Event as LogEvent;
 use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_game};
 use wf_scan::{HttpClients, InventoryBuffer, LuaState};
 
-use super::{INVENTORY_UPDATED, STATUS_UPDATED, blocking, dispatch, emit};
+use super::{INVENTORY_UPDATED, STATUS_UPDATED, blocking, dispatch, emit, market_loop};
 use crate::overlay;
 use crate::state::{AppState, InventorySource, QueueSession, lock, read, write};
 
@@ -338,7 +338,10 @@ where
         }
     };
 
-    {
+    let trades_remaining = lock(&state.core)
+        .inventory()
+        .map(|inventory| inventory.trades_remaining);
+    let last_trade_done = {
         let mut status = write(&state.status);
         status.scanning = false;
         status.last_scan_at = Some(Utc::now());
@@ -347,6 +350,13 @@ where
         if let Ingested::Newer { last_sync, .. } = &ingested {
             status.last_sync_oid = Some(last_sync.clone());
         }
+        let done =
+            status.trades_remaining.is_some_and(|left| left > 0) && trades_remaining == Some(0);
+        status.trades_remaining = trades_remaining;
+        done
+    };
+    if last_trade_done {
+        market_loop::offline_after_last_trade(app, state);
     }
 
     emit(app, STATUS_UPDATED, state.status_snapshot());
