@@ -391,7 +391,7 @@ export function MasteryPage() {
                       </Badge>
                     )}
                     {item.owned && <Badge variant="secondary">Owned</Badge>}
-                    {!item.owned && (
+                    {!item.owned && item.acquisition.relic_probability > 0 && (
                       <Badge variant="muted">
                         {percent(item.acquisition.relic_probability, 2)} relics
                       </Badge>

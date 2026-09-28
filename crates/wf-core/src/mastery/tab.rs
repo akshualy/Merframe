@@ -154,10 +154,18 @@ fn unfinished_intrinsics(summary: &MasterySummary) -> Vec<MasteryItem> {
     let started = |totals: CategoryTotals| totals.current > 0 && totals.current < totals.max;
     let mut extras = Vec::new();
     if started(summary.intrinsic_duviri) {
-        extras.push(intrinsic_row("duviriIntrinsics", "Duviri intrinsics"));
+        extras.push(intrinsic_row(
+            "duviriIntrinsics",
+            "Duviri intrinsics",
+            "game/intrinsics-drifter.png",
+        ));
     }
     if started(summary.intrinsic_railjack) {
-        extras.push(intrinsic_row("railjackIntrinsics", "Railjack intrinsics"));
+        extras.push(intrinsic_row(
+            "railjackIntrinsics",
+            "Railjack intrinsics",
+            "game/intrinsics-railjack.png",
+        ));
     }
     extras
 }

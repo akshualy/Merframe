@@ -5,10 +5,53 @@ use serde::Serialize;
 use wf_inventory::Inventory;
 
 use crate::catalog::Catalog;
+use crate::inventory_view::display_name;
 use crate::mastery::{self, MasteryOptions};
-use crate::store::{StatPoint, TimeRange};
+use crate::store::{RelicOpening, StatPoint, StoredDelta, TimeRange};
 
 pub(crate) const AYA_ITEM: &str = "/Lotus/Types/Items/MiscItems/SchismKey";
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct DeltaRow {
+    pub item_type: String,
+    pub name: String,
+    pub category: String,
+    pub delta: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct OpeningRow {
+    pub id: i64,
+    pub at: DateTime<Utc>,
+    pub relic: String,
+    pub reward: String,
+    pub player_count: i64,
+}
+
+pub(crate) fn delta_rows(catalog: &Catalog, deltas: Vec<StoredDelta>) -> Vec<DeltaRow> {
+    deltas
+        .into_iter()
+        .map(|delta| DeltaRow {
+            name: display_name(catalog, &delta.item_type),
+            item_type: delta.item_type,
+            category: delta.category,
+            delta: delta.delta,
+        })
+        .collect()
+}
+
+pub(crate) fn opening_rows(catalog: &Catalog, openings: Vec<RelicOpening>) -> Vec<OpeningRow> {
+    openings
+        .into_iter()
+        .map(|opening| OpeningRow {
+            id: opening.id,
+            at: opening.at,
+            relic: opening.relic,
+            reward: display_name(catalog, &opening.reward_item),
+            player_count: opening.player_count,
+        })
+        .collect()
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct DailyCount {
@@ -294,5 +337,40 @@ mod tests {
         assert!((prime_percent(2, 3) - 66.0).abs() < f64::EPSILON);
         assert!((prime_percent(199, 200) - 99.0).abs() < f64::EPSILON);
         assert!((prime_percent(200, 200) - 100.0).abs() < f64::EPSILON);
+    }
+}
+
+#[cfg(test)]
+mod naming_tests {
+    use super::*;
+    use crate::catalog::fixtures;
+    use crate::store::{RelicOpening, StoredDelta};
+    use wf_data::Refinement;
+
+    #[test]
+    fn rows_have_item_names() {
+        let catalog = fixtures::catalog();
+        let relic = catalog.relics().next().unwrap();
+        let relic_unique_name = relic.unique_names[&Refinement::Radiant].clone();
+        let deltas = delta_rows(
+            &catalog,
+            vec![StoredDelta {
+                item_type: relic_unique_name,
+                category: "MiscItems".to_owned(),
+                delta: 3,
+            }],
+        );
+        assert_eq!(deltas[0].name, format!("{} Relic (Radiant)", relic.name));
+        let openings = opening_rows(
+            &catalog,
+            vec![RelicOpening {
+                id: 1,
+                at: Utc::now(),
+                relic: relic.name.clone(),
+                reward_item: "/Lotus/StoreItems/Types/Items/MiscItems/Forma".to_owned(),
+                player_count: 2,
+            }],
+        );
+        assert_eq!(openings[0].reward, "Forma");
     }
 }

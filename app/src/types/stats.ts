@@ -32,12 +32,13 @@ export interface RelicOpening {
   id: number;
   at: string;
   relic: string;
-  reward_item: string;
+  reward: string;
   player_count: number;
 }
 
 export interface StoredDelta {
   item_type: string;
+  name: string;
   category: string;
   delta: number;
 }

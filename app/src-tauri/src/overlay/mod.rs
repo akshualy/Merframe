@@ -25,12 +25,7 @@ mod window;
 pub use riven::riven_item_type;
 #[cfg(target_os = "linux")]
 pub use session::adopt_xwayland;
-#[cfg(target_os = "linux")]
-pub use session::x_display_listening;
-pub use session::{
-    FORCE_ENV, OverlaySupport, Session, Startup, XWAYLAND_ENV, probe, session_of, support_for,
-    uses_windows, x_display_number,
-};
+pub use session::{OverlaySupport, probe, uses_windows};
 
 use relic::{
     recommendation_after_relic, recommendation_stays, recommendation_suppressed, requiem_mission,

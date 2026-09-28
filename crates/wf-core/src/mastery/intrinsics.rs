@@ -59,13 +59,13 @@ pub(super) fn routes(inventory: &Inventory) -> [LevelUpRoute; 2] {
     ]
 }
 
-pub(super) fn row(kind: &'static str, name: &str) -> MasteryItem {
+pub(super) fn row(kind: &'static str, name: &str, image_name: &str) -> MasteryItem {
     MasteryItem {
         unique_name: kind.to_owned(),
         name: name.to_owned(),
         kind,
         group: MasteryGroup::Other,
-        image_name: None,
+        image_name: Some(image_name.to_owned()),
         owned: true,
         mastered: false,
         level: Level {

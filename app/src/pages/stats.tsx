@@ -17,14 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
-import {
-  dateTime,
-  dayLabel,
-  displayNameFromPath,
-  num,
-  percent,
-  spansYears,
-} from "@/lib/format";
+import { dateTime, dayLabel, num, percent, spansYears } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { DAY_MS } from "@/lib/world";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -121,12 +114,7 @@ const OPENING_COLUMNS: ColumnDef<RelicOpening>[] = [
     cell: ({ row }) => dateTime(row.original.at),
   },
   { accessorKey: "relic", header: "Relic", enableHiding: false },
-  {
-    accessorKey: "reward_item",
-    header: "Reward",
-    meta: { wrap: true },
-    cell: ({ row }) => displayNameFromPath(row.original.reward_item),
-  },
+  { accessorKey: "reward", header: "Reward", meta: { wrap: true } },
   {
     accessorKey: "player_count",
     header: "Squad",
@@ -136,12 +124,7 @@ const OPENING_COLUMNS: ColumnDef<RelicOpening>[] = [
 ];
 
 const DELTA_COLUMNS: ColumnDef<StoredDelta>[] = [
-  {
-    accessorKey: "item_type",
-    header: "Item",
-    enableHiding: false,
-    cell: ({ row }) => displayNameFromPath(row.original.item_type),
-  },
+  { accessorKey: "name", header: "Item", enableHiding: false },
   { accessorKey: "category", header: "Category" },
   {
     accessorKey: "delta",

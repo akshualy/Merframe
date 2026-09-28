@@ -30,8 +30,8 @@ import type {
 const OFF = "Turned off.";
 
 const OVERLAY_MODES: { value: OverlayMode; label: string }[] = [
-  { value: "auto", label: "Windows when the session allows it" },
-  { value: "windows", label: "Always windows over the game" },
+  { value: "auto", label: "Over game if possible" },
+  { value: "windows", label: "Always over the game" },
   { value: "tab", label: "Only the Overlays tab" },
 ];
 

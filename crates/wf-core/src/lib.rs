@@ -59,7 +59,10 @@ pub use rivens::{
     fingerprint_weapon as riven_fingerprint_weapon, kept_roll as riven_kept_roll,
     listing_payload as riven_listing_payload,
 };
-pub use stats::{DailyCount, StatsSummary, daily_counts, daily_series, day_span, distinct_days};
+pub use stats::{
+    DailyCount, DeltaRow, OpeningRow, StatsSummary, daily_counts, daily_series, day_span,
+    distinct_days,
+};
 pub use store::{
     RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
 };

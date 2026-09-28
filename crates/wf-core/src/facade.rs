@@ -25,10 +25,8 @@ use crate::prices::PriceSource;
 use crate::relic_planner::{self, MissingPart, RelicPlan, RelicSource, RewardScreen};
 use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
-use crate::stats::{self, DailyCount, StatsSummary};
-use crate::store::{
-    RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
-};
+use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
+use crate::store::{Snapshot, SnapshotId, StatPoint, Store, StoredTrade, TimeRange};
 use crate::view::View;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -44,8 +42,8 @@ pub struct RelicPlannerTab {
 pub struct StatsTab {
     pub series: Vec<StatPoint>,
     pub trades: Vec<StoredTrade>,
-    pub relic_openings: Vec<RelicOpening>,
-    pub latest_deltas: Vec<StoredDelta>,
+    pub relic_openings: Vec<OpeningRow>,
+    pub latest_deltas: Vec<DeltaRow>,
     pub relics_per_day: Vec<DailyCount>,
     pub trades_per_day: Vec<DailyCount>,
     pub days_played: Vec<DailyCount>,
@@ -428,12 +426,12 @@ impl Core {
 
     pub fn stats_tab(&self, range: TimeRange, now: DateTime<Utc>) -> Result<StatsTab> {
         let latest_deltas = match self.latest_snapshot {
-            Some(id) => self.store.deltas(id)?,
+            Some(id) => stats::delta_rows(&self.catalog, self.store.deltas(id)?),
             None => Vec::new(),
         };
         let series = stats::daily_series(&self.store.stats_series(range)?);
         let trades = self.store.trades(range)?;
-        let relic_openings = self.store.relic_openings(range)?;
+        let relic_openings = stats::opening_rows(&self.catalog, self.store.relic_openings(range)?);
         let earliest = [
             series.first().map(|point| point.at),
             trades.first().map(|trade| trade.at),

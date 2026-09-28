@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 use wf_data::{Rarity, catch_grade, misc_item_name};
 
-use crate::catalog::{Catalog, VaultStatus, display_name_from_path, part_name};
+use crate::catalog::{Catalog, VaultStatus, display_name_from_path, part_name, refinement_name};
 use crate::listings::PlacedOrders;
 use crate::prices::Prices;
 use crate::view::View;
@@ -225,6 +225,13 @@ fn sum(rows: impl Iterator<Item = (i64, Option<u32>, Option<f64>)>) -> TabTotals
 }
 
 fn catalogued_name(catalog: &Catalog, unique_name: &str) -> Option<String> {
+    if let Some((relic, refinement)) = catalog.relic_by_unique_name(unique_name) {
+        return Some(format!(
+            "{} Relic ({})",
+            relic.name,
+            refinement_name(refinement)
+        ));
+    }
     if let Some((base, grade)) = catch_grade(unique_name)
         && let Some(item) = catalog.item(&base)
     {
@@ -242,7 +249,11 @@ fn catalogued_name(catalog: &Catalog, unique_name: &str) -> Option<String> {
     misc_item_name(unique_name).map(str::to_owned)
 }
 
-fn display_name(catalog: &Catalog, unique_name: &str) -> String {
+pub(crate) fn display_name(catalog: &Catalog, unique_name: &str) -> String {
+    let stocked = unique_name
+        .strip_prefix("/Lotus/StoreItems/")
+        .map(|tail| format!("/Lotus/{tail}"));
+    let unique_name = stocked.as_deref().unwrap_or(unique_name);
     catalogued_name(catalog, unique_name).unwrap_or_else(|| display_name_from_path(unique_name))
 }
 
