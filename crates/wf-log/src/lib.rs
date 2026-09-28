@@ -59,22 +59,9 @@ mod ee_log_fixture_tests {
         let events: Vec<Event> = lines
             .iter()
             .filter_map(classify)
-            .filter(|event| {
-                matches!(
-                    event,
-                    Event::TradeDialogOpened { .. } | Event::TradeSuccessful
-                )
-            })
+            .filter(|event| matches!(event, Event::TradeDialogOpened | Event::TradeSuccessful))
             .collect();
-        assert_eq!(
-            events,
-            [
-                Event::TradeDialogOpened {
-                    description: "Are you sure you want to accept this trade? You are offering:\nGoopolla (L)\nGoopolla (M)\nPlatinum x 12\nGoopolla (S)\n\nand will receive from TestSquadA the following:\nNoctua Swarm (RARE RANK 0)".to_owned()
-                },
-                Event::TradeSuccessful,
-            ]
-        );
+        assert_eq!(events, [Event::TradeDialogOpened, Event::TradeSuccessful]);
     }
 
     #[test]

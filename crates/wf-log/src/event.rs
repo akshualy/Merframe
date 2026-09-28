@@ -38,9 +38,7 @@ pub enum Event {
     SquadMissionPending {
         node: String,
     },
-    TradeDialogOpened {
-        description: String,
-    },
+    TradeDialogOpened,
     TradeSuccessful,
     ChatTabAdded {
         channel: String,
@@ -97,7 +95,7 @@ impl Event {
             Self::StarChartHidden => "StarChartHidden",
             Self::MissionCleared => "MissionCleared",
             Self::SquadMissionPending { .. } => "SquadMissionPending",
-            Self::TradeDialogOpened { .. } => "TradeDialogOpened",
+            Self::TradeDialogOpened => "TradeDialogOpened",
             Self::TradeSuccessful => "TradeSuccessful",
             Self::ChatTabAdded { .. } => "ChatTabAdded",
             Self::RivenDialog { .. } => "RivenDialog",
@@ -146,16 +144,6 @@ struct MissionSetWire {
     name: String,
     #[serde(rename = "voidTier")]
     void_tier: Option<String>,
-}
-
-fn trade_dialog(message: &str) -> Option<Event> {
-    let (_, description) = message.split_once("description=")?;
-    let description = description
-        .split_once(", title= leftItem=")
-        .map_or(description, |(description, _)| description);
-    Some(Event::TradeDialogOpened {
-        description: description.to_owned(),
-    })
 }
 
 fn mission_set(message: &str) -> Option<Event> {
@@ -330,7 +318,7 @@ pub fn classify(line: &LogLine) -> Option<Event> {
         return Some(event);
     }
     if message.contains("want to accept this trade?") {
-        return trade_dialog(message);
+        return Some(Event::TradeDialogOpened);
     }
     if message.ends_with("Mission Succeeded") {
         return Some(Event::MissionSucceeded);
@@ -475,12 +463,7 @@ mod tests {
         let event = classify(&log_line(
             "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to accept this trade? You are offering\nForma Blueprint x 2\nand will receive from TestSquadA\u{e000} the following:\nPlatinum x 45\n, title= leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)",
         ));
-        assert_eq!(
-            event,
-            Some(Event::TradeDialogOpened {
-                description: "Are you sure you want to accept this trade? You are offering\nForma Blueprint x 2\nand will receive from TestSquadA\u{e000} the following:\nPlatinum x 45\n".to_owned()
-            })
-        );
+        assert_eq!(event, Some(Event::TradeDialogOpened));
     }
 
     #[test]
@@ -488,13 +471,7 @@ mod tests {
         let event = classify(&log_line(
             "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to accept this trade? You are offering",
         ));
-        assert_eq!(
-            event,
-            Some(Event::TradeDialogOpened {
-                description: "Are you sure you want to accept this trade? You are offering"
-                    .to_owned()
-            })
-        );
+        assert_eq!(event, Some(Event::TradeDialogOpened));
     }
 
     #[test]

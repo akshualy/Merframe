@@ -54,7 +54,7 @@ function fullDate(iso: string): string {
 }
 
 function tradeItemLabel(item: TradeItem): string {
-  return item.rank === null ? item.name : `${item.name} (Rank ${item.rank})`;
+  return item.rank === null ? item.name : `${item.name} R${item.rank}`;
 }
 
 const TRADE_COLUMNS: ColumnDef<StoredTrade>[] = [

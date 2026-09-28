@@ -9,10 +9,10 @@ use futures_util::StreamExt;
 use futures_util::pin_mut;
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
-use wf_core::{CoreEvent, ScannedRewards};
+use wf_core::{CoreEvent, ScannedRewards, ScannedTrade, ScannedTradeItem};
 use wf_log::Event as LogEvent;
 use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_game};
-use wf_scan::{HttpClients, InventoryBuffer, LuaState};
+use wf_scan::{HttpClients, InventoryBuffer, LuaState, TradeScreen};
 
 use super::{INVENTORY_UPDATED, STATUS_UPDATED, blocking, dispatch, emit, market_loop};
 use crate::overlay;
@@ -24,6 +24,8 @@ const REWARD_TICKS: usize = 50;
 const PICKER_TICK: Duration = Duration::from_millis(100);
 const PICKER_LIFETIME: Duration = Duration::from_secs(600);
 const PICKER_GRACE: Duration = Duration::from_secs(2);
+const TRADE_TICK: Duration = Duration::from_millis(100);
+const TRADE_TICKS: usize = 20;
 
 pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut missing_reported = false;
@@ -158,6 +160,10 @@ async fn handle_log_event<R: Runtime>(
     if matches!(event, LogEvent::RelicSelectScreenLoaded) {
         watch_relic_picker(state);
     }
+    if matches!(event, LogEvent::TradeDialogOpened) {
+        let state = Arc::clone(state);
+        tauri::async_runtime::spawn(async move { handle_trade_screen(&state).await });
+    }
     let scan_rewards = matches!(
         event,
         LogEvent::SquadRewardInfoComplete | LogEvent::RelicRewardsShown
@@ -236,6 +242,52 @@ fn watch_relic_picker(state: &Arc<AppState>) {
 enum Picker {
     Closed,
     Open(Option<wf_scan::RelicPick>),
+}
+
+fn trade_screen() -> Option<TradeScreen> {
+    let reader = open_game().ok()?;
+    let state = LuaState::locate(reader.as_ref()).ok().flatten()?;
+    TradeScreen::read(reader.as_ref(), &state)
+}
+
+fn scanned_trade(screen: TradeScreen) -> ScannedTrade {
+    let items = |slots: Vec<wf_scan::TradeSlot>| {
+        slots
+            .into_iter()
+            .map(|slot| ScannedTradeItem {
+                name: slot.name,
+                item_type: slot.item_type,
+                count: i64::from(slot.count),
+                fingerprint: slot.fingerprint,
+            })
+            .collect()
+    };
+    ScannedTrade {
+        partner: screen.partner,
+        offered: items(screen.offered),
+        received: items(screen.received),
+    }
+}
+
+async fn handle_trade_screen(state: &Arc<AppState>) {
+    let mut seen = None;
+    for _ in 0..TRADE_TICKS {
+        match blocking("read trade screen", trade_screen).await.flatten() {
+            Some(screen) if seen.as_ref() == Some(&screen) => {
+                let screen = scanned_trade(screen);
+                debug!(
+                    offered = screen.offered.len(),
+                    received = screen.received.len(),
+                    "Trade screen read from game memory"
+                );
+                lock(&state.core).handle_trade_screen(&screen, Utc::now());
+                return;
+            }
+            screen => seen = screen,
+        }
+        tokio::time::sleep(TRADE_TICK).await;
+    }
+    warn!("Trade screen not read from game memory, the trade will not be recorded");
 }
 
 fn relic_picker() -> Picker {

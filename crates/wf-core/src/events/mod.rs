@@ -41,6 +41,21 @@ pub struct ScannedRewards {
     pub rewards: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScannedTradeItem {
+    pub name: String,
+    pub item_type: Option<String>,
+    pub count: i64,
+    pub fingerprint: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ScannedTrade {
+    pub partner: Option<String>,
+    pub offered: Vec<ScannedTradeItem>,
+    pub received: Vec<ScannedTradeItem>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum CoreEvent {
     InventoryUpdated(InventorySummary),

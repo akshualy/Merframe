@@ -562,6 +562,7 @@ mod tests {
     use super::*;
     use crate::catalog::fixtures;
     use crate::delta;
+    use crate::trade::TradeItem;
 
     fn at(millis: i64) -> DateTime<Utc> {
         DateTime::from_timestamp_millis(millis).unwrap()
@@ -741,12 +742,17 @@ mod tests {
     #[test]
     fn trades_and_relic_openings() {
         let store = Store::in_memory().unwrap();
-        let (partner, trade) = crate::trade::parse_trade_description(
-            "Are you sure you want to accept this trade? You are offering\nForma Blueprint x 2\nand will receive from SomePlayer the following:\nPlatinum x 45\n",
-        )
-        .unwrap();
+        let trade = Trade {
+            offered: vec![TradeItem {
+                name: String::from("Forma Blueprint"),
+                count: 2,
+                rank: None,
+            }],
+            received: Vec::new(),
+            plat: 45,
+        };
         store
-            .record_trade(at(5_000_000), partner.as_deref(), &trade)
+            .record_trade(at(5_000_000), Some("SomePlayer"), &trade)
             .unwrap();
         let trades = store.trades(TimeRange::all()).unwrap();
         assert_eq!(trades.len(), 1);

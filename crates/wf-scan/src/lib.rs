@@ -10,6 +10,7 @@ mod lua;
 mod relic;
 mod roots;
 mod station;
+mod trade;
 
 #[cfg(test)]
 mod fake;
@@ -24,3 +25,4 @@ pub use logbuf::{LogBuffer, find_log_buffer, is_line_head, locate, read_pending}
 pub use lua::LuaState;
 pub use relic::{RelicPicker, RelicPickerNode};
 pub use station::StationRiven;
+pub use trade::{TradeScreen, TradeSlot};

@@ -13,7 +13,7 @@ use crate::catalog::{Catalog, REQUIEM_MARKER};
 use crate::comparables::{self, ComparedStat, RivenComparables};
 use crate::delta;
 use crate::error::Result;
-use crate::events::{self, AlertSettings, CoreEvent, Engine, ScannedRewards};
+use crate::events::{self, AlertSettings, CoreEvent, Engine, ScannedRewards, ScannedTrade};
 use crate::export::{ExportBundle, export};
 use crate::favourites::Favourites;
 use crate::foundry::{self, FoundryTab};
@@ -195,6 +195,10 @@ impl Core {
         let events = self.engine.handle_log_event(event, now);
         self.record(&events, now)?;
         Ok(events)
+    }
+
+    pub fn handle_trade_screen(&mut self, screen: &ScannedTrade, now: DateTime<Utc>) {
+        self.engine.handle_trade_screen(screen, now);
     }
 
     pub fn reward_screen_generation(&self) -> u64 {
@@ -485,6 +489,7 @@ impl Core {
 mod tests {
     use super::*;
     use crate::catalog::fixtures;
+    use crate::events::ScannedTradeItem;
     use crate::events::{CyclePhase, FissureFilter, InventorySummary, TimerAlerts};
     use crate::prices::FixedPrices;
     use crate::resources::{ResourceScope, ResourceSource};
@@ -827,13 +832,26 @@ mod tests {
             .unwrap();
         assert_eq!(events.len(), 1);
 
-        core.handle_log_event(
-            &LogEvent::TradeDialogOpened {
-                description: "Are you sure you want to accept this trade? You are offering\nStyanax Prime Blueprint\nand will receive from TestSquadA the following:\nPlatinum x 90\n".to_owned(),
+        core.handle_trade_screen(
+            &ScannedTrade {
+                partner: Some(String::from("TestSquadA")),
+                offered: vec![ScannedTradeItem {
+                    name: String::from("Styanax Prime Blueprint"),
+                    item_type: Some(String::from(
+                        "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint",
+                    )),
+                    count: 1,
+                    fingerprint: None,
+                }],
+                received: vec![ScannedTradeItem {
+                    name: String::from("Platinum"),
+                    item_type: None,
+                    count: 90,
+                    fingerprint: None,
+                }],
             },
             now,
-        )
-        .unwrap();
+        );
         core.handle_log_event(&LogEvent::TradeSuccessful, now)
             .unwrap();
 

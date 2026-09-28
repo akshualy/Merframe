@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::catalog::{Catalog, part_name};
+use crate::events::{ScannedTrade, ScannedTradeItem};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TradeItem {
@@ -16,58 +17,60 @@ pub struct Trade {
     pub plat: i64,
 }
 
-pub(crate) fn parse_trade_description(description: &str) -> Option<(Option<String>, Trade)> {
-    let mut lines = description.lines().map(str::trim);
-    if !lines
-        .next()?
-        .trim_end_matches(':')
-        .ends_with("accept this trade? You are offering")
-    {
-        return None;
-    }
-    let mut trade = Trade::default();
-    let mut partner = None;
-    let mut receiving = false;
-    for line in lines.filter(|line| !line.is_empty()) {
-        if let Some(name) = partner_line(line) {
-            partner = Some(player_name(name));
-            receiving = true;
-            continue;
-        }
-        let item = parse_entry(line);
-        if item.name == "Platinum" {
-            trade.plat += if receiving { item.count } else { -item.count };
-        } else if receiving {
-            add_item(&mut trade.received, item);
-        } else {
-            add_item(&mut trade.offered, item);
-        }
-    }
-    Some((partner, trade))
+#[derive(Deserialize)]
+struct Level {
+    #[serde(default)]
+    lvl: u32,
 }
 
-fn partner_line(line: &str) -> Option<&str> {
-    line.strip_prefix("and will receive from ")?
-        .strip_suffix(" the following:")
+impl Trade {
+    pub(crate) fn from_screen(screen: &ScannedTrade) -> Self {
+        let mut trade = Self::default();
+        for (items, receiving) in [(&screen.offered, false), (&screen.received, true)] {
+            for item in items {
+                if item.name == "Platinum" {
+                    trade.plat += if receiving { item.count } else { -item.count };
+                    continue;
+                }
+                let side = if receiving {
+                    &mut trade.received
+                } else {
+                    &mut trade.offered
+                };
+                add_item(side, TradeItem::from(item));
+            }
+        }
+        trade
+    }
+}
+
+impl From<&ScannedTradeItem> for TradeItem {
+    fn from(item: &ScannedTradeItem) -> Self {
+        let upgrade = item
+            .item_type
+            .as_deref()
+            .is_some_and(|item_type| item_type.starts_with("/Lotus/Upgrades/"));
+        let level = item
+            .fingerprint
+            .as_deref()
+            .and_then(|fingerprint| serde_json::from_str::<Level>(fingerprint).ok())
+            .map_or(0, |level| level.lvl);
+        Self {
+            name: item
+                .name
+                .strip_suffix(" Defiled")
+                .unwrap_or(&item.name)
+                .to_owned(),
+            count: item.count,
+            rank: upgrade.then_some(level),
+        }
+    }
 }
 
 pub(crate) fn player_name(name: &str) -> String {
     name.trim_end_matches(|character: char| !character.is_ascii())
         .trim()
         .to_owned()
-}
-
-fn parse_entry(entry: &str) -> TradeItem {
-    let (name, count) = entry
-        .rsplit_once(" x ")
-        .and_then(|(name, count)| Some((name.trim(), count.trim().parse().ok()?)))
-        .unwrap_or((entry, 1));
-    let (name, rank) = split_rank(name);
-    TradeItem {
-        name: plain_name(name).to_owned(),
-        count,
-        rank,
-    }
 }
 
 fn add_item(items: &mut Vec<TradeItem>, item: TradeItem) {
@@ -78,10 +81,6 @@ fn add_item(items: &mut Vec<TradeItem>, item: TradeItem) {
         Some(known) => known.count += item.count,
         None => items.push(item),
     }
-}
-
-fn plain_name(name: &str) -> &str {
-    name.strip_suffix(" Defiled").unwrap_or(name)
 }
 
 pub fn traded_set(catalog: &Catalog, items: &[TradeItem]) -> Option<TradeItem> {
@@ -147,122 +146,9 @@ pub fn relic_refinement(name: &str) -> Option<(&str, String)> {
         .then(|| (name, String::from("intact")))
 }
 
-fn arcane_rank(pips: &str) -> Option<u32> {
-    let mut filled = 0;
-    for pip in pips.chars() {
-        match pip {
-            '\u{e0be}' => filled += 1,
-            '\u{e0bb}' => {}
-            _ => return None,
-        }
-    }
-    Some(filled)
-}
-
-fn split_rank(name: &str) -> (&str, Option<u32>) {
-    if let Some((base, pips)) = name.rsplit_once(' ')
-        && let Some(rank) = arcane_rank(pips)
-    {
-        return (base, Some(rank));
-    }
-    let Some((base, suffix)) = name.rsplit_once(" (") else {
-        return (name, None);
-    };
-    let Some(rank) = suffix
-        .strip_suffix(')')
-        .and_then(|suffix| suffix.rsplit_once(" RANK "))
-        .and_then(|(_, rank)| rank.parse().ok())
-    else {
-        return (name, None);
-    };
-    (base, Some(rank))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn items_for_platinum() {
-        let (partner, trade) = parse_trade_description(
-            "Are you sure you want to accept this trade? You are offering\nLoki Prime Systems Blueprint\nForma Blueprint x 2\nand will receive from TestSquadA\u{e000} the following:\nPlatinum x 45\n",
-        )
-        .unwrap();
-        assert_eq!(partner.as_deref(), Some("TestSquadA"));
-        assert_eq!(
-            trade.offered,
-            vec![
-                TradeItem {
-                    name: String::from("Loki Prime Systems Blueprint"),
-                    count: 1,
-                    rank: None,
-                },
-                TradeItem {
-                    name: String::from("Forma Blueprint"),
-                    count: 2,
-                    rank: None,
-                },
-            ]
-        );
-        assert!(trade.received.is_empty());
-        assert_eq!(trade.plat, 45);
-    }
-
-    #[test]
-    fn platinum_for_items() {
-        let (partner, trade) = parse_trade_description(
-            "Are you sure you want to accept this trade? You are offering\nPlatinum x 120\nand will receive from TestSquadB the following:\nRhino Prime Blueprint\nMesa Prime Chassis Blueprint\n",
-        )
-        .unwrap();
-        assert_eq!(partner.as_deref(), Some("TestSquadB"));
-        assert_eq!(trade.plat, -120);
-        assert!(trade.offered.is_empty());
-        assert_eq!(trade.received.len(), 2);
-        assert_eq!(trade.received[1].name, "Mesa Prime Chassis Blueprint");
-    }
-
-    #[test]
-    fn game_block_with_colon_ranks_and_fish_sizes() {
-        let (partner, trade) = parse_trade_description(
-            "Are you sure you want to accept this trade? You are offering:\nGoopolla (L)\nGoopolla (M)\nPlatinum x 12\nGoopolla (S)\n\nand will receive from TestSquadA the following:\nNoctua Swarm (RARE RANK 0)",
-        )
-        .unwrap();
-        assert_eq!(partner.as_deref(), Some("TestSquadA"));
-        assert_eq!(trade.plat, -12);
-        assert_eq!(
-            trade
-                .offered
-                .iter()
-                .map(|item| item.name.as_str())
-                .collect::<Vec<_>>(),
-            ["Goopolla (L)", "Goopolla (M)", "Goopolla (S)"]
-        );
-        assert_eq!(
-            trade.received,
-            [TradeItem {
-                name: String::from("Noctua Swarm"),
-                count: 1,
-                rank: Some(0),
-            }]
-        );
-    }
-
-    #[test]
-    fn repeated_lines_add_up() {
-        let (_, trade) = parse_trade_description(
-            "Are you sure you want to accept this trade? You are offering:\nGoopolla (S)\nGoopolla (S)\nGoopolla (S)\n\nand will receive from TestSquadA the following:\nPlatinum x 10",
-        )
-        .unwrap();
-        assert_eq!(
-            trade.offered,
-            [TradeItem {
-                name: String::from("Goopolla (S)"),
-                count: 3,
-                rank: None,
-            }]
-        );
-        assert!(same_part("Goopolla (S)", "Goopolla"));
-    }
 
     #[test]
     fn relic_refinements() {
@@ -279,54 +165,76 @@ mod tests {
     }
 
     #[test]
-    fn riven_rank_suffix() {
+    fn screen_items_carry_the_fingerprint_rank() {
+        let arcane = "/Lotus/Upgrades/CosmeticEnhancers/Offensive/OrbsOnResidualContact";
+        let scanned = |fingerprint: Option<&str>| ScannedTradeItem {
+            name: String::from("Theorem Contagion"),
+            item_type: Some(arcane.to_owned()),
+            count: 1,
+            fingerprint: fingerprint.map(str::to_owned),
+        };
+        let screen = ScannedTrade {
+            partner: Some(String::from("TestSquadA\u{e000}")),
+            offered: vec![ScannedTradeItem {
+                name: String::from("Platinum"),
+                item_type: None,
+                count: 84,
+                fingerprint: None,
+            }],
+            received: vec![
+                scanned(Some("{\"lvl\":3}")),
+                scanned(None),
+                scanned(None),
+                ScannedTradeItem {
+                    name: String::from("Forma"),
+                    item_type: Some(String::from("/Lotus/Types/Items/MiscItems/Forma")),
+                    count: 2,
+                    fingerprint: None,
+                },
+                ScannedTradeItem {
+                    name: String::from("Primed Continuity Defiled"),
+                    item_type: Some(String::from(
+                        "/Lotus/Upgrades/Mods/Warframe/Expert/AvatarAbilityDurationModExpert",
+                    )),
+                    count: 1,
+                    fingerprint: Some(String::from("{\"lvl\":10}")),
+                },
+            ],
+        };
+        let trade = Trade::from_screen(&screen);
+        assert_eq!(trade.plat, -84);
+        assert!(trade.offered.is_empty());
         assert_eq!(
-            split_rank("Rubico Critacan (RIVEN RANK 8)"),
-            ("Rubico Critacan", Some(8))
-        );
-        assert_eq!(
-            split_rank("Ayatan Anasa Sculpture"),
-            ("Ayatan Anasa Sculpture", None)
-        );
-    }
-
-    #[test]
-    fn defiled_suffix_is_dropped() {
-        assert_eq!(
-            parse_entry("Primed Continuity Defiled (RARE RANK 3)").name,
-            "Primed Continuity"
-        );
-        assert_eq!(
-            parse_entry("Okina Acri-Vexicak (RIVEN RANK 8)").rank,
-            Some(8)
-        );
-    }
-
-    #[test]
-    fn arcane_pips_become_the_rank() {
-        let (_, trade) = parse_trade_description(
-            "Are you sure you want to accept this trade? You are offering:\nPrimary Overcharge \u{e0be}\u{e0be}\u{e0be}\u{e0bb}\u{e0bb}\nPrimary Overcharge \u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\nPrimary Overcharge \u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\n\nand will receive from TestSquadA the following:\nPlatinum x 42",
-        )
-        .unwrap();
-        assert_eq!(
-            trade.offered,
+            trade.received,
             [
                 TradeItem {
-                    name: String::from("Primary Overcharge"),
+                    name: String::from("Theorem Contagion"),
                     count: 1,
                     rank: Some(3),
                 },
                 TradeItem {
-                    name: String::from("Primary Overcharge"),
+                    name: String::from("Theorem Contagion"),
                     count: 2,
                     rank: Some(0),
                 },
+                TradeItem {
+                    name: String::from("Forma"),
+                    count: 2,
+                    rank: None,
+                },
+                TradeItem {
+                    name: String::from("Primed Continuity"),
+                    count: 1,
+                    rank: Some(10),
+                },
             ]
         );
-        assert_eq!(
-            split_rank("Arcane Grace \u{e0be}\u{e0be}\u{e0be}\u{e0be}\u{e0be}"),
-            ("Arcane Grace", Some(5))
-        );
+    }
+
+    #[test]
+    fn partner_name_loses_the_platform_glyph() {
+        assert_eq!(player_name("TestSquadA\u{e000}"), "TestSquadA");
+        assert_eq!(player_name("TestSquadA"), "TestSquadA");
     }
 
     #[test]
@@ -350,22 +258,5 @@ mod tests {
         assert_eq!(traded_set(&catalog, &parts[..1]), None);
         let mixed = [item("Braton Prime Barrel", 1), item("Forma Blueprint", 1)];
         assert_eq!(traded_set(&catalog, &mixed), None);
-    }
-
-    #[test]
-    fn dialog_head_only() {
-        let (partner, trade) =
-            parse_trade_description("Are you sure you want to accept this trade? You are offering")
-                .unwrap();
-        assert_eq!(partner, None);
-        assert_eq!(trade, Trade::default());
-    }
-
-    #[test]
-    fn other_dialogs() {
-        assert!(parse_trade_description("Are you sure you want to accept this trade?").is_none());
-        assert!(
-            parse_trade_description("Are you sure you want to equip Lith K12 Relic?").is_none()
-        );
     }
 }

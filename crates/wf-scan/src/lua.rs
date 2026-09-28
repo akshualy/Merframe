@@ -6,6 +6,7 @@ use crate::roots::{image_data, in_heap, words};
 
 const STRING_TAG: u8 = 6;
 const STRING_HEADER: usize = 24;
+const NUMBER_TAG: u32 = 3;
 const TABLE_TAG: u32 = 7;
 const FUNCTION_TAG: u32 = 8;
 const USERDATA_TAG: u32 = 9;
@@ -46,6 +47,7 @@ pub struct LuaFunction(u64);
 #[derive(Debug, Clone, PartialEq)]
 pub enum LuaValue {
     Text(String),
+    Number(f32),
     Table(LuaTable),
     Function(LuaFunction),
     Userdata(u64),
@@ -56,6 +58,13 @@ impl LuaValue {
     pub fn text(self) -> Option<String> {
         match self {
             Self::Text(text) => Some(text),
+            _ => None,
+        }
+    }
+
+    pub fn number(self) -> Option<f32> {
+        match self {
+            Self::Number(number) => Some(number),
             _ => None,
         }
     }
@@ -107,6 +116,7 @@ fn value<R: MemoryReader + ?Sized>(reader: &R, slot: &[u8]) -> Option<LuaValue> 
     Some(match slot_tag(slot)? {
         0 => return None,
         tag if tag == u32::from(STRING_TAG) => LuaValue::Text(read_text(reader, payload)?),
+        NUMBER_TAG => LuaValue::Number(f32::from_le_bytes(slot[..4].try_into().ok()?)),
         TABLE_TAG => LuaValue::Table(LuaTable(payload)),
         FUNCTION_TAG => LuaValue::Function(LuaFunction(payload)),
         USERDATA_TAG => LuaValue::Userdata(payload),
@@ -449,6 +459,15 @@ pub(crate) mod tests {
 
         pub(crate) fn table_field(&mut self, name: &str, table: u64) -> Field {
             (self.text(name), u32::from(STRING_TAG), table, TABLE_TAG)
+        }
+
+        pub(crate) fn number_field(&mut self, name: &str, number: f32) -> Field {
+            (
+                self.text(name),
+                u32::from(STRING_TAG),
+                u64::from(number.to_bits()),
+                NUMBER_TAG,
+            )
         }
 
         pub(crate) fn userdata_field(&mut self, name: &str, object: u64) -> Field {

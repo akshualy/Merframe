@@ -6,9 +6,9 @@ use wf_log::Event as LogEvent;
 use wf_worldstate::WorldState;
 
 use super::alerts::{AlertSettings, fissure_planet};
-use super::{CoreEvent, FissureInfo, InventorySummary};
+use super::{CoreEvent, FissureInfo, InventorySummary, ScannedTrade};
 use crate::catalog::DUCATS_ITEM;
-use crate::trade::{Trade, parse_trade_description, player_name};
+use crate::trade::{Trade, player_name};
 
 fn conversation_player(channel: &str) -> Option<String> {
     let name = player_name(channel.strip_prefix('F')?);
@@ -82,13 +82,8 @@ impl Engine {
                 self.reward_screen.players.insert(account_id.clone());
                 Vec::new()
             }
-            LogEvent::TradeDialogOpened { description } => {
-                self.pending_trade =
-                    parse_trade_description(description).map(|(partner, trade)| PendingTrade {
-                        opened_at: now,
-                        partner,
-                        trade,
-                    });
+            LogEvent::TradeDialogOpened => {
+                self.pending_trade = None;
                 Vec::new()
             }
             LogEvent::TradeSuccessful => match self.pending_trade.take() {
@@ -155,6 +150,14 @@ impl Engine {
         events
     }
 
+    pub fn handle_trade_screen(&mut self, screen: &ScannedTrade, now: DateTime<Utc>) {
+        self.pending_trade = Some(PendingTrade {
+            opened_at: now,
+            partner: screen.partner.as_deref().map(player_name),
+            trade: Trade::from_screen(screen),
+        });
+    }
+
     pub fn reward_screen_generation(&self) -> u64 {
         self.reward_screen.generation
     }
@@ -210,6 +213,7 @@ pub(crate) fn inventory_events(inventory: &Inventory, changes: usize) -> Vec<Cor
 
 #[cfg(test)]
 mod tests {
+    use super::super::ScannedTradeItem;
     use super::*;
     use crate::catalog::fixtures;
     use crate::events::{CyclePhase, FissureFilter, SteelPathFilter, TimerAlerts};
@@ -367,16 +371,32 @@ mod tests {
         assert_eq!(engine.reward_player_count(), 1);
     }
 
+    fn forma_for_platinum() -> ScannedTrade {
+        ScannedTrade {
+            partner: Some(String::from("TestSquadA\u{e000}")),
+            offered: vec![ScannedTradeItem {
+                name: String::from("Forma Blueprint"),
+                item_type: Some(String::from(
+                    "/Lotus/Types/Recipes/Components/FormaBlueprint",
+                )),
+                count: 2,
+                fingerprint: None,
+            }],
+            received: vec![ScannedTradeItem {
+                name: String::from("Platinum"),
+                item_type: None,
+                count: 45,
+                fingerprint: None,
+            }],
+        }
+    }
+
     #[test]
     fn completed_trade() {
         let mut engine = Engine::new(AlertSettings::default());
         let now = at(2_000_000);
-        engine.handle_log_event(
-            &LogEvent::TradeDialogOpened {
-                description: "Are you sure you want to accept this trade? You are offering\nForma Blueprint x 2\nand will receive from TestSquadA\u{e000} the following:\nPlatinum x 45\n".to_owned(),
-            },
-            now,
-        );
+        engine.handle_log_event(&LogEvent::TradeDialogOpened, now);
+        engine.handle_trade_screen(&forma_for_platinum(), now);
         let events = engine.handle_log_event(&LogEvent::TradeSuccessful, now);
         assert_eq!(events.len(), 1);
         match &events[0] {
@@ -396,15 +416,23 @@ mod tests {
     }
 
     #[test]
+    fn dialog_without_a_screen_read_records_nothing() {
+        let mut engine = Engine::new(AlertSettings::default());
+        let now = at(2_000_000);
+        engine.handle_trade_screen(&forma_for_platinum(), now);
+        engine.handle_log_event(&LogEvent::TradeDialogOpened, now);
+        assert!(
+            engine
+                .handle_log_event(&LogEvent::TradeSuccessful, now)
+                .is_empty()
+        );
+    }
+
+    #[test]
     fn stale_trade_dialog_is_dropped() {
         let mut engine = Engine::new(AlertSettings::default());
         let opened = at(2_000_000);
-        engine.handle_log_event(
-            &LogEvent::TradeDialogOpened {
-                description: "Are you sure you want to accept this trade? You are offering:\nForma Blueprint x 2\nand will receive from TestSquadA the following:\nPlatinum x 45".to_owned(),
-            },
-            opened,
-        );
+        engine.handle_trade_screen(&forma_for_platinum(), opened);
         let confirmed = opened + chrono::TimeDelta::minutes(TRADE_DIALOG_MAX_AGE_MINS + 1);
         assert!(
             engine
