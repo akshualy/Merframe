@@ -265,7 +265,9 @@ fn upgrade_rows(view: &View, wanted: UpgradeKind) -> Vec<ModRow> {
             }
             let slug = match listed.and_then(|upgrade| upgrade.market_slug) {
                 Some(slug) => slug.to_owned(),
-                None => market_slug(&name),
+                None => prices
+                    .slug_for(unique_name)
+                    .unwrap_or_else(|| market_slug(&name)),
             };
             let max_rank = known.map(Item::max_upgrade_rank);
             ModRow {
@@ -476,6 +478,33 @@ mod tests {
                 .iter()
                 .all(|row| row.prices.sell_max_rank.is_none())
         );
+    }
+
+    #[test]
+    fn listed_slug_wins_over_the_derived_one() {
+        let inventory = fixtures::inventory();
+        let catalog = upgrade_catalog();
+        let prices = FixedPrices::new([
+            ("arcane_energize", 12.0),
+            ("arcane\u{2019}energize", 30.0),
+        ])
+        .with_slugs([(
+            "/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup",
+            "arcane\u{2019}energize",
+        )]);
+        let view = View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &prices,
+            favourites: &Favourites::default(),
+            listings: &no_listings(),
+        };
+        let energize = arcanes(&view)
+            .into_iter()
+            .find(|row| row.name == "Arcane Energize")
+            .expect("Arcane Energize");
+        assert_eq!(energize.market_slug, "arcane\u{2019}energize");
+        assert_eq!(energize.prices.sell, Some(30.0));
     }
 
     #[test]

@@ -10,6 +10,7 @@ use wf_market::{Etagged, PriceTable, RivenData, bulk_prices, bulk_riven_data};
 use wf_worldstate::WorldState;
 
 use super::{RIVEN_DATA_KEY, STATUS_UPDATED, dispatch, emit};
+use crate::market;
 use crate::state::{AppState, lock, read, write};
 
 const PRICE_RETRY: Duration = Duration::from_secs(60);
@@ -133,6 +134,10 @@ async fn load_price_table<R: Runtime>(
     state: &Arc<AppState>,
     client: &mut Etagged<PriceTable>,
 ) -> wf_market::Result<usize> {
+    if let Some(items) = market::item_table(state).await {
+        let indexed = state.prices.index(items.items());
+        debug!(indexed, "Market slugs indexed by game reference");
+    }
     let now = Utc::now();
     let Some(table) = client.fetch().await? else {
         state.prices.checked(now);

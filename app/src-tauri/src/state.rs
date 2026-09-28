@@ -11,7 +11,7 @@ use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::{Mutex as AsyncMutex, Notify, SetOnce};
 use wf_core::{Catalog, Core, PriceCache, PriceSource, Store};
 use wf_data::load_or_fetch;
-use wf_market::{Client, Platform, PriceTable};
+use wf_market::{Client, Item, Platform, PriceTable};
 use wf_worldstate::WorldState;
 
 use crate::auctions::AuctionCache;
@@ -54,6 +54,10 @@ impl SharedPrices {
         lock(&self.cache).load(table, now)
     }
 
+    pub fn index(&self, items: &[Item]) -> usize {
+        lock(&self.cache).index(items)
+    }
+
     pub fn checked(&self, now: DateTime<Utc>) {
         lock(&self.cache).checked(now);
     }
@@ -66,6 +70,10 @@ impl SharedPrices {
 impl PriceSource for SharedPrices {
     fn plat(&self, market_slug: &str) -> Option<f64> {
         lock(&self.cache).plat(market_slug)
+    }
+
+    fn slug_for(&self, unique_name: &str) -> Option<String> {
+        lock(&self.cache).slug_for(unique_name)
     }
 
     fn plat_max_rank(&self, market_slug: &str) -> Option<f64> {
