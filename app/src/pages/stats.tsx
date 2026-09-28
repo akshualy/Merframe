@@ -28,6 +28,7 @@ import type {
   StoredDelta,
   StoredTrade,
   Timeframe,
+  TradeItem,
 } from "@/types";
 
 const TIMEFRAMES: { value: Timeframe; label: string }[] = [
@@ -50,6 +51,10 @@ function fullDate(iso: string): string {
     month: "short",
     year: "numeric",
   });
+}
+
+function tradeItemLabel(item: TradeItem): string {
+  return item.rank === null ? item.name : `${item.name} (Rank ${item.rank})`;
 }
 
 const TRADE_COLUMNS: ColumnDef<StoredTrade>[] = [
@@ -83,8 +88,8 @@ const TRADE_COLUMNS: ColumnDef<StoredTrade>[] = [
     cell: ({ row }) => (
       <span className="flex flex-wrap gap-1">
         {row.original.trade.offered.map((item) => (
-          <Badge key={item.name} variant="secondary">
-            {item.name} x{item.count}
+          <Badge key={tradeItemLabel(item)} variant="secondary">
+            {tradeItemLabel(item)} x{item.count}
           </Badge>
         ))}
       </span>
@@ -98,8 +103,8 @@ const TRADE_COLUMNS: ColumnDef<StoredTrade>[] = [
     cell: ({ row }) => (
       <span className="flex flex-wrap gap-1">
         {row.original.trade.received.map((item) => (
-          <Badge key={item.name} variant="accent">
-            {item.name} x{item.count}
+          <Badge key={tradeItemLabel(item)} variant="accent">
+            {tradeItemLabel(item)} x{item.count}
           </Badge>
         ))}
       </span>

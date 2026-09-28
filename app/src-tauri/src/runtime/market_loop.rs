@@ -7,12 +7,12 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
 use wf_core::{Trade, TradeItem, relic_refinement, traded_set};
 use wf_market::{
-    Auction, IncomingEvent, MarketError, MarketSocket, Order, OrderType, Platform, Session,
+    Auction, IncomingEvent, Item, MarketError, MarketSocket, Order, OrderType, Platform, Session,
     StatusSetPayload, UserStatus,
 };
 
 use super::{MARKET_AUTO_CLOSED, MARKET_PRESENCE, STATUS_UPDATED, emit};
-use crate::market::{self, OrderRow};
+use crate::market::{self, ItemTable, MarketCategory, OrderRow};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, lock, read, write};
 
@@ -176,7 +176,7 @@ fn matching_auction<'a>(slug: &str, auctions: &'a [Auction]) -> Option<&'a Aucti
 }
 
 fn matching_order<'a>(
-    item_id: &str,
+    market_item: &Item,
     side: OrderType,
     plat: u32,
     item: &TradedItem,
@@ -184,7 +184,9 @@ fn matching_order<'a>(
 ) -> Option<(&'a Order, u32)> {
     orders
         .iter()
-        .filter(|order| order.order_type == side && order.item_id == item_id && order.quantity > 0)
+        .filter(|order| {
+            order.order_type == side && order.item_id == market_item.id && order.quantity > 0
+        })
         .min_by_key(|order| {
             let rank_distance = match (item.rank, order.rank) {
                 (Some(traded), Some(listed)) => traded.abs_diff(listed),
@@ -199,7 +201,38 @@ fn matching_order<'a>(
                 order.quantity,
             )
         })
-        .map(|order| (order, item.quantity.min(order.quantity)))
+        .map(|order| (order, closing_quantity(market_item, item, order)))
+}
+
+fn listed_item<'a>(table: &'a ItemTable, name: &str) -> Option<&'a Item> {
+    let listed = match name {
+        "Enter Nihil's Oubliette" => "Nihil's Oubliette (Key)",
+        "Legendary Core" => "Legendary Fusion Core",
+        "Ancient Core" => "Ancient Fusion Core",
+        _ => name,
+    };
+    table
+        .by_name(listed)
+        .or_else(|| table.by_name(name.strip_suffix(" Set")?))
+        .or_else(|| {
+            name.ends_with(" Riven Mod")
+                .then(|| table.by_name(&format!("{name} (Veiled)")))
+                .flatten()
+        })
+}
+
+fn closing_quantity(market_item: &Item, item: &TradedItem, order: &Order) -> u32 {
+    let copies = match (MarketCategory::of(market_item), item.rank) {
+        (MarketCategory::Arcanes, Some(rank)) if rank > order.rank.unwrap_or(0) => {
+            arcane_copies(rank)
+        }
+        _ => 1,
+    };
+    (item.quantity * copies).min(order.quantity)
+}
+
+fn arcane_copies(rank: u32) -> u32 {
+    (rank + 1) * (rank + 2) / 2
 }
 
 pub(super) async fn auto_close<R: Runtime>(
@@ -219,7 +252,7 @@ pub(super) async fn auto_close<R: Runtime>(
         return;
     }
     let refresh = market_refresh(state, &slug).await;
-    let orders = refresh.orders.unwrap_or_default();
+    let mut orders = refresh.orders.unwrap_or_default();
     let auctions = refresh.auctions.unwrap_or_default();
     let table = if orders.is_empty() {
         None
@@ -259,14 +292,12 @@ pub(super) async fn auto_close<R: Runtime>(
         let Some(table) = &table else {
             continue;
         };
-        let Some(market_item) = table
-            .by_name(&item.name)
-            .or_else(|| table.by_name(item.name.strip_suffix(" Set")?))
-        else {
+        let Some(market_item) = listed_item(table, &item.name) else {
             debug!(item = item.name, "Traded item not on warframe.market");
             continue;
         };
-        let Some((order, quantity)) = matching_order(&market_item.id, side, plat, &item, &orders)
+        let Some((order, quantity)) = matching_order(market_item, side, plat, &item, &orders)
+            .map(|(order, quantity)| (order.id.clone(), quantity))
         else {
             continue;
         };
@@ -274,10 +305,13 @@ pub(super) async fn auto_close<R: Runtime>(
             OrderType::Sell => AutoCloseKind::Sell,
             OrderType::Buy => AutoCloseKind::Buy,
         };
-        match client.close_order(&order.id, quantity).await {
+        match client.close_order(&order, quantity).await {
             Ok(()) => {
+                if let Some(closed) = orders.iter_mut().find(|listed| listed.id == order) {
+                    closed.quantity -= quantity;
+                }
                 info!(
-                    order = order.id,
+                    order,
                     item = item.name,
                     quantity,
                     side = ?side,
@@ -294,7 +328,7 @@ pub(super) async fn auto_close<R: Runtime>(
                 );
             }
             Err(error) => warn!(
-                order = order.id,
+                order,
                 quantity,
                 error = %error.brief(),
                 "Order close after trade failed"
@@ -573,11 +607,14 @@ pub(super) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: A
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
     use std::time::Duration;
 
     use chrono::Utc;
     use wf_core::{Trade, TradeItem};
-    use wf_market::{Auction, AuctionItem, Order, OrderType, Polarity, RivenAttributeInstance};
+    use wf_market::{
+        Auction, AuctionItem, ItemLocalization, Order, OrderType, Polarity, RivenAttributeInstance,
+    };
 
     use super::*;
 
@@ -684,6 +721,56 @@ mod tests {
         assert!(matching_auction("okina_visi_visitio", &auctions).is_none());
     }
 
+    fn market_item(id: &str, tags: &[&str]) -> Item {
+        named_item(id, "", tags)
+    }
+
+    fn named_item(id: &str, name: &str, tags: &[&str]) -> Item {
+        let en = ItemLocalization {
+            name: name.to_owned(),
+            description: None,
+            icon: String::new(),
+            thumb: String::new(),
+        };
+        Item {
+            id: id.to_owned(),
+            slug: id.to_owned(),
+            game_ref: String::new(),
+            tags: tags.iter().map(|tag| (*tag).to_owned()).collect(),
+            max_rank: None,
+            subtypes: None,
+            max_amber_stars: None,
+            max_cyan_stars: None,
+            tradable: None,
+            bulk_tradable: None,
+            vaulted: None,
+            ducats: None,
+            rarity: None,
+            i18n: HashMap::from([(String::from("en"), en)]),
+        }
+    }
+
+    #[test]
+    fn dialog_names_find_their_listing() {
+        let table = ItemTable::new(
+            vec![
+                named_item("key", "Nihil's Oubliette (Key)", &["key"]),
+                named_item("core", "Legendary Fusion Core", &["fusion core"]),
+                named_item("veiled", "Rifle Riven Mod (Veiled)", &["mod", "riven_mod"]),
+                named_item("set", "Braton Prime Set", &["set"]),
+                named_item("forma", "Forma Blueprint", &["misc"]),
+            ],
+            Utc::now(),
+        );
+        let found = |name: &str| listed_item(&table, name).map(|item| item.id.as_str());
+        assert_eq!(found("Enter Nihil's Oubliette"), Some("key"));
+        assert_eq!(found("Legendary Core"), Some("core"));
+        assert_eq!(found("Rifle Riven Mod"), Some("veiled"));
+        assert_eq!(found("Braton Prime Set"), Some("set"));
+        assert_eq!(found("Forma"), Some("forma"));
+        assert_eq!(found("Rubico Critacan"), None);
+    }
+
     fn traded(quantity: u32, rank: Option<u32>) -> TradedItem {
         TradedItem {
             name: String::new(),
@@ -727,12 +814,24 @@ mod tests {
         let orders = vec![radiant, intact];
         let mut item = traded(1, None);
         item.name = "Axi D6 Relic".to_owned();
-        let (order, _) =
-            matching_order("item-relic", OrderType::Sell, 12, &item, &orders).expect("sell order");
+        let (order, _) = matching_order(
+            &market_item("item-relic", &[]),
+            OrderType::Sell,
+            12,
+            &item,
+            &orders,
+        )
+        .expect("sell order");
         assert_eq!(order.id, "intact");
         item.name = "Axi D6 Relic [RADIANT]".to_owned();
-        let (order, _) =
-            matching_order("item-relic", OrderType::Sell, 40, &item, &orders).expect("sell order");
+        let (order, _) = matching_order(
+            &market_item("item-relic", &[]),
+            OrderType::Sell,
+            40,
+            &item,
+            &orders,
+        )
+        .expect("sell order");
         assert_eq!(order.id, "radiant");
     }
 
@@ -744,7 +843,7 @@ mod tests {
         dear.platinum = 40;
         let orders = vec![cheap, dear];
         let (order, _) = matching_order(
-            "item-octavia",
+            &market_item("item-octavia", &[]),
             OrderType::Sell,
             35,
             &traded(1, None),
@@ -761,7 +860,7 @@ mod tests {
             sell_order("sell", "item-octavia", 3),
         ];
         let (order, quantity) = matching_order(
-            "item-octavia",
+            &market_item("item-octavia", &[]),
             OrderType::Sell,
             22,
             &traded(2, None),
@@ -780,7 +879,7 @@ mod tests {
         unranked.rank = Some(0);
         let orders = vec![maxed, unranked];
         let (order, _) = matching_order(
-            "item-mod",
+            &market_item("item-mod", &[]),
             OrderType::Sell,
             22,
             &traded(1, Some(0)),
@@ -788,16 +887,48 @@ mod tests {
         )
         .expect("sell order");
         assert_eq!(order.id, "unranked");
-        let (order, _) = matching_order("item-mod", OrderType::Sell, 22, &traded(1, None), &orders)
-            .expect("sell order");
+        let (order, _) = matching_order(
+            &market_item("item-mod", &[]),
+            OrderType::Sell,
+            22,
+            &traded(1, None),
+            &orders,
+        )
+        .expect("sell order");
         assert_eq!(order.id, "maxed");
+    }
+
+    #[test]
+    fn ranked_arcane_closes_its_copies() {
+        let mut unranked = sell_order("unranked", "item-arcane", 20);
+        unranked.rank = Some(0);
+        let orders = vec![unranked];
+        let arcane = market_item("item-arcane", &["arcane_enhancement"]);
+        let (_, quantity) =
+            matching_order(&arcane, OrderType::Sell, 42, &traded(1, Some(3)), &orders)
+                .expect("sell order");
+        assert_eq!(quantity, 10);
+        let (_, quantity) =
+            matching_order(&arcane, OrderType::Sell, 42, &traded(2, Some(0)), &orders)
+                .expect("sell order");
+        assert_eq!(quantity, 2);
+        let mut maxed = sell_order("maxed", "item-arcane", 1);
+        maxed.rank = Some(5);
+        let orders = vec![maxed];
+        let (order, quantity) =
+            matching_order(&arcane, OrderType::Sell, 42, &traded(1, Some(5)), &orders)
+                .expect("sell order");
+        assert_eq!(order.id, "maxed");
+        assert_eq!(quantity, 1);
+        assert_eq!(arcane_copies(1), 3);
+        assert_eq!(arcane_copies(5), 21);
     }
 
     #[test]
     fn quantity_capped_at_order() {
         let orders = vec![sell_order("sell", "item-octavia", 1)];
         let (_, quantity) = matching_order(
-            "item-octavia",
+            &market_item("item-octavia", &[]),
             OrderType::Sell,
             22,
             &traded(6, None),
@@ -812,7 +943,7 @@ mod tests {
         let orders = vec![buy_order("buy", "item-octavia")];
         assert!(
             matching_order(
-                "item-octavia",
+                &market_item("item-octavia", &[]),
                 OrderType::Sell,
                 22,
                 &traded(1, None),
@@ -822,7 +953,7 @@ mod tests {
         );
         assert!(
             matching_order(
-                "item-mirage",
+                &market_item("item-mirage", &[]),
                 OrderType::Sell,
                 22,
                 &traded(1, None),

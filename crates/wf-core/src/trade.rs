@@ -81,11 +81,7 @@ fn add_item(items: &mut Vec<TradeItem>, item: TradeItem) {
 }
 
 fn plain_name(name: &str) -> &str {
-    let name = name.strip_suffix(" Defiled").unwrap_or(name);
-    if name.is_ascii() {
-        return name;
-    }
-    name.rsplit_once(' ').map_or(name, |(head, _)| head)
+    name.strip_suffix(" Defiled").unwrap_or(name)
 }
 
 pub fn traded_set(catalog: &Catalog, items: &[TradeItem]) -> Option<TradeItem> {
@@ -151,7 +147,24 @@ pub fn relic_refinement(name: &str) -> Option<(&str, String)> {
         .then(|| (name, String::from("intact")))
 }
 
+fn arcane_rank(pips: &str) -> Option<u32> {
+    let mut filled = 0;
+    for pip in pips.chars() {
+        match pip {
+            '\u{e0be}' => filled += 1,
+            '\u{e0bb}' => {}
+            _ => return None,
+        }
+    }
+    Some(filled)
+}
+
 fn split_rank(name: &str) -> (&str, Option<u32>) {
+    if let Some((base, pips)) = name.rsplit_once(' ')
+        && let Some(rank) = arcane_rank(pips)
+    {
+        return (base, Some(rank));
+    }
     let Some((base, suffix)) = name.rsplit_once(" (") else {
         return (name, None);
     };
@@ -278,18 +291,41 @@ mod tests {
     }
 
     #[test]
-    fn defiled_and_arcane_rank_glyphs_are_dropped() {
+    fn defiled_suffix_is_dropped() {
         assert_eq!(
             parse_entry("Primed Continuity Defiled (RARE RANK 3)").name,
             "Primed Continuity"
         );
         assert_eq!(
-            parse_entry("Arcane Grace \u{e001}\u{e001}\u{e001}").name,
-            "Arcane Grace"
-        );
-        assert_eq!(
             parse_entry("Okina Acri-Vexicak (RIVEN RANK 8)").rank,
             Some(8)
+        );
+    }
+
+    #[test]
+    fn arcane_pips_become_the_rank() {
+        let (_, trade) = parse_trade_description(
+            "Are you sure you want to accept this trade? You are offering:\nPrimary Overcharge \u{e0be}\u{e0be}\u{e0be}\u{e0bb}\u{e0bb}\nPrimary Overcharge \u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\nPrimary Overcharge \u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\u{e0bb}\n\nand will receive from TestSquadA the following:\nPlatinum x 42",
+        )
+        .unwrap();
+        assert_eq!(
+            trade.offered,
+            [
+                TradeItem {
+                    name: String::from("Primary Overcharge"),
+                    count: 1,
+                    rank: Some(3),
+                },
+                TradeItem {
+                    name: String::from("Primary Overcharge"),
+                    count: 2,
+                    rank: Some(0),
+                },
+            ]
+        );
+        assert_eq!(
+            split_rank("Arcane Grace \u{e0be}\u{e0be}\u{e0be}\u{e0be}\u{e0be}"),
+            ("Arcane Grace", Some(5))
         );
     }
 

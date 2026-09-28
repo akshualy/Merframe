@@ -22,7 +22,7 @@ pub enum MarketCategory {
 }
 
 impl MarketCategory {
-    fn of(item: &Item) -> Self {
+    pub(crate) fn of(item: &Item) -> Self {
         let tagged = |tag: &str| item.tags.iter().any(|owned| owned == tag);
         if tagged("component") || tagged("blueprint") || item.slug.contains("kavasa") {
             return Self::Parts;
@@ -83,7 +83,7 @@ pub struct ItemTable {
 }
 
 impl ItemTable {
-    fn new(items: Vec<Item>, fetched_at: DateTime<Utc>) -> Self {
+    pub(crate) fn new(items: Vec<Item>, fetched_at: DateTime<Utc>) -> Self {
         let by_id = items
             .iter()
             .enumerate()
