@@ -9,6 +9,7 @@ use wf_inventory::{RivenFingerprint, RivenStat};
 use wf_market::{Polarity, RivenAttribute};
 
 use super::Grader;
+use crate::catalog::Catalog;
 
 const GRADE_BANDS: [(f64, &str); 10] = [
     (0.025, "F"),
@@ -232,6 +233,18 @@ pub(super) fn polarity(pol: &str) -> Option<Polarity> {
 pub fn fingerprint_weapon(fingerprint: &str) -> Option<String> {
     let parsed = RivenFingerprint::parse(fingerprint).ok()?;
     Some(compat_path(parsed.compat.as_deref()?).to_owned())
+}
+
+pub(crate) fn traded_riven_name(
+    catalog: &Catalog,
+    item_type: &str,
+    fingerprint: &str,
+) -> Option<String> {
+    let riven_type = catalog.data().riven_data().riven_type(item_type)?;
+    let fingerprint = RivenFingerprint::parse(fingerprint).ok()?;
+    let weapon = catalog.item(compat_path(fingerprint.compat.as_deref()?))?;
+    let name = riven_name(riven_type, &fingerprint.buffs)?;
+    Some(format!("{} {name}", weapon.name))
 }
 
 #[allow(
@@ -546,6 +559,28 @@ mod tests {
         assert!(alike(903_450_000, 903_450_016));
         assert!(!alike(708_669_601, 741_320_000));
         assert!(!alike(1, 2));
+    }
+
+    #[test]
+    fn traded_riven_names() {
+        let catalog = riven_catalog();
+        let inventory = crate::catalog::fixtures::inventory();
+        let soma = inventory
+            .rivens()
+            .find(|upgrade| {
+                fingerprint_weapon(upgrade.upgrade_fingerprint.as_deref().unwrap_or_default())
+                    .is_some_and(|weapon| weapon.ends_with("/Rifle/TennoAR"))
+            })
+            .unwrap();
+        let fingerprint = soma.upgrade_fingerprint.as_deref().unwrap();
+        assert_eq!(
+            traded_riven_name(&catalog, &soma.item_type, fingerprint).as_deref(),
+            Some("Soma Toxidex")
+        );
+        assert_eq!(
+            traded_riven_name(&catalog, RIFLE_RIVEN, "{\"lvl\":0}"),
+            None
+        );
     }
 
     #[test]

@@ -8,11 +8,11 @@ use chrono::Utc;
 use futures_util::StreamExt;
 use futures_util::pin_mut;
 use tauri::{AppHandle, Runtime};
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 use wf_core::{CoreEvent, ScannedRewards, ScannedTrade, ScannedTradeItem};
 use wf_log::Event as LogEvent;
 use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_game};
-use wf_scan::{HttpClients, InventoryBuffer, LuaState, TradeScreen};
+use wf_scan::{HttpClients, InventoryBuffer, LuaState, TRADE_CONFIRM_OP, TradeScreen, trade_op};
 
 use super::{INVENTORY_UPDATED, STATUS_UPDATED, blocking, dispatch, emit, market_loop};
 use crate::overlay;
@@ -24,8 +24,8 @@ const REWARD_TICKS: usize = 50;
 const PICKER_TICK: Duration = Duration::from_millis(100);
 const PICKER_LIFETIME: Duration = Duration::from_secs(600);
 const PICKER_GRACE: Duration = Duration::from_secs(2);
-const TRADE_TICK: Duration = Duration::from_millis(100);
-const TRADE_TICKS: usize = 20;
+const TRADE_WATCH_WINDOW: Duration = Duration::from_secs(1);
+const TRADE_WATCH_LIFETIME: Duration = Duration::from_secs(600);
 
 pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut missing_reported = false;
@@ -160,9 +160,13 @@ async fn handle_log_event<R: Runtime>(
     if matches!(event, LogEvent::RelicSelectScreenLoaded) {
         watch_relic_picker(state);
     }
-    if matches!(event, LogEvent::TradeDialogOpened) {
-        let state = Arc::clone(state);
-        tauri::async_runtime::spawn(async move { handle_trade_screen(&state).await });
+    if let LogEvent::TradeScreen { visible } = event {
+        state.trade_screen_open.store(visible, Ordering::SeqCst);
+        if visible {
+            let app = app.clone();
+            let state = Arc::clone(state);
+            tauri::async_runtime::spawn(async move { watch_trade(&app, &state).await });
+        }
     }
     let scan_rewards = matches!(
         event,
@@ -244,12 +248,6 @@ enum Picker {
     Open(Option<wf_scan::RelicPick>),
 }
 
-fn trade_screen() -> Option<TradeScreen> {
-    let reader = open_game().ok()?;
-    let state = LuaState::locate(reader.as_ref()).ok().flatten()?;
-    TradeScreen::read(reader.as_ref(), &state)
-}
-
 fn scanned_trade(screen: TradeScreen) -> ScannedTrade {
     let items = |slots: Vec<wf_scan::TradeSlot>| {
         slots
@@ -269,25 +267,78 @@ fn scanned_trade(screen: TradeScreen) -> ScannedTrade {
     }
 }
 
-async fn handle_trade_screen(state: &Arc<AppState>) {
-    let mut seen = None;
-    for _ in 0..TRADE_TICKS {
-        match blocking("read trade screen", trade_screen).await.flatten() {
-            Some(screen) if seen.as_ref() == Some(&screen) => {
-                let screen = scanned_trade(screen);
-                debug!(
-                    offered = screen.offered.len(),
-                    received = screen.received.len(),
-                    "Trade screen read from game memory"
-                );
-                lock(&state.core).handle_trade_screen(&screen, Utc::now());
-                return;
-            }
-            screen => seen = screen,
+fn confirmed_trade(state: &Arc<AppState>) -> anyhow::Result<Option<ScannedTrade>> {
+    let reader = open_game().context("Attaching to the game process")?;
+    let clients = http_clients(state, reader.as_ref())?;
+    let started = Instant::now();
+    while started.elapsed() < TRADE_WATCH_LIFETIME && state.trade_screen_open.load(Ordering::SeqCst)
+    {
+        let confirmed = clients.await_response(reader.as_ref(), TRADE_WATCH_WINDOW, |response| {
+            let op = trade_op(&response.url)?;
+            debug!(op, "Trade call answered by the server");
+            (op == TRADE_CONFIRM_OP).then_some(())
+        });
+        if confirmed.is_none() {
+            continue;
         }
-        tokio::time::sleep(TRADE_TICK).await;
+        let screen = LuaState::locate(reader.as_ref())?
+            .and_then(|lua| TradeScreen::read(reader.as_ref(), &lua));
+        if screen.is_none() {
+            warn!("Trade screen not read from game memory, the trade is not recorded");
+        }
+        return Ok(screen.map(scanned_trade));
     }
-    warn!("Trade screen not read from game memory, the trade will not be recorded");
+    Ok(None)
+}
+
+fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    let remaining = {
+        let mut status = write(&state.status);
+        let Some(left) = status.trades_remaining.filter(|left| *left > 0) else {
+            return;
+        };
+        status.trades_remaining = Some(left - 1);
+        left - 1
+    };
+    emit(app, STATUS_UPDATED, state.status_snapshot());
+    if remaining == 0 {
+        market_loop::offline_after_last_trade(app, state);
+    }
+}
+
+async fn watch_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    let owned = Arc::clone(state);
+    let screen = match blocking("watch trade calls", move || confirmed_trade(&owned)).await {
+        Some(Ok(Some(screen))) => screen,
+        Some(Ok(None)) | None => return,
+        Some(Err(error)) => {
+            warn!(?error, "Trade calls not watched, the trade is not recorded");
+            return;
+        }
+    };
+    let owned = Arc::clone(state);
+    let handled = blocking("record trade", move || {
+        lock(&owned.core).handle_trade_screen(&screen, Utc::now())
+    })
+    .await;
+    match handled {
+        Some(Ok(events)) => {
+            for event in &events {
+                if let CoreEvent::TradeCompleted { trade, .. } = event {
+                    info!(
+                        offered = trade.offered.len(),
+                        received = trade.received.len(),
+                        plat = trade.plat,
+                        "Trade completed"
+                    );
+                    count_trade(app, state);
+                }
+            }
+            dispatch(app, state, events).await;
+        }
+        Some(Err(error)) => warn!(%error, "Core rejected the completed trade"),
+        None => {}
+    }
 }
 
 fn relic_picker() -> Picker {

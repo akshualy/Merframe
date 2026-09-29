@@ -8,7 +8,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tracing::{debug, info, warn};
 use wf_core::{CoreEvent, RivenRow};
-use wf_log::{Event as LogEvent, MonitorRect};
+use wf_log::{DialogButtons, Event as LogEvent, MonitorRect};
 use wf_worldstate::RelicTier;
 
 use crate::runtime::emit;
@@ -32,7 +32,7 @@ use relic::{
     reward_screen_closes, scan_recommendation, set_mission, suggest_mission,
 };
 use riven::{
-    on_dialog_answer, purchase_dialog_closes, riven_shows, show_linked_riven,
+    arm_station_answer, on_dialog_answer, purchase_dialog_closes, riven_shows, show_linked_riven,
     show_station_selection, station_closes,
 };
 use window::{bounds_for, logical, open, park, retire, reveal, screen_of};
@@ -157,9 +157,9 @@ impl OverlayState {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 enum PendingAnswer {
-    Cycle { riven: String },
+    Cycle { row: Box<RivenRow> },
     KeepRoll,
 }
 
@@ -308,19 +308,17 @@ pub fn on_log_event<R: Runtime>(
             lock(&state.overlays.marks).reroll_screen = Some(at);
             show_station_selection(app, state);
         }
-        LogEvent::RivenCycleDialog { riven, .. } => {
-            debug!(riven, "Cycle confirmation dialog opened");
-            let answer = PendingAnswer::Cycle {
-                riven: riven.clone(),
-            };
-            lock(&state.overlays.marks).pending = Some((answer, at));
-        }
-        LogEvent::RivenCycleKeepDialog => {
-            lock(&state.overlays.marks).pending = Some((PendingAnswer::KeepRoll, at));
+        LogEvent::ConfirmDialog {
+            buttons: DialogButtons::YesNo,
+        } => {
+            if lock(&state.overlays.marks).reroll_screen.is_some() {
+                arm_station_answer(state, at);
+            }
         }
         LogEvent::WindowFocus { focused } => follow_game_window(app, state, *focused),
         LogEvent::GameMonitor(rect) => follow_game_monitor(app, state, *rect),
-        LogEvent::DialogAccepted => on_dialog_answer(app, state, at),
+        LogEvent::DialogAnswered { accepted: true } => on_dialog_answer(app, state, at),
+        LogEvent::DialogAnswered { accepted: false } => lock(&state.overlays.marks).pending = None,
         LogEvent::SceneTornDown => {
             let closed = station_closes(&mut lock(&state.overlays.marks), at);
             if closed {

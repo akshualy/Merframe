@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
+use wf_data::Refinement;
 
-use crate::catalog::{Catalog, part_name};
+use crate::catalog::{Catalog, part_name, refinement_name};
 use crate::events::{ScannedTrade, ScannedTradeItem};
+use crate::inventory_view::catalogued_name;
+use crate::rivens::traded_riven_name;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TradeItem {
@@ -24,45 +27,53 @@ struct Level {
 }
 
 impl Trade {
-    pub(crate) fn from_screen(screen: &ScannedTrade) -> Self {
+    pub(crate) fn from_screen(screen: &ScannedTrade, catalog: &Catalog) -> Self {
         let mut trade = Self::default();
         for (items, receiving) in [(&screen.offered, false), (&screen.received, true)] {
             for item in items {
-                if item.name == "Platinum" {
+                let Some(item_type) = item.item_type.as_deref() else {
                     trade.plat += if receiving { item.count } else { -item.count };
                     continue;
-                }
+                };
                 let side = if receiving {
                     &mut trade.received
                 } else {
                     &mut trade.offered
                 };
-                add_item(side, TradeItem::from(item));
+                add_item(side, TradeItem::traded(catalog, item, item_type));
             }
         }
         trade
     }
 }
 
-impl From<&ScannedTradeItem> for TradeItem {
-    fn from(item: &ScannedTradeItem) -> Self {
-        let upgrade = item
-            .item_type
-            .as_deref()
-            .is_some_and(|item_type| item_type.starts_with("/Lotus/Upgrades/"));
-        let level = item
-            .fingerprint
-            .as_deref()
+impl TradeItem {
+    fn traded(catalog: &Catalog, item: &ScannedTradeItem, item_type: &str) -> Self {
+        let fingerprint = item.fingerprint.as_deref();
+        let name = match catalog.relic_by_unique_name(item_type) {
+            Some((relic, Refinement::Intact)) => format!("{} Relic", relic.name),
+            Some((relic, refinement)) => format!(
+                "{} Relic [{}]",
+                relic.name,
+                refinement_name(refinement).to_uppercase()
+            ),
+            None => fingerprint
+                .and_then(|fingerprint| traded_riven_name(catalog, item_type, fingerprint))
+                .or_else(|| catalogued_name(catalog, item_type))
+                .unwrap_or_else(|| {
+                    item.name
+                        .strip_suffix(" Defiled")
+                        .unwrap_or(&item.name)
+                        .to_owned()
+                }),
+        };
+        let level = fingerprint
             .and_then(|fingerprint| serde_json::from_str::<Level>(fingerprint).ok())
             .map_or(0, |level| level.lvl);
         Self {
-            name: item
-                .name
-                .strip_suffix(" Defiled")
-                .unwrap_or(&item.name)
-                .to_owned(),
+            name,
             count: item.count,
-            rank: upgrade.then_some(level),
+            rank: item_type.starts_with("/Lotus/Upgrades/").then_some(level),
         }
     }
 }
@@ -149,6 +160,7 @@ pub fn relic_refinement(name: &str) -> Option<(&str, String)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::catalog::fixtures;
 
     #[test]
     fn relic_refinements() {
@@ -165,69 +177,72 @@ mod tests {
     }
 
     #[test]
-    fn screen_items_carry_the_fingerprint_rank() {
-        let arcane = "/Lotus/Upgrades/CosmeticEnhancers/Offensive/OrbsOnResidualContact";
-        let scanned = |fingerprint: Option<&str>| ScannedTradeItem {
-            name: String::from("Theorem Contagion"),
-            item_type: Some(arcane.to_owned()),
-            count: 1,
-            fingerprint: fingerprint.map(str::to_owned),
+    fn screen_items_named_from_the_catalog() {
+        let arcane = "/Lotus/Upgrades/CosmeticEnhancers/Offensive/HealCompanionOnSixMeleeKills";
+        let scanned = |name: &str, item_type: Option<&str>, count, fingerprint: Option<&str>| {
+            ScannedTradeItem {
+                name: name.to_owned(),
+                item_type: item_type.map(str::to_owned),
+                count,
+                fingerprint: fingerprint.map(str::to_owned),
+            }
         };
         let screen = ScannedTrade {
             partner: Some(String::from("TestSquadA\u{e000}")),
-            offered: vec![ScannedTradeItem {
-                name: String::from("Platinum"),
-                item_type: None,
-                count: 84,
-                fingerprint: None,
-            }],
+            offered: vec![
+                scanned("Platin", None, 84, None),
+                scanned(
+                    "Axi A21 Relikt [STRAHLEND]",
+                    Some("/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeAPlatinum"),
+                    2,
+                    None,
+                ),
+            ],
             received: vec![
-                scanned(Some("{\"lvl\":3}")),
-                scanned(None),
-                scanned(None),
-                ScannedTradeItem {
-                    name: String::from("Forma"),
-                    item_type: Some(String::from("/Lotus/Types/Items/MiscItems/Forma")),
-                    count: 2,
-                    fingerprint: None,
-                },
-                ScannedTradeItem {
-                    name: String::from("Primed Continuity Defiled"),
-                    item_type: Some(String::from(
-                        "/Lotus/Upgrades/Mods/Warframe/Expert/AvatarAbilityDurationModExpert",
-                    )),
-                    count: 1,
-                    fingerprint: Some(String::from("{\"lvl\":10}")),
-                },
+                scanned("Leibwaechter", Some(arcane), 1, Some("{\"lvl\":3}")),
+                scanned("Leibwaechter", Some(arcane), 1, None),
+                scanned("Leibwaechter", Some(arcane), 1, None),
+                scanned(
+                    "Unbekannt Defiled",
+                    Some("/Lotus/Types/Items/Unknown/NotInTheCatalog"),
+                    1,
+                    None,
+                ),
             ],
         };
-        let trade = Trade::from_screen(&screen);
+        let trade = Trade::from_screen(&screen, &fixtures::upgrade_catalog());
         assert_eq!(trade.plat, -84);
-        assert!(trade.offered.is_empty());
+        assert_eq!(
+            trade.offered,
+            [TradeItem {
+                name: String::from("Axi A21 Relic [RADIANT]"),
+                count: 2,
+                rank: None,
+            }]
+        );
         assert_eq!(
             trade.received,
             [
                 TradeItem {
-                    name: String::from("Theorem Contagion"),
+                    name: String::from("Arcane Bodyguard"),
                     count: 1,
                     rank: Some(3),
                 },
                 TradeItem {
-                    name: String::from("Theorem Contagion"),
+                    name: String::from("Arcane Bodyguard"),
                     count: 2,
                     rank: Some(0),
                 },
                 TradeItem {
-                    name: String::from("Forma"),
-                    count: 2,
+                    name: String::from("Unbekannt"),
+                    count: 1,
                     rank: None,
                 },
-                TradeItem {
-                    name: String::from("Primed Continuity"),
-                    count: 1,
-                    rank: Some(10),
-                },
             ]
+        );
+        assert_eq!(
+            relic_refinement(&trade.offered[0].name),
+            Some(("Axi A21 Relic", String::from("radiant")))
         );
     }
 

@@ -27,6 +27,7 @@ use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
 use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
 use crate::store::{Snapshot, SnapshotId, StatPoint, Store, StoredTrade, TimeRange};
+use crate::trade::{Trade, player_name};
 use crate::view::View;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -197,8 +198,18 @@ impl Core {
         Ok(events)
     }
 
-    pub fn handle_trade_screen(&mut self, screen: &ScannedTrade, now: DateTime<Utc>) {
-        self.engine.handle_trade_screen(screen, now);
+    pub fn handle_trade_screen(
+        &mut self,
+        screen: &ScannedTrade,
+        now: DateTime<Utc>,
+    ) -> Result<Vec<CoreEvent>> {
+        let events = vec![CoreEvent::TradeCompleted {
+            at: now,
+            partner: screen.partner.as_deref().map(player_name),
+            trade: Trade::from_screen(screen, &self.catalog),
+        }];
+        self.record(&events, now)?;
+        Ok(events)
     }
 
     pub fn reward_screen_generation(&self) -> u64 {
@@ -832,28 +843,33 @@ mod tests {
             .unwrap();
         assert_eq!(events.len(), 1);
 
-        core.handle_trade_screen(
-            &ScannedTrade {
-                partner: Some(String::from("TestSquadA")),
-                offered: vec![ScannedTradeItem {
-                    name: String::from("Styanax Prime Blueprint"),
-                    item_type: Some(String::from(
-                        "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint",
-                    )),
-                    count: 1,
-                    fingerprint: None,
-                }],
-                received: vec![ScannedTradeItem {
-                    name: String::from("Platinum"),
-                    item_type: None,
-                    count: 90,
-                    fingerprint: None,
-                }],
-            },
-            now,
-        );
-        core.handle_log_event(&LogEvent::TradeSuccessful, now)
+        let events = core
+            .handle_trade_screen(
+                &ScannedTrade {
+                    partner: Some(String::from("TestSquadA\u{e000}")),
+                    offered: vec![ScannedTradeItem {
+                        name: String::from("Styanax Prime Blueprint"),
+                        item_type: Some(String::from(
+                            "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint",
+                        )),
+                        count: 1,
+                        fingerprint: None,
+                    }],
+                    received: vec![ScannedTradeItem {
+                        name: String::from("Platinum"),
+                        item_type: None,
+                        count: 90,
+                        fingerprint: None,
+                    }],
+                },
+                now,
+            )
             .unwrap();
+        assert!(matches!(
+            &events[..],
+            [CoreEvent::TradeCompleted { at, partner: Some(partner), trade }]
+                if *at == now && partner == "TestSquadA" && trade.offered[0].name == "Styanax Prime Blueprint"
+        ));
 
         let stats = core
             .stats_tab(TimeRange::all(), now + chrono::TimeDelta::days(2))

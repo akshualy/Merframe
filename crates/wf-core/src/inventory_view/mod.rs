@@ -224,7 +224,7 @@ fn sum(rows: impl Iterator<Item = (i64, Option<u32>, Option<f64>)>) -> TabTotals
     TabTotals { ducats, plat }
 }
 
-fn catalogued_name(catalog: &Catalog, unique_name: &str) -> Option<String> {
+pub(crate) fn catalogued_name(catalog: &Catalog, unique_name: &str) -> Option<String> {
     if let Some((relic, refinement)) = catalog.relic_by_unique_name(unique_name) {
         return Some(format!(
             "{} Relic ({})",

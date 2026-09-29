@@ -38,8 +38,15 @@ pub enum Event {
     SquadMissionPending {
         node: String,
     },
-    TradeDialogOpened,
-    TradeSuccessful,
+    TradeScreen {
+        visible: bool,
+    },
+    ConfirmDialog {
+        buttons: DialogButtons,
+    },
+    DialogAnswered {
+        accepted: bool,
+    },
     ChatTabAdded {
         channel: String,
     },
@@ -50,12 +57,6 @@ pub enum Event {
         count: u32,
     },
     RivenRerollScreenLoaded,
-    RivenCycleDialog {
-        riven: String,
-        cost: u32,
-    },
-    RivenCycleKeepDialog,
-    DialogAccepted,
     SceneTornDown,
     ConsoleOpened,
     InputMappingReset,
@@ -65,6 +66,12 @@ pub enum Event {
         focused: bool,
     },
     GameMonitor(MonitorRect),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DialogButtons {
+    OkCancel,
+    YesNo,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -95,15 +102,13 @@ impl Event {
             Self::StarChartHidden => "StarChartHidden",
             Self::MissionCleared => "MissionCleared",
             Self::SquadMissionPending { .. } => "SquadMissionPending",
-            Self::TradeDialogOpened => "TradeDialogOpened",
-            Self::TradeSuccessful => "TradeSuccessful",
+            Self::TradeScreen { .. } => "TradeScreen",
+            Self::ConfirmDialog { .. } => "ConfirmDialog",
+            Self::DialogAnswered { .. } => "DialogAnswered",
             Self::ChatTabAdded { .. } => "ChatTabAdded",
             Self::RivenDialog { .. } => "RivenDialog",
             Self::PurchaseDialogHudVisibility { .. } => "PurchaseDialogHudVisibility",
             Self::RivenRerollScreenLoaded => "RivenRerollScreenLoaded",
-            Self::RivenCycleDialog { .. } => "RivenCycleDialog",
-            Self::RivenCycleKeepDialog => "RivenCycleKeepDialog",
-            Self::DialogAccepted => "DialogAccepted",
             Self::SceneTornDown => "SceneTornDown",
             Self::ConsoleOpened => "ConsoleOpened",
             Self::InputMappingReset => "InputMappingReset",
@@ -132,8 +137,6 @@ static CHAT_TAB_ADDED: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"Adding tab with channel name: (\S+) to index"));
 static RIVEN_DIALOG: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"ThemedDetailedPurchaseDialog\.lua: PopulateInfo->(\S+)$"));
-static RIVEN_CYCLE_DIALOG: LazyLock<Regex> =
-    LazyLock::new(|| compiled(r"want to cycle (.+) for \D*(\d+(?:[,.\u{a0}]\d{3})*)\?"));
 static PURCHASE_DIALOG_HUD_VIS: LazyLock<Regex> =
     LazyLock::new(|| compiled(r"ThemedDetailedPurchaseDialog\.lua: DBG: HudVis (\d+)$"));
 static MONITOR_INFO: LazyLock<Regex> =
@@ -158,20 +161,6 @@ fn mission_set(message: &str) -> Option<Event> {
     })
 }
 
-fn riven_cycle_dialog(message: &str) -> Option<Event> {
-    let captures = RIVEN_CYCLE_DIALOG.captures(message)?;
-    let cost = captures[2]
-        .chars()
-        .filter(char::is_ascii_digit)
-        .collect::<String>()
-        .parse()
-        .ok()?;
-    Some(Event::RivenCycleDialog {
-        riven: captures[1].to_owned(),
-        cost,
-    })
-}
-
 fn host_start_match_path(message: &str) -> Option<String> {
     let (_, after) = message.split_once("launching level for ")?;
     let (_, inside) = after.split_once('(')?;
@@ -187,20 +176,25 @@ fn open_level_path(message: &str) -> Option<String> {
     Some(path.to_owned())
 }
 
-fn riven_station(message: &str) -> Option<Event> {
-    if message.contains("want to cycle") {
-        return riven_cycle_dialog(message);
+fn dialog(call: &str) -> Option<Event> {
+    match call {
+        "SendResult(4)" => Some(Event::DialogAnswered { accepted: true }),
+        "SendResult(5)" => Some(Event::DialogAnswered { accepted: false }),
+        _ => confirm_dialog(call),
     }
-    if message.contains("Dialog::CreateOkCancel(description=Cycle Riven into current selection?") {
-        return Some(Event::RivenCycleKeepDialog);
+}
+
+fn confirm_dialog(call: &str) -> Option<Event> {
+    let (created, buttons) = call.rsplit_once(" leftItem=")?;
+    if !created.starts_with("CreateOkCancel(") {
+        return None;
     }
-    if message.contains("Dialog.lua: Dialog::SendResult(4)") {
-        return Some(Event::DialogAccepted);
-    }
-    if message.ends_with("OmegaRerollSelection.lua: Diorama setup") {
-        return Some(Event::RivenRerollScreenLoaded);
-    }
-    None
+    let buttons = match buttons {
+        "/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)" => DialogButtons::OkCancel,
+        "/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)" => DialogButtons::YesNo,
+        _ => return None,
+    };
+    Some(Event::ConfirmDialog { buttons })
 }
 
 fn game_monitor(message: &str) -> Option<Event> {
@@ -314,11 +308,16 @@ pub fn classify(line: &LogLine) -> Option<Event> {
     if message.starts_with("FrameworkCmd::OpenLevel - ") {
         return open_level_path(message).map(|level_path| Event::MissionStart { level_path });
     }
-    if let Some(event) = riven_station(message) {
-        return Some(event);
+    if let Some(call) = message.strip_prefix("Dialog.lua: Dialog::") {
+        return dialog(call);
     }
-    if message.contains("want to accept this trade?") {
-        return Some(Event::TradeDialogOpened);
+    if message.ends_with("OmegaRerollSelection.lua: Diorama setup") {
+        return Some(Event::RivenRerollScreenLoaded);
+    }
+    match message.strip_prefix("Trade.lua: DBG: HudVis ") {
+        Some("0") => return Some(Event::TradeScreen { visible: false }),
+        Some("1") => return Some(Event::TradeScreen { visible: true }),
+        _ => {}
     }
     if message.ends_with("Mission Succeeded") {
         return Some(Event::MissionSucceeded);
@@ -334,9 +333,6 @@ pub fn classify(line: &LogLine) -> Option<Event> {
     }
     if message.ends_with("ThemedProjectionManager.lua: LoadingCompleteEnd") {
         return Some(Event::RelicSelectScreenLoaded);
-    }
-    if message.contains("The trade was successful!") {
-        return Some(Event::TradeSuccessful);
     }
     if let Some(captures) = CHAT_TAB_ADDED.captures(message) {
         return Some(Event::ChatTabAdded {
@@ -458,20 +454,100 @@ mod tests {
         );
     }
 
+    fn dialog_line(description: &str, buttons: &str) -> LogLine {
+        log_line(&format!(
+            "Dialog.lua: Dialog::CreateOkCancel(description={description}, title= {buttons})"
+        ))
+    }
+
+    const OK_CANCEL: &str = "leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel";
+    const YES_NO: &str = "leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No";
+
     #[test]
-    fn trade_dialog_block() {
-        let event = classify(&log_line(
-            "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to accept this trade? You are offering\nForma Blueprint x 2\nand will receive from TestSquadA\u{e000} the following:\nPlatinum x 45\n, title= leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)",
-        ));
-        assert_eq!(event, Some(Event::TradeDialogOpened));
+    fn confirmations_in_any_language() {
+        for description in [
+            "Are you sure you want to accept this trade? You are offering\nForma Blueprint x 2\nand will receive from TestSquadA\u{e000} the following:\nPlatinum x 45\n",
+            "Bist du sicher, dass du diesen Handel annehmen willst? Du bietest:\nForma-Blaupause x 2\nund erhaeltst von TestSquadA Folgendes:\nPlatin x 45",
+            "/Lotus/Language/Menu/ExitDojoConfirm",
+        ] {
+            assert_eq!(
+                classify(&dialog_line(description, OK_CANCEL)),
+                Some(Event::ConfirmDialog {
+                    buttons: DialogButtons::OkCancel,
+                })
+            );
+        }
+        for description in [
+            "Are you sure you want to cycle Kompressa Vexitis for \u{e071}3,500?",
+            "Willst du Kompressa Vexitis wirklich fuer \u{e071}3.500 umwandeln?",
+            "Cycle Riven into current selection?",
+        ] {
+            assert_eq!(
+                classify(&dialog_line(description, YES_NO)),
+                Some(Event::ConfirmDialog {
+                    buttons: DialogButtons::YesNo,
+                })
+            );
+        }
     }
 
     #[test]
-    fn trade_dialog_first_line_only() {
-        let event = classify(&log_line(
-            "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to accept this trade? You are offering",
-        ));
-        assert_eq!(event, Some(Event::TradeDialogOpened));
+    fn wait_dialogs_and_truncated_lines() {
+        assert_eq!(
+            classify(&dialog_line(
+                "/Lotus/Language/Menu/NavBar_QuickMatchPleaseWait",
+                "leftItem=nil, rightItem=nil"
+            )),
+            None
+        );
+        assert_eq!(
+            classify(&log_line(
+                "Dialog.lua: Dialog::CreateOkCancel(description=Bist du sicher, dass du diesen Handel annehmen willst? Du bietest:"
+            )),
+            None
+        );
+    }
+
+    #[test]
+    fn notice_dialogs_are_not_events() {
+        assert_eq!(
+            classify(&log_line(
+                "Dialog.lua: Dialog::CreateOk(description=Der Handel war erfolgreich!, title= leftItem=/Menu/Confirm_Item_Ok)"
+            )),
+            None
+        );
+    }
+
+    #[test]
+    fn dialog_answers() {
+        assert_eq!(
+            classify(&log_line("Dialog.lua: Dialog::SendResult(4)")),
+            Some(Event::DialogAnswered { accepted: true })
+        );
+        assert_eq!(
+            classify(&log_line("Dialog.lua: Dialog::SendResult(5)")),
+            Some(Event::DialogAnswered { accepted: false })
+        );
+        assert_eq!(
+            classify(&log_line("Dialog.lua: Dialog::SendResult(3)")),
+            None
+        );
+        assert_eq!(
+            classify(&log_line("Dialog.lua: SendResult_MENU_SELECT()")),
+            None
+        );
+    }
+
+    #[test]
+    fn trade_screen_visibility() {
+        assert_eq!(
+            classify(&log_line("Trade.lua: DBG: HudVis 1")),
+            Some(Event::TradeScreen { visible: true })
+        );
+        assert_eq!(
+            classify(&log_line("Trade.lua: DBG: HudVis 0")),
+            Some(Event::TradeScreen { visible: false })
+        );
     }
 
     #[test]
@@ -606,14 +682,6 @@ mod tests {
     }
 
     #[test]
-    fn trade_successful() {
-        assert_eq!(
-            classify(&log_line("Something.lua: The trade was successful!")),
-            Some(Event::TradeSuccessful)
-        );
-    }
-
-    #[test]
     fn chat_tab_added() {
         let event = classify(&log_line(
             "ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: Q_EN_EU to index 1",
@@ -642,62 +710,10 @@ mod tests {
     }
 
     #[test]
-    fn reroll_station_lines() {
+    fn reroll_station_loaded() {
         assert_eq!(
             classify(&log_line("OmegaRerollSelection.lua: Diorama setup")),
             Some(Event::RivenRerollScreenLoaded)
-        );
-        assert_eq!(
-            classify(&log_line(
-                "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to cycle Kompressa Vexitis for 900?, title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
-            )),
-            Some(Event::RivenCycleDialog {
-                riven: "Kompressa Vexitis".to_owned(),
-                cost: 900,
-            })
-        );
-        assert_eq!(
-            classify(&log_line(
-                "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to cycle Kuva Bramma Croni-critacan for 3,500?, title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
-            )),
-            Some(Event::RivenCycleDialog {
-                riven: "Kuva Bramma Croni-critacan".to_owned(),
-                cost: 3500,
-            })
-        );
-        assert_eq!(
-            classify(&log_line(
-                "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to cycle Onos Armatak for \u{e071}3,500?, title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
-            )),
-            Some(Event::RivenCycleDialog {
-                riven: "Onos Armatak".to_owned(),
-                cost: 3500,
-            })
-        );
-        for cost in ["3,500", "3.500", "3\u{a0}500"] {
-            assert_eq!(
-                classify(&log_line(&format!(
-                    "Dialog.lua: Dialog::CreateOkCancel(description=Are you sure you want to cycle Vitrica Acridex for \u{e071}{cost}?, title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
-                ))),
-                Some(Event::RivenCycleDialog {
-                    riven: "Vitrica Acridex".to_owned(),
-                    cost: 3500,
-                })
-            );
-        }
-        assert_eq!(
-            classify(&log_line(
-                "Dialog.lua: Dialog::CreateOkCancel(description=Cycle Riven into current selection?, title= leftItem=/Menu/Confirm_Item_Yes, rightItem=/Menu/Confirm_Item_No)",
-            )),
-            Some(Event::RivenCycleKeepDialog)
-        );
-        assert_eq!(
-            classify(&log_line("Dialog.lua: Dialog::SendResult(4)")),
-            Some(Event::DialogAccepted)
-        );
-        assert_eq!(
-            classify(&log_line("Dialog.lua: Dialog::SendResult(3)")),
-            None
         );
     }
 

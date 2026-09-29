@@ -303,16 +303,10 @@ mod tests {
     use crate::favourites::Favourites;
     use crate::prices::FixedPrices;
 
-    const UPGRADE_ITEMS: &str = include_str!("../../../../fixtures/upgrade_items.json");
-
-    fn upgrade_catalog() -> Catalog {
-        Catalog::from_json(UPGRADE_ITEMS, fixtures::RELICS, "[]").unwrap()
-    }
-
     #[test]
     fn every_upgrade_resolves() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let rows = [
             mods(&View {
                 inventory: &inventory,
@@ -345,7 +339,7 @@ mod tests {
     #[test]
     fn stances_and_precepts_are_mods() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let rows = mods(&View {
             inventory: &inventory,
             catalog: &catalog,
@@ -364,7 +358,7 @@ mod tests {
     #[test]
     fn starter_only_mods() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let rows = mods(&View {
             inventory: &inventory,
             catalog: &catalog,
@@ -396,7 +390,7 @@ mod tests {
     #[test]
     fn unlisted_upgrades() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let view = View {
             inventory: &inventory,
             catalog: &catalog,
@@ -430,7 +424,7 @@ mod tests {
     #[test]
     fn arcane_prices() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let prices = FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
             .with_max_rank([("arcane_energize", 240.0)])
             .with_buy([("arcane_energize", 7.0)]);
@@ -483,7 +477,7 @@ mod tests {
     #[test]
     fn listed_slug_wins_over_the_derived_one() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let prices = FixedPrices::new([
             ("arcane_energize", 12.0),
             ("arcane\u{2019}energize", 30.0),
@@ -616,7 +610,7 @@ mod tests {
     #[test]
     fn equipped_in() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let rows = mods(&View {
             inventory: &inventory,
             catalog: &catalog,
@@ -699,7 +693,7 @@ mod tests {
     #[test]
     fn floor_price_marker() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let priced = FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
             .with_max_rank([("arcane_energize", 240.0)]);
         let rows = arcanes(&View {
@@ -737,7 +731,7 @@ mod tests {
     #[test]
     fn maxed_serration_price() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let priced = FixedPrices::new([("serration", 10.0)]).with_max_rank([("serration", 90.0)]);
         let rows = mods(&View {
             inventory: &inventory,
@@ -776,7 +770,7 @@ mod tests {
     #[test]
     fn maxed_without_max_rank_price() {
         let inventory = fixtures::inventory();
-        let catalog = upgrade_catalog();
+        let catalog = fixtures::upgrade_catalog();
         let priced = FixedPrices::new([("serration", 10.0)]);
         let rows = mods(&View {
             inventory: &inventory,

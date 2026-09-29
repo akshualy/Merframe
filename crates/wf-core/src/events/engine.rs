@@ -6,9 +6,9 @@ use wf_log::Event as LogEvent;
 use wf_worldstate::WorldState;
 
 use super::alerts::{AlertSettings, fissure_planet};
-use super::{CoreEvent, FissureInfo, InventorySummary, ScannedTrade};
+use super::{CoreEvent, FissureInfo, InventorySummary};
 use crate::catalog::DUCATS_ITEM;
-use crate::trade::{Trade, player_name};
+use crate::trade::player_name;
 
 fn conversation_player(channel: &str) -> Option<String> {
     let name = player_name(channel.strip_prefix('F')?);
@@ -17,18 +17,11 @@ fn conversation_player(channel: &str) -> Option<String> {
 
 pub(crate) struct Engine {
     settings: AlertSettings,
-    pending_trade: Option<PendingTrade>,
     reward_screen: RewardScreenState,
     world_state_polled: bool,
     announced_fissures: HashMap<String, DateTime<Utc>>,
     announced_timers: HashMap<String, DateTime<Utc>>,
     seen_channels: HashMap<String, DateTime<Utc>>,
-}
-
-struct PendingTrade {
-    opened_at: DateTime<Utc>,
-    partner: Option<String>,
-    trade: Trade,
 }
 
 #[derive(Debug, Default)]
@@ -39,7 +32,6 @@ struct RewardScreenState {
     announced: usize,
 }
 
-const TRADE_DIALOG_MAX_AGE_MINS: i64 = 15;
 const ANNOUNCED_CAP: usize = 250;
 const ANNOUNCED_MAX_AGE_SECS: i64 = 3 * 60 * 60;
 
@@ -55,7 +47,6 @@ impl Engine {
     pub fn new(settings: AlertSettings) -> Self {
         Self {
             settings,
-            pending_trade: None,
             reward_screen: RewardScreenState::default(),
             world_state_polled: false,
             announced_fissures: HashMap::new(),
@@ -82,23 +73,6 @@ impl Engine {
                 self.reward_screen.players.insert(account_id.clone());
                 Vec::new()
             }
-            LogEvent::TradeDialogOpened => {
-                self.pending_trade = None;
-                Vec::new()
-            }
-            LogEvent::TradeSuccessful => match self.pending_trade.take() {
-                Some(pending)
-                    if now - pending.opened_at
-                        <= chrono::TimeDelta::minutes(TRADE_DIALOG_MAX_AGE_MINS) =>
-                {
-                    vec![CoreEvent::TradeCompleted {
-                        at: now,
-                        partner: pending.partner,
-                        trade: pending.trade,
-                    }]
-                }
-                _ => Vec::new(),
-            },
             LogEvent::ChatTabAdded { channel } => self.new_conversation(channel, now),
             _ => Vec::new(),
         }
@@ -148,14 +122,6 @@ impl Engine {
             });
         }
         events
-    }
-
-    pub fn handle_trade_screen(&mut self, screen: &ScannedTrade, now: DateTime<Utc>) {
-        self.pending_trade = Some(PendingTrade {
-            opened_at: now,
-            partner: screen.partner.as_deref().map(player_name),
-            trade: Trade::from_screen(screen),
-        });
     }
 
     pub fn reward_screen_generation(&self) -> u64 {
@@ -213,7 +179,6 @@ pub(crate) fn inventory_events(inventory: &Inventory, changes: usize) -> Vec<Cor
 
 #[cfg(test)]
 mod tests {
-    use super::super::ScannedTradeItem;
     use super::*;
     use crate::catalog::fixtures;
     use crate::events::{CyclePhase, FissureFilter, SteelPathFilter, TimerAlerts};
@@ -369,76 +334,6 @@ mod tests {
         assert_eq!(engine.reward_player_count(), 3);
         engine.handle_log_event(&LogEvent::RelicRewardScreenOpened, now);
         assert_eq!(engine.reward_player_count(), 1);
-    }
-
-    fn forma_for_platinum() -> ScannedTrade {
-        ScannedTrade {
-            partner: Some(String::from("TestSquadA\u{e000}")),
-            offered: vec![ScannedTradeItem {
-                name: String::from("Forma Blueprint"),
-                item_type: Some(String::from(
-                    "/Lotus/Types/Recipes/Components/FormaBlueprint",
-                )),
-                count: 2,
-                fingerprint: None,
-            }],
-            received: vec![ScannedTradeItem {
-                name: String::from("Platinum"),
-                item_type: None,
-                count: 45,
-                fingerprint: None,
-            }],
-        }
-    }
-
-    #[test]
-    fn completed_trade() {
-        let mut engine = Engine::new(AlertSettings::default());
-        let now = at(2_000_000);
-        engine.handle_log_event(&LogEvent::TradeDialogOpened, now);
-        engine.handle_trade_screen(&forma_for_platinum(), now);
-        let events = engine.handle_log_event(&LogEvent::TradeSuccessful, now);
-        assert_eq!(events.len(), 1);
-        match &events[0] {
-            CoreEvent::TradeCompleted { at, partner, trade } => {
-                assert_eq!(*at, now);
-                assert_eq!(partner.as_deref(), Some("TestSquadA"));
-                assert_eq!(trade.plat, 45);
-                assert_eq!(trade.offered[0].count, 2);
-            }
-            other => panic!("unexpected event {other:?}"),
-        }
-        assert!(
-            engine
-                .handle_log_event(&LogEvent::TradeSuccessful, now)
-                .is_empty()
-        );
-    }
-
-    #[test]
-    fn dialog_without_a_screen_read_records_nothing() {
-        let mut engine = Engine::new(AlertSettings::default());
-        let now = at(2_000_000);
-        engine.handle_trade_screen(&forma_for_platinum(), now);
-        engine.handle_log_event(&LogEvent::TradeDialogOpened, now);
-        assert!(
-            engine
-                .handle_log_event(&LogEvent::TradeSuccessful, now)
-                .is_empty()
-        );
-    }
-
-    #[test]
-    fn stale_trade_dialog_is_dropped() {
-        let mut engine = Engine::new(AlertSettings::default());
-        let opened = at(2_000_000);
-        engine.handle_trade_screen(&forma_for_platinum(), opened);
-        let confirmed = opened + chrono::TimeDelta::minutes(TRADE_DIALOG_MAX_AGE_MINS + 1);
-        assert!(
-            engine
-                .handle_log_event(&LogEvent::TradeSuccessful, confirmed)
-                .is_empty()
-        );
     }
 
     #[test]

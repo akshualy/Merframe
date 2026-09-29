@@ -320,65 +320,33 @@ fn settle_after_choice<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     });
 }
 
-fn cycle_from_station<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    let app = app.clone();
+pub(super) fn arm_station_answer(state: &Arc<AppState>, at: f64) {
+    if !riven_scans(state) {
+        return;
+    }
     let owned = Arc::clone(state);
     tauri::async_runtime::spawn(async move {
-        let Some((_, row)) = station_selection(&owned).await else {
-            return;
+        let answer = match station_selection(&owned).await {
+            Some((station, _)) if station.offered.is_some() => PendingAnswer::KeepRoll,
+            Some((_, row)) => PendingAnswer::Cycle { row: Box::new(row) },
+            None => return,
         };
-        show_riven(&app, &owned, row.clone());
-        hold_cycled_roll(&app, &owned, &row);
+        lock(&owned.overlays.marks).pending = Some((answer, at));
     });
-}
-
-fn kept_roll(row: &RivenRow) -> RivenRow {
-    let Some(pending) = row.pending.clone() else {
-        return row.clone();
-    };
-    RivenRow {
-        name: pending.name,
-        rerolls: pending.rerolls,
-        polarity: pending.polarity,
-        grade: pending.grade,
-        attributes: pending.attributes,
-        good_roll: pending.good_roll,
-        pending: None,
-        ..row.clone()
-    }
-}
-
-fn roll_named(shown: &RivenRow, wanted: &str) -> Option<RivenRow> {
-    let current = RivenRow {
-        pending: None,
-        ..shown.clone()
-    };
-    [kept_roll(shown), current].into_iter().find(|candidate| {
-        riven_display_name(candidate).is_some_and(|name| name.eq_ignore_ascii_case(wanted.trim()))
-    })
-}
-
-fn panel_roll(state: &Arc<AppState>, wanted: &str) -> Option<RivenRow> {
-    let shown = lock(&state.overlays.state)
-        .riven
-        .as_ref()
-        .and_then(|trigger| trigger.before.clone())?;
-    roll_named(&shown, wanted)
 }
 
 pub(super) fn on_dialog_answer<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, at: f64) {
     let answer = confirmed_answer(&mut lock(&state.overlays.marks), at);
     match answer {
-        Some(PendingAnswer::Cycle { riven }) => {
-            if let Some(row) = panel_roll(state, &riven) {
-                debug!(riven, rerolls = row.rerolls, "Cycle confirmed");
-                lock(&state.overlays.marks).choice_made = false;
-                show_riven(app, state, row.clone());
-                hold_cycled_roll(app, state, &row);
-            } else {
-                debug!(riven, "Cycle confirmed for a riven the panel does not hold");
-                cycle_from_station(app, state);
-            }
+        Some(PendingAnswer::Cycle { row }) => {
+            debug!(
+                riven = riven_display_name(&row),
+                rerolls = row.rerolls,
+                "Cycle confirmed"
+            );
+            lock(&state.overlays.marks).choice_made = false;
+            show_riven(app, state, (*row).clone());
+            hold_cycled_roll(app, state, &row);
         }
         Some(PendingAnswer::KeepRoll) => {
             debug!("Roll chosen, reading station card");
@@ -403,7 +371,6 @@ fn show_riven<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: RivenR
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wf_core::PendingRoll;
 
     #[test]
     fn riven_item_type_from_store_path() {
@@ -420,84 +387,6 @@ mod tests {
             None
         );
         assert_eq!(riven_item_type(""), None);
-    }
-
-    fn roll(rerolls: u32, name: &str, pending: Option<PendingRoll>) -> RivenRow {
-        RivenRow {
-            item_id: "19afb0d351ebb3350bab634c".to_owned(),
-            item_type: "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare".to_owned(),
-            riven_type: Some("Melee Riven Mod".to_owned()),
-            weapon_class: Some("Melee".to_owned()),
-            name: Some(name.to_owned()),
-            weapon: Some("Nepheri".to_owned()),
-            weapon_path: Some(
-                "/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep".to_owned(),
-            ),
-            weapon_slug: Some("nepheri".to_owned()),
-            image_name: Some("ArchonDualDaggers.png".to_owned()),
-            disposition: Some(1.0),
-            disposition_weapon: None,
-            unveiled: true,
-            rank: 8,
-            rank_required: Some(11),
-            rerolls,
-            polarity: Some(wf_market::Polarity::Vazarin),
-            grade: 0.5,
-            attributes: Vec::new(),
-            good_roll: None,
-            listed_in_wfm: false,
-            pending,
-        }
-    }
-
-    #[test]
-    fn kept_roll_promotes_offered() {
-        let before = roll(
-            100,
-            "Geli-toxidra",
-            Some(PendingRoll {
-                name: Some("Acri-gelipha".to_owned()),
-                rerolls: 101,
-                polarity: Some(wf_market::Polarity::Vazarin),
-                grade: 0.75,
-                attributes: Vec::new(),
-                good_roll: None,
-            }),
-        );
-        let kept = kept_roll(&before);
-        assert_eq!(kept.name.as_deref(), Some("Acri-gelipha"));
-        assert_eq!(kept.rerolls, 101);
-        assert_eq!(kept.pending, None);
-        assert_eq!(kept.item_id, before.item_id);
-
-        let alone = roll(100, "Geli-toxidra", None);
-        assert_eq!(kept_roll(&alone), alone);
-    }
-
-    #[test]
-    fn roll_named_either_side() {
-        let shown = roll(
-            101,
-            "Geli-toxidra",
-            Some(PendingRoll {
-                name: Some("Acri-gelipha".to_owned()),
-                rerolls: 101,
-                polarity: Some(wf_market::Polarity::Vazarin),
-                grade: 0.75,
-                attributes: Vec::new(),
-                good_roll: None,
-            }),
-        );
-
-        let kept = roll_named(&shown, "Nepheri Acri-gelipha").expect("offered roll");
-        assert_eq!(kept.name.as_deref(), Some("Acri-gelipha"));
-        assert_eq!(kept.pending, None);
-
-        let held = roll_named(&shown, "nepheri geli-toxidra").expect("held roll");
-        assert_eq!(held.name.as_deref(), Some("Geli-toxidra"));
-        assert_eq!(held.pending, None);
-
-        assert_eq!(roll_named(&shown, "Soma Hexatox"), None);
     }
 
     #[test]

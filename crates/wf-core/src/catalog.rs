@@ -276,6 +276,7 @@ pub mod fixtures {
     pub const RIVEN_ITEMS: &str = include_str!("../../wf-data/tests/fixtures/riven_items.json");
     pub const SKINS: &str = include_str!("../../wf-data/tests/fixtures/skins.json");
     pub const COMPONENTS: &str = include_str!("../../wf-data/tests/fixtures/components.json");
+    pub const UPGRADE_ITEMS: &str = include_str!("../../../fixtures/upgrade_items.json");
 
     pub fn catalog() -> Catalog {
         Catalog::from_json(ITEMS, RELICS, COMPONENTS).unwrap()
@@ -287,6 +288,10 @@ pub mod fixtures {
         merged.append(&mut skins);
         let merged = serde_json::to_string(&merged).unwrap();
         Catalog::from_json(&merged, RELICS, COMPONENTS).unwrap()
+    }
+
+    pub fn upgrade_catalog() -> Catalog {
+        Catalog::from_json(UPGRADE_ITEMS, RELICS, "[]").unwrap()
     }
 
     pub fn foundry_catalog() -> Catalog {

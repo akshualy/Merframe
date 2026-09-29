@@ -10,7 +10,7 @@ mod tap;
 
 pub use dbgwin::{DebugMessage, FRAME_SIZE, line_from_frame, parse_frame};
 pub use error::{LogError, Result};
-pub use event::{Event, MonitorRect, classify};
+pub use event::{DialogButtons, Event, MonitorRect, classify};
 pub use line::{Channel, Level, LogLine, parse_line};
 pub use paths::default_log_path;
 pub use source::{Dedup, Origin, Selection, SourceLine, TAP_INTERVAL, lines};
@@ -23,7 +23,7 @@ pub use dbgwin::DbgWinListener;
 
 #[cfg(test)]
 mod ee_log_fixture_tests {
-    use crate::{Event, MonitorRect, classify, parse_line, read_all};
+    use crate::{DialogButtons, Event, MonitorRect, classify, parse_line, read_all};
 
     fn fixture_path() -> std::path::PathBuf {
         std::path::PathBuf::from(concat!(
@@ -58,10 +58,33 @@ mod ee_log_fixture_tests {
         let lines = read_all(&fixture_path()).unwrap();
         let events: Vec<Event> = lines
             .iter()
+            .filter(|line| (12_347.0..12_353.0).contains(&line.time))
             .filter_map(classify)
-            .filter(|event| matches!(event, Event::TradeDialogOpened | Event::TradeSuccessful))
             .collect();
-        assert_eq!(events, [Event::TradeDialogOpened, Event::TradeSuccessful]);
+        assert_eq!(
+            events,
+            [
+                Event::ConfirmDialog {
+                    buttons: DialogButtons::OkCancel,
+                },
+                Event::DialogAnswered { accepted: true },
+                Event::TradeScreen { visible: false },
+            ]
+        );
+    }
+
+    #[test]
+    fn fixture_dialogs() {
+        let lines = read_all(&fixture_path()).unwrap();
+        let events: Vec<Event> = lines.iter().filter_map(classify).collect();
+        let count = |wanted: &Event| events.iter().filter(|event| *event == wanted).count();
+        assert_eq!(
+            count(&Event::ConfirmDialog {
+                buttons: DialogButtons::YesNo,
+            }),
+            4
+        );
+        assert_eq!(count(&Event::DialogAnswered { accepted: true }), 15);
     }
 
     #[test]
