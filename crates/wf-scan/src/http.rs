@@ -17,15 +17,13 @@ const STRING: usize = 16;
 const STRING_LENGTH: usize = 8;
 const STRING_TAG: usize = 15;
 const HEAP_STRING: u8 = 0xff;
-const INLINE_CAPACITY: usize = 15;
 const LENGTH_MASK: u32 = 0x0fff_ffff;
 const BLOCK_ENTRIES: u64 = 2;
 const MAX_BLOCKS: u64 = 1 << 20;
 const MAX_QUEUED: u64 = 64;
 const QUEUES: usize = 2;
+const DOCUMENT_HEAD: &[u8] = b"{\"";
 const POLL: Duration = Duration::from_millis(1);
-const TRADING_CALL: &str = "/api/trading.php?";
-pub const TRADE_CONFIRM_OP: u32 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Queue {
@@ -105,64 +103,26 @@ fn entry<R: MemoryReader + ?Sized>(reader: &R, queue: &Queue, index: u64) -> Opt
         .ok()
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct GameString {
-    pointer: u64,
-    length: u64,
-    inline: Option<Vec<u8>>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QueuedResponse {
-    pub url: String,
-    pub pointer: u64,
-    pub body: Vec<u8>,
-}
-
-pub fn trade_op(url: &str) -> Option<u32> {
-    let (_, query) = url.split_once(TRADING_CALL)?;
-    query
-        .split('&')
-        .find_map(|pair| pair.strip_prefix("op="))?
-        .parse()
-        .ok()
-}
-
-fn strings(entry: u64, fields: &[u8]) -> Vec<GameString> {
+fn strings(fields: &[u8]) -> Vec<(u64, u64)> {
     words(fields)
         .filter_map(|(at, pointer)| {
             let raw = fields.get(at..at + STRING)?;
-            let tag = raw[STRING_TAG];
-            if tag == HEAP_STRING {
-                let length = u64::from(read_u32_le(raw, STRING_LENGTH)? & LENGTH_MASK);
-                return (pointer != 0
-                    && length > 0
-                    && length <= to_u64(MAX_INVENTORY_BODY).ok()?)
-                .then_some(GameString {
-                    pointer,
-                    length,
-                    inline: None,
-                });
-            }
-            let length = INLINE_CAPACITY.checked_sub(usize::from(tag))?;
-            if length == 0 || raw[..length].contains(&0) {
-                return None;
-            }
-            Some(GameString {
-                pointer: entry.checked_add(to_u64(at).ok()?)?,
-                length: to_u64(length).ok()?,
-                inline: Some(raw[..length].to_vec()),
-            })
+            let length = u64::from(read_u32_le(raw, STRING_LENGTH)? & LENGTH_MASK);
+            (raw[STRING_TAG] == HEAP_STRING
+                && pointer != 0
+                && length >= to_u64(DOCUMENT_HEAD.len()).ok()?
+                && length <= to_u64(MAX_INVENTORY_BODY).ok()?)
+            .then_some((pointer, length))
         })
         .collect()
 }
 
-fn text<R: MemoryReader + ?Sized>(reader: &R, string: GameString) -> Option<Vec<u8>> {
-    if let Some(inline) = string.inline {
-        return Some(inline);
+fn document<R: MemoryReader + ?Sized>(reader: &R, pointer: u64, length: u64) -> Option<Vec<u8>> {
+    if reader.read_vec(pointer, DOCUMENT_HEAD.len()).ok()? != DOCUMENT_HEAD {
+        return None;
     }
-    let mut body = vec![0u8; to_usize(string.length).ok()?];
-    reader.read_exact(string.pointer, &mut body).ok()?;
+    let mut body = vec![0u8; to_usize(length).ok()?];
+    reader.read_exact(pointer, &mut body).ok()?;
     Some(body)
 }
 
@@ -196,8 +156,8 @@ impl HttpClients {
         self.clients.iter().map(|client| client.slot).collect()
     }
 
-    fn queued<R: MemoryReader + ?Sized>(&self, reader: &R) -> Vec<(GameString, GameString)> {
-        let mut queued = Vec::new();
+    fn bodies<R: MemoryReader + ?Sized>(&self, reader: &R) -> Vec<(u64, u64)> {
+        let mut bodies = Vec::new();
         for client in &self.clients {
             let Ok(object) = reader.read_u64(client.slot) else {
                 continue;
@@ -216,54 +176,21 @@ impl HttpClients {
                     let Ok(fields) = reader.read_vec(entry, ENTRY_FIELDS) else {
                         continue;
                     };
-                    let mut strings = strings(entry, &fields).into_iter();
-                    let Some(url) = strings.next() else {
-                        continue;
-                    };
-                    queued.extend(strings.map(|body| (url.clone(), body)));
+                    bodies.extend(strings(&fields));
                 }
             }
         }
-        queued
+        bodies
     }
 
-    pub fn await_response<R: MemoryReader + ?Sized, T>(
-        &self,
-        reader: &R,
-        window: Duration,
-        mut accept: impl FnMut(&QueuedResponse) -> Option<T>,
-    ) -> Option<T> {
-        let deadline = Instant::now() + window;
-        let mut seen = HashSet::new();
-        loop {
-            for (url, body) in self.queued(reader) {
-                if !seen.insert((url.pointer, body.pointer, body.length)) {
-                    continue;
-                }
-                let (pointer, length) = (body.pointer, body.length);
-                let Some(url) = text(reader, url).and_then(|url| String::from_utf8(url).ok())
-                else {
-                    continue;
-                };
-                let Some(body) = text(reader, body) else {
-                    continue;
-                };
-                tracing::debug!(
-                    path = url.split('?').next(),
-                    ptr = format!("{pointer:#x}"),
-                    len = length,
-                    "HTTP response seen in the queue"
-                );
-                let response = QueuedResponse { url, pointer, body };
-                if let Some(found) = accept(&response) {
-                    return Some(found);
-                }
-            }
-            if Instant::now() >= deadline {
-                return None;
-            }
-            thread::sleep(POLL);
-        }
+    fn idle<R: MemoryReader + ?Sized>(&self, reader: &R) -> bool {
+        self.clients.iter().all(|client| {
+            let list = reader.read_u64(client.slot).ok().and_then(|object| {
+                let head = object.checked_add(to_u64(REQUESTS).ok()?)?;
+                Some((head, reader.read_u64(head).ok()?))
+            });
+            list.is_none_or(|(head, first)| first == head)
+        })
     }
 
     pub fn await_inventory<R: MemoryReader + ?Sized>(
@@ -271,9 +198,34 @@ impl HttpClients {
         reader: &R,
         window: Duration,
     ) -> Option<InventoryBuffer> {
-        self.await_response(reader, window, |response| {
-            accept(response.pointer, &response.body)
-        })
+        let deadline = Instant::now() + window;
+        let mut seen = HashSet::new();
+        loop {
+            for (pointer, len) in self.bodies(reader) {
+                if !seen.insert((pointer, len)) {
+                    continue;
+                }
+                let Some(body) = document(reader, pointer, len) else {
+                    continue;
+                };
+                tracing::debug!(
+                    ptr = format!("{pointer:#x}"),
+                    len,
+                    "HTTP response body seen in the queue"
+                );
+                if let Some(buffer) = accept(pointer, &body) {
+                    return Some(buffer);
+                }
+            }
+            if Instant::now() >= deadline {
+                return None;
+            }
+            if self.idle(reader) {
+                thread::sleep(POLL);
+            } else {
+                std::hint::spin_loop();
+            }
+        }
     }
 }
 
@@ -292,12 +244,8 @@ mod tests {
     const DONE_MAP: usize = 0x0300;
     const DONE_BLOCKS: [usize; 2] = [0x0340, 0x0380];
     const ENTRIES: [usize; 2] = [0x0400, 0x0600];
-    const URLS: [usize; 2] = [0x0c00, 0x0e00];
     const BODIES: [usize; 2] = [0x1000, 0x8000];
-    const URL_FIELD: usize = 0x18;
     const BODY_FIELD: usize = 0x50;
-    const INVENTORY_URL: &str = "https://api.warframe.com/api/inventory.php?accountId=000000000000000000000abc&nonce=1&ct=STM";
-    const WORLD_STATE_URL: &str = "api.warframe.com/api/worldState.php";
     const PENDING: usize = 0x58;
     const DONE: usize = 0x98;
     const OID: &str = "6a9f2bde000000000000c104";
@@ -331,17 +279,11 @@ mod tests {
             self.word(at + 3 * POINTER, count);
         }
 
-        fn inline(&mut self, at: usize, text: &str) {
-            self.put(at, text.as_bytes());
-            self.0[at + STRING_TAG] = u8::try_from(INLINE_CAPACITY - text.len()).unwrap();
-        }
-
-        fn entry(&mut self, index: usize, url: &str, body: &str) {
+        fn entry(&mut self, index: usize, body: &str) {
             let at = ENTRIES[index];
-            self.put(URLS[index], url.as_bytes());
-            self.string(at + URL_FIELD, URLS[index], url.len());
-            self.put(BODIES[index], body.as_bytes());
-            self.string(at + BODY_FIELD, BODIES[index], body.len());
+            let text = BODIES[index];
+            self.put(text, body.as_bytes());
+            self.string(at + BODY_FIELD, text, body.len());
         }
     }
 
@@ -366,8 +308,8 @@ mod tests {
         heap.address(DONE_MAP + POINTER, DONE_BLOCKS[1]);
         heap.address(DONE_BLOCKS[0] + POINTER, ENTRIES[0]);
         heap.address(DONE_BLOCKS[1], ENTRIES[1]);
-        heap.entry(0, INVENTORY_URL, &inventory_json(OID));
-        heap.entry(1, WORLD_STATE_URL, "{\"WorldSeed\":\"x\",\"Events\":[]}");
+        heap.entry(0, &inventory_json(OID));
+        heap.entry(1, "{\"WorldSeed\":\"x\",\"Events\":[]}");
         heap
     }
 
@@ -412,13 +354,13 @@ mod tests {
             HttpClients::locate(&one)
                 .unwrap()
                 .unwrap()
-                .queued(&one)
+                .bodies(&one)
                 .len(),
             1
         );
         let empty = reader(heap(0));
         let clients = HttpClients::locate(&empty).unwrap().unwrap();
-        assert!(clients.queued(&empty).is_empty());
+        assert!(clients.bodies(&empty).is_empty());
         assert_eq!(
             clients.await_inventory(&empty, Duration::from_millis(3)),
             None
@@ -428,82 +370,10 @@ mod tests {
     #[test]
     fn non_inventory_response() {
         let mut heap = heap(2);
-        heap.entry(0, WORLD_STATE_URL, "{\"WorldSeed\":\"x\",\"Events\":[]}");
+        heap.entry(0, "{\"WorldSeed\":\"x\",\"Events\":[]}");
         let reader = reader(heap);
         let clients = HttpClients::locate(&reader).unwrap().unwrap();
         assert_eq!(clients.await_inventory(&reader, Duration::ZERO), None);
-    }
-
-    #[test]
-    fn responses_carry_the_request_url() {
-        let body = "{\"PendingTrades\":[]}";
-        let url = "api.warframe.com/api/trading.php?accountId=000000000000000000000abc&op=4";
-        let mut heap = heap(2);
-        heap.entry(1, url, body);
-        let reader = reader(heap);
-        let clients = HttpClients::locate(&reader).unwrap().unwrap();
-        let found = clients.await_response(&reader, Duration::ZERO, |response| {
-            (response.body == body.as_bytes()).then(|| response.clone())
-        });
-        assert_eq!(
-            found,
-            Some(QueuedResponse {
-                url: url.to_owned(),
-                pointer: HEAP + u64::try_from(BODIES[1]).unwrap(),
-                body: body.as_bytes().to_vec(),
-            })
-        );
-    }
-
-    #[test]
-    fn inline_body() {
-        let url = "api.warframe.com/api/trading.php?accountId=000000000000000000000abc&op=2";
-        let mut heap = heap(2);
-        heap.entry(1, url, "");
-        heap.inline(ENTRIES[1] + BODY_FIELD, "11");
-        let reader = reader(heap);
-        let clients = HttpClients::locate(&reader).unwrap().unwrap();
-        let found = clients.await_response(&reader, Duration::ZERO, |response| {
-            (response.url == url).then(|| response.clone())
-        });
-        assert_eq!(
-            found,
-            Some(QueuedResponse {
-                url: url.to_owned(),
-                pointer: HEAP + u64::try_from(ENTRIES[1] + BODY_FIELD).unwrap(),
-                body: b"11".to_vec(),
-            })
-        );
-    }
-
-    #[test]
-    fn trading_call_op() {
-        let call = |op: &str| {
-            format!(
-                "api.warframe.com/api/trading.php?accountId=000000000000000000000abc&nonce=1&ct=STM&buddyId=000000000000000000000def&{op}&guildId=000000000000000000000123&revision=2"
-            )
-        };
-        assert_eq!(trade_op(&call("op=6")), Some(6));
-        assert_eq!(trade_op(&call("op=2")), Some(TRADE_CONFIRM_OP));
-        assert_eq!(trade_op(&call("open=2")), None);
-        assert_eq!(
-            trade_op("api.warframe.com/api/credits.php?accountId=000000000000000000000abc&op=2"),
-            None
-        );
-    }
-
-    #[test]
-    fn entry_without_a_body_is_skipped() {
-        let mut heap = heap(2);
-        heap.put(ENTRIES[1] + BODY_FIELD, &[0u8; STRING]);
-        let reader = reader(heap);
-        let clients = HttpClients::locate(&reader).unwrap().unwrap();
-        let urls = std::cell::RefCell::new(Vec::new());
-        clients.await_response::<_, ()>(&reader, Duration::ZERO, |response| {
-            urls.borrow_mut().push(response.url.clone());
-            None
-        });
-        assert_eq!(urls.into_inner(), [INVENTORY_URL]);
     }
 
     #[test]
@@ -528,6 +398,21 @@ mod tests {
         let mut heap = heap(2);
         heap.address(CLIENT + REQUESTS, CLIENT + PENDING);
         assert_eq!(clients(heap), None);
+    }
+
+    #[test]
+    fn linked_request_ends_the_idle_state() {
+        let idle = reader(heap(2));
+        let clients = HttpClients::locate(&idle).unwrap().unwrap();
+        assert!(clients.idle(&idle));
+
+        let mut heap = heap(2);
+        let node = 0x2000;
+        heap.address(CLIENT + REQUESTS, node);
+        heap.address(CLIENT + REQUESTS + POINTER, node);
+        heap.address(node, CLIENT + REQUESTS);
+        heap.address(node + POINTER, CLIENT + REQUESTS);
+        assert!(!clients.idle(&reader(heap)));
     }
 
     #[test]
@@ -556,14 +441,14 @@ mod tests {
 
         let mut rejected = heap(2);
         rejected.queue(CLIENT + DONE, DONE_MAP, 1 << 62, u64::MAX - 1, 2);
-        assert!(clients.queued(&reader(rejected)).is_empty());
+        assert!(clients.bodies(&reader(rejected)).is_empty());
 
         let mut absurd = heap(2);
         absurd.queue(CLIENT + DONE, DONE_MAP, 1 << 62, 1 << 63, 1 << 63);
-        assert!(clients.queued(&reader(absurd)).is_empty());
+        assert!(clients.bodies(&reader(absurd)).is_empty());
 
         let mut unmapped = heap(2);
         unmapped.word(CLIENT + DONE, 0);
-        assert!(clients.queued(&reader(unmapped)).is_empty());
+        assert!(clients.bodies(&reader(unmapped)).is_empty());
     }
 }

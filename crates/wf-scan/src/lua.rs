@@ -6,6 +6,7 @@ use crate::roots::{image_data, in_heap, words};
 
 const STRING_TAG: u8 = 6;
 const STRING_HEADER: usize = 24;
+const BOOLEAN_TAG: u32 = 1;
 const NUMBER_TAG: u32 = 3;
 const TABLE_TAG: u32 = 7;
 const FUNCTION_TAG: u32 = 8;
@@ -46,6 +47,7 @@ pub struct LuaFunction(u64);
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LuaValue {
+    Boolean(bool),
     Text(String),
     Number(f32),
     Table(LuaTable),
@@ -115,6 +117,11 @@ fn value<R: MemoryReader + ?Sized>(reader: &R, slot: &[u8]) -> Option<LuaValue> 
     let payload = read_u64_le(slot, 0)?;
     Some(match slot_tag(slot)? {
         0 => return None,
+        BOOLEAN_TAG => match read_u32_le(slot, 0)? {
+            0 => LuaValue::Boolean(false),
+            1 => LuaValue::Boolean(true),
+            _ => LuaValue::Other,
+        },
         tag if tag == u32::from(STRING_TAG) => LuaValue::Text(read_text(reader, payload)?),
         NUMBER_TAG => LuaValue::Number(f32::from_le_bytes(slot[..4].try_into().ok()?)),
         TABLE_TAG => LuaValue::Table(LuaTable(payload)),
@@ -435,13 +442,23 @@ pub(crate) mod tests {
         }
 
         pub(crate) fn function_field(&mut self, name: &str, upvalues: &[u64]) -> Field {
+            let upvalues: Vec<(u64, u32)> =
+                upvalues.iter().map(|table| (*table, TABLE_TAG)).collect();
+            self.closure_field(name, &upvalues)
+        }
+
+        pub(crate) fn flag_function_field(&mut self, name: &str, flag: bool) -> Field {
+            self.closure_field(name, &[(u64::from(flag), BOOLEAN_TAG)])
+        }
+
+        fn closure_field(&mut self, name: &str, upvalues: &[(u64, u32)]) -> Field {
             let at = self.take(0x20 + upvalues.len() * NODE_KEY);
             self.bytes[at] = u8::try_from(FUNCTION_TAG).unwrap();
             self.bytes[at + CLOSURE_UPVALUES] = u8::try_from(upvalues.len()).unwrap();
-            for (index, table) in upvalues.iter().enumerate() {
+            for (index, (payload, tag)) in upvalues.iter().enumerate() {
                 let cell = self.take(0x20);
                 self.put_u64(cell + 8, address(cell + 0x10));
-                self.put_slot(cell + 0x10, *table, TABLE_TAG);
+                self.put_slot(cell + 0x10, *payload, *tag);
                 self.put_slot(at + 0x20 + index * NODE_KEY, address(cell), UPVALUE_TAG);
             }
             (

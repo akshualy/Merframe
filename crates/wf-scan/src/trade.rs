@@ -3,6 +3,7 @@ use wf_mem::MemoryReader;
 use crate::lua::{LuaState, LuaTable, LuaValue};
 
 const TRADE_SCRIPT: &str = "AcceptTrade";
+const SUCCESS_FLAG_OWNER: &str = "TradeBuddyDestroyed";
 const ELEMENTS: &str = "mElements";
 const CLIP: &str = "mClipName";
 const SIDE_CLIPS: [&str; 2] = ["PlayerTradeMenu.", "PartnerTradeMenu."];
@@ -25,13 +26,19 @@ pub struct TradeScreen {
     pub partner: Option<String>,
     pub offered: Vec<TradeSlot>,
     pub received: Vec<TradeSlot>,
+    pub completed: bool,
 }
 
 impl TradeScreen {
     pub fn read<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -> Option<Self> {
         let mut partner = None;
         let mut sides: [Option<Vec<TradeSlot>>; 2] = [None, None];
-        for local in state.script(reader, TRADE_SCRIPT)?.locals(reader) {
+        let script = state.script(reader, TRADE_SCRIPT)?;
+        let completed = script
+            .field(reader, SUCCESS_FLAG_OWNER)
+            .and_then(LuaValue::function)
+            .is_some_and(|function| function.upvalues(reader).contains(&LuaValue::Boolean(true)));
+        for local in script.locals(reader) {
             if let Some(name) = local.field(reader, PARTNER).and_then(LuaValue::text) {
                 partner = Some(name);
                 continue;
@@ -68,6 +75,7 @@ impl TradeScreen {
             partner,
             offered: offered?,
             received: received?,
+            completed,
         })
     }
 }
@@ -99,7 +107,7 @@ mod tests {
 
     type Entry<'a> = (&'a str, &'a [(&'a str, &'a str)], f32);
 
-    fn screen(own: &[Entry<'_>], partner: &[Entry<'_>]) -> FakeReader {
+    fn screen(own: &[Entry<'_>], partner: &[Entry<'_>], completed: bool) -> FakeReader {
         Heap::with_scripts(|heap| {
             let mut grids = Vec::new();
             for (prefix, entries) in SIDE_CLIPS.into_iter().zip([own, partner]) {
@@ -130,7 +138,8 @@ mod tests {
             let args = [heap.text_field(PARTNER, "TestSquadA\u{e000}")];
             grids.push(heap.table(&args));
             let accept = heap.function_field(TRADE_SCRIPT, &grids);
-            vec![heap.table(&[accept])]
+            let flag = heap.flag_function_field(SUCCESS_FLAG_OWNER, completed);
+            vec![heap.table(&[accept, flag])]
         })
     }
 
@@ -155,6 +164,7 @@ mod tests {
                 ),
                 ("", &[], 0.0),
             ],
+            true,
         );
         assert_eq!(
             read(&reader),
@@ -180,8 +190,15 @@ mod tests {
                         fingerprint: None,
                     },
                 ],
+                completed: true,
             })
         );
+    }
+
+    #[test]
+    fn open_trade_is_not_completed() {
+        let reader = screen(&[("Platinum", &[], 84.0)], &[("", &[], 0.0)], false);
+        assert_eq!(read(&reader).map(|screen| screen.completed), Some(false));
     }
 
     #[test]

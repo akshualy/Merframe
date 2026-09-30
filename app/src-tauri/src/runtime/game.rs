@@ -12,7 +12,7 @@ use tracing::{debug, info, warn};
 use wf_core::{CoreEvent, ScannedRewards, ScannedTrade, ScannedTradeItem};
 use wf_log::Event as LogEvent;
 use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_game};
-use wf_scan::{HttpClients, InventoryBuffer, LuaState, TRADE_CONFIRM_OP, TradeScreen, trade_op};
+use wf_scan::{HttpClients, InventoryBuffer, LuaState, TradeScreen};
 
 use super::{INVENTORY_UPDATED, STATUS_UPDATED, blocking, dispatch, emit, market_loop};
 use crate::overlay;
@@ -24,7 +24,7 @@ const REWARD_TICKS: usize = 50;
 const PICKER_TICK: Duration = Duration::from_millis(100);
 const PICKER_LIFETIME: Duration = Duration::from_secs(600);
 const PICKER_GRACE: Duration = Duration::from_secs(2);
-const TRADE_WATCH_WINDOW: Duration = Duration::from_secs(1);
+const TRADE_TICK: Duration = Duration::from_millis(50);
 const TRADE_WATCH_LIFETIME: Duration = Duration::from_secs(600);
 
 pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
@@ -267,28 +267,18 @@ fn scanned_trade(screen: TradeScreen) -> ScannedTrade {
     }
 }
 
-fn confirmed_trade(state: &Arc<AppState>) -> anyhow::Result<Option<ScannedTrade>> {
+fn completed_trade(state: &Arc<AppState>) -> anyhow::Result<Option<ScannedTrade>> {
     let reader = open_game().context("Attaching to the game process")?;
-    let clients = http_clients(state, reader.as_ref())?;
+    let lua = LuaState::locate(reader.as_ref())?.context("The game's Lua state was not found")?;
     let started = Instant::now();
-    while started.elapsed() < TRADE_WATCH_LIFETIME && state.trade_screen_open.load(Ordering::SeqCst)
-    {
-        let confirmed = clients.await_response(reader.as_ref(), TRADE_WATCH_WINDOW, |response| {
-            let op = trade_op(&response.url)?;
-            debug!(op, "Trade call answered by the server");
-            (op == TRADE_CONFIRM_OP).then_some(())
-        });
-        if confirmed.is_none() {
-            continue;
+    loop {
+        let open = state.trade_screen_open.load(Ordering::SeqCst);
+        let completed = TradeScreen::read(reader.as_ref(), &lua).filter(|screen| screen.completed);
+        if completed.is_some() || !open || started.elapsed() >= TRADE_WATCH_LIFETIME {
+            return Ok(completed.map(scanned_trade));
         }
-        let screen = LuaState::locate(reader.as_ref())?
-            .and_then(|lua| TradeScreen::read(reader.as_ref(), &lua));
-        if screen.is_none() {
-            warn!("Trade screen not read from game memory, the trade is not recorded");
-        }
-        return Ok(screen.map(scanned_trade));
+        std::thread::sleep(TRADE_TICK);
     }
-    Ok(None)
 }
 
 fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
@@ -308,11 +298,18 @@ fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
 
 async fn watch_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let owned = Arc::clone(state);
-    let screen = match blocking("watch trade calls", move || confirmed_trade(&owned)).await {
+    let screen = match blocking("watch trade screen", move || completed_trade(&owned)).await {
         Some(Ok(Some(screen))) => screen,
-        Some(Ok(None)) | None => return,
+        Some(Ok(None)) => {
+            debug!("Trade screen closed without a completed trade");
+            return;
+        }
+        None => return,
         Some(Err(error)) => {
-            warn!(?error, "Trade calls not watched, the trade is not recorded");
+            warn!(
+                ?error,
+                "Trade screen not watched, the trade is not recorded"
+            );
             return;
         }
     };
