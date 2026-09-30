@@ -429,9 +429,11 @@ where
     let ingested = match outcome {
         Ok(ingested) => ingested,
         Err(error) => {
+            let cause = format!("{error:#}");
+            warn!(cause, "Inventory not ingested");
             let mut status = write(&state.status);
             status.scanning = false;
-            status.last_scan_error = Some(format!("{error:#}"));
+            status.last_scan_error = Some(cause);
             drop(status);
             emit(app, STATUS_UPDATED, state.status_snapshot());
             return false;

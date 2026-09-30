@@ -131,6 +131,7 @@ impl InventoryCache {
 pub struct Store {
     connection: Connection,
     inventory: InventoryCache,
+    raw_inventory: InventoryCache,
 }
 
 impl Store {
@@ -140,19 +141,29 @@ impl Store {
         Self::prepare(
             connection,
             InventoryCache::File(path.with_file_name("inventory.json.gz")),
+            InventoryCache::File(path.with_file_name("inventory_latest_raw.json.gz")),
         )
     }
 
     pub fn in_memory() -> Result<Self> {
         let connection = Connection::open_in_memory()?;
-        Self::prepare(connection, InventoryCache::Held(RefCell::new(None)))
+        Self::prepare(
+            connection,
+            InventoryCache::Held(RefCell::new(None)),
+            InventoryCache::Held(RefCell::new(None)),
+        )
     }
 
-    fn prepare(connection: Connection, inventory: InventoryCache) -> Result<Self> {
+    fn prepare(
+        connection: Connection,
+        inventory: InventoryCache,
+        raw_inventory: InventoryCache,
+    ) -> Result<Self> {
         connection.execute_batch("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;")?;
         let store = Self {
             connection,
             inventory,
+            raw_inventory,
         };
         store.migrate()?;
         Ok(store)
@@ -189,6 +200,10 @@ impl Store {
 
     pub fn cache_inventory(&self, json: &str) -> Result<()> {
         self.inventory.write(json)
+    }
+
+    pub fn keep_raw_inventory(&self, json: &str) -> Result<()> {
+        self.raw_inventory.write(json)
     }
 
     pub fn record_snapshot(&self, inventory: &Inventory, at: DateTime<Utc>) -> Result<SnapshotId> {

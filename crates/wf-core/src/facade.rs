@@ -147,6 +147,7 @@ impl Core {
     }
 
     pub fn ingest_inventory(&mut self, json: &str, now: DateTime<Utc>) -> Result<Vec<CoreEvent>> {
+        self.store.keep_raw_inventory(json)?;
         let inventory = Inventory::parse(json)?;
         let previous = self.store.latest_snapshot()?;
         let id = self.store.record_snapshot(&inventory, now)?;
@@ -614,6 +615,20 @@ mod tests {
         assert!(stats.latest_deltas.is_empty());
         drop(reader);
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn unparsed_inventory_is_kept_apart_from_the_cache() {
+        let dir = std::env::temp_dir().join("wf-core-facade-raw-inventory");
+        if dir.exists() {
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let mut core = core_over(Store::open(&dir.join("merframe.sqlite")).unwrap());
+        assert!(core.ingest_inventory("{}", at(1_000_000)).is_err());
+        assert!(dir.join("inventory_latest_raw.json.gz").exists());
+        assert!(!dir.join("inventory.json.gz").exists());
     }
 
     #[test]

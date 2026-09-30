@@ -1,4 +1,6 @@
-use serde::Deserialize;
+use serde::de::{DeserializeOwned, Error as _};
+use serde::{Deserialize, Deserializer};
+use serde_json::{Map, Value};
 
 use crate::mongo::{MongoDate, ObjectId};
 use crate::riven::RivenFingerprint;
@@ -248,6 +250,32 @@ impl Accolades {
     }
 }
 
+fn typed_entries<'de, D, T>(deserializer: D) -> std::result::Result<Vec<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: DeserializeOwned,
+{
+    Vec::<Map<String, Value>>::deserialize(deserializer)?
+        .into_iter()
+        .filter(|entry| {
+            let typed = entry.contains_key("ItemType");
+            if !typed {
+                tracing::warn!(
+                    entry = std::any::type_name::<T>(),
+                    fields = entry
+                        .keys()
+                        .map(String::as_str)
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                    "Inventory entry without ItemType skipped"
+                );
+            }
+            typed
+        })
+        .map(|entry| T::deserialize(Value::Object(entry)).map_err(D::Error::custom))
+        .collect()
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Inventory {
@@ -260,61 +288,61 @@ pub struct Inventory {
     pub created: MongoDate,
     pub last_inventory_sync: ObjectId,
     pub reward_seed: i64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub suits: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub long_guns: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub pistols: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub melee: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub space_suits: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub space_guns: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub space_melee: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub sentinels: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub sentinel_weapons: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub mech_suits: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub hoverboards: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub moa_pets: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub kubrow_pets: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub data_knives: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub crew_ship_harnesses: Vec<EquipmentItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub misc_items: Vec<CountedItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub recipes: Vec<CountedItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub raw_upgrades: Vec<CountedItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub consumables: Vec<CountedItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub level_keys: Vec<CountedItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub fusion_treasures: Vec<CountedItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub ship_decorations: Vec<CountedItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub weapon_skins: Vec<CosmeticItem>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub flavour_items: Vec<CosmeticItem>,
     #[serde(default)]
     pub kubrow_pet_prints: Vec<PetPrint>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub upgrades: Vec<Upgrade>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub pending_recipes: Vec<PendingRecipe>,
-    #[serde(default, rename = "XPInfo")]
+    #[serde(default, rename = "XPInfo", deserialize_with = "typed_entries")]
     pub xp_info: Vec<XpInfo>,
     #[serde(default)]
     pub missions: Vec<Mission>,
@@ -326,9 +354,9 @@ pub struct Inventory {
     pub challenge_progress: Vec<ChallengeProgress>,
     #[serde(default)]
     pub load_out_presets: serde_json::Value,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub focus_upgrades: Vec<FocusUpgrade>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "typed_entries")]
     pub boosters: Vec<Booster>,
     #[serde(default)]
     pub accolades: Accolades,
@@ -344,7 +372,20 @@ impl Inventory {
 
 #[cfg(test)]
 mod tests {
-    use super::EquipmentItem;
+    use super::{EquipmentItem, Inventory};
+
+    #[test]
+    fn entries_without_an_item_type_are_skipped() {
+        let fixture = include_str!("../../../fixtures/inventory.json");
+        let patched = fixture.replacen(
+            '{',
+            r#"{"ShipDecorations":[{"ItemCount":2},{"ItemType":"/Lotus/Types/Items/ShipDecos/TeshinBobbleHead","ItemCount":3}],"#,
+            1,
+        );
+        let inventory = Inventory::parse(&patched).unwrap();
+        assert_eq!(inventory.ship_decorations.len(), 1);
+        assert_eq!(inventory.ship_decorations[0].item_count, 3);
+    }
 
     fn equipment(fields: &str) -> EquipmentItem {
         serde_json::from_str(&format!(
