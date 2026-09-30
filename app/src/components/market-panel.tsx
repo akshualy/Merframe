@@ -323,9 +323,8 @@ export function MarketPanel() {
               </TabsList>
             </Tabs>
             <Hint as="span">
-              {side === "sell"
-                ? "Lowest sellers in game, click to copy a whisper"
-                : "Highest buyers in game, click to copy a whisper"}
+              {side === "sell" ? "Lowest sellers" : "Highest buyers"} in game.
+              Click a trader to copy a whisper, a price to use it.
             </Hint>
             <div className="min-h-0 flex-1 overflow-y-auto">
               <OrderList
@@ -338,6 +337,7 @@ export function MarketPanel() {
                 loading={loadingOrders}
                 side={side}
                 best={side === "buy" ? lowestSell : null}
+                onPickPrice={(price) => setPlatinum(String(price))}
               />
             </div>
           </>

@@ -52,12 +52,14 @@ export function OrderList({
   loading,
   side,
   best,
+  onPickPrice,
 }: {
   item: MarketItem;
   orders: Order[];
   loading: boolean;
   side: OrderType;
   best: number | null;
+  onPickPrice: (platinum: number) => void;
 }) {
   const [copied, setCopied] = useState<string | null>(null);
   const clearCopied = useRef(0);
@@ -95,14 +97,14 @@ export function OrderList({
         const bundle = perTrade(order);
         const detail = orderDetail(order);
         return (
-          <li key={order.id}>
+          <li
+            key={order.id}
+            className={cn("flex rounded-md border text-sm", good)}
+          >
             <button
               type="button"
               onClick={() => handleCopy(order)}
-              className={cn(
-                "hover:bg-secondary flex w-full cursor-pointer flex-col gap-1 rounded-md border px-2 py-1 text-left text-sm",
-                good,
-              )}
+              className="hover:bg-secondary flex min-w-0 flex-1 cursor-pointer flex-col gap-1 rounded-md px-2 py-1 text-left"
             >
               {copied === order.id ? (
                 <span className="text-muted-foreground">Copied!</span>
@@ -112,18 +114,8 @@ export function OrderList({
                     <span className="truncate">
                       {order.user?.ingameName ?? ""}
                     </span>
-                    <span className="text-muted-foreground flex-1 tabular-nums">
+                    <span className="text-muted-foreground tabular-nums">
                       x{order.quantity}
-                    </span>
-                    <span
-                      className={cn(
-                        "flex items-center justify-end gap-0.5 font-bold tabular-nums",
-                        side === "sell" ? "text-primary" : "text-accent",
-                      )}
-                    >
-                      {order.platinum}
-                      <GameIcon name="platinum" size={16} alt="Platinum" />
-                      {bundle > 1 ? ` (${unitPrice(order)})` : ""}
                     </span>
                   </span>
                   {(bundle > 1 || detail) && (
@@ -136,6 +128,19 @@ export function OrderList({
                   )}
                 </>
               )}
+            </button>
+            <button
+              type="button"
+              onClick={() => onPickPrice(order.platinum)}
+              title="Use this price"
+              className={cn(
+                "hover:bg-secondary flex shrink-0 cursor-pointer items-center gap-0.5 rounded-md px-2 py-1 font-bold tabular-nums",
+                side === "sell" ? "text-primary" : "text-accent",
+              )}
+            >
+              {order.platinum}
+              <GameIcon name="platinum" size={16} alt="Platinum" />
+              {bundle > 1 ? ` (${unitPrice(order)})` : ""}
             </button>
           </li>
         );
