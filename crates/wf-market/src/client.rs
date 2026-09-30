@@ -369,7 +369,9 @@ impl Client {
                 ApiFamily::V1,
                 "/profile/auctions/visibility",
             )
-            .json(&SetAuctionsVisibilityRequest { visible })
+            .json(&SetAuctionsVisibilityRequest {
+                visibility: visible,
+            })
             .build()?)
     }
 

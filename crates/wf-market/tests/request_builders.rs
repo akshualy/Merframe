@@ -293,7 +293,7 @@ fn auctions_visibility_request() {
         request.url().as_str(),
         "https://api.warframe.market/v1/profile/auctions/visibility"
     );
-    assert_eq!(body_json(&request)["visible"], false);
+    assert_eq!(body_json(&request)["visibility"], false);
 }
 
 #[test]

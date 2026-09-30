@@ -324,7 +324,7 @@ pub struct UpdateAuctionRequest {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SetAuctionsVisibilityRequest {
-    pub visible: bool,
+    pub visibility: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
