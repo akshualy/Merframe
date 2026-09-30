@@ -1,7 +1,6 @@
 import { Filter, X } from "lucide-react";
 import { type RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
-import { toast } from "sonner";
 import { DataTable } from "@/components/data-table";
 import { FilterField, FilterGrid } from "@/components/filter-grid";
 import { FilterSelect, FilterSingleSelect } from "@/components/filter-select";
@@ -33,6 +32,7 @@ import {
   writeOverlayFilters,
 } from "@/lib/relic-filters";
 import { REFINEMENTS, RELIC_TIERS } from "@/lib/relics";
+import { notify } from "@/lib/toast";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import {
   type PlannerRow,
@@ -115,7 +115,7 @@ export function RelicPlannerPage() {
 
   const handlePushToOverlay = useCallback(() => {
     writeOverlayFilters(filters);
-    toast.success("The relic overlay now uses these filters");
+    notify.success("The relic overlay now uses these filters");
   }, [filters]);
 
   const owned = data?.plans ?? [];

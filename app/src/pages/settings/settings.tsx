@@ -1,11 +1,11 @@
-import { Save } from "lucide-react";
+import { Save, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { ErrorNote, Page, Quoted } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, errorMessage, reportError } from "@/lib/bridge";
 import { usePageQuote } from "@/lib/quotes";
+import { notify } from "@/lib/toast";
 import { useAppStore } from "@/stores/app-store";
 import type { Settings } from "@/types";
 import { PricesAndData, StatsTabSetting } from "./data";
@@ -64,7 +64,7 @@ export function SettingsPage() {
     setSaving(true);
     try {
       setStored(await api.settingsSet(draft));
-      toast.success("Settings saved");
+      notify.success("Settings saved");
     } catch (error) {
       reportError(error);
     } finally {
@@ -95,6 +95,25 @@ export function SettingsPage() {
       }
     >
       {error && <ErrorNote message={error} />}
+      <div className="sticky top-2 z-10 h-10">
+        {dirty && (
+          <button
+            type="button"
+            className="bg-card text-card-foreground border-border mx-auto flex w-fit cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm shadow-md"
+            onClick={(event) =>
+              event.currentTarget
+                .closest("main")
+                ?.scrollTo({ top: 0, behavior: "smooth" })
+            }
+          >
+            <TriangleAlert className="text-warning size-4" />
+            <span className="font-medium">You have unsaved settings.</span>
+            <span className="text-muted-foreground">
+              Click to scroll to Save.
+            </span>
+          </button>
+        )}
+      </div>
 
       <NotificationChannels draft={draft} patch={patch} />
       <div className="grid items-start gap-6 @7xl:grid-cols-2">

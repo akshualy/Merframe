@@ -9,7 +9,7 @@ import {
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { GameIcon } from "@/components/game-icon";
-import { ErrorNote, Page, Quoted, Section } from "@/components/page";
+import { ErrorNote, Page, Quoted, Section, Stat } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +18,7 @@ import { useListen } from "@/hooks/use-listen";
 import { api, errorMessage, events, logError, reportError } from "@/lib/bridge";
 import { ago, MARKET_CHATS_URL, num } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
+import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
@@ -26,7 +27,6 @@ import { AuctionsTable } from "./auctions";
 import { LoginCard } from "./login-card";
 import { OrdersTable } from "./orders";
 import { PresenceControl } from "./presence";
-import { TradesLeft } from "./trades-left";
 
 type MarketTab = "orders" | "auctions";
 
@@ -115,7 +115,7 @@ export function MarketPage() {
         reportError(error);
         return;
       }
-      toast.success(message);
+      notify.success(message);
       reload();
     },
     [reload],
@@ -229,7 +229,14 @@ export function MarketPage() {
 
       {tradesLeft !== null && (
         <div className="grid gap-3 @sm:grid-cols-2 @5xl:grid-cols-4">
-          <TradesLeft count={tradesLeft} />
+          <Stat
+            label="Trades left today"
+            value={
+              <span className={cn(tradesLeft === 0 && "text-warning")}>
+                {num(tradesLeft)}
+              </span>
+            }
+          />
         </div>
       )}
 

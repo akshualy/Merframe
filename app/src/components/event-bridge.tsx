@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { useListen } from "@/hooks/use-listen";
 import { useOverlayFeed } from "@/hooks/use-overlay-feed";
 import { api, events, reportError } from "@/lib/bridge";
 import { countdown, num } from "@/lib/format";
+import { notify } from "@/lib/toast";
 import { useAppStore } from "@/stores/app-store";
 import type {
   CoreEvent,
@@ -56,7 +56,7 @@ export function EventBridge() {
       sell: "sell order",
       buy: "buy order",
     };
-    toast.success(titles[closed.kind], {
+    notify.success(titles[closed.kind], {
       description: `Closed the ${what[closed.kind]} for ${item}`,
     });
   });
@@ -65,7 +65,7 @@ export function EventBridge() {
     if ("InventoryUpdated" in event) {
       const summary = event.InventoryUpdated;
       if (summary.changes > 0) {
-        toast.info(`${summary.changes} inventory changes`, {
+        notify.info(`${summary.changes} inventory changes`, {
           description: `${num(summary.plat)} plat, ${num(summary.endo)} endo, MR ${summary.mr}`,
         });
       }
@@ -73,13 +73,13 @@ export function EventBridge() {
     }
     if ("TradeCompleted" in event) {
       const { trade, partner } = event.TradeCompleted;
-      toast.success("Trade completed", {
+      notify.success("Trade completed", {
         description: `${trade.plat} plat with ${partner ?? "an unknown Tenno"}`,
       });
       return;
     }
     if ("NewConversation" in event) {
-      toast.info("New in-game conversation", {
+      notify.info("New in-game conversation", {
         description: event.NewConversation.player,
       });
       return;
@@ -89,13 +89,13 @@ export function EventBridge() {
     }
     if ("FissureAlert" in event) {
       const { fissure } = event.FissureAlert;
-      toast.warning(`${fissure.tier} ${fissure.mission_name} fissure`, {
+      notify.warning(`${fissure.tier} ${fissure.mission_name} fissure`, {
         description: `${fissure.planet ?? fissure.node_name ?? fissure.node_id}${fissure.steel_path ? " (Steel Path)" : ""}, ${countdown(fissure.remaining_secs)} left`,
       });
       return;
     }
     const timer = event.TimerAlert;
-    toast.warning(`${timer.name} turns ${timer.next_state}`, {
+    notify.warning(`${timer.name} turns ${timer.next_state}`, {
       description: `in ${countdown(timer.remaining_secs)}`,
     });
   };

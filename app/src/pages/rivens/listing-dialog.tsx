@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api, reportError } from "@/lib/bridge";
+import { notify } from "@/lib/toast";
 import type { ListingChoices, RivenRow } from "@/types";
 import { MAX_RIVEN_RANK } from "./columns";
 
@@ -122,7 +123,7 @@ export function RivenListingDialog({
     setPosting(true);
     try {
       await api.marketPostRiven(riven.item_id, choices);
-      toast.success("Listed on warframe.market");
+      notify.success("Listed on warframe.market");
     } catch (error) {
       reportError(error);
     } finally {

@@ -1,7 +1,6 @@
 import { Download } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
-import { toast } from "sonner";
 import { InventoryTabView } from "@/components/inventory-tab-view";
 import {
   ErrorNote,
@@ -19,6 +18,7 @@ import { num } from "@/lib/format";
 import type { InventoryTabKey } from "@/lib/inventory-filters";
 import { rowsFor } from "@/lib/inventory-rows";
 import { usePageQuote } from "@/lib/quotes";
+import { notify } from "@/lib/toast";
 
 export function InventoryPage() {
   const quote = usePageQuote("inventory");
@@ -36,7 +36,7 @@ export function InventoryPage() {
     try {
       const dir = await api.exportBundle();
       if (dir) {
-        toast.success("Exported", { description: dir });
+        notify.success("Exported", { description: dir });
       }
     } catch (error) {
       reportError(error);

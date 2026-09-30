@@ -20,6 +20,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, reportError } from "@/lib/bridge";
 import { marketUrl } from "@/lib/format";
+import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/world";
 import { useAppStore } from "@/stores/app-store";
@@ -247,7 +248,7 @@ export function MarketPanel() {
           hasAmberStars && Number.isFinite(amber) ? amber : undefined,
         cyan_stars: hasCyanStars && Number.isFinite(cyan) ? cyan : undefined,
       });
-      toast.success(
+      notify.success(
         `${side === "sell" ? "Sell" : "Buy"} order posted for ${selected.name}`,
       );
       setSelected(null);

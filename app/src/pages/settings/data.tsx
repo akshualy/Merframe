@@ -1,6 +1,5 @@
 import { Download, FileSearch, FolderOpen } from "lucide-react";
 import { useCallback } from "react";
-import { toast } from "sonner";
 import { Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { api, reportError } from "@/lib/bridge";
 import { dateTime, num } from "@/lib/format";
+import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import type { Settings, TraderStatus } from "@/types";
@@ -55,7 +55,7 @@ export function PricesAndData({
     try {
       const dir = await api.exportBundle();
       if (dir) {
-        toast.success("Exported", { description: dir });
+        notify.success("Exported", { description: dir });
       }
     } catch (error) {
       reportError(error);
@@ -65,7 +65,7 @@ export function PricesAndData({
   const handleRefreshPrices = useCallback(async () => {
     try {
       const count = await api.refreshPrices();
-      toast.success(
+      notify.success(
         count === 0
           ? "The price table is already current"
           : `${num(count)} prices loaded`,
@@ -180,6 +180,15 @@ export function PricesAndData({
             hint="A traded item marks its sell order sold, a traded riven closes its auction."
           >
             Close the matching listing when a trade completes
+          </SwitchRow>
+          <SwitchRow
+            checked={draft.market_offline_after_last_trade}
+            onChange={(checked) =>
+              patch({ market_offline_after_last_trade: checked })
+            }
+            hint="Sets your warframe.market status to offline once the day's trade limit is used up."
+          >
+            Go offline after the last trade
           </SwitchRow>
           <CheckboxRow
             checked={draft.take_rank_into_account}

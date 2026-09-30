@@ -2,7 +2,6 @@ import { getVersion } from "@tauri-apps/api/app";
 import { check } from "@tauri-apps/plugin-updater";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import Merframe from "@/components/icons/merframe";
 import { Page, Quoted, Section } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +10,7 @@ import { Hint } from "@/components/ui/hint";
 import { api, reportError } from "@/lib/bridge";
 import { ago } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
+import { notify } from "@/lib/toast";
 import { useAppStore } from "@/stores/app-store";
 
 const LINKS = [
@@ -41,7 +41,7 @@ export function AboutPage() {
       if (update) {
         setUpdate(update);
       } else {
-        toast.success("Merframe is up to date");
+        notify.success("Merframe is up to date");
       }
     } catch (error) {
       reportError(error);

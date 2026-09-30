@@ -8,6 +8,14 @@ export type OverlayPlacement =
   | "bottom_right"
   | "centre";
 
+export type ToastPosition =
+  | "top_left"
+  | "top_centre"
+  | "top_right"
+  | "bottom_left"
+  | "bottom_centre"
+  | "bottom_right";
+
 export type RecommendationRefinement = "radiant" | "owned";
 
 export type SteelPathFilter = "all" | "steelPath" | "normal";
@@ -78,6 +86,8 @@ export interface Settings {
   overlay_only_while_game_active: boolean;
   overlay_account_balance: boolean;
   copy_relic_rewards: boolean;
+  toasts_enabled: boolean;
+  toast_position: ToastPosition;
   check_for_updates: boolean;
   log_file_path: string | null;
 }

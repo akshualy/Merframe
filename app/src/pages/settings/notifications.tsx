@@ -1,13 +1,29 @@
 import { BellRing } from "lucide-react";
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
 import { Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { api, reportError } from "@/lib/bridge";
-import type { Settings } from "@/types";
+import { notify } from "@/lib/toast";
+import type { Settings, ToastPosition } from "@/types";
 import { CheckboxRow, type Patch, SwitchRow } from "./row";
+
+const TOAST_POSITIONS: { value: ToastPosition; label: string }[] = [
+  { value: "top_left", label: "Top left" },
+  { value: "top_centre", label: "Top centre" },
+  { value: "top_right", label: "Top right" },
+  { value: "bottom_left", label: "Bottom left" },
+  { value: "bottom_centre", label: "Bottom centre" },
+  { value: "bottom_right", label: "Bottom right" },
+];
 
 export function NotificationChannels({
   draft,
@@ -21,7 +37,7 @@ export function NotificationChannels({
     setTesting(true);
     try {
       await api.testNotifications(draft);
-      toast.success("Test notification sent");
+      notify.success("Test notification sent");
     } catch (error) {
       reportError(error);
     } finally {
@@ -30,12 +46,36 @@ export function NotificationChannels({
   }, [draft]);
 
   return (
-    <Section
-      title="Notification Channels"
-      description="In-app toasts always stay on."
-    >
+    <Section title="Notification Channels">
       <div className="grid gap-x-8 gap-y-6 @3xl:grid-cols-2">
         <div className="flex flex-col gap-4">
+          <SwitchRow
+            checked={draft.toasts_enabled}
+            onChange={(checked) => patch({ toasts_enabled: checked })}
+            hint="Errors are always shown."
+          >
+            In-app toasts for confirmations and alerts
+          </SwitchRow>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="toast-position">Toast position</Label>
+            <Select
+              value={draft.toast_position}
+              onValueChange={(value) =>
+                patch({ toast_position: value as ToastPosition })
+              }
+            >
+              <SelectTrigger id="toast-position" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TOAST_POSITIONS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <SwitchRow
             checked={draft.windows_notifications_enabled}
             onChange={(checked) =>

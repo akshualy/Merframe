@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, errorMessage } from "@/lib/bridge";
+import { notify } from "@/lib/toast";
 
 export function LoginCard({ onDone }: { onDone: () => void }) {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ export function LoginCard({ onDone }: { onDone: () => void }) {
     setFailure(null);
     try {
       const account = await api.marketLogin(email, password);
-      toast.success(`Signed in as ${account.ingame_name}`);
+      notify.success(`Signed in as ${account.ingame_name}`);
       onDone();
     } catch (error) {
       const message = errorMessage(error);

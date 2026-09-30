@@ -41,6 +41,18 @@ pub enum OverlayPlacement {
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+pub enum ToastPosition {
+    TopLeft,
+    TopCentre,
+    TopRight,
+    BottomLeft,
+    BottomCentre,
+    #[default]
+    BottomRight,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RecommendationRefinement {
     #[default]
     Radiant,
@@ -63,9 +75,18 @@ pub struct Settings {
     #[serde(flatten)]
     pub overlays: OverlaySettings,
     pub copy_relic_rewards: bool,
+    #[serde(flatten)]
+    pub toasts: ToastSettings,
     pub check_for_updates: bool,
     pub force_log_file: bool,
     pub log_file_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ToastSettings {
+    pub toasts_enabled: bool,
+    pub toast_position: ToastPosition,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -151,9 +172,19 @@ impl Default for Settings {
             inventory: InventorySettings::default(),
             overlays: OverlaySettings::default(),
             copy_relic_rewards: false,
+            toasts: ToastSettings::default(),
             check_for_updates: true,
             force_log_file: false,
             log_file_path: None,
+        }
+    }
+}
+
+impl Default for ToastSettings {
+    fn default() -> Self {
+        Self {
+            toasts_enabled: true,
+            toast_position: ToastPosition::BottomRight,
         }
     }
 }
@@ -430,6 +461,8 @@ mod tests {
         assert!(settings.inventory.include_forma_ranks);
         assert!(!settings.inventory.show_full_inventory);
         assert!(settings.inventory.stats_tab_enabled);
+        assert!(settings.toasts.toasts_enabled);
+        assert_eq!(settings.toasts.toast_position, ToastPosition::BottomRight);
         assert!(settings.overlays.overlays_enabled);
         assert!(settings.overlays.shown.overlay_relic_reward);
         assert!(settings.overlays.shown.overlay_relic_recommendation);
@@ -500,7 +533,8 @@ mod tests {
                 "overlay_relic_recommendation_placement":"centre","overlay_riven_placement":"bottom_right",
                 "overlay_recommendation_refinement":"owned","overlay_opacity":55,
                 "overlay_recommendation_count":9,"overlay_mode":"windows",
-                "overlay_only_while_game_active":false,"force_log_file":true}"#,
+                "overlay_only_while_game_active":false,"force_log_file":true,
+                "toasts_enabled":false,"toast_position":"top_centre"}"#,
         )
         .unwrap();
         assert!(stored.alerts.fissure_notifications_enabled);
@@ -522,6 +556,8 @@ mod tests {
         assert!(!stored.inventory.include_forma_ranks);
         assert!(stored.inventory.show_full_inventory);
         assert!(!stored.inventory.stats_tab_enabled);
+        assert!(!stored.toasts.toasts_enabled);
+        assert_eq!(stored.toasts.toast_position, ToastPosition::TopCentre);
         assert!(stored.overlays.overlays_enabled);
         assert!(!stored.overlays.shown.overlay_relic_reward);
         assert!(stored.overlays.shown.overlay_relic_recommendation);

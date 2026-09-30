@@ -98,7 +98,7 @@ function MainWindow() {
     return (
       <>
         <StartupScreen error={bootError} onRetry={retry} />
-        <Toaster position="bottom-right" />
+        <Toaster />
       </>
     );
   }
@@ -137,7 +137,7 @@ function MainWindow() {
       <MarketPanel />
       <EventBridge />
       <UpdateDialog />
-      <Toaster position="bottom-right" />
+      <Toaster />
     </div>
   );
 }
