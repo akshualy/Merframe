@@ -317,6 +317,7 @@ pub fn fissure_body(fissure: &wf_core::FissureInfo) -> String {
     if fissure.is_storm {
         body.push_str(", Void Storm");
     }
+    let _ = write!(body, ", {} min left", fissure.remaining_secs / 60);
     body
 }
 
@@ -383,7 +384,7 @@ mod tests {
             faction: Some("Grineer"),
             levels: Some((15, 17)),
             expiry: DateTime::UNIX_EPOCH,
-            remaining_secs: 0,
+            remaining_secs: 5400,
         }
     }
 
@@ -397,7 +398,10 @@ mod tests {
 
     #[test]
     fn fissure_body_lists_mission_levels_and_faction() {
-        assert_eq!(fissure_body(&fissure()), "Extermination (15-17) - Grineer");
+        assert_eq!(
+            fissure_body(&fissure()),
+            "Extermination (15-17) - Grineer, 90 min left"
+        );
         let steel_path = FissureInfo {
             steel_path: true,
             levels: Some((115, 117)),
@@ -405,7 +409,7 @@ mod tests {
         };
         assert_eq!(
             fissure_body(&steel_path),
-            "Extermination (115-117) - Grineer, Steel Path"
+            "Extermination (115-117) - Grineer, Steel Path, 90 min left"
         );
         let storm = FissureInfo {
             is_storm: true,
@@ -413,6 +417,9 @@ mod tests {
             levels: None,
             ..fissure()
         };
-        assert_eq!(fissure_body(&storm), "Extermination, Void Storm");
+        assert_eq!(
+            fissure_body(&storm),
+            "Extermination, Void Storm, 90 min left"
+        );
     }
 }

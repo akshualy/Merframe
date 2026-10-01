@@ -101,7 +101,7 @@ export function EventBridge() {
       notify.warning(
         `New ${fissure.tier} Fissure - ${fissure.node_name ?? fissure.node_id}`,
         {
-          description: `${fissure.mission_name}${levels}${faction}${steelPath}${storm}`,
+          description: `${fissure.mission_name}${levels}${faction}${steelPath}${storm}, ${countdown(fissure.remaining_secs)} left`,
           inGame: "fissure",
         },
       );
