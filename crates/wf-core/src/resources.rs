@@ -73,15 +73,6 @@ pub struct ShardRow {
     pub holders: Vec<ShardHolder>,
 }
 
-const SHARD_COLOURS: [(&str, &str); 6] = [
-    ("Amar", "ACC_RED"),
-    ("Nira", "ACC_YELLOW"),
-    ("Boreal", "ACC_BLUE"),
-    ("Green", "ACC_GREEN"),
-    ("Orange", "ACC_ORANGE"),
-    ("Violet", "ACC_PURPLE"),
-];
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ResourcesTab {
     pub resources: Vec<ResourceRow>,
@@ -168,6 +159,15 @@ pub(crate) fn tab(
     }
 }
 
+const SHARD_COLOURS: [(&str, &str); 6] = [
+    ("Amar", "ACC_RED"),
+    ("Nira", "ACC_YELLOW"),
+    ("Boreal", "ACC_BLUE"),
+    ("Green", "ACC_GREEN"),
+    ("Orange", "ACC_ORANGE"),
+    ("Violet", "ACC_PURPLE"),
+];
+
 fn shards(inventory: &Inventory, catalog: &Catalog, stock: &Stock<'_>) -> Vec<ShardRow> {
     SHARD_COLOURS
         .iter()
@@ -182,8 +182,9 @@ fn shards(inventory: &Inventory, catalog: &Catalog, stock: &Stock<'_>) -> Vec<Sh
                     let installed = |wanted: &str| {
                         suit.archon_crystal_upgrades
                             .iter()
-                            .filter(|slot| {
-                                matches!(slot, ArchonCrystalSlot::Installed { color, .. } if color == wanted)
+                            .filter(|slot| match slot {
+                                ArchonCrystalSlot::Installed { color, .. } => color == wanted,
+                                ArchonCrystalSlot::Empty(_) => false,
                             })
                             .count()
                     };
