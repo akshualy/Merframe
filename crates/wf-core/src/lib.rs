@@ -57,7 +57,7 @@ pub use rivens::{
     AlternativeMatch, AttributeGrade, GoodRollView, KeptRoll, ListingChoices, PendingRoll,
     RivenRow, RivensTab, StatMatch, VeiledGroup, VeiledRiven, display_name as riven_display_name,
     fingerprint_weapon as riven_fingerprint_weapon, kept_roll as riven_kept_roll,
-    listing_payload as riven_listing_payload,
+    listing_payload as riven_listing_payload, listing_update as riven_listing_update,
 };
 pub use stats::{
     DailyCount, DeltaRow, OpeningRow, StatsSummary, daily_counts, daily_series, day_span,

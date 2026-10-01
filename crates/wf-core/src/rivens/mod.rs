@@ -16,7 +16,7 @@ mod tab;
 pub use good_roll::{AlternativeMatch, GoodRollView, StatMatch};
 pub(crate) use grading::traded_riven_name;
 pub use grading::{AttributeGrade, fingerprint_weapon};
-pub use listing::{ListingChoices, listing_payload};
+pub use listing::{ListingChoices, listing_payload, listing_update};
 pub use reroll::{KeptRoll, kept_roll};
 pub use tab::display_name;
 

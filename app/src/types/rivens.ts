@@ -75,9 +75,9 @@ export interface ListingChoices {
   startingPrice: number;
   buyoutPrice: number;
   minReputation: number;
-  note: string | null;
-  private: boolean;
-  maxRankStats: boolean;
+  note: string;
+  visible: boolean;
+  rank: number;
 }
 
 export interface VeiledRiven {

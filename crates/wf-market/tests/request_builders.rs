@@ -254,7 +254,7 @@ fn my_auctions_request() {
 fn update_auction_request() {
     let client = client();
     let body = UpdateAuctionRequest {
-        buyout_price: Some(450),
+        buyout_price: Some(Some(450)),
         ..UpdateAuctionRequest::default()
     };
     let request = client
@@ -269,6 +269,19 @@ fn update_auction_request() {
     assert_eq!(json["buyout_price"], 450);
     assert!(json.get("starting_price").is_none());
     assert!(json.get("visible").is_none());
+
+    let cleared = UpdateAuctionRequest {
+        buyout_price: Some(None),
+        minimal_reputation: Some(3),
+        ..UpdateAuctionRequest::default()
+    };
+    let request = client
+        .update_auction_request("6a9f08ab51f7f20eeeb6add2", &cleared)
+        .unwrap();
+    let json = body_json(&request);
+    assert!(json["buyout_price"].is_null());
+    assert!(json.get("buyout_price").is_some());
+    assert_eq!(json["minimal_reputation"], 3);
 }
 
 #[test]

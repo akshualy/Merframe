@@ -120,6 +120,7 @@ export interface Auction {
   id: string;
   buyout_price: number | null;
   starting_price: number;
+  minimal_reputation: number;
   note?: string;
   item: AuctionItem;
   private: boolean;
@@ -140,11 +141,4 @@ export interface MarketSnapshot {
   orders: OrderRow[] | null;
   auctions: Auction[] | null;
   at: string;
-}
-
-export interface AuctionPatch {
-  starting_price?: number;
-  buyout_price?: number;
-  note?: string;
-  visible?: boolean;
 }

@@ -277,6 +277,7 @@ pub struct Auction {
     pub id: String,
     pub buyout_price: Option<u32>,
     pub starting_price: u32,
+    pub minimal_reputation: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     pub item: AuctionItem,
@@ -294,12 +295,12 @@ pub struct CreateAuctionRequest {
     pub buyout_price: Option<u32>,
     pub starting_price: u32,
     pub minimal_reputation: Option<u32>,
-    pub note: Option<String>,
-    pub private: bool,
+    pub note: String,
     pub visible: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type", rename = "riven")]
 pub struct CreateAuctionItem {
     pub attributes: Vec<RivenAttributeInstance>,
     pub polarity: Polarity,
@@ -313,9 +314,11 @@ pub struct CreateAuctionItem {
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct UpdateAuctionRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub buyout_price: Option<u32>,
+    pub buyout_price: Option<Option<u32>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub starting_price: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimal_reputation: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

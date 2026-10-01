@@ -1,6 +1,8 @@
 use serde::Deserialize;
-use wf_data::{MAX_RANK, rank_multiplier};
-use wf_market::{CreateAuctionItem, CreateAuctionRequest, RivenAttributeInstance};
+use wf_data::rank_multiplier;
+use wf_market::{
+    CreateAuctionItem, CreateAuctionRequest, RivenAttributeInstance, UpdateAuctionRequest,
+};
 
 use super::RivenRow;
 use super::grading::display_value;
@@ -13,61 +15,72 @@ pub struct ListingChoices {
     pub starting_price: u32,
     pub buyout_price: u32,
     pub min_reputation: u32,
-    pub note: Option<String>,
-    pub private: bool,
-    pub max_rank_stats: bool,
+    pub note: String,
+    pub visible: bool,
+    pub rank: u32,
+}
+
+impl ListingChoices {
+    fn starting(&self) -> u32 {
+        if self.direct {
+            self.selling_price
+        } else {
+            self.starting_price
+        }
+    }
+
+    fn buyout(&self) -> Option<u32> {
+        let asking = if self.direct {
+            self.selling_price
+        } else {
+            self.buyout_price
+        };
+        (asking > 0).then_some(asking)
+    }
+
+    fn reputation(&self) -> u32 {
+        if self.direct { 0 } else { self.min_reputation }
+    }
+}
+
+pub fn listing_update(choices: &ListingChoices) -> UpdateAuctionRequest {
+    UpdateAuctionRequest {
+        buyout_price: Some(choices.buyout()),
+        starting_price: Some(choices.starting()),
+        minimal_reputation: Some(choices.reputation()),
+        note: Some(choices.note.clone()),
+        visible: Some(choices.visible),
+    }
 }
 
 pub fn listing_payload(row: &RivenRow, choices: &ListingChoices) -> Option<CreateAuctionRequest> {
     let mut attributes = Vec::with_capacity(row.attributes.len());
     for attribute in &row.attributes {
-        let value = if choices.max_rank_stats {
-            attribute.display?
-        } else {
-            display_value(
-                attribute.rolled? * rank_multiplier(row.rank),
-                attribute.unit.as_deref() == Some("multiply"),
-            )
-        };
+        let value = display_value(
+            attribute.rolled? * rank_multiplier(choices.rank),
+            attribute.unit.as_deref() == Some("multiply"),
+        );
         attributes.push(RivenAttributeInstance {
             value,
             positive: !attribute.curse,
             url_name: attribute.slug.clone()?,
         });
     }
-    let asking = if choices.direct {
-        choices.selling_price
-    } else {
-        choices.buyout_price
-    };
     Some(CreateAuctionRequest {
         item: CreateAuctionItem {
             attributes,
             polarity: row.polarity?,
-            mod_rank: if choices.max_rank_stats {
-                MAX_RANK
-            } else {
-                row.rank
-            },
+            mod_rank: choices.rank,
             name: row.name.clone()?,
             re_rolls: row.rerolls,
             mastery_level: row.rank_required?,
             weapon_url_name: row.weapon_slug.clone()?,
         },
-        buyout_price: (asking > 0).then_some(asking),
-        starting_price: if choices.direct {
-            choices.selling_price
-        } else {
-            choices.starting_price
-        },
-        minimal_reputation: Some(if choices.direct {
-            0
-        } else {
-            choices.min_reputation
-        }),
+        buyout_price: choices.buyout(),
+        starting_price: choices.starting(),
+        minimal_reputation: Some(choices.reputation()),
         note: choices.note.clone(),
-        private: choices.private,
-        visible: true,
+        visible: choices.visible,
     })
 }
 
@@ -123,16 +136,17 @@ mod tests {
             starting_price: 200,
             buyout_price: 400,
             min_reputation: 7,
-            note: Some("merframe".to_owned()),
-            private: true,
+            note: "merframe".to_owned(),
+            visible: true,
+            rank: cernos.rank,
             ..ListingChoices::default()
         };
         let payload = listing_payload(cernos, &auction).unwrap();
         assert_eq!(payload.starting_price, 200);
         assert_eq!(payload.buyout_price, Some(400));
         assert_eq!(payload.minimal_reputation, Some(7));
-        assert_eq!(payload.note.as_deref(), Some("merframe"));
-        assert!(payload.private);
+        assert_eq!(payload.note, "merframe");
+        assert!(payload.visible);
         assert_eq!(payload.item.mod_rank, 8);
         assert_eq!(payload.item.re_rolls, cernos.rerolls);
         assert_eq!(payload.item.name.as_str(), "Sci-cronicron");
@@ -155,6 +169,15 @@ mod tests {
                 .any(|attribute| attribute.url_name == "slash_damage"
                     && (attribute.value - 108.7).abs() < f64::EPSILON)
         );
+        assert!(
+            payload
+                .item
+                .attributes
+                .iter()
+                .all(|attribute| attribute.positive == (attribute.value > 0.0))
+        );
+        let json = serde_json::to_value(&payload).unwrap();
+        assert_eq!(json["item"]["type"], "riven");
     }
 
     #[test]
@@ -165,7 +188,8 @@ mod tests {
         assert_eq!(payload.starting_price, 120);
         assert_eq!(payload.buyout_price, Some(120));
         assert_eq!(payload.minimal_reputation, Some(0));
-        assert!(!payload.private);
+        assert!(!payload.visible);
+        assert_eq!(serde_json::to_value(&payload).unwrap()["note"], "");
 
         let free = listing_payload(
             cernos,
@@ -184,6 +208,33 @@ mod tests {
     }
 
     #[test]
+    fn update_from_choices() {
+        let auction = listing_update(&ListingChoices {
+            direct: false,
+            starting_price: 200,
+            min_reputation: 4,
+            visible: true,
+            ..ListingChoices::default()
+        });
+        assert_eq!(auction.starting_price, Some(200));
+        assert_eq!(auction.buyout_price, Some(None));
+        assert_eq!(auction.minimal_reputation, Some(4));
+        assert_eq!(auction.note.as_deref(), Some(""));
+        assert_eq!(auction.visible, Some(true));
+
+        let sale = listing_update(&ListingChoices {
+            min_reputation: 4,
+            note: "merframe".to_owned(),
+            ..direct(150)
+        });
+        assert_eq!(sale.starting_price, Some(150));
+        assert_eq!(sale.buyout_price, Some(Some(150)));
+        assert_eq!(sale.minimal_reputation, Some(0));
+        assert_eq!(sale.note.as_deref(), Some("merframe"));
+        assert_eq!(sale.visible, Some(false));
+    }
+
+    #[test]
     fn max_rank_stats() {
         let tab = riven_tab();
         let unranked = tab
@@ -196,7 +247,7 @@ mod tests {
             &ListingChoices {
                 direct: true,
                 selling_price: 50,
-                max_rank_stats: true,
+                rank: 8,
                 ..ListingChoices::default()
             },
         )
@@ -207,7 +258,14 @@ mod tests {
             assert!((sent.value - shown).abs() < f64::EPSILON);
         }
 
-        let as_rolled = listing_payload(unranked, &direct(50)).unwrap();
+        let as_rolled = listing_payload(
+            unranked,
+            &ListingChoices {
+                rank: unranked.rank,
+                ..direct(50)
+            },
+        )
+        .unwrap();
         assert_eq!(as_rolled.item.mod_rank, unranked.rank);
         let scale = f64::from(unranked.rank + 1) / 9.0;
         for (attribute, sent) in unranked.attributes.iter().zip(&as_rolled.item.attributes) {

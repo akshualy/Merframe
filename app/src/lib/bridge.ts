@@ -3,7 +3,6 @@ import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import type {
   Auction,
-  AuctionPatch,
   CommandError,
   ComparedStat,
   CraftDetails,
@@ -165,10 +164,12 @@ export const api = {
   marketPostRiven: (itemId: string, choices: ListingChoices) =>
     call<string>("market_post_riven", { itemId, choices }),
   marketMyAuctions: () => call<Auction[]>("market_my_auctions"),
-  marketUpdateAuction: (id: string, patch: AuctionPatch) =>
-    call<Auction>("market_update_auction", { id, patch }),
+  marketEditAuction: (id: string, choices: ListingChoices) =>
+    call<Auction>("market_edit_auction", { id, choices }),
+  marketSetAuctionVisible: (id: string, visible: boolean) =>
+    call<Auction>("market_set_auction_visible", { id, visible }),
   marketCloseAuction: (id: string) =>
-    call<Auction>("market_close_auction", { id }),
+    call<void>("market_close_auction", { id }),
   marketSetAuctionsVisibility: (visible: boolean) =>
     call<void>("market_set_auctions_visibility", { visible }),
   worldstate: () => call<WorldStateView>("worldstate"),

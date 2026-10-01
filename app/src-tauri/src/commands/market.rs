@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
-use wf_core::{ListingChoices, market_icon, riven_listing_payload};
+use wf_core::{ListingChoices, market_icon, riven_listing_payload, riven_listing_update};
 use wf_market::{
     Auction, CreateOrderRequest, ItemListings, Order, OrderType, Platform, UpdateAuctionRequest,
     UpdateOrderRequest, UserStatus, order_rejection,
@@ -55,14 +55,6 @@ pub struct NewOrder {
 pub struct OrderPatch {
     pub platinum: Option<u32>,
     pub quantity: Option<u32>,
-    pub visible: Option<bool>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct AuctionPatch {
-    pub starting_price: Option<u32>,
-    pub buyout_price: Option<u32>,
-    pub note: Option<String>,
     pub visible: Option<bool>,
 }
 
@@ -364,23 +356,32 @@ pub async fn market_my_auctions(state: Shared<'_>) -> CommandResult<Vec<Auction>
 }
 
 #[tauri::command]
-pub async fn market_update_auction(
+pub async fn market_edit_auction(
     state: Shared<'_>,
     id: String,
-    patch: AuctionPatch,
+    choices: ListingChoices,
+) -> CommandResult<Auction> {
+    let state = ready(&state).await?;
+    let body = riven_listing_update(&choices);
+    Ok(state.market().update_auction(&id, &body).await?)
+}
+
+#[tauri::command]
+pub async fn market_set_auction_visible(
+    state: Shared<'_>,
+    id: String,
+    visible: bool,
 ) -> CommandResult<Auction> {
     let state = ready(&state).await?;
     let body = UpdateAuctionRequest {
-        buyout_price: patch.buyout_price,
-        starting_price: patch.starting_price,
-        note: patch.note,
-        visible: patch.visible,
+        visible: Some(visible),
+        ..UpdateAuctionRequest::default()
     };
     Ok(state.market().update_auction(&id, &body).await?)
 }
 
 #[tauri::command]
-pub async fn market_close_auction(state: Shared<'_>, id: String) -> CommandResult<Auction> {
+pub async fn market_close_auction(state: Shared<'_>, id: String) -> CommandResult<()> {
     let state = ready(&state).await?;
     Ok(state.market().close_auction(&id).await?)
 }

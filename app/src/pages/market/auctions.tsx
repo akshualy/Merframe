@@ -1,17 +1,9 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Ellipsis, RefreshCw, Wrench } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,12 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { api, reportError } from "@/lib/bridge";
 import { dateTime, num } from "@/lib/format";
 import { rivenAuctionUrl } from "@/lib/rivens";
-import type { Auction, AuctionPatch, MarketItem } from "@/types";
+import { ListingDialog, type ListingForm } from "@/pages/rivens/listing-dialog";
+import type { Auction, MarketItem } from "@/types";
 
 function titleCase(slug: string): string {
   return slug
@@ -45,6 +36,19 @@ function auctionName(auction: Auction, items: MarketItem[]): string {
   return `${weapon ?? titleCase(slug)} ${titleCase(auction.item.name)}`;
 }
 
+function auctionForm(auction: Auction): ListingForm {
+  return {
+    direct: auction.is_direct_sell,
+    visible: auction.visible,
+    rank: auction.item.mod_rank,
+    sellingPrice: String(auction.starting_price),
+    startingPrice: String(auction.starting_price),
+    buyoutPrice: String(auction.buyout_price ?? 0),
+    minReputation: String(auction.minimal_reputation),
+    note: auction.note ?? "",
+  };
+}
+
 export function AuctionsTable({
   auctions,
   items,
@@ -56,21 +60,12 @@ export function AuctionsTable({
   items: MarketItem[];
   onRefresh: () => void;
   onSetVisibility: (visible: boolean) => void;
-  runMarketAction: (promise: Promise<unknown>, message: string) => void;
+  runMarketAction: (
+    promise: Promise<unknown>,
+    message: string,
+  ) => Promise<void>;
 }) {
   const [editing, setEditing] = useState<Auction | null>(null);
-  const [starting, setStarting] = useState("");
-  const [buyout, setBuyout] = useState("");
-  const [note, setNote] = useState("");
-
-  const handleEdit = useCallback((auction: Auction) => {
-    setEditing(auction);
-    setStarting(String(auction.starting_price));
-    setBuyout(
-      auction.buyout_price === null ? "" : String(auction.buyout_price),
-    );
-    setNote(auction.note ?? "");
-  }, []);
 
   const columns = useMemo<ColumnDef<Auction>[]>(
     () => [
@@ -177,15 +172,16 @@ export function AuctionsTable({
                 Compare on the market
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => handleEdit(row.original)}>
-                Edit price
+              <DropdownMenuItem onSelect={() => setEditing(row.original)}>
+                Edit auction
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() =>
                   runMarketAction(
-                    api.marketUpdateAuction(row.original.id, {
-                      visible: !row.original.visible,
-                    }),
+                    api.marketSetAuctionVisible(
+                      row.original.id,
+                      !row.original.visible,
+                    ),
                     row.original.visible ? "Auction hidden" : "Auction shown",
                   )
                 }
@@ -210,27 +206,8 @@ export function AuctionsTable({
         ),
       },
     ],
-    [items, runMarketAction, handleEdit],
+    [items, runMarketAction],
   );
-
-  const handleSubmit = useCallback(() => {
-    if (!editing) {
-      return;
-    }
-    const patch: AuctionPatch = {
-      starting_price: Math.max(1, Number(starting) || editing.starting_price),
-      note,
-    };
-    const wanted = Number(buyout);
-    if (buyout.trim() !== "" && wanted > 0) {
-      patch.buyout_price = wanted;
-    }
-    runMarketAction(
-      api.marketUpdateAuction(editing.id, patch),
-      "Auction updated",
-    );
-    setEditing(null);
-  }, [editing, starting, buyout, note, runMarketAction]);
 
   return (
     <>
@@ -273,58 +250,22 @@ export function AuctionsTable({
         rowKey={(row) => row.id}
         emptyMessage="No riven auctions on this account."
       />
-      <Dialog
-        open={editing !== null}
-        onOpenChange={(open) => !open && setEditing(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Auction</DialogTitle>
-            <DialogDescription>
-              {editing ? auctionName(editing, items) : ""}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="auction-starting">Starting price</Label>
-                <Input
-                  id="auction-starting"
-                  type="number"
-                  min={1}
-                  value={starting}
-                  onChange={(e) => setStarting(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="auction-buyout">Buyout price</Label>
-                <Input
-                  id="auction-buyout"
-                  type="number"
-                  min={0}
-                  value={buyout}
-                  onChange={(e) => setBuyout(e.target.value)}
-                  placeholder="none"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="auction-note">Note</Label>
-              <Input
-                id="auction-note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditing(null)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {editing && (
+        <ListingDialog
+          key={editing.id}
+          title="Edit Auction"
+          description={auctionName(editing, items)}
+          initial={auctionForm(editing)}
+          submitLabel="Save"
+          onSubmit={(choices) =>
+            runMarketAction(
+              api.marketEditAuction(editing.id, choices),
+              "Auction updated",
+            )
+          }
+          onClose={() => setEditing(null)}
+        />
+      )}
     </>
   );
 }

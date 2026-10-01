@@ -357,9 +357,12 @@ impl Client {
             .build()?)
     }
 
-    pub async fn close_auction(&self, id: &str) -> Result<Auction> {
+    pub async fn close_auction(&self, id: &str) -> Result<()> {
         let request = self.close_auction_request(id)?;
-        self.execute(request, parse::parse_v1_auction).await
+        let response = self.send(request).await?;
+        let status = response.status();
+        accepted(status, response.text().await?)?;
+        Ok(())
     }
 
     pub fn set_auctions_visibility_request(&self, visible: bool) -> Result<Request> {

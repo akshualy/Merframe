@@ -1,8 +1,6 @@
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
+import { type ReactNode, useCallback, useState } from "react";
 import { PolarityIcon } from "@/components/game-icon";
 import { Button } from "@/components/ui/button";
-import { CheckboxField } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -13,23 +11,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { api, reportError } from "@/lib/bridge";
 import { notify } from "@/lib/toast";
 import type { ListingChoices, RivenRow } from "@/types";
 import { MAX_RIVEN_RANK } from "./columns";
 
-interface ListingForm {
+export interface ListingForm {
   direct: boolean;
-  private: boolean;
-  maxRankStats: boolean;
+  visible: boolean;
+  rank: number;
   sellingPrice: string;
   startingPrice: string;
   buyoutPrice: string;
@@ -39,8 +33,8 @@ interface ListingForm {
 
 const EMPTY_LISTING: ListingForm = {
   direct: true,
-  private: false,
-  maxRankStats: false,
+  visible: true,
+  rank: 0,
   sellingPrice: "0",
   startingPrice: "0",
   buyoutPrice: "0",
@@ -56,27 +50,26 @@ function wholeNumber(value: string): number {
 function listingChoices(form: ListingForm): ListingChoices {
   return {
     direct: form.direct,
-    private: form.private,
-    maxRankStats: form.maxRankStats,
+    visible: form.visible,
+    rank: form.rank,
     sellingPrice: wholeNumber(form.sellingPrice),
     startingPrice: wholeNumber(form.startingPrice),
     buyoutPrice: wholeNumber(form.buyoutPrice),
     minReputation: wholeNumber(form.minReputation),
-    note: form.note.trim() || null,
+    note: form.note.trim(),
   };
 }
 
-function listingProblem(choices: ListingChoices): string | null {
-  if (choices.direct) {
-    return choices.sellingPrice > 0 ? null : "A selling price is required";
-  }
-  if (choices.startingPrice <= 0) {
-    return "A starting price is required";
-  }
-  if (choices.buyoutPrice > 0 && choices.buyoutPrice < choices.startingPrice) {
-    return "The buyout has to be at least the starting price";
-  }
-  return null;
+function priced(form: ListingForm): boolean {
+  return wholeNumber(form.direct ? form.sellingPrice : form.startingPrice) > 0;
+}
+
+function buyoutAboveStarting(form: ListingForm): ListingForm {
+  const starting = wholeNumber(form.startingPrice);
+  const buyout = wholeNumber(form.buyoutPrice);
+  return buyout > 0 && buyout <= starting
+    ? { ...form, buyoutPrice: String(starting + 1) }
+    : form;
 }
 
 function PriceField({
@@ -84,11 +77,13 @@ function PriceField({
   label,
   value,
   onChange,
+  onBlur,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -97,90 +92,69 @@ function PriceField({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         inputMode="numeric"
       />
     </div>
   );
 }
 
-export function RivenListingDialog({
-  riven,
+export function ListingDialog({
+  title,
+  description,
+  initial,
+  rankEditable,
+  submitLabel,
+  onSubmit,
   onClose,
 }: {
-  riven: RivenRow;
+  title: string;
+  description: ReactNode;
+  initial: ListingForm;
+  rankEditable?: boolean;
+  submitLabel?: string;
+  onSubmit: (choices: ListingChoices) => Promise<void>;
   onClose: () => void;
 }) {
-  const [form, setForm] = useState<ListingForm>(EMPTY_LISTING);
+  const [form, setForm] = useState(initial);
   const [posting, setPosting] = useState(false);
 
   const handleSubmit = useCallback(async () => {
-    const choices = listingChoices(form);
-    const problem = listingProblem(choices);
-    if (problem) {
-      toast.error(problem);
-      return;
-    }
     setPosting(true);
-    try {
-      await api.marketPostRiven(riven.item_id, choices);
-      notify.success("Listed on warframe.market");
-    } catch (error) {
-      reportError(error);
-    } finally {
-      setPosting(false);
-      onClose();
-    }
-  }, [form, riven.item_id, onClose]);
+    await onSubmit(listingChoices(form));
+    setPosting(false);
+    onClose();
+  }, [form, onSubmit, onClose]);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>List on warframe.market</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="flex items-center gap-2">
-            <span>
-              {`${riven.weapon ?? "Riven"} ${riven.name ?? ""}, ${riven.rerolls} rolls`}
-            </span>
-            {riven.polarity && (
-              <PolarityIcon polarity={riven.polarity} size={20} />
-            )}
+            {description}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="listType">Sale</Label>
-              <Select
-                value={form.direct ? "direct" : "auction"}
-                onValueChange={(value) =>
-                  setForm({ ...form, direct: value === "direct" })
-                }
-              >
-                <SelectTrigger id="listType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="direct">Direct sale</SelectItem>
-                  <SelectItem value="auction">Auction</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="visibility">Visibility</Label>
-              <Select
-                value={form.private ? "private" : "public"}
-                onValueChange={(value) =>
-                  setForm({ ...form, private: value === "private" })
-                }
-              >
-                <SelectTrigger id="visibility">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="private">Private</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex items-center justify-between gap-4">
+            <Tabs
+              value={form.direct ? "direct" : "auction"}
+              onValueChange={(value) =>
+                setForm({ ...form, direct: value === "direct" })
+              }
+            >
+              <TabsList>
+                <TabsTrigger value="direct">Direct sale</TabsTrigger>
+                <TabsTrigger value="auction">Auction</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="visible">Visible</Label>
+              <Switch
+                id="visible"
+                checked={form.visible}
+                onCheckedChange={(visible) => setForm({ ...form, visible })}
+              />
             </div>
           </div>
 
@@ -200,12 +174,14 @@ export function RivenListingDialog({
                 onChange={(startingPrice) =>
                   setForm({ ...form, startingPrice })
                 }
+                onBlur={() => setForm(buyoutAboveStarting)}
               />
               <PriceField
                 id="buyout"
                 label="Buyout"
                 value={form.buyoutPrice}
                 onChange={(buyoutPrice) => setForm({ ...form, buyoutPrice })}
+                onBlur={() => setForm(buyoutAboveStarting)}
               />
               <PriceField
                 id="reputation"
@@ -218,16 +194,21 @@ export function RivenListingDialog({
             </div>
           )}
 
-          <CheckboxField
-            id="maxRankStats"
-            checked={form.maxRankStats}
-            onChange={(maxRankStats) => setForm({ ...form, maxRankStats })}
-          >
-            List the stats at rank 8
-            {riven.rank < MAX_RIVEN_RANK
-              ? ` instead of rank ${riven.rank}`
-              : ""}
-          </CheckboxField>
+          {rankEditable && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="rank">Mod rank {form.rank}</Label>
+              <Slider
+                id="rank"
+                min={0}
+                max={MAX_RIVEN_RANK}
+                step={1}
+                value={[form.rank]}
+                onValueChange={([rank = form.rank]) =>
+                  setForm({ ...form, rank })
+                }
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="note">Note</Label>
@@ -243,11 +224,51 @@ export function RivenListingDialog({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={posting}>
-            {form.direct ? "List for Sale" : "Post Auction"}
+          <Button onClick={handleSubmit} disabled={posting || !priced(form)}>
+            {submitLabel ?? (form.direct ? "List for Sale" : "Post Auction")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function RivenListingDialog({
+  riven,
+  onClose,
+}: {
+  riven: RivenRow;
+  onClose: () => void;
+}) {
+  const handleSubmit = useCallback(
+    async (choices: ListingChoices) => {
+      try {
+        await api.marketPostRiven(riven.item_id, choices);
+        notify.success("Listed on warframe.market");
+      } catch (error) {
+        reportError(error);
+      }
+    },
+    [riven.item_id],
+  );
+
+  return (
+    <ListingDialog
+      title="List on warframe.market"
+      description={
+        <>
+          <span>
+            {`${riven.weapon ?? "Riven"} ${riven.name ?? ""}, ${riven.rerolls} rolls`}
+          </span>
+          {riven.polarity && (
+            <PolarityIcon polarity={riven.polarity} size={20} />
+          )}
+        </>
+      }
+      initial={{ ...EMPTY_LISTING, rank: riven.rank }}
+      rankEditable
+      onSubmit={handleSubmit}
+      onClose={onClose}
+    />
   );
 }

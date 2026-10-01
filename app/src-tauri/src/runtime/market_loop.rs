@@ -265,7 +265,7 @@ pub(super) async fn auto_close<R: Runtime>(
             && let Some(auction) = matching_auction(&item.slug, &auctions)
         {
             match client.close_auction(&auction.id).await {
-                Ok(_) => {
+                Ok(()) => {
                     info!(
                         auction = auction.id,
                         riven = item.name,
@@ -647,6 +647,7 @@ mod tests {
         Auction {
             id: id.to_owned(),
             buyout_price: Some(500),
+            minimal_reputation: 0,
             starting_price: 500,
             note: None,
             item: AuctionItem {
