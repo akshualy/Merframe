@@ -20,6 +20,9 @@ pub struct FissureInfo {
     pub planet: Option<&'static str>,
     pub tier: String,
     pub steel_path: bool,
+    pub is_storm: bool,
+    pub faction: Option<&'static str>,
+    pub levels: Option<(u32, u32)>,
     pub expiry: DateTime<Utc>,
     pub remaining_secs: i64,
 }

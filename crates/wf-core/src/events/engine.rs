@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use chrono::{DateTime, Utc};
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
-use wf_worldstate::WorldState;
+use wf_worldstate::{WorldState, node_info};
 
 use super::alerts::{AlertSettings, fissure_planet};
 use super::{CoreEvent, FissureInfo, InventorySummary};
@@ -33,6 +33,7 @@ struct RewardScreenState {
 }
 
 const ANNOUNCED_CAP: usize = 250;
+const STEEL_PATH_LEVEL_OFFSET: u32 = 100;
 const ANNOUNCED_MAX_AGE_SECS: i64 = 3 * 60 * 60;
 
 fn remember(seen: &mut HashMap<String, DateTime<Utc>>, key: String, now: DateTime<Utc>) -> bool {
@@ -41,6 +42,20 @@ fn remember(seen: &mut HashMap<String, DateTime<Utc>>, key: String, now: DateTim
         seen.retain(|_, at| now.signed_duration_since(*at).num_seconds() < ANNOUNCED_MAX_AGE_SECS);
     }
     unseen
+}
+
+fn fissure_levels(planet: Option<&str>, node_levels: (u32, u32), steel_path: bool) -> (u32, u32) {
+    let (min, max) = match planet {
+        Some("Kuva Fortress") => (60, 70),
+        Some("Void") => node_levels,
+        _ => (node_levels.1 + 3, node_levels.1 + 5),
+    };
+    let offset = if steel_path {
+        STEEL_PATH_LEVEL_OFFSET
+    } else {
+        0
+    };
+    (min + offset, max + offset)
 }
 
 impl Engine {
@@ -88,15 +103,22 @@ impl Engine {
             if first_poll || !unseen || !self.settings.wants(&fissure) {
                 continue;
             }
+            let node = node_info(&fissure.node_id);
+            let planet = fissure_planet(&fissure);
             events.push(CoreEvent::FissureAlert {
                 fissure: FissureInfo {
                     node_id: fissure.node_id.clone(),
                     node_name: fissure.node_name,
                     mission_type: fissure.mission_type.clone(),
                     mission_name: fissure.mission_name.clone(),
-                    planet: fissure_planet(&fissure),
+                    planet,
                     tier: fissure.tier.name().to_owned(),
                     steel_path: fissure.steel_path,
+                    is_storm: fissure.is_storm,
+                    faction: node.and_then(|node| node.faction),
+                    levels: node
+                        .and_then(|node| node.levels)
+                        .map(|levels| fissure_levels(planet, levels, fissure.steel_path)),
                     expiry: fissure.expiry,
                     remaining_secs: fissure.expiry.signed_duration_since(now).num_seconds(),
                 },
@@ -204,6 +226,18 @@ mod tests {
             activation: at(0),
             expiry: at(1_000_000),
         }
+    }
+
+    #[test]
+    fn fissure_level_ranges() {
+        assert_eq!(fissure_levels(Some("Mars"), (8, 12), false), (15, 17));
+        assert_eq!(fissure_levels(Some("Mars"), (8, 12), true), (115, 117));
+        assert_eq!(fissure_levels(Some("Void"), (40, 45), false), (40, 45));
+        assert_eq!(
+            fissure_levels(Some("Kuva Fortress"), (28, 30), true),
+            (160, 170)
+        );
+        assert_eq!(fissure_levels(None, (1, 3), false), (6, 8));
     }
 
     #[test]
@@ -490,6 +524,12 @@ mod tests {
                 CoreEvent::FissureAlert { fissure } => {
                     assert_eq!(fissure.tier, "Lith");
                     assert!(fissure.steel_path);
+                    assert!(fissure.faction.is_some());
+                    assert!(
+                        fissure
+                            .levels
+                            .is_some_and(|(min, max)| min > 100 && max >= min)
+                    );
                 }
                 other => panic!("unexpected event {other:?}"),
             }

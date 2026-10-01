@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -217,6 +217,7 @@ pub struct Overlays {
     recommendation_ticket: AtomicU64,
     riven_ticket: AtomicU64,
     notification_ticket: AtomicU64,
+    notification_queue: Mutex<VecDeque<NotificationTrigger>>,
     marks: Mutex<Marks>,
     windows: Mutex<HashMap<&'static str, WindowLife>>,
     game_monitor: Mutex<Option<MonitorRect>>,
@@ -365,22 +366,38 @@ fn attached_game() -> Option<Box<dyn wf_mem::MemoryReader>> {
 }
 
 pub fn notify<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, title: String, body: String) {
+    if !enabled(&read(&state.settings), Kind::Notification) {
+        return;
+    }
     let id = state
         .overlays
         .notification_ticket
         .fetch_add(1, Ordering::Relaxed)
         + 1;
-    show(app, state, Kind::Notification, |slots| {
-        slots.notification = Some(NotificationTrigger { id, title, body });
-    });
-    let app = app.clone();
-    let owned = Arc::clone(state);
-    tauri::async_runtime::spawn(async move {
+    let idle = {
+        let mut queue = lock(&state.overlays.notification_queue);
+        queue.push_back(NotificationTrigger { id, title, body });
+        queue.len() == 1
+    };
+    if idle {
+        tauri::async_runtime::spawn(show_queued_notifications(app.clone(), Arc::clone(state)));
+    }
+}
+
+async fn show_queued_notifications<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+    loop {
+        let next = lock(&state.overlays.notification_queue).front().cloned();
+        show(&app, &state, Kind::Notification, |slots| {
+            slots.notification = next;
+        });
         tokio::time::sleep(NOTIFICATION_LIFETIME).await;
-        if owned.overlays.notification_ticket.load(Ordering::Relaxed) == id {
-            hide(&app, &owned, Kind::Notification);
+        let mut queue = lock(&state.overlays.notification_queue);
+        queue.pop_front();
+        if queue.is_empty() {
+            hide(&app, &state, Kind::Notification);
+            break;
         }
-    });
+    }
 }
 
 pub fn on_inventory_updated<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {

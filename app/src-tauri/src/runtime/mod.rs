@@ -1,3 +1,4 @@
+use std::fmt::Write as _;
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -33,6 +34,7 @@ pub const MARKET_PRESENCE: &str = "market-presence";
 pub const MARKET_UPDATED: &str = "market-updated";
 
 const RIVEN_DATA_KEY: &str = "riven_data";
+const APP_TITLE: &str = "Merframe";
 const NOTIFICATION_SOUND: &str = if cfg!(windows) {
     "Default"
 } else {
@@ -153,7 +155,8 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
                 return;
             }
             if settings.notifications.windows_notifications_enabled
-                && let Err(error) = show(app, &conversation_text(player), &settings).await
+                && let Err(error) =
+                    show(app, APP_TITLE, &conversation_text(player), &settings).await
             {
                 warn!(?error, player, "Conversation notification not shown");
             }
@@ -182,7 +185,10 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
         }
         CoreEvent::FissureAlert { fissure } => {
             let mirrored = settings.discord.discord_fissure_alerts;
-            alert(app, state, &settings, fissure_text(fissure), mirrored).await;
+            let title = fissure_title(fissure);
+            let body = fissure_body(fissure);
+            let message = mirrored.then(|| format!("{title}\n{body}"));
+            alert(app, state, &settings, &title, &body, message).await;
         }
         CoreEvent::TimerAlert {
             name,
@@ -194,8 +200,8 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
                 "{name} turns {next_state} in {} minutes",
                 remaining_secs / 60
             );
-            let mirrored = settings.discord.discord_timer_alerts;
-            alert(app, state, &settings, body, mirrored).await;
+            let message = settings.discord.discord_timer_alerts.then(|| body.clone());
+            alert(app, state, &settings, APP_TITLE, &body, message).await;
         }
         CoreEvent::InventoryUpdated(_) => {}
     }
@@ -205,26 +211,28 @@ async fn alert<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
     settings: &Settings,
-    body: String,
-    mirrored: bool,
+    title: &str,
+    body: &str,
+    webhook_message: Option<String>,
 ) {
     if settings.notifications.windows_notifications_enabled
-        && let Err(error) = show(app, &body, settings).await
+        && let Err(error) = show(app, title, body, settings).await
     {
-        warn!(?error, body, "Game event notification not shown");
+        warn!(?error, title, body, "Game event notification not shown");
     }
-    if mirrored {
-        post_webhook(state, settings.discord.discord_webhook.as_deref(), body).await;
+    if let Some(message) = webhook_message {
+        post_webhook(state, settings.discord.discord_webhook.as_deref(), message).await;
     }
 }
 
 #[cfg(not(target_os = "linux"))]
 fn show<R: Runtime>(
     app: &AppHandle<R>,
+    title: &str,
     body: &str,
     settings: &Settings,
 ) -> std::future::Ready<anyhow::Result<()>> {
-    let mut builder = app.notification().builder().title("Merframe").body(body);
+    let mut builder = app.notification().builder().title(title).body(body);
     if settings.notifications.sound_notifications_enabled {
         builder = builder.sound(NOTIFICATION_SOUND);
     }
@@ -234,11 +242,12 @@ fn show<R: Runtime>(
 #[cfg(target_os = "linux")]
 async fn show<R: Runtime>(
     _app: &AppHandle<R>,
+    title: &str,
     body: &str,
     settings: &Settings,
 ) -> anyhow::Result<()> {
     let mut notification = notify_rust::Notification::new();
-    notification.summary("Merframe").body(body).auto_icon();
+    notification.summary(title).body(body).auto_icon();
     if settings.notifications.sound_notifications_enabled {
         notification.sound_name(NOTIFICATION_SOUND);
     }
@@ -277,7 +286,7 @@ pub async fn test_notifications<R: Runtime>(
         anyhow::bail!("No notification channels are enabled");
     }
     if settings.notifications.windows_notifications_enabled {
-        show(app, "Notifications are working", settings).await?;
+        show(app, APP_TITLE, "Notifications are working", settings).await?;
     }
     if let Some(url) = webhook {
         send_webhook(state, url, "Merframe notifications are working").await?;
@@ -289,24 +298,26 @@ pub fn conversation_text(player: &str) -> String {
     format!("You have a new in-game conversation from {player}")
 }
 
-pub fn fissure_text(fissure: &wf_core::FissureInfo) -> String {
-    let location = fissure
-        .planet
-        .or(fissure.node_name)
-        .unwrap_or(fissure.node_id.as_str());
-    let steel_path = if fissure.steel_path {
-        " [Steel Path]"
-    } else {
-        ""
-    };
-    format!(
-        "{} on {} - {} fissure ({} min left){}",
-        fissure.mission_name,
-        location,
-        fissure.tier,
-        fissure.remaining_secs / 60,
-        steel_path
-    )
+pub fn fissure_title(fissure: &wf_core::FissureInfo) -> String {
+    let node = fissure.node_name.unwrap_or(fissure.node_id.as_str());
+    format!("New {} Fissure - {node}", fissure.tier)
+}
+
+pub fn fissure_body(fissure: &wf_core::FissureInfo) -> String {
+    let mut body = fissure.mission_name.clone();
+    if let Some((min, max)) = fissure.levels {
+        let _ = write!(body, " ({min}-{max})");
+    }
+    if let Some(faction) = fissure.faction {
+        let _ = write!(body, " - {faction}");
+    }
+    if fissure.steel_path {
+        body.push_str(", Steel Path");
+    }
+    if fissure.is_storm {
+        body.push_str(", Void Storm");
+    }
+    body
 }
 
 async fn post_webhook(state: &Arc<AppState>, url: Option<&str>, message: String) {
@@ -349,5 +360,59 @@ where
             error!(task, %error, "Blocking task panicked");
             None
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::DateTime;
+    use wf_core::FissureInfo;
+
+    use super::*;
+
+    fn fissure() -> FissureInfo {
+        FissureInfo {
+            node_id: String::from("SolNode58"),
+            node_name: Some("Hellas (Mars)"),
+            mission_type: String::from("MT_EXTERMINATION"),
+            mission_name: String::from("Extermination"),
+            planet: Some("Mars"),
+            tier: String::from("Lith"),
+            steel_path: false,
+            is_storm: false,
+            faction: Some("Grineer"),
+            levels: Some((15, 17)),
+            expiry: DateTime::UNIX_EPOCH,
+            remaining_secs: 0,
+        }
+    }
+
+    #[test]
+    fn fissure_title_names_tier_and_node() {
+        assert_eq!(
+            fissure_title(&fissure()),
+            "New Lith Fissure - Hellas (Mars)"
+        );
+    }
+
+    #[test]
+    fn fissure_body_lists_mission_levels_and_faction() {
+        assert_eq!(fissure_body(&fissure()), "Extermination (15-17) - Grineer");
+        let steel_path = FissureInfo {
+            steel_path: true,
+            levels: Some((115, 117)),
+            ..fissure()
+        };
+        assert_eq!(
+            fissure_body(&steel_path),
+            "Extermination (115-117) - Grineer, Steel Path"
+        );
+        let storm = FissureInfo {
+            is_storm: true,
+            faction: None,
+            levels: None,
+            ..fissure()
+        };
+        assert_eq!(fissure_body(&storm), "Extermination, Void Storm");
     }
 }

@@ -92,10 +92,19 @@ export function EventBridge() {
     }
     if ("FissureAlert" in event) {
       const { fissure } = event.FissureAlert;
-      notify.warning(`${fissure.tier} ${fissure.mission_name} fissure`, {
-        description: `${fissure.planet ?? fissure.node_name ?? fissure.node_id}${fissure.steel_path ? " (Steel Path)" : ""}, ${countdown(fissure.remaining_secs)} left`,
-        inGame: "fissure",
-      });
+      const levels = fissure.levels
+        ? ` (${fissure.levels[0]}-${fissure.levels[1]})`
+        : "";
+      const faction = fissure.faction ? ` - ${fissure.faction}` : "";
+      const steelPath = fissure.steel_path ? ", Steel Path" : "";
+      const storm = fissure.is_storm ? ", Void Storm" : "";
+      notify.warning(
+        `New ${fissure.tier} Fissure - ${fissure.node_name ?? fissure.node_id}`,
+        {
+          description: `${fissure.mission_name}${levels}${faction}${steelPath}${storm}`,
+          inGame: "fissure",
+        },
+      );
       return;
     }
     const timer = event.TimerAlert;

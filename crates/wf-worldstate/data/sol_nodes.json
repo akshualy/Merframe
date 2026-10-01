@@ -26,131 +26,183 @@
  },
  "ClanNode0": {
   "enemy": "Infested",
+  "maxEnemyLevel": 18,
+  "minEnemyLevel": 8,
   "type": "Dark Sector Defense",
   "value": "Romula (Venus)"
  },
  "ClanNode1": {
   "enemy": "Infested",
+  "maxEnemyLevel": 18,
+  "minEnemyLevel": 8,
   "type": "Dark Sector Survival",
   "value": "Malva (Venus)"
  },
  "ClanNode10": {
   "enemy": "Infested",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 15,
   "type": "Dark Sector Defection",
   "value": "Memphis (Phobos)"
  },
  "ClanNode11": {
   "enemy": "Infested",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 15,
   "type": "Dark Sector Survival",
   "value": "Zeugma (Phobos)"
  },
  "ClanNode12": {
   "enemy": "Infested",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 26,
   "type": "Dark Sector Defection",
   "value": "Caracol (Saturn)"
  },
  "ClanNode13": {
   "enemy": "Infested",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 26,
   "type": "Dark Sector Survival",
   "value": "Piscinas (Saturn)"
  },
  "ClanNode14": {
   "enemy": "Infested",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Dark Sector Survival",
   "value": "Amarna (Sedna)"
  },
  "ClanNode15": {
   "enemy": "Infested",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Dark Sector Defense",
   "value": "Sangeru (Sedna)"
  },
  "ClanNode16": {
   "enemy": "Infested",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 30,
   "type": "Dark Sector Disruption",
   "value": "Ur (Uranus)"
  },
  "ClanNode17": {
   "enemy": "Infested",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 25,
   "type": "Dark Sector Survival",
   "value": "Assur (Uranus)"
  },
  "ClanNode18": {
   "enemy": "Infested",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Dark Sector Defense",
   "value": "Akkad (Eris)"
  },
  "ClanNode19": {
   "enemy": "Infested",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Dark Sector Survival",
   "value": "Zabala (Eris)"
  },
  "ClanNode2": {
   "enemy": "Infested",
+  "maxEnemyLevel": 16,
+  "minEnemyLevel": 6,
   "type": "Dark Sector Defense",
   "value": "Coba (Earth)"
  },
  "ClanNode20": {
   "enemy": "Infested",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Dark Sector Defection",
   "value": "Yursa (Neptune)"
  },
  "ClanNode21": {
   "enemy": "Infested",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Dark Sector Survival",
   "value": "Kelashin (Neptune)"
  },
  "ClanNode22": {
   "enemy": "Infested",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 15,
   "type": "Dark Sector Defense",
   "value": "Seimeni (Ceres)"
  },
  "ClanNode23": {
   "enemy": "Infested",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 15,
   "type": "Dark Sector Survival",
   "value": "Gabii (Ceres)"
  },
  "ClanNode24": {
   "enemy": "Infested",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Dark Sector Defense",
   "value": "Sechura (Pluto)"
  },
  "ClanNode25": {
   "enemy": "Infested",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Dark Sector Excavation",
   "value": "Hieracon (Pluto)"
  },
  "ClanNode3": {
   "enemy": "Infested",
+  "maxEnemyLevel": 16,
+  "minEnemyLevel": 6,
   "type": "Dark Sector Excavation",
   "value": "Tikal (Earth)"
  },
  "ClanNode4": {
   "enemy": "Infested",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 20,
   "type": "Dark Sector Defense",
   "value": "Sinai (Jupiter)"
  },
  "ClanNode5": {
   "enemy": "Infested",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 20,
   "type": "Dark Sector Survival",
   "value": "Cameria (Jupiter)"
  },
  "ClanNode6": {
   "enemy": "Infested",
+  "maxEnemyLevel": 33,
+  "minEnemyLevel": 23,
   "type": "Dark Sector Defense",
   "value": "Larzac (Europa)"
  },
  "ClanNode7": {
   "enemy": "Infested",
+  "maxEnemyLevel": 33,
+  "minEnemyLevel": 23,
   "type": "Dark Sector Excavation",
   "value": "Cholistan (Europa)"
  },
  "ClanNode8": {
   "enemy": "Infested",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 10,
   "type": "Dark Sector Defense",
   "value": "Kadesh (Mars)"
  },
  "ClanNode9": {
   "enemy": "Infested",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 10,
   "type": "Dark Sector Survival",
   "value": "Wahiba (Mars)"
  },
@@ -776,21 +828,29 @@
  },
  "SettlementNode1": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 12,
+  "minEnemyLevel": 10,
   "type": "Extermination",
   "value": "Roche (Phobos)"
  },
  "SettlementNode10": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 14,
+  "minEnemyLevel": 12,
   "type": "Rush (Archwing)",
   "value": "Kepler (Phobos)"
  },
  "SettlementNode11": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 10,
   "type": "Defense",
   "value": "Gulliver (Phobos)"
  },
  "SettlementNode12": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 13,
   "type": "Rescue",
   "value": "Monolith (Phobos)"
  },
@@ -801,11 +861,15 @@
  },
  "SettlementNode14": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 13,
+  "minEnemyLevel": 11,
   "type": "Spy",
   "value": "Shklovsky (Phobos)"
  },
  "SettlementNode15": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 13,
+  "minEnemyLevel": 11,
   "type": "Mobile Defense",
   "value": "Sharpless (Phobos)"
  },
@@ -831,16 +895,22 @@
  },
  "SettlementNode2": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 14,
+  "minEnemyLevel": 12,
   "type": "Capture",
   "value": "Skyresh (Phobos)"
  },
  "SettlementNode20": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 13,
   "type": "Assassination",
   "value": "Iliad (Phobos)"
  },
  "SettlementNode3": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 10,
   "type": "Survival",
   "value": "Stickney (Phobos)"
  },
@@ -881,66 +951,92 @@
  },
  "SolNode1": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 27,
   "type": "Capture",
   "value": "Galatea (Neptune)"
  },
  "SolNode10": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 18,
   "type": "Sabotage",
   "value": "Thebe (Jupiter)"
  },
  "SolNode100": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 15,
   "type": "Survival",
   "value": "Elara (Jupiter)"
  },
  "SolNode101": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 7,
+  "minEnemyLevel": 3,
   "type": "Excavation",
   "value": "Kiliken (Venus)"
  },
  "SolNode102": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 32,
   "type": "Spy",
   "value": "Oceanum (Pluto)"
  },
  "SolNode103": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 9,
+  "minEnemyLevel": 7,
   "type": "Extermination",
   "value": "M Prime (Mercury)"
  },
  "SolNode104": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 6,
   "type": "Assassination",
   "value": "Fossa (Venus)"
  },
  "SolNode105": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 27,
   "type": "Assassination",
   "value": "Titania (Uranus)"
  },
  "SolNode106": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 13,
+  "minEnemyLevel": 8,
   "type": "Interception",
   "value": "Alator (Mars)"
  },
  "SolNode107": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 7,
+  "minEnemyLevel": 5,
   "type": "Capture",
   "value": "Venera (Venus)"
  },
  "SolNode108": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 10,
+  "minEnemyLevel": 8,
   "type": "Assassination",
   "value": "Tolstoj (Mercury)"
  },
  "SolNode109": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 7,
+  "minEnemyLevel": 5,
   "type": "Rescue",
   "value": "Linea (Venus)"
  },
  "SolNode11": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 11,
+  "minEnemyLevel": 9,
   "type": "Mobile Defense",
   "value": "Tharsis (Mars)"
  },
@@ -961,11 +1057,15 @@
  },
  "SolNode113": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 10,
+  "minEnemyLevel": 8,
   "type": "Sabotage",
   "value": "Ares (Mars)"
  },
  "SolNode114": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 27,
   "type": "Extermination",
   "value": "Puck (Uranus)"
  },
@@ -986,16 +1086,22 @@
  },
  "SolNode118": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Disruption",
   "value": "Laomedeia (Neptune)"
  },
  "SolNode119": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 6,
   "type": "Rescue",
   "value": "Caloris (Mercury)"
  },
  "SolNode12": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 9,
+  "minEnemyLevel": 7,
   "type": "Capture",
   "value": "Elion (Mercury)"
  },
@@ -1006,16 +1112,22 @@
  },
  "SolNode121": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 19,
+  "minEnemyLevel": 17,
   "type": "Extermination",
   "value": "Carpo (Jupiter)"
  },
  "SolNode122": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 24,
   "type": "Defense",
   "value": "Stephano (Uranus)"
  },
  "SolNode123": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 6,
   "type": "Survival",
   "value": "V Prime (Venus)"
  },
@@ -1026,26 +1138,36 @@
  },
  "SolNode125": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 15,
   "type": "Defense",
   "value": "Io (Jupiter)"
  },
  "SolNode126": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 17,
+  "minEnemyLevel": 15,
   "type": "Rescue",
   "value": "Metis (Jupiter)"
  },
  "SolNode127": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 30,
   "type": "Assassination",
   "value": "Psamathe (Neptune)"
  },
  "SolNode128": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 5,
+  "minEnemyLevel": 3,
   "type": "Extermination",
   "value": "E Gate (Venus)"
  },
  "SolNode129": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 10,
   "type": "Free Roam",
   "value": "Orb Vallis (Venus)"
  },
@@ -1056,16 +1178,22 @@
  },
  "SolNode130": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 11,
+  "minEnemyLevel": 6,
   "type": "Defense",
   "value": "Lares (Mercury)"
  },
  "SolNode131": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 14,
+  "minEnemyLevel": 12,
   "type": "Extermination",
   "value": "Pallas (Ceres)"
  },
  "SolNode132": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 14,
+  "minEnemyLevel": 12,
   "type": "Spy",
   "value": "Bode (Ceres)"
  },
@@ -1081,6 +1209,8 @@
  },
  "SolNode135": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 17,
+  "minEnemyLevel": 15,
   "type": "Sabotage",
   "value": "Thon (Ceres)"
  },
@@ -1091,31 +1221,43 @@
  },
  "SolNode137": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 13,
   "type": "Rescue",
   "value": "Nuovo (Ceres)"
  },
  "SolNode138": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 17,
+  "minEnemyLevel": 15,
   "type": "Hijack",
   "value": "Ludi (Ceres)"
  },
  "SolNode139": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 16,
+  "minEnemyLevel": 14,
   "type": "Capture",
   "value": "Lex (Ceres)"
  },
  "SolNode14": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 13,
+  "minEnemyLevel": 11,
   "type": "Extermination",
   "value": "Ultor (Mars)"
  },
  "SolNode140": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 13,
   "type": "Mobile Defense",
   "value": "Kiste (Ceres)"
  },
  "SolNode141": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 16,
+  "minEnemyLevel": 14,
   "type": "Sabotage",
   "value": "Ker (Ceres)"
  },
@@ -1131,6 +1273,8 @@
  },
  "SolNode144": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 16,
+  "minEnemyLevel": 14,
   "type": "Assassination",
   "value": "Exta (Ceres)"
  },
@@ -1141,11 +1285,15 @@
  },
  "SolNode146": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 17,
+  "minEnemyLevel": 12,
   "type": "Survival",
   "value": "Draco (Ceres)"
  },
  "SolNode147": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 17,
+  "minEnemyLevel": 12,
   "type": "Interception",
   "value": "Cinxia (Ceres)"
  },
@@ -1154,11 +1302,15 @@
  },
  "SolNode149": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 17,
+  "minEnemyLevel": 12,
   "type": "Defense",
   "value": "Casta (Ceres)"
  },
  "SolNode15": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 6,
+  "minEnemyLevel": 3,
   "type": "Rescue",
   "value": "Pacific (Earth)"
  },
@@ -1179,6 +1331,8 @@
  },
  "SolNode153": {
   "enemy": "Infested",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 32,
   "type": "Rescue",
   "value": "Brugia (Eris)"
  },
@@ -1214,6 +1368,8 @@
  },
  "SolNode16": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 11,
+  "minEnemyLevel": 9,
   "type": "Excavation",
   "value": "Augustus (Mars)"
  },
@@ -1229,6 +1385,8 @@
  },
  "SolNode162": {
   "enemy": "Infested",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 32,
   "type": "Capture",
   "value": "Isos (Eris)"
  },
@@ -1237,6 +1395,8 @@
  },
  "SolNode164": {
   "enemy": "Infested",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Defense",
   "value": "Kala-azar (Eris)"
  },
@@ -1247,11 +1407,15 @@
  },
  "SolNode166": {
   "enemy": "Infested",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Survival",
   "value": "Nimus (Eris)"
  },
  "SolNode167": {
   "enemy": "Infested",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Infested Salvage",
   "value": "Oestrus (Eris)"
  },
@@ -1267,6 +1431,8 @@
  },
  "SolNode17": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 27,
   "type": "Defense",
   "value": "Proteus (Neptune)"
  },
@@ -1277,16 +1443,22 @@
  },
  "SolNode171": {
   "enemy": "Infested",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Extermination",
   "value": "Saxis (Eris)"
  },
  "SolNode172": {
   "enemy": "Infested",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Interception",
   "value": "Xini (Eris)"
  },
  "SolNode173": {
   "enemy": "Infested",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Mobile Defense",
   "value": "Solium (Eris)"
  },
@@ -1297,6 +1469,8 @@
  },
  "SolNode175": {
   "enemy": "Infested",
+  "maxEnemyLevel": 34,
+  "minEnemyLevel": 30,
   "type": "Hive",
   "value": "Naeglar (Eris)"
  },
@@ -1307,6 +1481,8 @@
  },
  "SolNode177": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Disruption",
   "value": "Kappa (Sedna)"
  },
@@ -1322,6 +1498,8 @@
  },
  "SolNode18": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 26,
+  "minEnemyLevel": 21,
   "type": "Interception",
   "value": "Rhea (Saturn)"
  },
@@ -1332,6 +1510,8 @@
  },
  "SolNode181": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 32,
   "type": "Extermination",
   "value": "Adaro (Sedna)"
  },
@@ -1342,16 +1522,22 @@
  },
  "SolNode183": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 85,
+  "minEnemyLevel": 85,
   "type": "Arena",
   "value": "Vodyanoi (Sedna)"
  },
  "SolNode184": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 32,
   "type": "Sabotage",
   "value": "Rusalka (Sedna)"
  },
  "SolNode185": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Interception",
   "value": "Berehynia (Sedna)"
  },
@@ -1362,31 +1548,43 @@
  },
  "SolNode187": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Survival",
   "value": "Selkie (Sedna)"
  },
  "SolNode188": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 35,
   "type": "Spy",
   "value": "Kelpie (Sedna)"
  },
  "SolNode189": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 34,
+  "minEnemyLevel": 30,
   "type": "Rescue",
   "value": "Naga (Sedna)"
  },
  "SolNode19": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 23,
   "type": "Sabotage",
   "value": "Enceladus (Saturn)"
  },
  "SolNode190": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 40,
   "type": "Arena",
   "value": "Nakki (Sedna)"
  },
  "SolNode191": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Hijack",
   "value": "Marid (Sedna)"
  },
@@ -1397,6 +1595,8 @@
  },
  "SolNode193": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 35,
   "type": "Assassination",
   "value": "Merrow (Sedna)"
  },
@@ -1407,11 +1607,15 @@
  },
  "SolNode195": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Defense",
   "value": "Hydron (Sedna)"
  },
  "SolNode196": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Mobile Defense",
   "value": "Charybdis (Sedna)"
  },
@@ -1427,16 +1631,22 @@
  },
  "SolNode199": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 60,
+  "minEnemyLevel": 60,
   "type": "Arena",
   "value": "Yam (Sedna)"
  },
  "SolNode2": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 5,
   "type": "Mobile Defense",
   "value": "Aphrodite (Venus)"
  },
  "SolNode20": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 24,
+  "minEnemyLevel": 22,
   "type": "Extermination",
   "value": "Telesto (Saturn)"
  },
@@ -1457,16 +1667,22 @@
  },
  "SolNode203": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 21,
   "type": "Capture",
   "value": "Abaddon (Europa)"
  },
  "SolNode204": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 18,
   "type": "Extermination",
   "value": "Armaros (Europa)"
  },
  "SolNode205": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 21,
   "type": "Extermination",
   "value": "Baal (Europa)"
  },
@@ -1485,26 +1701,36 @@
  },
  "SolNode209": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 18,
   "type": "Mobile Defense",
   "value": "Morax (Europa)"
  },
  "SolNode21": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 36,
+  "minEnemyLevel": 32,
   "type": "Extermination",
   "value": "Narcissus (Pluto)"
  },
  "SolNode210": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 21,
   "type": "Assassination",
   "value": "Naamah (Europa)"
  },
  "SolNode211": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 18,
   "type": "Interception",
   "value": "Ose (Europa)"
  },
  "SolNode212": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 18,
   "type": "Defense",
   "value": "Paimon (Europa)"
  },
@@ -1513,21 +1739,29 @@
  },
  "SolNode214": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 21,
+  "minEnemyLevel": 19,
   "type": "Hijack",
   "value": "Sorath (Europa)"
  },
  "SolNode215": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 18,
   "type": "Spy",
   "value": "Valac (Europa)"
  },
  "SolNode216": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 18,
   "type": "Excavation",
   "value": "Valefor (Europa)"
  },
  "SolNode217": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 22,
+  "minEnemyLevel": 20,
   "type": "Rescue",
   "value": "Orias (Europa)"
  },
@@ -1543,11 +1777,15 @@
  },
  "SolNode22": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 7,
+  "minEnemyLevel": 3,
   "type": "Defense",
   "value": "Tessera (Venus)"
  },
  "SolNode220": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 22,
+  "minEnemyLevel": 20,
   "type": "Sabotage",
   "value": "Kokabiel (Europa)"
  },
@@ -1563,21 +1801,29 @@
  },
  "SolNode223": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 10,
+  "minEnemyLevel": 8,
   "type": "Mobile Defense",
   "value": "Boethius (Mercury)"
  },
  "SolNode224": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 11,
+  "minEnemyLevel": 6,
   "type": "Interception",
   "value": "Odin (Mercury)"
  },
  "SolNode225": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 10,
+  "minEnemyLevel": 8,
   "type": "Spy",
   "value": "Suisei (Mercury)"
  },
  "SolNode226": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 6,
   "type": "Extermination",
   "value": "Pantheon (Mercury)"
  },
@@ -1586,36 +1832,50 @@
  },
  "SolNode228": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 10,
   "type": "Free Roam",
   "value": "Plains of Eidolon (Earth)"
  },
  "SolNode229": {
   "enemy": "Infested",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 15,
   "type": "Free Roam",
   "value": "Cambion Drift (Deimos)"
  },
  "SolNode23": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 6,
   "type": "Interception",
   "value": "Cytherean (Venus)"
  },
  "SolNode230": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 55,
+  "minEnemyLevel": 50,
   "type": "Void Flood",
   "value": "Everview Arc (Zariman)"
  },
  "SolNode231": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 55,
+  "minEnemyLevel": 50,
   "type": "Extermination",
   "value": "Halako Perimeter (Zariman)"
  },
  "SolNode232": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 55,
+  "minEnemyLevel": 50,
   "type": "Void Cascade",
   "value": "Tuvul Commons (Zariman)"
  },
  "SolNode233": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 55,
+  "minEnemyLevel": 50,
   "type": "Void Armageddon",
   "value": "Oro Works (Zariman)"
  },
@@ -1626,76 +1886,106 @@
  },
  "SolNode235": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 55,
+  "minEnemyLevel": 50,
   "type": "Mobile Defense",
   "value": "The Greenway (Zariman)"
  },
  "SolNode236": {
   "enemy": "Duviri",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 20,
   "type": "Free Roam",
   "value": "The Duviri Experience (Duviri)"
  },
  "SolNode237": {
   "enemy": "Duviri",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 20,
   "type": "Free Roam",
   "value": "The Lone Story (Duviri)"
  },
  "SolNode238": {
   "enemy": "Duviri",
+  "maxEnemyLevel": 55,
+  "minEnemyLevel": 35,
   "type": "Free Roam",
   "value": "The Circuit (Duviri)"
  },
  "SolNode239": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Relay",
   "value": "Vesper Relay (Venus)"
  },
  "SolNode24": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 20,
   "type": "Assassination",
   "value": "Oro (Earth)"
  },
  "SolNode25": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 15,
   "type": "Interception",
   "value": "Callisto (Jupiter)"
  },
  "SolNode250": {
   "enemy": "Anarchs",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "The Perita Rebellion",
   "value": "Recall: Hunhullus (Dark Refractory)"
  },
  "SolNode251": {
   "enemy": "Anarch",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "The Perita Rebellion",
   "value": "Dark Refactory (Deimos)"
  },
  "SolNode252": {
   "enemy": "Anarchs",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "The Perita Rebellion",
   "value": "Recall: Prime Vanguard (Dark Refractory)"
  },
  "SolNode253": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 65,
+  "minEnemyLevel": 65,
   "type": "The Descendia",
   "value": "The Descendia (Dark Refractory)"
  },
  "SolNode257": {
   "enemy": "Anarchs",
+  "maxEnemyLevel": 170,
+  "minEnemyLevel": 165,
   "type": "The Guilty",
   "value": "The Guilty (Dark Refractory)"
  },
  "SolNode26": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 5,
+  "minEnemyLevel": 2,
   "type": "Defense",
   "value": "Lith (Earth)"
  },
  "SolNode27": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 3,
+  "minEnemyLevel": 1,
   "type": "Extermination",
   "value": "E Prime (Earth)"
  },
  "SolNode28": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 10,
+  "minEnemyLevel": 8,
   "type": "Sabotage",
   "value": "Terminus (Mercury)"
  },
@@ -1711,76 +2001,106 @@
  },
  "SolNode30": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 15,
   "type": "Disruption",
   "value": "Olympus (Mars)"
  },
  "SolNode300": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Extermination",
   "value": "Plato (Lua)"
  },
  "SolNode301": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Mobile Defense",
   "value": "Grimaldi (Lua)"
  },
  "SolNode302": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Survival",
   "value": "Tycho (Lua)"
  },
  "SolNode304": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Capture",
   "value": "Copernicus (Lua)"
  },
  "SolNode305": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Defense",
   "value": "Stöfler (Lua)"
  },
  "SolNode306": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Spy",
   "value": "Pavlov (Lua)"
  },
  "SolNode307": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Rescue",
   "value": "Zeipel (Lua)"
  },
  "SolNode308": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 35,
   "type": "Disruption",
   "value": "Apollo (Lua)"
  },
  "SolNode309": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Survival",
   "value": "Yuvarium (Lua)"
  },
  "SolNode31": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 24,
+  "minEnemyLevel": 22,
   "type": "Rescue",
   "value": "Anthe (Saturn)"
  },
  "SolNode310": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 100,
+  "minEnemyLevel": 80,
   "type": "Survival",
   "value": "Circulus (Lua)"
  },
  "SolNode32": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 26,
+  "minEnemyLevel": 24,
   "type": "Assassination",
   "value": "Tethys (Saturn)"
  },
  "SolNode33": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 27,
+  "minEnemyLevel": 25,
   "type": "Capture",
   "value": "Ariel (Uranus)"
  },
  "SolNode34": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 26,
+  "minEnemyLevel": 24,
   "type": "Extermination",
   "value": "Sycorax (Uranus)"
  },
@@ -1791,6 +2111,8 @@
  },
  "SolNode36": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 12,
+  "minEnemyLevel": 10,
   "type": "Rescue",
   "value": "Martialis (Mars)"
  },
@@ -1801,16 +2123,22 @@
  },
  "SolNode38": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 34,
+  "minEnemyLevel": 30,
   "type": "Mobile Defense",
   "value": "Minthe (Pluto)"
  },
  "SolNode39": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 6,
+  "minEnemyLevel": 1,
   "type": "Excavation",
   "value": "Everest (Earth)"
  },
  "SolNode4": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Extermination",
   "value": "Acheron (Pluto)"
  },
@@ -1821,71 +2149,99 @@
  },
  "SolNode400": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 10,
   "type": "Extermination",
   "value": "Teshub (Void)"
  },
  "SolNode401": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 10,
   "type": "Capture",
   "value": "Hepit (Void)"
  },
  "SolNode402": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 10,
   "type": "Defense",
   "value": "Taranis (Void)"
  },
  "SolNode403": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 20,
   "type": "Mobile Defense",
   "value": "Tiwaz (Void)"
  },
  "SolNode404": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 20,
   "type": "Orokin Sabotage",
   "value": "Stribog (Void)"
  },
  "SolNode405": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 20,
   "type": "Survival",
   "value": "Ani (Void)"
  },
  "SolNode406": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 30,
   "type": "Capture",
   "value": "Ukko (Void)"
  },
  "SolNode407": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 30,
   "type": "Extermination",
   "value": "Oxomoco (Void)"
  },
  "SolNode408": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 30,
   "type": "Defense",
   "value": "Belenus (Void)"
  },
  "SolNode409": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 40,
   "type": "Survival",
   "value": "Mot (Void)"
  },
  "SolNode41": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 11,
+  "minEnemyLevel": 9,
   "type": "Spy",
   "value": "Arval (Mars)"
  },
  "SolNode410": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 40,
   "type": "Mobile Defense",
   "value": "Aten (Void)"
  },
  "SolNode411": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 40,
   "type": "Sabotage",
   "value": "Marduk (Void)"
  },
  "SolNode412": {
   "enemy": "Orokin",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 40,
   "type": "Interception",
   "value": "Mithra (Void)"
  },
@@ -1896,11 +2252,15 @@
  },
  "SolNode42": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 26,
+  "minEnemyLevel": 21,
   "type": "Defense",
   "value": "Helene (Saturn)"
  },
  "SolNode43": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Interception",
   "value": "Cerberus (Pluto)"
  },
@@ -1911,21 +2271,29 @@
  },
  "SolNode45": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 12,
+  "minEnemyLevel": 10,
   "type": "Capture",
   "value": "Ara (Mars)"
  },
  "SolNode450": {
   "enemy": "Crossfire",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 25,
   "type": "Mirror Defense",
   "value": "Tyana Pass (Mars)"
  },
  "SolNode451": {
   "enemy": "Infested",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 5,
   "type": "Shrine Defense",
   "value": "Saya's Visions (Earth)"
  },
  "SolNode46": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 12,
+  "minEnemyLevel": 8,
   "type": "Defense",
   "value": "Spear (Mars)"
  },
@@ -1936,11 +2304,15 @@
  },
  "SolNode48": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Rescue",
   "value": "Regna (Pluto)"
  },
  "SolNode49": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 31,
+  "minEnemyLevel": 29,
   "type": "Mobile Defense",
   "value": "Larissa (Neptune)"
  },
@@ -1951,11 +2323,15 @@
  },
  "SolNode50": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 24,
+  "minEnemyLevel": 22,
   "type": "Rescue",
   "value": "Numa (Saturn)"
  },
  "SolNode51": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 45,
+  "minEnemyLevel": 35,
   "type": "Assassination",
   "value": "Hades (Pluto)"
  },
@@ -1966,6 +2342,8 @@
  },
  "SolNode53": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 18,
   "type": "Assassination",
   "value": "Themisto (Jupiter)"
  },
@@ -1981,76 +2359,106 @@
  },
  "SolNode56": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 38,
+  "minEnemyLevel": 34,
   "type": "Sabotage",
   "value": "Cypress (Pluto)"
  },
  "SolNode57": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 30,
   "type": "Sabotage",
   "value": "Sao (Neptune)"
  },
  "SolNode58": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 12,
+  "minEnemyLevel": 8,
   "type": "Extermination",
   "value": "Hellas (Mars)"
  },
  "SolNode59": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 6,
+  "minEnemyLevel": 3,
   "type": "Mobile Defense",
   "value": "Eurasia (Earth)"
  },
  "SolNode6": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 27,
   "type": "Excavation",
   "value": "Despina (Neptune)"
  },
  "SolNode60": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 27,
+  "minEnemyLevel": 25,
   "type": "Rescue",
   "value": "Caliban (Uranus)"
  },
  "SolNode61": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 6,
   "type": "Sabotage",
   "value": "Ishtar (Venus)"
  },
  "SolNode62": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 31,
+  "minEnemyLevel": 29,
   "type": "Extermination",
   "value": "Neso (Neptune)"
  },
  "SolNode63": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 4,
+  "minEnemyLevel": 2,
   "type": "Capture",
   "value": "Mantle (Earth)"
  },
  "SolNode64": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 24,
   "type": "Interception",
   "value": "Umbriel (Uranus)"
  },
  "SolNode65": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 12,
+  "minEnemyLevel": 9,
   "type": "Sabotage",
   "value": "Gradivus (Mars)"
  },
  "SolNode66": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 6,
   "type": "Spy",
   "value": "Unda (Venus)"
  },
  "SolNode67": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 21,
   "type": "Spy",
   "value": "Dione (Saturn)"
  },
  "SolNode68": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 13,
+  "minEnemyLevel": 11,
   "type": "Mobile Defense",
   "value": "Vallis (Mars)"
  },
  "SolNode69": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 24,
   "type": "Survival",
   "value": "Ophelia (Uranus)"
  },
@@ -2061,6 +2469,8 @@
  },
  "SolNode70": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 21,
   "type": "Capture",
   "value": "Cassini (Saturn)"
  },
@@ -2076,21 +2486,29 @@
  },
  "SolNode706": {
   "enemy": "Infested",
+  "maxEnemyLevel": 14,
+  "minEnemyLevel": 12,
   "type": "Capture",
   "value": "Horend (Deimos)"
  },
  "SolNode707": {
   "enemy": "Infested",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 15,
   "type": "Defense",
   "value": "Hyf (Deimos)"
  },
  "SolNode708": {
   "enemy": "Infested",
+  "maxEnemyLevel": 15,
+  "minEnemyLevel": 13,
   "type": "Extermination",
   "value": "Phlegyas (Deimos)"
  },
  "SolNode709": {
   "enemy": "Infested",
+  "maxEnemyLevel": 17,
+  "minEnemyLevel": 15,
   "type": "Mobile Defense",
   "value": "Dirus (Deimos)"
  },
@@ -2101,21 +2519,29 @@
  },
  "SolNode710": {
   "enemy": "Infested",
+  "maxEnemyLevel": 16,
+  "minEnemyLevel": 14,
   "type": "Sabotage",
   "value": "Formido (Deimos)"
  },
  "SolNode711": {
   "enemy": "Infested",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 25,
   "type": "Survival",
   "value": "Terrorem (Deimos)"
  },
  "SolNode712": {
   "enemy": "Infested",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 20,
   "type": "Assassination",
   "value": "Magnacidium (Deimos)"
  },
  "SolNode713": {
   "enemy": "Infested",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 30,
   "type": "Assassination",
   "value": "Exequias (Deimos)"
  },
@@ -2126,31 +2552,43 @@
  },
  "SolNode715": {
   "enemy": "The Murmur",
+  "maxEnemyLevel": 60,
+  "minEnemyLevel": 55,
   "type": "Assassination",
   "value": "Effervo (Deimos)"
  },
  "SolNode716": {
   "enemy": "The Murmur",
+  "maxEnemyLevel": 60,
+  "minEnemyLevel": 55,
   "type": "Extermination",
   "value": "Nex (Deimos)"
  },
  "SolNode717": {
   "enemy": "The Murmur",
+  "maxEnemyLevel": 60,
+  "minEnemyLevel": 55,
   "type": "Survival",
   "value": "Persto (Deimos)"
  },
  "SolNode718": {
   "enemy": "The Murmur",
+  "maxEnemyLevel": 60,
+  "minEnemyLevel": 55,
   "type": "Alchemy",
   "value": "Cambire (Deimos)"
  },
  "SolNode719": {
   "enemy": "The Murmur",
+  "maxEnemyLevel": 60,
+  "minEnemyLevel": 55,
   "type": "Mirror Defense",
   "value": "Munio (Deimos)"
  },
  "SolNode72": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Defense",
   "value": "Outer Terminus (Pluto)"
  },
@@ -2161,6 +2599,8 @@
  },
  "SolNode721": {
   "enemy": "The Murmur",
+  "maxEnemyLevel": 60,
+  "minEnemyLevel": 55,
   "type": "Disruption",
   "value": "Armatus (Deimos)"
  },
@@ -2171,66 +2611,92 @@
  },
  "SolNode73": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 18,
+  "minEnemyLevel": 16,
   "type": "Capture",
   "value": "Ananke (Jupiter)"
  },
  "SolNode74": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 18,
+  "minEnemyLevel": 16,
   "type": "Mobile Defense",
   "value": "Carme (Jupiter)"
  },
  "SolNode740": {
   "enemy": "Sentient",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 40,
   "type": "Assassination",
   "value": "The Ropalolyst (Jupiter)"
  },
  "SolNode741": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 31,
+  "minEnemyLevel": 29,
   "type": "Assault",
   "value": "Koro (Kuva Fortress)"
  },
  "SolNode742": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 30,
   "type": "Defense",
   "value": "Nabuk (Kuva Fortress)"
  },
  "SolNode743": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 30,
   "type": "Mobile Defense",
   "value": "Rotuma (Kuva Fortress)"
  },
  "SolNode744": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 37,
+  "minEnemyLevel": 32,
   "type": "Survival",
   "value": "Taveuni (Kuva Fortress)"
  },
  "SolNode745": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 35,
   "type": "Disruption",
   "value": "Tamu (Kuva Fortress)"
  },
  "SolNode746": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 28,
   "type": "Extermination",
   "value": "Dakata (Kuva Fortress)"
  },
  "SolNode747": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 33,
+  "minEnemyLevel": 31,
   "type": "Spy",
   "value": "Pago (Kuva Fortress)"
  },
  "SolNode748": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 33,
+  "minEnemyLevel": 31,
   "type": "Rescue",
   "value": "Garus (Kuva Fortress)"
  },
  "SolNode75": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 6,
+  "minEnemyLevel": 4,
   "type": "Sabotage",
   "value": "Cervantes (Earth)"
  },
  "SolNode76": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 34,
+  "minEnemyLevel": 30,
   "type": "Capture",
   "value": "Hydra (Pluto)"
  },
@@ -2241,11 +2707,15 @@
  },
  "SolNode78": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 30,
+  "minEnemyLevel": 28,
   "type": "Rescue",
   "value": "Triton (Neptune)"
  },
  "SolNode79": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 6,
+  "minEnemyLevel": 3,
   "type": "Spy",
   "value": "Cambria (Earth)"
  },
@@ -2271,71 +2741,99 @@
  },
  "SolNode81": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 40,
+  "minEnemyLevel": 30,
   "type": "Survival",
   "value": "Palus (Pluto)"
  },
  "SolNode82": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 26,
+  "minEnemyLevel": 24,
   "type": "Sabotage",
   "value": "Calypso (Saturn)"
  },
  "SolNode83": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 27,
   "type": "Mobile Defense",
   "value": "Cressida (Uranus)"
  },
  "SolNode84": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 30,
   "type": "Spy",
   "value": "Nereid (Neptune)"
  },
  "SolNode85": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 6,
+  "minEnemyLevel": 1,
   "type": "Interception",
   "value": "Gaia (Earth)"
  },
  "SolNode850": {
   "enemy": "Techrot",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Legacyte Harvest",
   "value": "Köbinn West (Höllvania)"
  },
  "SolNode851": {
   "enemy": "Scaldra",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Hell-Scrub",
   "value": "Mischta Ramparts (Höllvania)"
  },
  "SolNode852": {
   "enemy": "Techrot",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Hell-Scrub",
   "value": "Old Konderuk (Höllvania)"
  },
  "SolNode853": {
   "enemy": "Scaldra",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Exterminate",
   "value": "Mausoleum East (Höllvania)"
  },
  "SolNode854": {
   "enemy": "Techrot",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Exterminate",
   "value": "Rhu Manor (Höllvania)"
  },
  "SolNode855": {
   "enemy": "Scaldra",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Faceoff",
   "value": "Lower Vehrvod (Höllvania)"
  },
  "SolNode856": {
   "enemy": "Scaldra",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Assassination",
   "value": "Victory Plaza (Höllvania)"
  },
  "SolNode857": {
   "enemy": "Scaldra",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Faceoff",
   "value": "Vehrvod District (Höllvania)"
  },
  "SolNode858": {
   "enemy": "Scaldra",
+  "maxEnemyLevel": 70,
+  "minEnemyLevel": 65,
   "type": "Stage Defense",
   "value": "Solstice Square (Höllvania)"
  },
@@ -2346,21 +2844,29 @@
  },
  "SolNode87": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 35,
+  "minEnemyLevel": 30,
   "type": "Disruption",
   "value": "Ganymede (Jupiter)"
  },
  "SolNode88": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 18,
   "type": "Sabotage",
   "value": "Adrastea (Jupiter)"
  },
  "SolNode89": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 3,
+  "minEnemyLevel": 1,
   "type": "Extermination",
   "value": "Mariana (Earth)"
  },
  "SolNode9": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 27,
   "type": "Spy",
   "value": "Rosalind (Uranus)"
  },
@@ -2376,36 +2882,50 @@
  },
  "SolNode902": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 8,
+  "minEnemyLevel": 3,
   "type": "Extermination (Archwing)",
   "value": "Montes (Venus)"
  },
  "SolNode903": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 6,
+  "minEnemyLevel": 1,
   "type": "Mobile Defense (Archwing)",
   "value": "Erpo (Earth)"
  },
  "SolNode904": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 13,
+  "minEnemyLevel": 8,
   "type": "Extermination (Archwing)",
   "value": "Syrtis (Mars)"
  },
  "SolNode905": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 20,
+  "minEnemyLevel": 15,
   "type": "Sabotage (Archwing)",
   "value": "Galilea (Jupiter)"
  },
  "SolNode906": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 23,
+  "minEnemyLevel": 21,
   "type": "Pursuit (Archwing)",
   "value": "Pandora (Saturn)"
  },
  "SolNode907": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 29,
+  "minEnemyLevel": 24,
   "type": "Interception (Archwing)",
   "value": "Caelus (Uranus)"
  },
  "SolNode908": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 32,
+  "minEnemyLevel": 27,
   "type": "Mobile Defense (Archwing)",
   "value": "Salacia (Neptune)"
  },
@@ -2421,11 +2941,15 @@
  },
  "SolNode93": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 25,
+  "minEnemyLevel": 23,
   "type": "Mobile Defense",
   "value": "Keeler (Saturn)"
  },
  "SolNode94": {
   "enemy": "Infested",
+  "maxEnemyLevel": 11,
+  "minEnemyLevel": 6,
   "type": "Survival",
   "value": "Apollodorus (Mercury)"
  },
@@ -2436,21 +2960,29 @@
  },
  "SolNode96": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 26,
+  "minEnemyLevel": 21,
   "type": "Survival",
   "value": "Titan (Saturn)"
  },
  "SolNode97": {
   "enemy": "Corpus",
+  "maxEnemyLevel": 19,
+  "minEnemyLevel": 17,
   "type": "Spy",
   "value": "Amalthea (Jupiter)"
  },
  "SolNode98": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 28,
+  "minEnemyLevel": 26,
   "type": "Sabotage (Archwing)",
   "value": "Desdemona (Uranus)"
  },
  "SolNode99": {
   "enemy": "Grineer",
+  "maxEnemyLevel": 13,
+  "minEnemyLevel": 11,
   "type": "Assassination",
   "value": "War (Mars)"
  },

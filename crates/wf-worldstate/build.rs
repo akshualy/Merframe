@@ -10,6 +10,12 @@ struct SolNode {
     value: String,
     #[serde(default, rename = "type")]
     kind: String,
+    #[serde(default)]
+    enemy: String,
+    #[serde(rename = "minEnemyLevel")]
+    min_enemy_level: Option<u32>,
+    #[serde(rename = "maxEnemyLevel")]
+    max_enemy_level: Option<u32>,
 }
 
 #[derive(Deserialize)]
@@ -61,8 +67,11 @@ fn emit_nodes(source: &mut String) -> Result<(), String> {
     }
     emit(source, "SOL_NODES", "SolNode", &nodes, |node| {
         format!(
-            "SolNode {{ value: {:?}, kind: {:?} }}",
-            node.value, node.kind
+            "SolNode {{ value: {:?}, kind: {:?}, faction: {:?}, levels: {:?} }}",
+            node.value,
+            node.kind,
+            Some(&node.enemy).filter(|enemy| !enemy.is_empty()),
+            node.min_enemy_level.zip(node.max_enemy_level)
         )
     });
     let mastery: BTreeMap<String, u32> = table("data/node_mastery.json")?;

@@ -2,6 +2,8 @@
 pub struct SolNode {
     pub value: &'static str,
     pub kind: &'static str,
+    pub faction: Option<&'static str>,
+    pub levels: Option<(u32, u32)>,
 }
 
 #[derive(Debug)]

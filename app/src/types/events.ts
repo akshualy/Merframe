@@ -8,6 +8,9 @@ export interface FissureInfo {
   planet: string | null;
   tier: string;
   steel_path: boolean;
+  is_storm: boolean;
+  faction: string | null;
+  levels: [number, number] | null;
   expiry: string;
   remaining_secs: number;
 }
