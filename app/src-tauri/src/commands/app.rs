@@ -39,6 +39,17 @@ pub async fn overlay_page_ready<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn overlay_notify<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+    title: String,
+    body: String,
+) -> CommandResult<()> {
+    overlay::notify(&app, &ready(&state).await?, title, body);
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn overlay_content_shrank<R: Runtime>(window: tauri::WebviewWindow<R>) {
     overlay::on_content_shrank(&window);
 }

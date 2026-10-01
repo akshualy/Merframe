@@ -16,6 +16,13 @@ export type ToastPosition =
   | "bottom_centre"
   | "bottom_right";
 
+export type InGameToast =
+  | "inventory"
+  | "trade"
+  | "fissure"
+  | "timer"
+  | "market_close";
+
 export type RecommendationRefinement = "radiant" | "owned";
 
 export type SteelPathFilter = "all" | "steelPath" | "normal";
@@ -88,6 +95,9 @@ export interface Settings {
   copy_relic_rewards: boolean;
   toasts_enabled: boolean;
   toast_position: ToastPosition;
+  toasts_in_game: boolean;
+  toasts_in_game_position: ToastPosition;
+  toasts_in_game_muted: InGameToast[];
   check_for_updates: boolean;
   log_file_path: string | null;
 }

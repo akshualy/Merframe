@@ -6,6 +6,7 @@ import {
 } from "@/components/overlay-slots";
 import { Page, Quoted, Section } from "@/components/page";
 import { Label } from "@/components/ui/label";
+import { PositionPicker } from "@/components/ui/position-picker";
 import {
   Select,
   SelectContent,
@@ -107,22 +108,18 @@ function Focused({
 function CardControls({
   name,
   enabled,
-  placement,
   disabled,
   onEnabled,
-  onPlacement,
   children,
 }: {
   name: string;
   enabled: boolean;
-  placement: OverlayPlacement;
   disabled: boolean;
   onEnabled: (enabled: boolean) => void;
-  onPlacement: (placement: OverlayPlacement) => void;
   children?: ReactNode;
 }) {
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+    <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2">
       <Field id={`${name}-enabled`} label="Enabled">
         <Switch
           id={`${name}-enabled`}
@@ -130,24 +127,6 @@ function CardControls({
           disabled={disabled}
           onCheckedChange={onEnabled}
         />
-      </Field>
-      <Field id={`${name}-placement`} label="Placement">
-        <Select
-          value={placement}
-          disabled={disabled}
-          onValueChange={(value) => onPlacement(value as OverlayPlacement)}
-        >
-          <SelectTrigger id={`${name}-placement`} size="sm" className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {PLACEMENTS.map(({ value, label }) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </Field>
       {children}
     </div>
@@ -271,40 +250,50 @@ export function OverlaysPage() {
 
       <Section
         title="Relic Rewards"
+        controls={
+          <CardControls
+            name="reward"
+            enabled={settings.overlay_relic_reward}
+            disabled={!master}
+            onEnabled={(enabled) => update({ overlay_relic_reward: enabled })}
+          >
+            <Field id="reward-balance" label="Show your Platinum and Ducats">
+              <Switch
+                id="reward-balance"
+                checked={settings.overlay_account_balance}
+                disabled={!master}
+                onCheckedChange={(checked) =>
+                  update({ overlay_account_balance: checked })
+                }
+              />
+            </Field>
+            <Field id="reward-copy" label="Copy the rewards to the clipboard">
+              <Switch
+                id="reward-copy"
+                checked={settings.copy_relic_rewards}
+                onCheckedChange={(checked) =>
+                  update({ copy_relic_rewards: checked })
+                }
+              />
+            </Field>
+          </CardControls>
+        }
+        action={
+          <PositionPicker
+            id="reward-placement"
+            label="Placement"
+            value={settings.overlay_relic_reward_placement}
+            options={PLACEMENTS}
+            disabled={!master}
+            onChange={(value) =>
+              update({ overlay_relic_reward_placement: value })
+            }
+          />
+        }
         description={
           reward ? "Shown while the reward screen is on display." : OFF
         }
       >
-        <CardControls
-          name="reward"
-          enabled={settings.overlay_relic_reward}
-          placement={settings.overlay_relic_reward_placement}
-          disabled={!master}
-          onEnabled={(enabled) => update({ overlay_relic_reward: enabled })}
-          onPlacement={(value) =>
-            update({ overlay_relic_reward_placement: value })
-          }
-        >
-          <Field id="reward-balance" label="Show your Platinum and Ducats">
-            <Switch
-              id="reward-balance"
-              checked={settings.overlay_account_balance}
-              disabled={!master}
-              onCheckedChange={(checked) =>
-                update({ overlay_account_balance: checked })
-              }
-            />
-          </Field>
-          <Field id="reward-copy" label="Copy the rewards to the clipboard">
-            <Switch
-              id="reward-copy"
-              checked={settings.copy_relic_rewards}
-              onCheckedChange={(checked) =>
-                update({ copy_relic_rewards: checked })
-              }
-            />
-          </Field>
-        </CardControls>
         <Focused trigger={reward ? overlays.reward : null}>
           <RewardSlot trigger={reward ? overlays.reward : null} />
         </Focused>
@@ -312,74 +301,84 @@ export function OverlaysPage() {
 
       <Section
         title="Relic Recommendation"
+        controls={
+          <CardControls
+            name="recommendation"
+            enabled={settings.overlay_relic_recommendation}
+            disabled={!master}
+            onEnabled={(enabled) =>
+              update({ overlay_relic_recommendation: enabled })
+            }
+          >
+            <Field id="recommendation-refinement" label="Values">
+              <Select
+                value={settings.overlay_recommendation_refinement}
+                disabled={!master}
+                onValueChange={(value) =>
+                  update({
+                    overlay_recommendation_refinement:
+                      value as RecommendationRefinement,
+                  })
+                }
+              >
+                <SelectTrigger
+                  id="recommendation-refinement"
+                  size="sm"
+                  className="w-48"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REFINEMENTS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="flex items-center gap-3">
+              <Label htmlFor="recommendation-count" className="text-sm">
+                Relics shown
+              </Label>
+              <Slider
+                id="recommendation-count"
+                className="w-28"
+                min={3}
+                max={10}
+                step={1}
+                value={[count]}
+                disabled={!master}
+                onValueChange={([value = count]) => setDraggedCount(value)}
+                onValueCommit={([value = count]) => {
+                  setDraggedCount(null);
+                  update({ overlay_recommendation_count: value });
+                }}
+              />
+              <span className="text-muted-foreground w-5 text-sm tabular-nums">
+                {count}
+              </span>
+            </div>
+          </CardControls>
+        }
+        action={
+          <PositionPicker
+            id="recommendation-placement"
+            label="Placement"
+            value={settings.overlay_relic_recommendation_placement}
+            options={PLACEMENTS}
+            disabled={!master}
+            onChange={(value) =>
+              update({ overlay_relic_recommendation_placement: value })
+            }
+          />
+        }
         description={
           recommendation
             ? "Shown while the relic select screen is on display. Always Radiant ranks every relic as if you refined it first."
             : OFF
         }
       >
-        <CardControls
-          name="recommendation"
-          enabled={settings.overlay_relic_recommendation}
-          placement={settings.overlay_relic_recommendation_placement}
-          disabled={!master}
-          onEnabled={(enabled) =>
-            update({ overlay_relic_recommendation: enabled })
-          }
-          onPlacement={(value) =>
-            update({ overlay_relic_recommendation_placement: value })
-          }
-        >
-          <Field id="recommendation-refinement" label="Values">
-            <Select
-              value={settings.overlay_recommendation_refinement}
-              disabled={!master}
-              onValueChange={(value) =>
-                update({
-                  overlay_recommendation_refinement:
-                    value as RecommendationRefinement,
-                })
-              }
-            >
-              <SelectTrigger
-                id="recommendation-refinement"
-                size="sm"
-                className="w-48"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {REFINEMENTS.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <div className="flex items-center gap-3">
-            <Label htmlFor="recommendation-count" className="text-sm">
-              Relics shown
-            </Label>
-            <Slider
-              id="recommendation-count"
-              className="w-28"
-              min={3}
-              max={10}
-              step={1}
-              value={[count]}
-              disabled={!master}
-              onValueChange={([value = count]) => setDraggedCount(value)}
-              onValueCommit={([value = count]) => {
-                setDraggedCount(null);
-                update({ overlay_recommendation_count: value });
-              }}
-            />
-            <span className="text-muted-foreground w-5 text-sm tabular-nums">
-              {count}
-            </span>
-          </div>
-        </CardControls>
         <Focused trigger={recommendation ? overlays.recommendation : null}>
           <RecommendationSlot
             trigger={recommendation ? overlays.recommendation : null}
@@ -389,16 +388,26 @@ export function OverlaysPage() {
 
       <Section
         title="Riven"
+        controls={
+          <CardControls
+            name="riven"
+            enabled={settings.overlay_riven}
+            disabled={!master}
+            onEnabled={(enabled) => update({ overlay_riven: enabled })}
+          />
+        }
+        action={
+          <PositionPicker
+            id="riven-placement"
+            label="Placement"
+            value={settings.overlay_riven_placement}
+            options={PLACEMENTS}
+            disabled={!master}
+            onChange={(value) => update({ overlay_riven_placement: value })}
+          />
+        }
         description={riven ? "Shown while you inspect or cycle a riven." : OFF}
       >
-        <CardControls
-          name="riven"
-          enabled={settings.overlay_riven}
-          placement={settings.overlay_riven_placement}
-          disabled={!master}
-          onEnabled={(enabled) => update({ overlay_riven: enabled })}
-          onPlacement={(value) => update({ overlay_riven_placement: value })}
-        />
         <Focused trigger={riven ? overlays.riven : null}>
           <RivenSlot trigger={riven ? overlays.riven : null} />
         </Focused>

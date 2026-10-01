@@ -140,6 +140,7 @@ pub fn run() {
             commands::app::updates_supported,
             commands::app::overlay_state,
             commands::app::overlay_page_ready,
+            commands::app::overlay_notify,
             commands::app::overlay_content_shrank,
             commands::app::rescan_inventory,
             commands::app::export,

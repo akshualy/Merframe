@@ -54,12 +54,14 @@ pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>
                         Ok(source) => {
                             if let Some(event) = wf_log::classify(&source.line) {
                                 let started = Instant::now();
-                                debug!(
-                                    event = event.label(),
-                                    origin = source.origin.label(),
-                                    at = source.line.time,
-                                    "Log event"
-                                );
+                                if !matches!(event, LogEvent::InputMappingReset) {
+                                    debug!(
+                                        event = event.label(),
+                                        origin = source.origin.label(),
+                                        at = source.line.time,
+                                        "Log event"
+                                    );
+                                }
                                 handle_log_event(&app, &state, event, source.line.time).await;
                                 if started.elapsed() > Duration::from_secs(1) {
                                     warn!(

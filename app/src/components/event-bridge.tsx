@@ -58,6 +58,7 @@ export function EventBridge() {
     };
     notify.success(titles[closed.kind], {
       description: `Closed the ${what[closed.kind]} for ${item}`,
+      inGame: "market_close",
     });
   });
 
@@ -67,6 +68,7 @@ export function EventBridge() {
       if (summary.changes > 0) {
         notify.info(`${summary.changes} inventory changes`, {
           description: `${num(summary.plat)} plat, ${num(summary.endo)} endo, MR ${summary.mr}`,
+          inGame: "inventory",
         });
       }
       return;
@@ -75,6 +77,7 @@ export function EventBridge() {
       const { trade, partner } = event.TradeCompleted;
       notify.success("Trade completed", {
         description: `${trade.plat} plat with ${partner ?? "an unknown Tenno"}`,
+        inGame: "trade",
       });
       return;
     }
@@ -91,12 +94,14 @@ export function EventBridge() {
       const { fissure } = event.FissureAlert;
       notify.warning(`${fissure.tier} ${fissure.mission_name} fissure`, {
         description: `${fissure.planet ?? fissure.node_name ?? fissure.node_id}${fissure.steel_path ? " (Steel Path)" : ""}, ${countdown(fissure.remaining_secs)} left`,
+        inGame: "fissure",
       });
       return;
     }
     const timer = event.TimerAlert;
     notify.warning(`${timer.name} turns ${timer.next_state}`, {
       description: `in ${countdown(timer.remaining_secs)}`,
+      inGame: "timer",
     });
   };
 

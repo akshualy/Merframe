@@ -37,13 +37,21 @@ use riven::{
 };
 use window::{bounds_for, logical, open, park, retire, reveal, screen_of};
 
-pub const KINDS: [Kind; 3] = [Kind::RelicReward, Kind::RelicRecommendation, Kind::Riven];
+pub const KINDS: [Kind; 4] = [
+    Kind::RelicReward,
+    Kind::RelicRecommendation,
+    Kind::Riven,
+    Kind::Notification,
+];
+
+const NOTIFICATION_LIFETIME: Duration = Duration::from_millis(6500);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kind {
     RelicReward,
     RelicRecommendation,
     Riven,
+    Notification,
 }
 
 impl Kind {
@@ -52,7 +60,12 @@ impl Kind {
             Self::RelicReward => "overlay-relic",
             Self::RelicRecommendation => "overlay-recommend",
             Self::Riven => "overlay-riven",
+            Self::Notification => "overlay-notify",
         }
+    }
+
+    const fn permanent(self) -> bool {
+        matches!(self, Self::Notification)
     }
 
     pub(super) const fn route(self) -> &'static str {
@@ -60,6 +73,7 @@ impl Kind {
             Self::RelicReward => "index.html#/overlay/relic",
             Self::RelicRecommendation => "index.html#/overlay/recommend",
             Self::Riven => "index.html#/overlay/riven",
+            Self::Notification => "index.html#/overlay/notify",
         }
     }
 
@@ -68,6 +82,7 @@ impl Kind {
             Self::RelicReward => "Merframe relic rewards",
             Self::RelicRecommendation => "Merframe relic recommendation",
             Self::Riven => "Merframe riven",
+            Self::Notification => "Merframe notification",
         }
     }
 }
@@ -78,6 +93,7 @@ pub fn enabled(settings: &Settings, kind: Kind) -> bool {
             Kind::RelicReward => settings.overlays.shown.overlay_relic_reward,
             Kind::RelicRecommendation => settings.overlays.shown.overlay_relic_recommendation,
             Kind::Riven => settings.overlays.shown.overlay_riven,
+            Kind::Notification => settings.toasts.toasts_in_game,
         }
 }
 
@@ -86,15 +102,12 @@ fn window_shows(only_while_game_active: bool, focused: Option<bool>, due: bool) 
 }
 
 fn placement_of(settings: &Settings, kind: Kind) -> OverlayPlacement {
+    let placements = &settings.overlays.placements;
     match kind {
-        Kind::RelicReward => settings.overlays.placements.overlay_relic_reward_placement,
-        Kind::RelicRecommendation => {
-            settings
-                .overlays
-                .placements
-                .overlay_relic_recommendation_placement
-        }
-        Kind::Riven => settings.overlays.placements.overlay_riven_placement,
+        Kind::RelicReward => placements.overlay_relic_reward_placement,
+        Kind::RelicRecommendation => placements.overlay_relic_recommendation_placement,
+        Kind::Riven => placements.overlay_riven_placement,
+        Kind::Notification => settings.toasts.toasts_in_game_position.into(),
     }
 }
 
@@ -118,6 +131,13 @@ pub struct RivenTrigger {
     pub linked: Option<RivenRow>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NotificationTrigger {
+    pub id: u64,
+    pub title: String,
+    pub body: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct OverlayState {
     pub seq: u64,
@@ -125,6 +145,7 @@ pub struct OverlayState {
     pub reward: Option<RewardTrigger>,
     pub recommendation: Option<RecommendationTrigger>,
     pub riven: Option<RivenTrigger>,
+    pub notification: Option<NotificationTrigger>,
 }
 
 impl Default for OverlayState {
@@ -135,6 +156,7 @@ impl Default for OverlayState {
             reward: None,
             recommendation: None,
             riven: None,
+            notification: None,
         }
     }
 }
@@ -145,6 +167,7 @@ impl OverlayState {
             Kind::RelicReward => self.reward.is_some(),
             Kind::RelicRecommendation => self.recommendation.is_some(),
             Kind::Riven => self.riven.is_some(),
+            Kind::Notification => self.notification.is_some(),
         }
     }
 
@@ -153,6 +176,7 @@ impl OverlayState {
             Kind::RelicReward => self.reward = None,
             Kind::RelicRecommendation => self.recommendation = None,
             Kind::Riven => self.riven = None,
+            Kind::Notification => self.notification = None,
         }
     }
 }
@@ -192,6 +216,7 @@ pub struct Overlays {
     state: Mutex<OverlayState>,
     recommendation_ticket: AtomicU64,
     riven_ticket: AtomicU64,
+    notification_ticket: AtomicU64,
     marks: Mutex<Marks>,
     windows: Mutex<HashMap<&'static str, WindowLife>>,
     game_monitor: Mutex<Option<MonitorRect>>,
@@ -339,6 +364,25 @@ fn attached_game() -> Option<Box<dyn wf_mem::MemoryReader>> {
     }
 }
 
+pub fn notify<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, title: String, body: String) {
+    let id = state
+        .overlays
+        .notification_ticket
+        .fetch_add(1, Ordering::Relaxed)
+        + 1;
+    show(app, state, Kind::Notification, |slots| {
+        slots.notification = Some(NotificationTrigger { id, title, body });
+    });
+    let app = app.clone();
+    let owned = Arc::clone(state);
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(NOTIFICATION_LIFETIME).await;
+        if owned.overlays.notification_ticket.load(Ordering::Relaxed) == id {
+            hide(&app, &owned, Kind::Notification);
+        }
+    });
+}
+
 pub fn on_inventory_updated<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let rerolling = {
         let mut slots = lock(&state.overlays.state);
@@ -408,6 +452,9 @@ pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
             (None, _) => {}
         }
         if keep {
+            if kind.permanent() {
+                load(app, state, kind);
+            }
             let due = lock(&state.overlays.state).occupied(kind);
             if window_shows(only_while_game_active, state.focus.focused(), due) {
                 surface(app, state, kind);
@@ -488,6 +535,9 @@ fn surface<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
 
 fn rest<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
     park(app, kind);
+    if kind.permanent() {
+        return;
+    }
     let idle_since = Instant::now();
     match lock(&state.overlays.windows).get_mut(kind.label()) {
         Some(life) if life.idle_since.is_none() => life.idle_since = Some(idle_since),
@@ -637,11 +687,16 @@ mod tests {
         assert!(enabled(&settings, Kind::RelicReward));
         assert!(enabled(&settings, Kind::RelicRecommendation));
         assert!(enabled(&settings, Kind::Riven));
+        assert!(!enabled(&settings, Kind::Notification));
+
+        let notification_on: Settings = serde_json::from_str(r#"{"toasts_in_game":true}"#).unwrap();
+        assert!(enabled(&notification_on, Kind::Notification));
 
         let master_off: Settings = serde_json::from_str(r#"{"overlays_enabled":false}"#).unwrap();
         assert!(!enabled(&master_off, Kind::RelicReward));
         assert!(!enabled(&master_off, Kind::RelicRecommendation));
         assert!(!enabled(&master_off, Kind::Riven));
+        assert!(!enabled(&master_off, Kind::Notification));
 
         let one_toggle_off: Settings = serde_json::from_str(r#"{"overlay_riven":false}"#).unwrap();
         assert!(!enabled(&one_toggle_off, Kind::Riven));
@@ -666,8 +721,15 @@ mod tests {
         let labels: Vec<&str> = super::KINDS.iter().map(|kind| kind.label()).collect();
         assert_eq!(
             labels,
-            vec!["overlay-relic", "overlay-recommend", "overlay-riven"]
+            vec![
+                "overlay-relic",
+                "overlay-recommend",
+                "overlay-riven",
+                "overlay-notify"
+            ]
         );
+        assert!(Kind::Notification.permanent());
+        assert!(!Kind::Riven.permanent());
         for kind in super::KINDS {
             assert!(kind.route().starts_with("index.html#/overlay/"));
         }

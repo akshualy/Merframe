@@ -129,6 +129,8 @@ export const api = {
   updatesSupported: () => call<boolean>("updates_supported"),
   overlayState: () => call<OverlayState>("overlay_state"),
   overlayPageReady: () => call<void>("overlay_page_ready"),
+  overlayNotify: (title: string, body: string) =>
+    call<void>("overlay_notify", { title, body }),
   overlayContentShrank: () => call<void>("overlay_content_shrank"),
   rescanInventory: () => call<GameStatus>("rescan_inventory"),
   exportBundle: () => call<string | null>("export"),

@@ -81,23 +81,23 @@ pub(super) fn bounds_for(
             700.0,
             (900.0 * scale).min(screen.height - 2.0 * MARGIN).round(),
         ),
+        Kind::Notification => (380.0, 100.0),
     };
+    let middle = (screen.width / 2.0 - width / 2.0).round();
     let right = (screen.width - width - MARGIN).round();
     let bottom = (screen.height - height - MARGIN).round();
     let (x, y) = match placement {
         OverlayPlacement::TopLeft => (MARGIN, MARGIN),
+        OverlayPlacement::TopCentre => (middle, MARGIN),
         OverlayPlacement::TopRight => (right, MARGIN),
         OverlayPlacement::BottomLeft => (MARGIN, bottom),
+        OverlayPlacement::BottomCentre => (middle, bottom),
         OverlayPlacement::BottomRight => (right, bottom),
         OverlayPlacement::Centre => match kind {
-            Kind::RelicReward => (
-                (screen.width / 2.0 - width / 2.0 - 15.0).round(),
-                (630.0 * scale).round(),
-            ),
-            Kind::RelicRecommendation | Kind::Riven => (
-                (screen.width / 2.0 - width / 2.0).round(),
-                (screen.height / 2.0 - height / 2.0).round(),
-            ),
+            Kind::RelicReward => (middle - 15.0, (630.0 * scale).round()),
+            Kind::RelicRecommendation | Kind::Riven | Kind::Notification => {
+                (middle, (screen.height / 2.0 - height / 2.0).round())
+            }
         },
     };
     Bounds {
@@ -382,6 +382,29 @@ mod tests {
         assert_eq!(tall.width, 1333.0);
         assert_eq!(tall.y, 840.0);
         assert_eq!(tall.x, 599.0);
+    }
+
+    #[test]
+    fn notification_positions() {
+        let at = |position: &str| {
+            let settings: Settings =
+                serde_json::from_str(&format!(r#"{{"toasts_in_game_position":"{position}"}}"#))
+                    .unwrap();
+            let bounds = bounds_for(
+                Kind::Notification,
+                placement_of(&settings, Kind::Notification),
+                RECOMMENDATION_COUNT_DEFAULT,
+                FULL_HD,
+            );
+            assert_eq!((bounds.width, bounds.height), (380.0, 100.0));
+            (bounds.x, bounds.y)
+        };
+        assert_eq!(at("top_left"), (20.0, 20.0));
+        assert_eq!(at("top_centre"), (770.0, 20.0));
+        assert_eq!(at("top_right"), (1520.0, 20.0));
+        assert_eq!(at("bottom_left"), (20.0, 960.0));
+        assert_eq!(at("bottom_centre"), (770.0, 960.0));
+        assert_eq!(at("bottom_right"), (1520.0, 960.0));
     }
 
     #[test]

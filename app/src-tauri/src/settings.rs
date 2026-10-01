@@ -33,10 +33,25 @@ pub enum OverlayMode {
 #[serde(rename_all = "snake_case")]
 pub enum OverlayPlacement {
     TopLeft,
+    TopCentre,
     TopRight,
     BottomLeft,
+    BottomCentre,
     BottomRight,
     Centre,
+}
+
+impl From<ToastPosition> for OverlayPlacement {
+    fn from(position: ToastPosition) -> Self {
+        match position {
+            ToastPosition::TopLeft => Self::TopLeft,
+            ToastPosition::TopCentre => Self::TopCentre,
+            ToastPosition::TopRight => Self::TopRight,
+            ToastPosition::BottomLeft => Self::BottomLeft,
+            ToastPosition::BottomCentre => Self::BottomCentre,
+            ToastPosition::BottomRight => Self::BottomRight,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -83,10 +98,23 @@ pub struct Settings {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum InGameToast {
+    Inventory,
+    Trade,
+    Fissure,
+    Timer,
+    MarketClose,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ToastSettings {
     pub toasts_enabled: bool,
     pub toast_position: ToastPosition,
+    pub toasts_in_game: bool,
+    pub toasts_in_game_position: ToastPosition,
+    pub toasts_in_game_muted: Vec<InGameToast>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -185,6 +213,9 @@ impl Default for ToastSettings {
         Self {
             toasts_enabled: true,
             toast_position: ToastPosition::BottomRight,
+            toasts_in_game: false,
+            toasts_in_game_position: ToastPosition::BottomRight,
+            toasts_in_game_muted: Vec::new(),
         }
     }
 }
@@ -463,6 +494,12 @@ mod tests {
         assert!(settings.inventory.stats_tab_enabled);
         assert!(settings.toasts.toasts_enabled);
         assert_eq!(settings.toasts.toast_position, ToastPosition::BottomRight);
+        assert!(!settings.toasts.toasts_in_game);
+        assert_eq!(
+            settings.toasts.toasts_in_game_position,
+            ToastPosition::BottomRight
+        );
+        assert!(settings.toasts.toasts_in_game_muted.is_empty());
         assert!(settings.overlays.overlays_enabled);
         assert!(settings.overlays.shown.overlay_relic_reward);
         assert!(settings.overlays.shown.overlay_relic_recommendation);
@@ -534,7 +571,9 @@ mod tests {
                 "overlay_recommendation_refinement":"owned","overlay_opacity":55,
                 "overlay_recommendation_count":9,"overlay_mode":"windows",
                 "overlay_only_while_game_active":false,"force_log_file":true,
-                "toasts_enabled":false,"toast_position":"top_centre"}"#,
+                "toasts_enabled":false,"toast_position":"top_centre","toasts_in_game":true,
+                "toasts_in_game_position":"top_left",
+                "toasts_in_game_muted":["inventory","market_close"]}"#,
         )
         .unwrap();
         assert!(stored.alerts.fissure_notifications_enabled);
@@ -558,6 +597,15 @@ mod tests {
         assert!(!stored.inventory.stats_tab_enabled);
         assert!(!stored.toasts.toasts_enabled);
         assert_eq!(stored.toasts.toast_position, ToastPosition::TopCentre);
+        assert!(stored.toasts.toasts_in_game);
+        assert_eq!(
+            stored.toasts.toasts_in_game_position,
+            ToastPosition::TopLeft
+        );
+        assert_eq!(
+            stored.toasts.toasts_in_game_muted,
+            [InGameToast::Inventory, InGameToast::MarketClose]
+        );
         assert!(stored.overlays.overlays_enabled);
         assert!(!stored.overlays.shown.overlay_relic_reward);
         assert!(stored.overlays.shown.overlay_relic_recommendation);

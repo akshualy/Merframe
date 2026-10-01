@@ -47,23 +47,31 @@ export function Section({
   description,
   action,
   className,
+  controls,
   children,
 }: {
   title?: string;
   description?: ReactNode;
   action?: ReactNode;
   className?: string;
+  controls?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <Card className={cn("gap-4", className)}>
-      {(title || description || action) && (
-        <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+      {(title || description || action || controls) && (
+        <CardHeader
+          className={cn(
+            "flex flex-wrap justify-between gap-3",
+            controls ? "items-start" : "items-center",
+          )}
+        >
           <div className="flex flex-col gap-1">
             {title && <CardTitle>{title}</CardTitle>}
             {description && (
               <p className="text-muted-foreground text-sm">{description}</p>
             )}
+            {controls}
           </div>
           {action}
         </CardHeader>

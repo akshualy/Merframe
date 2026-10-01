@@ -1,19 +1,19 @@
-import { BellRing } from "lucide-react";
+import { BellRing, ChevronDown } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { PositionPicker } from "@/components/ui/position-picker";
 import { api, reportError } from "@/lib/bridge";
 import { notify } from "@/lib/toast";
-import type { Settings, ToastPosition } from "@/types";
+import type { InGameToast, Settings, ToastPosition } from "@/types";
 import { CheckboxRow, type Patch, SwitchRow } from "./row";
 
 const TOAST_POSITIONS: { value: ToastPosition; label: string }[] = [
@@ -24,6 +24,42 @@ const TOAST_POSITIONS: { value: ToastPosition; label: string }[] = [
   { value: "bottom_centre", label: "Bottom centre" },
   { value: "bottom_right", label: "Bottom right" },
 ];
+
+const IN_GAME_TOASTS: { value: InGameToast; label: string }[] = [
+  { value: "inventory", label: "Inventory changes" },
+  { value: "trade", label: "Completed trades" },
+  { value: "fissure", label: "Fissure alerts" },
+  { value: "timer", label: "Timer alerts" },
+  { value: "market_close", label: "Closed orders and auctions" },
+];
+
+function PositionSelect({
+  id,
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: ToastPosition;
+  disabled?: boolean;
+  onChange: (value: ToastPosition) => void;
+}) {
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <Label htmlFor={id}>{label}</Label>
+      <PositionPicker
+        id={id}
+        label={label}
+        value={value}
+        options={TOAST_POSITIONS}
+        disabled={disabled}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
 
 export function NotificationChannels({
   draft,
@@ -56,26 +92,61 @@ export function NotificationChannels({
           >
             In-app toasts for confirmations and alerts
           </SwitchRow>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="toast-position">Toast position</Label>
-            <Select
-              value={draft.toast_position}
-              onValueChange={(value) =>
-                patch({ toast_position: value as ToastPosition })
-              }
-            >
-              <SelectTrigger id="toast-position" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TOAST_POSITIONS.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <PositionSelect
+            id="toast-position"
+            label="Toast position"
+            value={draft.toast_position}
+            onChange={(value) => patch({ toast_position: value })}
+          />
+          <CheckboxRow
+            checked={draft.toasts_in_game}
+            disabled={!draft.toasts_enabled}
+            onChange={(checked) => patch({ toasts_in_game: checked })}
+            hint="Shows informative notifications also as an overlay in-game. Needs overlays enabled."
+          >
+            In-game notifications
+          </CheckboxRow>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="self-start"
+                disabled={!draft.toasts_enabled || !draft.toasts_in_game}
+              >
+                {IN_GAME_TOASTS.length - draft.toasts_in_game_muted.length} of{" "}
+                {IN_GAME_TOASTS.length} shown in-game
+                <ChevronDown className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {IN_GAME_TOASTS.map(({ value, label }) => (
+                <DropdownMenuCheckboxItem
+                  key={value}
+                  checked={!draft.toasts_in_game_muted.includes(value)}
+                  onCheckedChange={(checked) =>
+                    patch({
+                      toasts_in_game_muted: checked
+                        ? draft.toasts_in_game_muted.filter(
+                            (muted) => muted !== value,
+                          )
+                        : [...draft.toasts_in_game_muted, value],
+                    })
+                  }
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  {label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <PositionSelect
+            id="toast-in-game-position"
+            label="In-game notification position"
+            value={draft.toasts_in_game_position}
+            disabled={!draft.toasts_enabled || !draft.toasts_in_game}
+            onChange={(value) => patch({ toasts_in_game_position: value })}
+          />
           <SwitchRow
             checked={draft.windows_notifications_enabled}
             onChange={(checked) =>

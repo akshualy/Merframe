@@ -18,10 +18,17 @@ export interface RivenTrigger {
   linked: RivenRow | null;
 }
 
+export interface NotificationTrigger {
+  id: number;
+  title: string;
+  body: string;
+}
+
 export interface OverlayState {
   seq: number;
   opacity: number;
   reward: RewardTrigger | null;
   recommendation: RecommendationTrigger | null;
   riven: RivenTrigger | null;
+  notification: NotificationTrigger | null;
 }

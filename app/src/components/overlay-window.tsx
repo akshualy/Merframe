@@ -1,6 +1,10 @@
 import { type ReactNode, useEffect } from "react";
 import { Route, Routes } from "react-router";
 import {
+  NotificationFade,
+  NotificationOverlay,
+} from "@/components/notification-overlay";
+import {
   RecommendationSlot,
   RewardSlot,
   RivenSlot,
@@ -108,6 +112,18 @@ export function OverlayWindow() {
               <OverlayFrame opacity={overlays.opacity} fit>
                 <RivenSlot trigger={overlays.riven} compact />
               </OverlayFrame>
+            )
+          }
+        />
+        <Route
+          path="notify"
+          element={
+            overlays.notification && (
+              <NotificationFade key={overlays.notification.id}>
+                <OverlayFrame opacity={overlays.opacity} scroll={false}>
+                  <NotificationOverlay trigger={overlays.notification} />
+                </OverlayFrame>
+              </NotificationFade>
             )
           }
         />
