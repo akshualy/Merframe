@@ -25,13 +25,13 @@ export type InGameToast =
 
 export type RecommendationRefinement = "radiant" | "owned";
 
-export type SteelPathFilter = "all" | "steelPath" | "normal";
+export type FissureSubtype = "all" | "normal" | "steelPath" | "voidStorm";
 
 export interface FissureFilter {
   tier: string;
   mission: string;
   location: string;
-  steel_path: SteelPathFilter;
+  subtype: FissureSubtype;
 }
 
 export type CyclePhase =

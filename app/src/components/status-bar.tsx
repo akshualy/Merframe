@@ -88,7 +88,8 @@ export function StatusBar() {
                   <li key={`${fissure.node_id}-${fissure.expiry}`}>
                     {fissure.tier} {fissure.mission_name} at{" "}
                     {fissure.node_name ?? fissure.node_id}
-                    {fissure.steel_path ? " (Steel Path)" : ""},{" "}
+                    {fissure.steel_path ? " (Steel Path)" : ""}
+                    {fissure.is_storm ? " (Void Storm)" : ""},{" "}
                     {countdown(secondsUntil(fissure.expiry, now))} left
                   </li>
                 ))}

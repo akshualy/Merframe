@@ -17,7 +17,7 @@ import { secondsUntil } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
-import type { FissurePath } from "@/types";
+import type { Fissure, FissurePath } from "@/types";
 import { FissuresByTier } from "./fissures";
 import { MarketSalesPanel } from "./market-sales";
 import {
@@ -35,7 +35,8 @@ import { TimerChip } from "./timers";
 const PATH_FILTERS: { value: FissurePath; label: string }[] = [
   { value: "normal", label: "Normal" },
   { value: "hard", label: "Steel Path" },
-  { value: "all", label: "Both" },
+  { value: "storm", label: "Void Storms" },
+  { value: "all", label: "All" },
 ];
 
 export function WorldPage() {
@@ -63,13 +64,15 @@ export function WorldPage() {
     reload();
   }, [now, nextCycleEnd, reload]);
 
+  const shown: Record<FissurePath, (fissure: Fissure) => boolean> = {
+    all: () => true,
+    normal: (fissure) => !fissure.steel_path && !fissure.is_storm,
+    hard: (fissure) => fissure.steel_path,
+    storm: (fissure) => fissure.is_storm,
+  };
   const fissures = (data?.fissures ?? [])
     .filter((fissure) => secondsUntil(fissure.expiry, now) > 0)
-    .filter(
-      (fissure) =>
-        fissurePath === "all" ||
-        fissure.steel_path === (fissurePath === "hard"),
-    )
+    .filter(shown[fissurePath])
     .sort(
       (left, right) =>
         new Date(left.expiry).getTime() - new Date(right.expiry).getTime(),

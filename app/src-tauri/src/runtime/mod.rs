@@ -300,7 +300,12 @@ pub fn conversation_text(player: &str) -> String {
 
 pub fn fissure_title(fissure: &wf_core::FissureInfo) -> String {
     let node = fissure.node_name.unwrap_or(fissure.node_id.as_str());
-    format!("New {} Fissure - {node}", fissure.tier)
+    let kind = if fissure.is_storm {
+        "Void Storm"
+    } else {
+        "Fissure"
+    };
+    format!("New {} {kind} - {node}", fissure.tier)
 }
 
 pub fn fissure_body(fissure: &wf_core::FissureInfo) -> String {
@@ -313,9 +318,6 @@ pub fn fissure_body(fissure: &wf_core::FissureInfo) -> String {
     }
     if fissure.steel_path {
         body.push_str(", Steel Path");
-    }
-    if fissure.is_storm {
-        body.push_str(", Void Storm");
     }
     let _ = write!(body, ", {} min left", fissure.remaining_secs / 60);
     body
@@ -413,13 +415,10 @@ mod tests {
         );
         let storm = FissureInfo {
             is_storm: true,
-            faction: None,
             levels: None,
             ..fissure()
         };
-        assert_eq!(
-            fissure_body(&storm),
-            "Extermination, Void Storm, 90 min left"
-        );
+        assert_eq!(fissure_body(&storm), "Extermination - Grineer, 90 min left");
+        assert_eq!(fissure_title(&storm), "New Lith Void Storm - Hellas (Mars)");
     }
 }

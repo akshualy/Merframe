@@ -97,11 +97,11 @@ export function EventBridge() {
         : "";
       const faction = fissure.faction ? ` - ${fissure.faction}` : "";
       const steelPath = fissure.steel_path ? ", Steel Path" : "";
-      const storm = fissure.is_storm ? ", Void Storm" : "";
+      const kind = fissure.is_storm ? "Void Storm" : "Fissure";
       notify.warning(
-        `New ${fissure.tier} Fissure - ${fissure.node_name ?? fissure.node_id}`,
+        `New ${fissure.tier} ${kind} - ${fissure.node_name ?? fissure.node_id}`,
         {
-          description: `${fissure.mission_name}${levels}${faction}${steelPath}${storm}, ${countdown(fissure.remaining_secs)} left`,
+          description: `${fissure.mission_name}${levels}${faction}${steelPath}, ${countdown(fissure.remaining_secs)} left`,
           inGame: "fissure",
         },
       );

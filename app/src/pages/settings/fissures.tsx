@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { occurrenceKeys } from "@/lib/keys";
 import { RELIC_TIERS } from "@/lib/relics";
-import type { FissureFilter, Settings, SteelPathFilter } from "@/types";
+import type { FissureFilter, FissureSubtype, Settings } from "@/types";
 import { type PatchAlerts, SwitchRow } from "./row";
 
 const ANY = "all";
@@ -35,9 +35,12 @@ const MISSION_TYPES: { value: string; label: string }[] = [
   { value: "MT_ASCENSION", label: "Ascension" },
   { value: "MT_VOID_CASCADE", label: "Void Cascade" },
   { value: "MT_CORRUPTION", label: "Void Flood" },
+  { value: "Skirmish", label: "Skirmish" },
+  { value: "Volatile", label: "Volatile" },
+  { value: "Orphix", label: "Orphix" },
 ];
 
-const PLANETS = [
+const LOCATIONS = [
   "Mercury",
   "Venus",
   "Earth",
@@ -57,12 +60,14 @@ const PLANETS = [
   "Void",
   "Kuva Fortress",
   "Zariman",
-];
+]
+  .map((planet) => ({ value: planet, label: planet }))
+  .concat({ value: "Veil", label: "Veil Proxima" });
 
-const STEEL_PATH: { value: SteelPathFilter; label: string }[] = [
-  { value: "all", label: "Either" },
-  { value: "steelPath", label: "Steel Path only" },
-  { value: "normal", label: "Normal only" },
+const SUBTYPES: { value: FissureSubtype; label: string }[] = [
+  { value: "normal", label: "Normal" },
+  { value: "steelPath", label: "Steel Path" },
+  { value: "voidStorm", label: "Void Storm" },
 ];
 
 function ColumnSelect({
@@ -114,7 +119,7 @@ export function FissureAlerts({
   return (
     <Section
       title="Fissure Alerts"
-      description="A fissure notifies when it matches any one of these rows."
+      description="A fissure or Void Storm notifies when it matches any one of these rows."
     >
       <div className="flex flex-col gap-4">
         <SwitchRow
@@ -123,7 +128,7 @@ export function FissureAlerts({
             patchAlerts({ fissure_notifications_enabled: checked })
           }
         >
-          Notify about relic fissures
+          Notify about relic fissures and Void Storms
         </SwitchRow>
 
         {filters.map((row, index) => (
@@ -157,34 +162,20 @@ export function FissureAlerts({
               <ColumnSelect
                 value={row.location}
                 anyLabel="Any planet"
-                options={PLANETS.map((planet) => ({
-                  value: planet,
-                  label: planet,
-                }))}
+                options={LOCATIONS}
                 onChange={(location) => patchFilter(index, { location })}
               />
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs">Steel Path</Label>
-              <Select
-                value={row.steel_path}
-                onValueChange={(value) =>
-                  patchFilter(index, {
-                    steel_path: value as SteelPathFilter,
-                  })
+              <Label className="text-xs">Subtype</Label>
+              <ColumnSelect
+                value={row.subtype}
+                anyLabel="Any subtype"
+                options={SUBTYPES}
+                onChange={(subtype) =>
+                  patchFilter(index, { subtype: subtype as FissureSubtype })
                 }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STEEL_PATH.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
             <Button
               variant="outline"
@@ -212,7 +203,12 @@ export function FissureAlerts({
             patchAlerts({
               fissure_filters: [
                 ...filters,
-                { tier: ANY, mission: ANY, location: ANY, steel_path: "all" },
+                {
+                  tier: ANY,
+                  mission: ANY,
+                  location: ANY,
+                  subtype: ANY,
+                },
               ],
             })
           }

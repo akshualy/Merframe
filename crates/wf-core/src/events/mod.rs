@@ -5,7 +5,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 pub use alerts::{
-    AlertSettings, CyclePhase, FissureFilter, SteelPathFilter, TimerAlerts, tier_name,
+    AlertSettings, CyclePhase, FissureFilter, FissureSubtype, TimerAlerts, tier_name,
 };
 pub(crate) use engine::{Engine, inventory_events};
 

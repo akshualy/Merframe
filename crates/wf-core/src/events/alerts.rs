@@ -1,25 +1,27 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
-use wf_worldstate::{Fissure, RelicTier};
+use wf_worldstate::{Fissure, RelicTier, mission_type_name};
 
 const ANY: &str = "all";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum SteelPathFilter {
+pub enum FissureSubtype {
     #[default]
     All,
-    SteelPath,
     Normal,
+    SteelPath,
+    VoidStorm,
 }
 
-impl SteelPathFilter {
-    pub fn matches(self, steel_path: bool) -> bool {
+impl FissureSubtype {
+    pub fn matches(self, fissure: &Fissure) -> bool {
         match self {
             Self::All => true,
-            Self::SteelPath => steel_path,
-            Self::Normal => !steel_path,
+            Self::Normal => !fissure.steel_path && !fissure.is_storm,
+            Self::SteelPath => fissure.steel_path,
+            Self::VoidStorm => fissure.is_storm,
         }
     }
 }
@@ -30,7 +32,8 @@ pub struct FissureFilter {
     pub tier: String,
     pub mission: String,
     pub location: String,
-    pub steel_path: SteelPathFilter,
+    #[serde(alias = "steel_path")]
+    pub subtype: FissureSubtype,
 }
 
 impl Default for FissureFilter {
@@ -39,7 +42,7 @@ impl Default for FissureFilter {
             tier: ANY.to_owned(),
             mission: ANY.to_owned(),
             location: ANY.to_owned(),
-            steel_path: SteelPathFilter::All,
+            subtype: FissureSubtype::All,
         }
     }
 }
@@ -47,9 +50,14 @@ impl Default for FissureFilter {
 impl FissureFilter {
     pub fn matches(&self, fissure: &Fissure) -> bool {
         matches_value(&self.tier, fissure.tier.name())
-            && matches_value(&self.mission, &fissure.mission_type)
+            && self.matches_mission(fissure)
             && self.matches_location(fissure)
-            && self.steel_path.matches(fissure.steel_path)
+            && self.subtype.matches(fissure)
+    }
+
+    fn matches_mission(&self, fissure: &Fissure) -> bool {
+        matches_value(&self.mission, &fissure.mission_type)
+            || mission_type_name(&self.mission) == fissure.mission_name
     }
 
     fn matches_location(&self, fissure: &Fissure) -> bool {
@@ -203,7 +211,6 @@ impl Default for AlertSettings {
 impl AlertSettings {
     pub fn wants(&self, fissure: &Fissure) -> bool {
         self.fissure_notifications_enabled
-            && !fissure.is_storm
             && self
                 .fissure_filters
                 .iter()
@@ -316,7 +323,7 @@ mod tests {
         assert!(!location.matches(&sample()));
 
         let steel_path = FissureFilter {
-            steel_path: SteelPathFilter::SteelPath,
+            subtype: FissureSubtype::SteelPath,
             ..FissureFilter::default()
         };
         assert!(!steel_path.matches(&sample()));
@@ -328,9 +335,61 @@ mod tests {
             tier: "lith".to_owned(),
             mission: "mt_extermination".to_owned(),
             location: "neptune".to_owned(),
-            steel_path: SteelPathFilter::Normal,
+            subtype: FissureSubtype::Normal,
         };
         assert!(filter.matches(&sample()));
+    }
+
+    fn storm(mission: &str, node_name: &'static str) -> Fissure {
+        Fissure {
+            node_id: "CrewBattleNode531".to_owned(),
+            node_name: Some(node_name),
+            mission_type: mission.to_owned(),
+            mission_name: mission.to_owned(),
+            is_storm: true,
+            ..sample()
+        }
+    }
+
+    #[test]
+    fn void_storm_filter() {
+        let survival = storm("Survival", "Fenton's Field (Pluto)");
+        let row = |subtype| FissureFilter {
+            subtype,
+            ..FissureFilter::default()
+        };
+        assert!(row(FissureSubtype::All).matches(&survival));
+        assert!(row(FissureSubtype::All).matches(&sample()));
+        assert!(row(FissureSubtype::VoidStorm).matches(&survival));
+        assert!(!row(FissureSubtype::VoidStorm).matches(&sample()));
+        assert!(!row(FissureSubtype::Normal).matches(&survival));
+        assert!(!row(FissureSubtype::SteelPath).matches(&survival));
+        assert!(row(FissureSubtype::Normal).matches(&sample()));
+    }
+
+    #[test]
+    fn void_storm_mission_and_location() {
+        let survival = storm("Survival", "Fenton's Field (Pluto)");
+        let skirmish = storm("Skirmish", "Gian Point (Veil)");
+        let row = |mission: &str, location: &str| FissureFilter {
+            mission: mission.to_owned(),
+            location: location.to_owned(),
+            subtype: FissureSubtype::VoidStorm,
+            ..FissureFilter::default()
+        };
+        assert!(row("MT_SURVIVAL", "Pluto").matches(&survival));
+        assert!(!row("MT_SURVIVAL", "Veil").matches(&survival));
+        assert!(!row("MT_INTEL", "all").matches(&survival));
+        assert!(row("Skirmish", "Veil").matches(&skirmish));
+        assert!(!row("Skirmish", "all").matches(&survival));
+    }
+
+    #[test]
+    fn stored_steel_path_row() {
+        let row: FissureFilter = serde_json::from_str(r#"{"steel_path":"steelPath"}"#).unwrap();
+        assert_eq!(row.subtype, FissureSubtype::SteelPath);
+        let row: FissureFilter = serde_json::from_str(r#"{"subtype":"voidStorm"}"#).unwrap();
+        assert_eq!(row.subtype, FissureSubtype::VoidStorm);
     }
 
     #[test]
@@ -420,7 +479,7 @@ mod tests {
                 tier: "Lith".to_owned(),
                 mission: "MT_EXTERMINATION".to_owned(),
                 location: "Earth".to_owned(),
-                steel_path: SteelPathFilter::SteelPath,
+                subtype: FissureSubtype::SteelPath,
             }],
             timers: TimerAlerts::from_iter([
                 CyclePhase::EarthDay,
@@ -432,7 +491,7 @@ mod tests {
             timer_lead_secs: 300,
         };
         let json = serde_json::to_string(&settings).unwrap();
-        assert!(json.contains(r#""steel_path":"steelPath""#));
+        assert!(json.contains(r#""subtype":"steelPath""#));
         assert!(json.contains(
             r#""timers":["earth_day","cetus_night","vallis_warm","duviri_joy","zariman_grineer"]"#
         ));

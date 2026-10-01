@@ -22,7 +22,7 @@ function FissureRow({ fissure, now }: { fissure: Fissure; now: number }) {
         </span>
       </span>
       {fissure.steel_path && <Badge variant="secondary">Steel Path</Badge>}
-      {fissure.is_storm && <Badge variant="secondary">Void storm</Badge>}
+      {fissure.is_storm && <Badge variant="secondary">Void Storm</Badge>}
       <span
         className={cn(
           "w-20 shrink-0 text-right font-mono text-sm tabular-nums",

@@ -203,7 +203,7 @@ pub(crate) fn inventory_events(inventory: &Inventory, changes: usize) -> Vec<Cor
 mod tests {
     use super::*;
     use crate::catalog::fixtures;
-    use crate::events::{CyclePhase, FissureFilter, SteelPathFilter, TimerAlerts};
+    use crate::events::{CyclePhase, FissureFilter, FissureSubtype, TimerAlerts};
     use wf_worldstate::{Fissure, FissureTier, RelicTier};
 
     const WORLD_STATE: &str = include_str!("../../../../fixtures/worldState.json");
@@ -241,18 +241,30 @@ mod tests {
     }
 
     #[test]
-    fn storms_never_alert() {
-        let settings = AlertSettings {
+    fn storm_alerts_from_world_state() {
+        let mut engine = Engine::new(AlertSettings {
             fissure_notifications_enabled: true,
-            fissure_filters: vec![FissureFilter::default()],
+            fissure_filters: vec![FissureFilter {
+                subtype: FissureSubtype::VoidStorm,
+                ..FissureFilter::default()
+            }],
             ..AlertSettings::default()
-        };
-        assert!(settings.wants(&sample()));
-        let storm = Fissure {
-            is_storm: true,
-            ..sample()
-        };
-        assert!(!settings.wants(&storm));
+        });
+        engine.handle_world_state(&world(), at(EARLY_POLL_MILLIS));
+        let alerts: Vec<FissureInfo> = engine
+            .handle_world_state(&world(), at(POLL_MILLIS))
+            .into_iter()
+            .filter_map(|event| match event {
+                CoreEvent::FissureAlert { fissure } => Some(fissure),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(alerts.len(), 6);
+        assert!(alerts.iter().all(|fissure| fissure.is_storm));
+        assert!(alerts.iter().all(|fissure| fissure.levels.is_none()));
+        assert!(alerts.iter().any(|fissure| {
+            fissure.planet == Some("Veil") && fissure.faction == Some("Corpus")
+        }));
     }
 
     fn screen() -> Vec<String> {
@@ -510,7 +522,7 @@ mod tests {
             fissure_notifications_enabled: true,
             fissure_filters: vec![FissureFilter {
                 tier: "Lith".to_owned(),
-                steel_path: SteelPathFilter::SteelPath,
+                subtype: FissureSubtype::SteelPath,
                 ..FissureFilter::default()
             }],
             ..AlertSettings::default()
