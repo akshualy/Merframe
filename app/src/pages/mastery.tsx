@@ -14,6 +14,7 @@ import {
   Surface,
   TableSkeleton,
 } from "@/components/page";
+import { Pagination } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { Hint } from "@/components/ui/hint";
@@ -21,6 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useListen } from "@/hooks/use-listen";
+import { usePaged } from "@/hooks/use-paged";
 import { api, errorMessage, events } from "@/lib/bridge";
 import { num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
@@ -196,13 +198,16 @@ export function MasteryPage() {
   useListen(events.inventoryUpdated, reload);
   useListen(events.pricesUpdated, reload);
 
-  const topItems = data?.recommended ?? [];
+  const { pageItems: topItems, pagination } = usePaged(
+    data?.recommended ?? [],
+    JSON.stringify([ordering, founders, includeForma]),
+  );
   const routes = data?.routes ?? [];
   const routeTotal = routes.reduce((sum, route) => sum + route.xp_available, 0);
 
   useEffect(() => {
-    prefetchImages((data?.recommended ?? []).map((item) => item.image_name));
-  }, [data?.recommended]);
+    prefetchImages(topItems.map((item) => item.image_name));
+  }, [topItems]);
 
   const choose = async (patch: Partial<Settings>) => {
     if (!settings) {
@@ -425,6 +430,9 @@ export function MasteryPage() {
             ))
           )}
         </CardGrid>
+        <div className="mt-3">
+          <Pagination {...pagination} />
+        </div>
         {ordering === "by_platinum" && (data?.plat_total ?? 0) > 0 && (
           <p className="text-muted-foreground mt-3 text-right text-sm">
             Total{" "}

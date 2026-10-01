@@ -6,9 +6,9 @@ import { GameIcon } from "@/components/game-icon";
 import { ItemCard } from "@/components/inventory-item-card";
 import { prefetchImages } from "@/components/item-image";
 import { CardGrid, EmptyPanel } from "@/components/page";
+import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
-import { Hint } from "@/components/ui/hint";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePaged } from "@/hooks/use-paged";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
@@ -31,7 +32,6 @@ import {
   yesNoFiltersFor,
 } from "@/lib/inventory-filters";
 import { keeps, type Row, rowPlat } from "@/lib/inventory-rows";
-import { useAppStore } from "@/stores/app-store";
 
 const MIN_PLAT_CHOICES = [5, 10, 15];
 
@@ -43,9 +43,6 @@ export function InventoryTabView({
   rows: Row[];
 }) {
   const [filters, setFilters] = useState<TabFilters>(() => loadFilters(tab));
-  const { settings } = useAppStore();
-  const showEveryRow = settings?.show_full_inventory ?? false;
-  const [capLifted, setCapLifted] = useState(false);
 
   const update = (patch: Partial<TabFilters>) => {
     setFilters((current) => {
@@ -64,10 +61,9 @@ export function InventoryTabView({
       );
   }, [rows, filters, tab]);
 
-  const capped = !showEveryRow && !capLifted;
-  const cappedRows = useMemo(
-    () => (capped ? visible.slice(0, 300) : visible),
-    [visible, capped],
+  const { pageItems: pageRows, pagination } = usePaged(
+    visible,
+    JSON.stringify(filters),
   );
 
   const selection = useMemo(
@@ -85,12 +81,12 @@ export function InventoryTabView({
 
   useEffect(() => {
     prefetchImages([
-      ...cappedRows.map((row) => row.imageName),
-      ...cappedRows.flatMap(
+      ...pageRows.map((row) => row.imageName),
+      ...pageRows.flatMap(
         (row) => row.set?.components.map((part) => part.image_name) ?? [],
       ),
     ]);
-  }, [cappedRows]);
+  }, [pageRows]);
 
   const refinements = refinementsFor(tab);
   const activeFilters =
@@ -186,31 +182,17 @@ export function InventoryTabView({
         />
       </FilterGrid>
 
-      {cappedRows.length === 0 ? (
+      {pageRows.length === 0 ? (
         <EmptyPanel>Nothing matches these filters.</EmptyPanel>
       ) : (
         <CardGrid className="@sm:grid-cols-1 @2xl:grid-cols-2 @6xl:grid-cols-3 @7xl:grid-cols-3">
-          {cappedRows.map((row) => (
+          {pageRows.map((row) => (
             <ItemCard key={row.key} row={row} tab={tab} />
           ))}
         </CardGrid>
       )}
 
-      {visible.length > cappedRows.length && (
-        <div className="flex flex-wrap items-center gap-3">
-          <Hint>
-            Showing the first {num(cappedRows.length)} of {num(visible.length)}.
-            Search or filter to narrow it down.
-          </Hint>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCapLifted(true)}
-          >
-            Show All
-          </Button>
-        </div>
-      )}
+      <Pagination {...pagination} />
 
       <div className="text-muted-foreground flex items-center justify-end gap-6 text-sm">
         <span

@@ -153,7 +153,6 @@ pub struct InventorySettings {
     #[serde(skip_serializing)]
     hide_founders_items: Option<bool>,
     pub include_forma_ranks: bool,
-    pub show_full_inventory: bool,
     pub stats_tab_enabled: bool,
 }
 
@@ -261,7 +260,6 @@ impl Default for InventorySettings {
             include_founders_items: None,
             hide_founders_items: None,
             include_forma_ranks: true,
-            show_full_inventory: false,
             stats_tab_enabled: true,
         }
     }
@@ -490,7 +488,6 @@ mod tests {
         assert!(!settings.market.market_offline_after_last_trade);
         assert_eq!(settings.inventory.include_founders_items, None);
         assert!(settings.inventory.include_forma_ranks);
-        assert!(!settings.inventory.show_full_inventory);
         assert!(settings.inventory.stats_tab_enabled);
         assert!(settings.toasts.toasts_enabled);
         assert_eq!(settings.toasts.toast_position, ToastPosition::BottomRight);
@@ -564,7 +561,7 @@ mod tests {
                 "notification_only_background":false,
                 "world_state_interval_minutes":7,"market_poll_minutes":10,"market_auto_close":true,
                 "take_rank_into_account":false,"include_founders_items":false,"include_forma_ranks":false,
-                "show_full_inventory":true,"stats_tab_enabled":false,"overlays_enabled":true,
+                "stats_tab_enabled":false,"overlays_enabled":true,
                 "overlay_relic_reward":false,"overlay_relic_recommendation":true,"overlay_riven":false,
                 "overlay_relic_reward_placement":"bottom_left",
                 "overlay_relic_recommendation_placement":"centre","overlay_riven_placement":"bottom_right",
@@ -593,7 +590,6 @@ mod tests {
         assert_eq!(stored.world_state_interval_minutes, 7);
         assert_eq!(stored.inventory.include_founders_items, Some(false));
         assert!(!stored.inventory.include_forma_ranks);
-        assert!(stored.inventory.show_full_inventory);
         assert!(!stored.inventory.stats_tab_enabled);
         assert!(!stored.toasts.toasts_enabled);
         assert_eq!(stored.toasts.toast_position, ToastPosition::TopCentre);
@@ -827,15 +823,6 @@ mod tests {
         assert!(stored.notifications.windows_notifications_enabled);
         assert!(stored.inventory.stats_tab_enabled);
         assert_eq!(stored.discord.discord_message_template, DISCORD_TEMPLATE);
-    }
-
-    #[test]
-    fn show_full_inventory_default() {
-        assert!(!Settings::default().inventory.show_full_inventory);
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert!(!stored.inventory.show_full_inventory);
-        let asked: Settings = serde_json::from_str(r#"{"show_full_inventory":true}"#).unwrap();
-        assert!(asked.inventory.show_full_inventory);
     }
 
     #[test]

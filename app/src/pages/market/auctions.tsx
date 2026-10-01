@@ -271,7 +271,6 @@ export function AuctionsTable({
         searchPlaceholder="Filter auctions"
         initialSorting={[{ id: "updated", desc: true }]}
         rowKey={(row) => row.id}
-        pageSize={25}
         emptyMessage="No riven auctions on this account."
       />
       <Dialog

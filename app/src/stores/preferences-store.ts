@@ -19,6 +19,7 @@ interface PreferencesState {
   resourceSource: ResourceSource;
   resourceScope: ResourceScope;
   hiddenColumns: Record<string, string[]>;
+  pageSize: number;
   setSquadSize: (squadSize: number) => void;
   setRefinement: (refinement: string) => void;
   setEra: (era: string) => void;
@@ -28,6 +29,7 @@ interface PreferencesState {
   setResourceSource: (resourceSource: ResourceSource) => void;
   setResourceScope: (resourceScope: ResourceScope) => void;
   setHiddenColumns: (tableId: string, columns: string[]) => void;
+  setPageSize: (pageSize: number) => void;
 }
 
 const TABLE_KEY = /^merframe\.table\.(.+)\.hiddenColumns$/;
@@ -64,6 +66,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       resourceSource: "held",
       resourceScope: "mastery",
       hiddenColumns: legacyHiddenColumns(),
+      pageSize: 50,
       setSquadSize: (squadSize) => set({ squadSize }),
       setRefinement: (refinement) => set({ refinement }),
       setEra: (era) => set({ era }),
@@ -76,6 +79,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         set((state) => ({
           hiddenColumns: { ...state.hiddenColumns, [tableId]: columns },
         })),
+      setPageSize: (pageSize) => set({ pageSize }),
     }),
     {
       name: "merframe.preferences",
@@ -89,6 +93,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         resourceSource: state.resourceSource,
         resourceScope: state.resourceScope,
         hiddenColumns: state.hiddenColumns,
+        pageSize: state.pageSize,
       }),
     },
   ),

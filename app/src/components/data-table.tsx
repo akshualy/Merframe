@@ -15,11 +15,10 @@ import {
   ArrowUp,
   ArrowUpDown,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Columns3,
 } from "lucide-react";
 import { Fragment, type ReactNode, useMemo, useState } from "react";
+import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Hint } from "@/components/ui/hint";
 import {
   Table,
   TableBody,
@@ -62,7 +60,6 @@ interface DataTableProps<TData, TValue> {
   primarySort?: SortingState;
   toolbar?: ReactNode;
   filters?: ReactNode;
-  pageSize?: number;
   emptyMessage?: string;
   renderSubRow?: (row: TData) => ReactNode;
   rowKey?: (row: TData, index: number) => string;
@@ -87,7 +84,6 @@ export function DataTable<TData, TValue>({
   primarySort,
   toolbar,
   filters,
-  pageSize = 50,
   emptyMessage = "Nothing here yet.",
   renderSubRow,
   rowKey,
@@ -95,7 +91,8 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const { hiddenColumns, setHiddenColumns } = usePreferencesStore();
+  const [pageIndex, setPageIndex] = useState(0);
+  const { hiddenColumns, setHiddenColumns, pageSize } = usePreferencesStore();
   const hidden = hiddenColumns[tableId];
   const columnVisibility = useMemo<VisibilityState>(
     () => Object.fromEntries((hidden ?? []).map((id) => [id, false])),
@@ -113,6 +110,7 @@ export function DataTable<TData, TValue>({
       sorting: primarySort ? [...primarySort, ...chosenSorting] : chosenSorting,
       globalFilter,
       columnVisibility,
+      pagination: { pageIndex, pageSize },
     },
     globalFilterFn: searchValue
       ? (row, _columnId, filter: string) =>
@@ -122,6 +120,13 @@ export function DataTable<TData, TValue>({
       : "auto",
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater) => {
+      const next =
+        typeof updater === "function"
+          ? updater({ pageIndex, pageSize })
+          : updater;
+      setPageIndex(next.pageIndex);
+    },
     onColumnVisibilityChange: (updater) => {
       const next =
         typeof updater === "function" ? updater(columnVisibility) : updater;
@@ -134,7 +139,6 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize } },
   });
 
   const rows = table.getRowModel().rows;
@@ -306,30 +310,12 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-end gap-2">
-          <Hint as="span">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </Hint>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
-      )}
+      <Pagination
+        page={Math.min(pageIndex, table.getPageCount() - 1)}
+        pageCount={table.getPageCount()}
+        total={table.getFilteredRowModel().rows.length}
+        onPageChange={table.setPageIndex}
+      />
     </div>
   );
 }

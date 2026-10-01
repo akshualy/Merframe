@@ -14,9 +14,11 @@ import {
   Stat,
   TableSkeleton,
 } from "@/components/page";
+import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useListen } from "@/hooks/use-listen";
+import { usePaged } from "@/hooks/use-paged";
 import { api, events } from "@/lib/bridge";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
@@ -102,12 +104,17 @@ export function ResourcesPage() {
     [data?.resources, show, query],
   );
 
+  const { pageItems: pageRows, pagination } = usePaged(
+    resources,
+    JSON.stringify([source, scope, kind, prime, owned, show, query]),
+  );
+
   const selectedRow = useMemo(
     () =>
-      resources.find((row) => row.unique_name === selected) ??
-      resources[0] ??
+      pageRows.find((row) => row.unique_name === selected) ??
+      pageRows[0] ??
       null,
-    [resources, selected],
+    [pageRows, selected],
   );
 
   const openedItem = useMemo(
@@ -121,10 +128,10 @@ export function ResourcesPage() {
 
   useEffect(() => {
     prefetchImages([
-      ...resources.map((row) => row.image_name),
+      ...pageRows.map((row) => row.image_name),
       ...(selectedRow?.used_by.map((use) => use.image_name) ?? []),
     ]);
-  }, [resources, selectedRow]);
+  }, [pageRows, selectedRow]);
 
   if (loading && !data) {
     return (
@@ -247,7 +254,7 @@ export function ResourcesPage() {
                   loading && "opacity-60",
                 )}
               >
-                {resources.map((row) => (
+                {pageRows.map((row) => (
                   <ResourceCard
                     key={row.unique_name}
                     row={row}
@@ -257,6 +264,8 @@ export function ResourcesPage() {
                 ))}
               </CardGrid>
             )}
+
+            <Pagination {...pagination} />
           </div>
         </Section>
 

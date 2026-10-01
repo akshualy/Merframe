@@ -11,9 +11,11 @@ import {
   Section,
   TableSkeleton,
 } from "@/components/page";
+import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCommand } from "@/hooks/use-command";
+import { usePaged } from "@/hooks/use-paged";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
@@ -37,13 +39,11 @@ export function FoundryPage() {
     usePreferencesStore();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>({});
-  const [showAll, setShowAll] = useState(false);
   const [selectedName, setSelectedName] = useState<string | null>(null);
 
   const handleCategoryChange = (next: Category) => {
     setFoundryCategory(next);
     setFilters((current) => scoped(current, next));
-    setShowAll(false);
   };
 
   const visible = useMemo(
@@ -54,9 +54,9 @@ export function FoundryPage() {
     [data?.items, category, query, filters],
   );
 
-  const cappedItems = useMemo(
-    () => (showAll ? visible : visible.slice(0, 100)),
-    [visible, showAll],
+  const { pageItems, pagination } = usePaged(
+    visible,
+    JSON.stringify([category, query, filters]),
   );
 
   const handleCloseTree = useCallback(() => setSelectedName(null), []);
@@ -67,12 +67,12 @@ export function FoundryPage() {
 
   useEffect(() => {
     prefetchImages([
-      ...cappedItems.map((item) => item.image_name),
-      ...cappedItems.flatMap((item) =>
+      ...pageItems.map((item) => item.image_name),
+      ...pageItems.flatMap((item) =>
         item.components.map((component) => component.image_name),
       ),
     ]);
-  }, [cappedItems]);
+  }, [pageItems]);
 
   if (loading && !data) {
     return (
@@ -138,17 +138,16 @@ export function FoundryPage() {
                     next[group.key] = mode as YesNo;
                   }
                   setFilters(next);
-                  setShowAll(false);
                 }}
               />
             ))}
           </FilterGrid>
 
-          {cappedItems.length === 0 ? (
+          {pageItems.length === 0 ? (
             <EmptyPanel>Nothing matches these filters.</EmptyPanel>
           ) : (
             <CardGrid>
-              {cappedItems.map((item) => (
+              {pageItems.map((item) => (
                 <FoundryCard
                   key={item.unique_name}
                   item={item}
@@ -158,19 +157,7 @@ export function FoundryPage() {
             </CardGrid>
           )}
 
-          {visible.length > cappedItems.length && (
-            <p className="text-muted-foreground text-center text-xs">
-              Only the first {num(cappedItems.length)} of {num(visible.length)}{" "}
-              are shown.{" "}
-              <button
-                type="button"
-                className="text-primary cursor-pointer underline-offset-2 hover:underline"
-                onClick={() => setShowAll(true)}
-              >
-                Show All
-              </button>
-            </p>
-          )}
+          <Pagination {...pagination} />
         </div>
       </Section>
 

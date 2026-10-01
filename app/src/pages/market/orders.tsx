@@ -347,7 +347,6 @@ export function OrdersTable({
         searchValue={(row) => row.name}
         initialSorting={[{ id: "updated_at", desc: true }]}
         rowKey={(row) => row.id}
-        pageSize={25}
         emptyMessage="No order matches these filters."
         toolbar={
           <>

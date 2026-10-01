@@ -367,7 +367,6 @@ export function StatsPage() {
             searchPlaceholder="Filter changes"
             initialSorting={[{ id: "delta", desc: true }]}
             rowKey={(row) => row.item_type}
-            pageSize={15}
             emptyMessage="No changes since the previous snapshot."
           />
         </Section>
@@ -382,7 +381,6 @@ export function StatsPage() {
             searchPlaceholder="Filter openings"
             initialSorting={[{ id: "at", desc: true }]}
             rowKey={(row) => String(row.id)}
-            pageSize={15}
             emptyMessage="No relic openings recorded yet."
           />
         </Section>
@@ -396,7 +394,6 @@ export function StatsPage() {
           searchPlaceholder="Filter trades"
           initialSorting={[{ id: "at", desc: true }]}
           rowKey={(row) => String(row.id)}
-          pageSize={15}
           emptyMessage="No trades recorded yet."
         />
       </Section>

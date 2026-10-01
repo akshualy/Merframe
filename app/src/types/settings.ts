@@ -77,7 +77,6 @@ export interface Settings {
   market_trader_locale: string | null;
   include_founders_items: boolean | null;
   include_forma_ranks: boolean;
-  show_full_inventory: boolean;
   stats_tab_enabled: boolean;
   overlays_enabled: boolean;
   overlay_relic_reward: boolean;

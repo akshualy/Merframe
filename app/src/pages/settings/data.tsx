@@ -197,13 +197,6 @@ export function PricesAndData({
           >
             Take the mod rank into account for the missing items check
           </CheckboxRow>
-          <CheckboxRow
-            checked={draft.show_full_inventory}
-            onChange={(checked) => patch({ show_full_inventory: checked })}
-            hint="Otherwise a tab stops at 300 rows until you ask for the rest."
-          >
-            Show every inventory row
-          </CheckboxRow>
         </div>
         <div className="flex flex-col gap-2 @3xl:col-span-2">
           <span className="text-sm font-medium">EE.log</span>
