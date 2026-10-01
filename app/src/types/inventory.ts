@@ -173,8 +173,26 @@ export interface ResourceRow {
   used_by: ResourceUse[];
 }
 
+export interface ShardHolder {
+  item_id: string;
+  name: string;
+  image_name: string | null;
+  normal: number;
+  tauforged: number;
+}
+
+export interface ShardRow {
+  unique_name: string;
+  name: string;
+  image_name: string | null;
+  owned_normal: number;
+  owned_tauforged: number;
+  holders: ShardHolder[];
+}
+
 export interface ResourcesTab {
   resources: ResourceRow[];
+  shards: ShardRow[];
   items: number;
   credits: number;
 }

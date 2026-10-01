@@ -52,6 +52,7 @@ pub use relic_planner::{
 };
 pub use resources::{
     ResourceQuery, ResourceRow, ResourceScope, ResourceSource, ResourceUse, ResourcesTab,
+    ShardHolder, ShardRow,
 };
 pub use rivens::{
     AlternativeMatch, AttributeGrade, GoodRollView, KeptRoll, ListingChoices, PendingRoll,

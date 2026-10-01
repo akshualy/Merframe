@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { FoundryTreeDialog } from "@/pages/foundry/tree-dialog";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import type { ResourceScope, ResourceSource } from "@/types";
+import { ArchonShards } from "./archon-shards";
 import { NeededBy } from "./needed-by";
 import { ResourceCard } from "./resource-card";
 
@@ -130,8 +131,9 @@ export function ResourcesPage() {
     prefetchImages([
       ...pageRows.map((row) => row.image_name),
       ...(selectedRow?.used_by.map((use) => use.image_name) ?? []),
+      ...(data?.shards.map((shard) => shard.image_name) ?? []),
     ]);
-  }, [pageRows, selectedRow]);
+  }, [pageRows, selectedRow, data?.shards]);
 
   if (loading && !data) {
     return (
@@ -154,6 +156,8 @@ export function ResourcesPage() {
   return (
     <Page title="Resources" description={<Quoted quote={quote} />}>
       {error && <ErrorNote message={error} />}
+
+      {data && data.shards.length > 0 && <ArchonShards shards={data.shards} />}
 
       <div className="grid gap-4 @sm:grid-cols-3">
         <Stat label="Short resources" value={num(short)} />

@@ -2,9 +2,9 @@ use std::collections::{BTreeMap, HashSet};
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use wf_inventory::Inventory;
+use wf_inventory::{ArchonCrystalSlot, Inventory};
 
-use crate::catalog::{Stock, part_identity};
+use crate::catalog::{Catalog, Stock, item_name, part_identity};
 use crate::foundry::{self, CraftNode, FoundryItem, is_blueprint};
 use crate::view::View;
 
@@ -55,8 +55,37 @@ pub struct ResourceRow {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ShardHolder {
+    pub item_id: String,
+    pub name: String,
+    pub image_name: Option<String>,
+    pub normal: usize,
+    pub tauforged: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ShardRow {
+    pub unique_name: String,
+    pub name: String,
+    pub image_name: Option<String>,
+    pub owned_normal: i64,
+    pub owned_tauforged: i64,
+    pub holders: Vec<ShardHolder>,
+}
+
+const SHARD_COLOURS: [(&str, &str); 6] = [
+    ("Amar", "ACC_RED"),
+    ("Nira", "ACC_YELLOW"),
+    ("Boreal", "ACC_BLUE"),
+    ("Green", "ACC_GREEN"),
+    ("Orange", "ACC_ORANGE"),
+    ("Violet", "ACC_PURPLE"),
+];
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ResourcesTab {
     pub resources: Vec<ResourceRow>,
+    pub shards: Vec<ShardRow>,
     pub items: usize,
     pub credits: i64,
 }
@@ -133,9 +162,52 @@ pub(crate) fn tab(
     resources.sort_by(|left, right| left.name.cmp(&right.name));
     ResourcesTab {
         resources,
+        shards: shards(view.inventory, view.catalog, &stock),
         items: counted,
         credits,
     }
+}
+
+fn shards(inventory: &Inventory, catalog: &Catalog, stock: &Stock<'_>) -> Vec<ShardRow> {
+    SHARD_COLOURS
+        .iter()
+        .filter_map(|(tail, colour)| {
+            let unique_name = format!("/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystal{tail}");
+            let item = catalog.item(&unique_name)?;
+            let tauforged_colour = format!("{colour}_MYTHIC");
+            let mut holders: Vec<ShardHolder> = inventory
+                .suits
+                .iter()
+                .map(|suit| {
+                    let installed = |wanted: &str| {
+                        suit.archon_crystal_upgrades
+                            .iter()
+                            .filter(|slot| {
+                                matches!(slot, ArchonCrystalSlot::Installed { color, .. } if color == wanted)
+                            })
+                            .count()
+                    };
+                    ShardHolder {
+                        item_id: suit.item_id.as_str().to_owned(),
+                        name: item_name(catalog, &suit.item_type),
+                        image_name: catalog.icon_for(&suit.item_type),
+                        normal: installed(colour),
+                        tauforged: installed(&tauforged_colour),
+                    }
+                })
+                .filter(|holder| holder.normal + holder.tauforged > 0)
+                .collect();
+            holders.sort_by(|left, right| left.name.cmp(&right.name));
+            Some(ShardRow {
+                name: item.name.rsplit("> ").next()?.to_owned(),
+                image_name: item.image_name.clone(),
+                owned_normal: stock.count(&unique_name),
+                owned_tauforged: stock.count(&format!("{unique_name}Mythic")),
+                holders,
+                unique_name,
+            })
+        })
+        .collect()
 }
 
 fn gather<'a>(
@@ -588,6 +660,49 @@ mod tests {
             ResourceScope::All,
         );
         assert!(amounts(&tab, DUAL_KAMAS).contains(&("Circuits", 900)));
+    }
+
+    #[test]
+    fn archon_shards_by_colour() {
+        const AMBER: &str = "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNira";
+        const TAUFORGED_AMBER: &str = "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNiraMythic";
+
+        let misc = include_str!("../../../fixtures/misc_items.json");
+        let tab = resources(
+            &fixtures::inventory_owning(&[(AMBER, 7), (TAUFORGED_AMBER, 2)]),
+            &Catalog::from_json(misc, fixtures::RELICS, fixtures::COMPONENTS).unwrap(),
+            &Favourites::default(),
+            ResourceSource::Held,
+            ResourceScope::Mastery,
+        );
+        let equipped = |row: &ShardRow| -> Vec<(String, usize, usize)> {
+            row.holders
+                .iter()
+                .map(|holder| (holder.name.clone(), holder.normal, holder.tauforged))
+                .collect()
+        };
+
+        let [crimson, amber, violet] = tab.shards.as_slice() else {
+            panic!("three shard colours in the fixture export");
+        };
+        assert_eq!(amber.name, "Amber Archon Shard");
+        assert_eq!(amber.image_name.as_deref(), Some("ArchonShardNira.png"));
+        assert_eq!((amber.owned_normal, amber.owned_tauforged), (7, 2));
+        assert_eq!(amber.holders.len(), 9);
+        assert_eq!(
+            equipped(violet),
+            [("Dagath".to_owned(), 0, 4)],
+            "the Violet shard sits in purple slots"
+        );
+        assert_eq!((crimson.owned_normal, crimson.owned_tauforged), (0, 0));
+        assert_eq!(
+            crimson
+                .holders
+                .iter()
+                .map(|holder| holder.tauforged)
+                .sum::<usize>(),
+            13
+        );
     }
 
     #[test]

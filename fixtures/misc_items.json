@@ -1252,6 +1252,66 @@
   "masterable": false
  },
  {
+  "uniqueName": "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystal",
+  "name": "Archon Shard",
+  "description": "A source of anti-entropic radiation ideal for empowering synthetic lifeforms, most notably Archons and Warframes.",
+  "codexSecret": false,
+  "excludeFromCodex": true,
+  "type": "Misc",
+  "imageName": "ArchonCrystal.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalAmar",
+  "name": "<Shard_red_simple> Crimson Archon Shard",
+  "description": "A source of anti-entropic radiation ideal for empowering synthetic lifeforms, most notably Archons and Warframes.",
+  "codexSecret": false,
+  "excludeFromCodex": true,
+  "type": "Misc",
+  "imageName": "ArchonShardAmar.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNira",
+  "name": "<Shard_yellow_simple> Amber Archon Shard",
+  "description": "A source of anti-entropic radiation ideal for empowering synthetic lifeforms, most notably Archons and Warframes.",
+  "codexSecret": false,
+  "excludeFromCodex": true,
+  "type": "Misc",
+  "imageName": "ArchonShardNira.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNiraMythic",
+  "name": "<Shard_yellow_simple> Tauforged Amber Archon Shard",
+  "description": "A source of anti-entropic radiation ideal for empowering synthetic lifeforms, most notably Archons and Warframes.",
+  "codexSecret": false,
+  "excludeFromCodex": true,
+  "type": "Misc",
+  "imageName": "ArchonShardNiraMythicGlow.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalViolet",
+  "name": "<Shard_violet_simple> Violet Archon Shard",
+  "description": "A source of anti-entropic radiation ideal for empowering synthetic lifeforms, most notably Archons and Warframes.",
+  "codexSecret": false,
+  "excludeFromCodex": true,
+  "type": "Misc",
+  "imageName": "ArchonShardViolet.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
   "uniqueName": "/Lotus/Types/Items/MiscItems/Neurode",
   "name": "Neurodes",
   "codexSecret": false,
