@@ -63,6 +63,8 @@ interface DataTableProps<TData, TValue> {
   emptyMessage?: string;
   renderSubRow?: (row: TData) => ReactNode;
   rowKey?: (row: TData, index: number) => string;
+  fixedPageSize?: number;
+  initialPageSize?: number;
 }
 
 function columnLabel<TData, TValue>(column: Column<TData, TValue>): string {
@@ -87,12 +89,17 @@ export function DataTable<TData, TValue>({
   emptyMessage = "Nothing here yet.",
   renderSubRow,
   rowKey,
+  fixedPageSize,
+  initialPageSize,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
-  const { hiddenColumns, setHiddenColumns, pageSize } = usePreferencesStore();
+  const preferences = usePreferencesStore();
+  const { hiddenColumns, setHiddenColumns } = preferences;
+  const [ownPageSize, setOwnPageSize] = useState(initialPageSize);
+  const pageSize = fixedPageSize ?? ownPageSize ?? preferences.pageSize;
   const hidden = hiddenColumns[tableId];
   const columnVisibility = useMemo<VisibilityState>(
     () => Object.fromEntries((hidden ?? []).map((id) => [id, false])),
@@ -314,6 +321,11 @@ export function DataTable<TData, TValue>({
         page={Math.min(pageIndex, table.getPageCount() - 1)}
         pageCount={table.getPageCount()}
         total={table.getFilteredRowModel().rows.length}
+        fixedPageSize={fixedPageSize}
+        pageSize={ownPageSize}
+        onPageSizeChange={
+          initialPageSize === undefined ? undefined : setOwnPageSize
+        }
         onPageChange={table.setPageIndex}
       />
     </div>

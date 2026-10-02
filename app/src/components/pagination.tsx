@@ -24,14 +24,22 @@ export function Pagination({
   page,
   pageCount,
   total,
+  fixedPageSize,
+  pageSize: ownPageSize,
+  onPageSizeChange,
   onPageChange,
 }: {
   page: number;
   pageCount: number;
   total: number;
+  fixedPageSize?: number;
+  pageSize?: number;
+  onPageSizeChange?: (pageSize: number) => void;
   onPageChange: (page: number) => void;
 }) {
-  const { pageSize, setPageSize } = usePreferencesStore();
+  const preferences = usePreferencesStore();
+  const pageSize = ownPageSize ?? preferences.pageSize;
+  const setPageSize = onPageSizeChange ?? preferences.setPageSize;
   const [typed, setTyped] = useState<string | null>(null);
 
   const commitTyped = () => {
@@ -42,30 +50,34 @@ export function Pagination({
     setTyped(null);
   };
 
-  if (total <= Math.min(...PAGE_SIZES)) {
+  if (total <= (fixedPageSize ?? Math.min(...PAGE_SIZES))) {
     return null;
   }
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      <Hint as="span">Per page</Hint>
-      <Select
-        value={String(pageSize)}
-        onValueChange={(value) => {
-          setPageSize(Number(value));
-          onPageChange(0);
-        }}
-      >
-        <SelectTrigger size="sm" aria-label="Per page" className="text-xs">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {PAGE_SIZES.map((size) => (
-            <SelectItem key={size} value={String(size)} className="text-xs">
-              {size}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {fixedPageSize === undefined && (
+        <>
+          <Hint as="span">Per page</Hint>
+          <Select
+            value={String(pageSize)}
+            onValueChange={(value) => {
+              setPageSize(Number(value));
+              onPageChange(0);
+            }}
+          >
+            <SelectTrigger size="sm" aria-label="Per page" className="text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZES.map((size) => (
+                <SelectItem key={size} value={String(size)} className="text-xs">
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </>
+      )}
       <Button
         variant="outline"
         size="icon"
