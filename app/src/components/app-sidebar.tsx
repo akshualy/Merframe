@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Sparkles,
   Target,
+  TrendingUp,
 } from "lucide-react";
 import { NavLink } from "react-router";
 import Merframe from "@/components/icons/merframe";
@@ -28,6 +29,7 @@ const NAV = [
   { to: "/mastery", label: "Mastery", icon: GraduationCap },
   { to: "/resources", label: "Resources", icon: Target },
   { to: "/market", label: "warframe.market", icon: ShoppingCart },
+  { to: "/analytics", label: "Trading Analytics", icon: TrendingUp },
   { to: "/stats", label: "Stats", icon: BarChart3 },
 ] as const;
 

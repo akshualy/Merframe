@@ -12,6 +12,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { UpdateDialog } from "@/components/update-dialog";
 import { api, errorMessage, logError } from "@/lib/bridge";
 import { AboutPage } from "@/pages/about";
+import { AnalyticsPage } from "@/pages/analytics/analytics";
 import { FoundryPage } from "@/pages/foundry/foundry";
 import { InventoryPage } from "@/pages/inventory";
 import { MarketPage } from "@/pages/market/market";
@@ -121,6 +122,7 @@ function MainWindow() {
               <Route path="/mastery" element={<MasteryPage />} />
               <Route path="/resources" element={<ResourcesPage />} />
               <Route path="/market" element={<MarketPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
               <Route
                 path="/stats"
                 element={

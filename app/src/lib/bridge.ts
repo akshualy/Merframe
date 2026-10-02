@@ -13,8 +13,10 @@ import type {
   ListingChoices,
   MarketAccount,
   MarketItem,
+  MarketMover,
   MarketPresence,
   MarketStatus,
+  MarketWindow,
   MasteryOrdering,
   MasteryTab,
   NewOrder,
@@ -31,6 +33,7 @@ import type {
   RivensTab,
   Settings,
   StatsTab,
+  TradeAnalytics,
   WorldStateView,
 } from "@/types";
 
@@ -118,6 +121,10 @@ export const api = {
     call<RivenComparables | null>("riven_comparables", { weaponSlug, shown }),
   statsTab: (sinceMs?: number) =>
     call<StatsTab>("stats_tab", { sinceMs: sinceMs ?? null }),
+  marketMovers: (window: MarketWindow) =>
+    call<MarketMover[]>("market_movers", { window }),
+  tradeAnalytics: (sinceMs?: number) =>
+    call<TradeAnalytics>("trade_analytics", { sinceMs: sinceMs ?? null }),
   toggleFavourite: (uniqueName: string) =>
     call<boolean>("toggle_favourite", { uniqueName }),
   relicsFor: (partUniqueName: string) =>

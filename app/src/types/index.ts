@@ -1,3 +1,4 @@
+export * from "@/types/analytics";
 export * from "@/types/events";
 export * from "@/types/foundry";
 export * from "@/types/inventory";

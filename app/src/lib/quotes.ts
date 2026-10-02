@@ -226,6 +226,28 @@ export const QUOTES = {
       speaker: "Mother",
     },
   ],
+  analytics: [
+    {
+      line: "I have this cycle's figures, and they are very pleasing!",
+      speaker: "Nef Anyo",
+    },
+    {
+      line: "I only work for myself. I make my own profits.",
+      speaker: "Darvo",
+    },
+    {
+      line: "Do you ever wonder what I do with all your ducats? Well, keep wondering.",
+      speaker: "Baro Ki'Teer",
+    },
+    {
+      line: "When you don't run with any of the major factions or Syndicates, the big pay-days are few and far between.",
+      speaker: "Maroo",
+    },
+    {
+      line: "Life's just a bargain like any other.",
+      speaker: "Parvos Granum",
+    },
+  ],
   overlays: [
     {
       line: "It is always satisfying to watch you work, Operator.",
