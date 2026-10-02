@@ -96,20 +96,20 @@ export function ChartHeader({
   );
 }
 
-export function ChartTooltip({
-  at,
+export function ChartReadings({
   label,
   readings,
+  className,
 }: {
-  at: number;
   label: string;
   readings: Reading[];
+  className?: string;
 }) {
   return (
     <div
       className={cn(
-        "bg-popover text-popover-foreground pointer-events-none absolute top-0 z-10 rounded-md border px-2 py-1.5 shadow-md",
-        at > WIDTH / 2 ? "left-0" : "right-0",
+        "bg-popover text-popover-foreground rounded-md border px-2 py-1.5 shadow-md",
+        className,
       )}
     >
       <span className="text-muted-foreground block text-xs">{label}</span>
@@ -127,5 +127,26 @@ export function ChartTooltip({
         </span>
       ))}
     </div>
+  );
+}
+
+export function ChartTooltip({
+  at,
+  label,
+  readings,
+}: {
+  at: number;
+  label: string;
+  readings: Reading[];
+}) {
+  return (
+    <ChartReadings
+      label={label}
+      readings={readings}
+      className={cn(
+        "pointer-events-none absolute top-0 z-10",
+        at > WIDTH / 2 ? "left-0" : "right-0",
+      )}
+    />
   );
 }

@@ -1,11 +1,24 @@
 export const WIDTH = 360;
 export const HEIGHT = 152;
 export const PADDING = { top: 12, right: 10, bottom: 22, left: 46 };
-export const INNER_WIDTH = WIDTH - PADDING.left - PADDING.right;
 export const INNER_HEIGHT = HEIGHT - PADDING.top - PADDING.bottom;
 
 export const TICK_FONT = 10;
 export const TICK_BASELINE = HEIGHT - 6;
+
+export const AXIS_TICK = {
+  fontSize: TICK_FONT,
+  fill: "currentColor",
+  fillOpacity: 0.6,
+};
+export const GRID = { stroke: "currentColor", strokeOpacity: 0.1 };
+
+export function changeTone(change: number): string | undefined {
+  if (change === 0) {
+    return undefined;
+  }
+  return change > 0 ? "text-chart-gain" : "text-chart-loss";
+}
 
 const GLYPH_WIDTH = 0.6;
 const TICK_CLEARANCE = 10;
