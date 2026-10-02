@@ -12,14 +12,15 @@ import {
   Stat,
   TableSkeleton,
 } from "@/components/page";
+import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
+import { changeTone } from "@/lib/chart";
 import { dateTime, dayLabel, num, percent, spansYears } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
-import { DAY_MS } from "@/lib/world";
+import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import type {
   DailyCount,
@@ -27,23 +28,8 @@ import type {
   StatPoint,
   StoredDelta,
   StoredTrade,
-  Timeframe,
   TradeItem,
 } from "@/types";
-
-const TIMEFRAMES: { value: Timeframe; label: string }[] = [
-  { value: "7", label: "7 days" },
-  { value: "30", label: "30 days" },
-  { value: "90", label: "90 days" },
-  { value: "all", label: "All history" },
-];
-
-function sinceMs(timeframe: Timeframe): number | undefined {
-  if (timeframe === "all") {
-    return undefined;
-  }
-  return Date.now() - Number(timeframe) * DAY_MS;
-}
 
 function fullDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -136,17 +122,17 @@ const DELTA_COLUMNS: ColumnDef<StoredDelta>[] = [
     header: "Change",
     meta: { numeric: true },
     cell: ({ row }) => (
-      <Badge variant={row.original.delta >= 0 ? "accent" : "warning"}>
-        {row.original.delta >= 0 ? "+" : ""}
+      <span className={cn("font-medium", changeTone(row.original.delta))}>
+        {row.original.delta > 0 ? "+" : ""}
         {num(row.original.delta)}
-      </Badge>
+      </span>
     ),
   },
 ];
 
 export function StatsPage() {
   const quote = usePageQuote("stats");
-  const { timeframe, setTimeframe } = usePreferencesStore();
+  const { timeframe } = usePreferencesStore();
   const load = useCallback(() => api.statsTab(sinceMs(timeframe)), [timeframe]);
   const { data, error, loading, reload } = useAsyncData(load);
 
@@ -248,27 +234,12 @@ export function StatsPage() {
   );
   const bestRelicDay = Math.max(0, ...dayBars.relics.map((bar) => bar.value));
 
-  const timeframeTabs = (
-    <Tabs
-      value={timeframe}
-      onValueChange={(value) => setTimeframe(value as Timeframe)}
-    >
-      <TabsList>
-        {TIMEFRAMES.map(({ value, label }) => (
-          <TabsTrigger key={value} value={value}>
-            {label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
-  );
-
   if (loading && !data) {
     return (
       <Page
         title="Stats"
         description={<Quoted quote={quote} />}
-        actions={timeframeTabs}
+        actions={<TimeframeTabs />}
       >
         <TableSkeleton />
       </Page>
@@ -288,7 +259,7 @@ export function StatsPage() {
     <Page
       title="Stats"
       description={<Quoted quote={quote} />}
-      actions={timeframeTabs}
+      actions={<TimeframeTabs />}
     >
       {error && <ErrorNote message={error} />}
 
