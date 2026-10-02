@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use wf_market::{Item, PriceEntry, PriceTable};
 
 pub trait PriceSource {
@@ -44,22 +44,81 @@ impl From<&PriceEntry> for PriceQuote {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+pub enum MarketWindow {
+    #[serde(rename = "2")]
+    TwoDays,
+    #[serde(rename = "7")]
+    Week,
+    #[serde(rename = "30")]
+    Month,
+    #[serde(rename = "90")]
+    Quarter,
+}
+
+impl MarketWindow {
+    fn readings(self, entry: &PriceEntry) -> (Option<u32>, Option<f64>) {
+        match self {
+            Self::TwoDays => (entry.volume_48h, entry.median_48h),
+            Self::Week => (entry.volume_7d, entry.median_7d),
+            Self::Month => (entry.volume_30d, entry.median_30d),
+            Self::Quarter => (entry.volume_90d, entry.median_90d),
+        }
+    }
+
+    fn previous_readings(self, entry: &PriceEntry) -> (Option<u32>, Option<f64>) {
+        match self {
+            Self::TwoDays => (entry.volume_prev_48h, entry.median_prev_48h),
+            Self::Week => (entry.volume_prev_7d, entry.median_prev_7d),
+            Self::Month => (entry.volume_prev_30d, entry.median_prev_30d),
+            Self::Quarter => (None, None),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Turnover {
+    pub unit_price: f64,
+    pub volume: u32,
+    pub price_change: Option<f64>,
+    pub volume_change: Option<f64>,
+}
+
+impl Turnover {
+    fn of(entry: &PriceEntry, window: MarketWindow) -> Option<Self> {
+        let (volume, median) = window.readings(entry);
+        let unit_price = median?;
+        let volume = volume.filter(|volume| *volume > 0)?;
+        let (previous_volume, previous_price) = window.previous_readings(entry);
+        Some(Self {
+            unit_price,
+            volume,
+            price_change: previous_price
+                .filter(|previous| *previous > 0.0)
+                .map(|previous| unit_price / previous - 1.0),
+            volume_change: previous_volume
+                .filter(|previous| *previous > 0)
+                .map(|previous| f64::from(volume) / f64::from(previous) - 1.0),
+        })
+    }
+
+    pub fn value(self) -> f64 {
+        self.unit_price * f64::from(self.volume)
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct PriceCache {
-    quotes: HashMap<String, PriceQuote>,
+    entries: HashMap<String, PriceEntry>,
     slugs: HashMap<String, String>,
     checked_at: Option<DateTime<Utc>>,
 }
 
 impl PriceCache {
     pub fn load(&mut self, table: &PriceTable, now: DateTime<Utc>) -> usize {
-        self.quotes = table
-            .items
-            .iter()
-            .map(|(slug, entry)| (slug.clone(), PriceQuote::from(entry)))
-            .collect();
+        self.entries.clone_from(&table.items);
         self.checked_at = Some(now);
-        self.quotes.len()
+        self.entries.len()
     }
 
     pub fn index(&mut self, items: &[Item]) -> usize {
@@ -80,7 +139,14 @@ impl PriceCache {
     }
 
     pub fn quote(&self, market_slug: &str) -> Option<PriceQuote> {
-        self.quotes.get(market_slug).copied()
+        self.entries.get(market_slug).map(PriceQuote::from)
+    }
+
+    pub fn turnover(&self, window: MarketWindow) -> HashMap<String, Turnover> {
+        self.entries
+            .iter()
+            .filter_map(|(slug, entry)| Some((slug.clone(), Turnover::of(entry, window)?)))
+            .collect()
     }
 }
 
@@ -311,6 +377,43 @@ mod tests {
         );
         assert_eq!(cache.plat("vasca_kavat_imprint"), None);
         assert_eq!(cache.buy_plat("vasca_kavat_imprint"), None);
+    }
+
+    #[test]
+    fn turnover_per_window() {
+        let mut cache = PriceCache::default();
+        cache.load(&table(), moment());
+        let week = cache.turnover(MarketWindow::Week);
+        assert_eq!(week.len(), 4);
+        let set = week["braton_prime_set"];
+        assert_eq!(set.volume, 61);
+        assert!((set.unit_price - 45.5).abs() < f64::EPSILON);
+        assert!((set.value() - 2775.5).abs() < f64::EPSILON);
+        let price_change = set.price_change.unwrap();
+        assert!((price_change - (45.5 / 50.0 - 1.0)).abs() < f64::EPSILON);
+        let volume_change = set.volume_change.unwrap();
+        assert!((volume_change - (61.0 / 40.0 - 1.0)).abs() < f64::EPSILON);
+        let barrel = week["braton_prime_barrel"];
+        assert_eq!(barrel.price_change, None);
+        assert_eq!(barrel.volume_change, None);
+        let quarter = cache.turnover(MarketWindow::Quarter)["braton_prime_set"];
+        assert_eq!(quarter.price_change, None);
+        assert_eq!(quarter.volume_change, None);
+        let two_days = cache.turnover(MarketWindow::TwoDays);
+        assert_eq!(two_days.len(), 5);
+        assert!(!two_days.contains_key("magus_elevate"));
+        assert_eq!(
+            cache.turnover(MarketWindow::Month)["arcane_energize"].volume,
+            450
+        );
+        assert_eq!(
+            cache.turnover(MarketWindow::Quarter)["magus_elevate"].volume,
+            75
+        );
+        assert_eq!(
+            serde_json::from_str::<MarketWindow>("\"30\"").unwrap(),
+            MarketWindow::Month
+        );
     }
 
     #[test]

@@ -44,7 +44,7 @@ pub use mastery::{
     Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryComponent, MasteryGroup, MasteryItem,
     MasteryOptions, MasteryOrdering, MasterySummary, MasteryTab, RouteMember,
 };
-pub use prices::{PriceCache, PriceQuote, PriceSource, Prices, set_slug};
+pub use prices::{MarketWindow, PriceCache, PriceQuote, PriceSource, Prices, Turnover, set_slug};
 pub use relic_planner::{
     AccountBalance, Best, DEFAULT_SQUAD_SIZE, DropLocation, IntactToRadiant, MissingPart,
     OwnedRefinement, Ownership, PerTrace, Ranked, RankedComponent, RefinementValue, RelicMarket,

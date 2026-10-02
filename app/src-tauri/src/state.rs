@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::{Mutex as AsyncMutex, Notify, SetOnce};
-use wf_core::{Catalog, Core, PriceCache, PriceSource, Store};
+use wf_core::{Catalog, Core, MarketWindow, PriceCache, PriceSource, Store, Turnover};
 use wf_data::load_or_fetch;
 use wf_market::{Client, Item, Platform, PriceTable};
 use wf_worldstate::WorldState;
@@ -64,6 +64,10 @@ impl SharedPrices {
 
     pub fn checked_at(&self) -> Option<DateTime<Utc>> {
         lock(&self.cache).checked_at()
+    }
+
+    pub fn turnover(&self, window: MarketWindow) -> HashMap<String, Turnover> {
+        lock(&self.cache).turnover(window)
     }
 }
 

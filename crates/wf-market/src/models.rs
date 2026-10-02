@@ -330,18 +330,32 @@ pub struct SetAuctionsVisibilityRequest {
     pub visibility: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct PriceTable {
     pub updated_at: i64,
     pub count: usize,
     pub items: HashMap<String, PriceEntry>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct PriceEntry {
     pub sell_r0: Option<u32>,
     pub sell_max: Option<u32>,
     pub buy_r0: Option<u32>,
+    pub volume_48h: Option<u32>,
+    pub median_48h: Option<f64>,
+    pub volume_7d: Option<u32>,
+    pub median_7d: Option<f64>,
+    pub volume_30d: Option<u32>,
+    pub median_30d: Option<f64>,
+    pub volume_90d: Option<u32>,
+    pub median_90d: Option<f64>,
+    pub volume_prev_48h: Option<u32>,
+    pub median_prev_48h: Option<f64>,
+    pub volume_prev_7d: Option<u32>,
+    pub median_prev_7d: Option<f64>,
+    pub volume_prev_30d: Option<u32>,
+    pub median_prev_30d: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
