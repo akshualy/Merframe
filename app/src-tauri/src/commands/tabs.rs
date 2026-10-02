@@ -1,12 +1,12 @@
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use tauri::{AppHandle, Runtime};
 use wf_core::{
     ComparedStat, CraftDetails, FoundryTab, InventoryTab, MasteryOptions, MasteryOrdering,
     MasteryTab, RelicPlannerTab, RelicSource, ResourceQuery, ResourcesTab, RewardScreen,
-    RivenComparables, RivensTab, StatsTab, TimeRange,
+    RivenComparables, RivensTab, StatsTab,
 };
 
-use super::{Shared, compute, ready};
+use super::{Shared, compute, ready, since};
 use crate::error::CommandResult;
 use crate::runtime;
 use crate::state::{lock, read};
@@ -98,11 +98,7 @@ pub async fn riven_comparables(
 #[tauri::command]
 pub async fn stats_tab(state: Shared<'_>, since_ms: Option<i64>) -> CommandResult<StatsTab> {
     let state = ready(&state).await?;
-    let range = match since_ms.and_then(DateTime::from_timestamp_millis) {
-        Some(from) => TimeRange::since(from),
-        None => TimeRange::all(),
-    };
-    Ok(lock(&state.core).stats_tab(range, Utc::now())?)
+    Ok(lock(&state.core).stats_tab(since(since_ms), Utc::now())?)
 }
 
 #[tauri::command]

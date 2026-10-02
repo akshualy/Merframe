@@ -106,7 +106,7 @@ pub struct MarketAutoClose {
     pub kind: AutoCloseKind,
 }
 
-fn trade_side(trade: &Trade) -> Option<(OrderType, &[TradeItem], u32)> {
+pub(crate) fn trade_side(trade: &Trade) -> Option<(OrderType, &[TradeItem], u32)> {
     if trade.received.is_empty() && trade.plat > 0 {
         let plat = u32::try_from(trade.plat).ok()?;
         return Some((OrderType::Sell, &trade.offered, plat));
@@ -204,7 +204,7 @@ fn matching_order<'a>(
         .map(|order| (order, closing_quantity(market_item, item, order)))
 }
 
-fn listed_item<'a>(table: &'a ItemTable, name: &str) -> Option<&'a Item> {
+pub(crate) fn listed_item<'a>(table: &'a ItemTable, name: &str) -> Option<&'a Item> {
     let listed = match name {
         "Enter Nihil's Oubliette" => "Nihil's Oubliette (Key)",
         "Legendary Core" => "Legendary Fusion Core",

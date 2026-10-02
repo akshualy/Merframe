@@ -1,3 +1,4 @@
+mod analytics;
 mod auctions;
 pub mod commands;
 pub mod envelope;
@@ -124,6 +125,8 @@ pub fn run() {
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
+            commands::analytics::market_movers,
+            commands::analytics::trade_analytics,
             commands::tabs::inventory_tab,
             commands::tabs::foundry_tab,
             commands::tabs::craft_tree,

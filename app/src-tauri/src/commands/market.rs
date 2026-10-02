@@ -17,7 +17,7 @@ use crate::runtime;
 use crate::settings::{self, MarketAccount};
 use crate::state::{lock, read, write};
 
-fn unlisted_items() -> CommandError {
+pub(super) fn unlisted_items() -> CommandError {
     CommandError::from("The warframe.market item list is not loaded")
 }
 
