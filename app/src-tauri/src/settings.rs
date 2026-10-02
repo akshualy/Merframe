@@ -140,10 +140,19 @@ pub struct DiscordSettings {
 pub struct MarketSettings {
     pub market_poll_minutes: u32,
     pub market_auto_close: bool,
-    pub market_offline_after_last_trade: bool,
+    #[serde(flatten)]
+    pub last_trade: LastTradeSettings,
     pub take_rank_into_account: bool,
     pub market_trader_status: TraderStatus,
     pub market_trader_locale: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LastTradeSettings {
+    pub market_offline_after_last_trade: bool,
+    pub market_hide_after_last_trade: bool,
+    pub market_hide_auctions_after_last_trade: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -246,7 +255,7 @@ impl Default for MarketSettings {
         Self {
             market_poll_minutes: 5,
             market_auto_close: false,
-            market_offline_after_last_trade: false,
+            last_trade: LastTradeSettings::default(),
             take_rank_into_account: true,
             market_trader_status: TraderStatus::Ingame,
             market_trader_locale: Some("en".to_owned()),
@@ -485,7 +494,7 @@ mod tests {
         assert_eq!(settings.world_state_interval_minutes, 5);
         assert_eq!(settings.market.market_poll_minutes, 5);
         assert!(!settings.market.market_auto_close);
-        assert!(!settings.market.market_offline_after_last_trade);
+        assert_eq!(settings.market.last_trade, LastTradeSettings::default());
         assert_eq!(settings.inventory.include_founders_items, None);
         assert!(settings.inventory.include_forma_ranks);
         assert!(settings.inventory.stats_tab_enabled);
@@ -806,6 +815,25 @@ mod tests {
         let chosen: Settings =
             serde_json::from_str(r#"{"discord_message_template":"{tenno}?"}"#).unwrap();
         assert_eq!(chosen.discord.discord_message_template, "{tenno}?");
+    }
+
+    #[test]
+    fn last_trade_actions_opt_in() {
+        let stored: Settings = serde_json::from_str("{}").unwrap();
+        assert!(!stored.market.last_trade.market_offline_after_last_trade);
+        assert!(!stored.market.last_trade.market_hide_after_last_trade);
+        let enabled: Settings =
+            serde_json::from_str(r#"{"market_hide_after_last_trade":true}"#).unwrap();
+        assert!(!enabled.market.last_trade.market_offline_after_last_trade);
+        assert!(enabled.market.last_trade.market_hide_after_last_trade);
+        assert!(
+            !enabled
+                .market
+                .last_trade
+                .market_hide_auctions_after_last_trade
+        );
+        let saved = serde_json::to_value(&enabled).unwrap();
+        assert_eq!(saved["market_hide_after_last_trade"], true);
     }
 
     #[test]

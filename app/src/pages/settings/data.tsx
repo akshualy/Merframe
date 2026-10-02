@@ -190,6 +190,27 @@ export function PricesAndData({
           >
             Go offline after the last trade
           </SwitchRow>
+          <SwitchRow
+            checked={draft.market_hide_after_last_trade}
+            onChange={(checked) =>
+              patch({ market_hide_after_last_trade: checked })
+            }
+            hint="Hides all your warframe.market orders once the day's trade limit is used up."
+          >
+            Hide all listings after the last trade
+          </SwitchRow>
+          <div className="pl-6">
+            <CheckboxRow
+              checked={draft.market_hide_auctions_after_last_trade}
+              disabled={!draft.market_hide_after_last_trade}
+              onChange={(checked) =>
+                patch({ market_hide_auctions_after_last_trade: checked })
+              }
+              hint="Riven auctions are hidden together with the orders."
+            >
+              Hide auctions too
+            </CheckboxRow>
+          </div>
           <CheckboxRow
             checked={draft.take_rank_into_account}
             onChange={(checked) => patch({ take_rank_into_account: checked })}

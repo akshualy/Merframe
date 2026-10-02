@@ -72,6 +72,8 @@ export interface Settings {
   market_poll_minutes: number;
   market_auto_close: boolean;
   market_offline_after_last_trade: boolean;
+  market_hide_after_last_trade: boolean;
+  market_hide_auctions_after_last_trade: boolean;
   take_rank_into_account: boolean;
   market_trader_status: TraderStatus;
   market_trader_locale: string | null;

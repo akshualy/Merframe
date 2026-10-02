@@ -294,7 +294,7 @@ fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     };
     emit(app, STATUS_UPDATED, state.status_snapshot());
     if remaining == 0 {
-        market_loop::offline_after_last_trade(app, state);
+        market_loop::last_trade_done(app, state);
     }
 }
 
@@ -460,7 +460,7 @@ where
         done
     };
     if last_trade_done {
-        market_loop::offline_after_last_trade(app, state);
+        market_loop::last_trade_done(app, state);
     }
 
     emit(app, STATUS_UPDATED, state.status_snapshot());
