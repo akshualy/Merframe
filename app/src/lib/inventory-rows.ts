@@ -43,6 +43,7 @@ export interface Row extends SortableRow {
   refinement: string | null;
   tier: string | null;
   set: SetRow | null;
+  setOrders: PlacedOrders | null;
 }
 
 function partRows(rows: PartRow[]): Row[] {
@@ -76,6 +77,7 @@ function partRows(rows: PartRow[]): Row[] {
     refinement: null,
     tier: null,
     set: null,
+    setOrders: row.set.orders,
   }));
 }
 
@@ -110,6 +112,7 @@ function setRows(rows: SetRow[]): Row[] {
     refinement: null,
     tier: null,
     set: row,
+    setOrders: null,
   }));
 }
 
@@ -148,6 +151,7 @@ function modRows(rows: ModRow[]): Row[] {
     refinement: null,
     tier: null,
     set: null,
+    setOrders: null,
   }));
 }
 
@@ -182,6 +186,7 @@ function relicRows(rows: RelicRow[]): Row[] {
     refinement: row.refinement,
     tier: row.tier,
     set: null,
+    setOrders: null,
   }));
 }
 
@@ -216,6 +221,7 @@ function miscRows(rows: MiscRow[]): Row[] {
     refinement: null,
     tier: null,
     set: null,
+    setOrders: null,
   }));
 }
 
@@ -267,7 +273,10 @@ const TRAITS: Record<YesNoKey, (row: Row) => boolean> = {
   fullSet: (row) => row.setComplete === true,
   ranked: (row) => Boolean(row.rank),
   equipped: (row) => row.equippedIn.length > 0,
-  orderPlaced: (row) => row.orders.sell || row.orders.buy,
+  orderPlaced: (row) =>
+    row.orders.sell ||
+    row.orders.buy ||
+    Boolean(row.setOrders?.sell || row.setOrders?.buy),
   favourite: (row) => row.favourite,
 };
 

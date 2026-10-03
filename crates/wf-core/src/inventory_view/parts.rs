@@ -96,6 +96,7 @@ pub(crate) fn parts(view: &View) -> Vec<PartRow> {
                 set: PartSet {
                     name: item.name.clone(),
                     complete: set_is_complete(&stock, item),
+                    orders: listings.orders_for(&set_slug(&item.name)),
                 },
                 vault: vault_status(&name, item.vaulted),
                 item: ItemStatus {

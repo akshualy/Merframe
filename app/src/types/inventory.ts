@@ -21,6 +21,7 @@ export interface ItemStatus {
 export interface PartSet {
   name: string;
   complete: boolean;
+  orders: PlacedOrders;
 }
 
 export interface PartRow {

@@ -236,6 +236,18 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
               Buying
             </Meta>
           )}
+          {row.setOrders?.sell && (
+            <Meta className="text-primary">
+              <Tag className="size-3.5" />
+              Selling in set
+            </Meta>
+          )}
+          {row.setOrders?.buy && (
+            <Meta className="text-primary">
+              <Tag className="size-3.5" />
+              Buying in set
+            </Meta>
+          )}
         </div>
         {equipped && <EquippedDialog row={row} label={equipped} />}
         {isSet && row.set && <SetParts set={row.set} />}
