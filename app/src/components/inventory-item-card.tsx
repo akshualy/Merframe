@@ -155,7 +155,6 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
   const equipped = equippedLabel(row);
   const crafted = (tab === "parts" || tab === "sets") && row.itemOwned;
   const stars = listingStars(row);
-  console.log(`${row.name}: ${row.set?.orders.sell}`);
 
   return (
     <div className="bg-card hover:border-primary/50 flex gap-4 rounded-xl border p-4 transition-colors">
