@@ -190,8 +190,8 @@ export const api = {
   marketSetAuctionsVisibility: (visible: boolean) =>
     call<void>("market_set_auctions_visibility", { visible }),
   worldstate: () => call<WorldStateView>("worldstate"),
-  refreshPrices: () => call<number>("refresh_prices"),
   openUrl: (url: string) => call<void>("open_url", { url }),
+  appLogFile: () => call<string>("app_log_file"),
   openDataFolder: () => call<void>("open_data_folder"),
   openGameLogFolder: () => call<void>("open_game_log_folder"),
   itemImage: (imageName: string) => call<string>("item_image", { imageName }),

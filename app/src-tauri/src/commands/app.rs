@@ -11,7 +11,7 @@ use crate::error::{CommandError, CommandResult};
 use crate::overlay;
 use crate::runtime;
 use crate::settings::{self, Settings};
-use crate::state::{GameStatus, lock, read, write};
+use crate::state::{GameStatus, LOG_FILE, lock, read, write};
 
 #[tauri::command]
 pub async fn game_status(state: Shared<'_>) -> CommandResult<GameStatus> {
@@ -136,20 +136,17 @@ pub async fn test_notifications<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn refresh_prices<R: Runtime>(
-    app: AppHandle<R>,
-    state: Shared<'_>,
-) -> CommandResult<usize> {
-    let state = ready(&state).await?;
-    Ok(runtime::refresh_prices(&app, &state).await?)
-}
-
-#[tauri::command]
 pub async fn open_url<R: Runtime>(app: AppHandle<R>, url: String) -> CommandResult<()> {
     Ok(app
         .opener()
         .open_url(url, None::<&str>)
         .context("Opening the URL")?)
+}
+
+#[tauri::command]
+pub async fn app_log_file(state: Shared<'_>) -> CommandResult<String> {
+    let state = ready(&state).await?;
+    Ok(state.data_dir.join(LOG_FILE).display().to_string())
 }
 
 #[tauri::command]
@@ -160,7 +157,7 @@ pub async fn open_data_folder<R: Runtime>(
     let state = ready(&state).await?;
     Ok(app
         .opener()
-        .reveal_item_in_dir(state.data_dir.join("merframe.log"))
+        .reveal_item_in_dir(state.data_dir.join(LOG_FILE))
         .context("Opening the data folder")?)
 }
 

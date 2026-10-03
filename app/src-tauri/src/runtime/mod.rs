@@ -23,7 +23,6 @@ use feeds::{price_task, world_state_task};
 use game::{inventory_task, log_task, process_task};
 use market_loop::{auto_close, market_presence_task, market_task};
 
-pub use feeds::refresh_prices;
 pub use game::acquire;
 pub use market_loop::{MarketAutoClose, MarketSnapshot};
 pub(crate) use market_loop::{listed_item, trade_side};

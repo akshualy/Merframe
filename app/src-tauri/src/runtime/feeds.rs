@@ -121,14 +121,6 @@ async fn load_riven_data<R: Runtime>(
     Ok(())
 }
 
-pub async fn refresh_prices<R: Runtime>(
-    app: &AppHandle<R>,
-    state: &Arc<AppState>,
-) -> wf_market::Result<usize> {
-    let mut client = bulk_prices(state.http.clone());
-    load_price_table(app, state, &mut client).await
-}
-
 async fn load_price_table<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,

@@ -55,7 +55,7 @@ fn prepare_data_dir(data_dir: &Path) -> std::io::Result<()> {
 }
 
 fn open_log(data_dir: &Path) -> std::io::Result<std::fs::File> {
-    let path = data_dir.join("merframe.log");
+    let path = data_dir.join(state::LOG_FILE);
     if std::fs::metadata(&path).is_ok_and(|log| log.len() > 4 * 1024 * 1024) {
         std::fs::rename(&path, path.with_extension("log.1"))?;
     }
@@ -176,8 +176,8 @@ pub fn run() {
             commands::market::market_close_auction,
             commands::market::market_set_auctions_visibility,
             commands::world::worldstate,
-            commands::app::refresh_prices,
             commands::app::open_url,
+            commands::app::app_log_file,
             commands::app::open_data_folder,
             commands::app::open_game_log_folder,
             commands::app::item_image,

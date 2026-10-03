@@ -22,6 +22,7 @@ use crate::overlay::{OverlaySupport, Overlays};
 use crate::settings::{self, MarketAccount, Settings};
 
 pub const DATA_DIR: &str = "Merframe";
+pub const LOG_FILE: &str = "merframe.log";
 
 pub fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     match mutex.lock() {

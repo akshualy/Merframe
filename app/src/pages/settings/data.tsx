@@ -1,4 +1,4 @@
-import { Download, FileSearch, FolderOpen } from "lucide-react";
+import { FileSearch, FolderOpen } from "lucide-react";
 import { useCallback } from "react";
 import { Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { api, reportError } from "@/lib/bridge";
-import { dateTime, num } from "@/lib/format";
-import { notify } from "@/lib/toast";
+import { dateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import type { OrderType, Settings, TraderStatus } from "@/types";
@@ -56,30 +55,6 @@ export function PricesAndData({
 }) {
   const { status } = useAppStore();
 
-  const handleExport = useCallback(async () => {
-    try {
-      const dir = await api.exportBundle();
-      if (dir) {
-        notify.success("Exported", { description: dir });
-      }
-    } catch (error) {
-      reportError(error);
-    }
-  }, []);
-
-  const handleRefreshPrices = useCallback(async () => {
-    try {
-      const count = await api.refreshPrices();
-      notify.success(
-        count === 0
-          ? "The price table is already current"
-          : `${num(count)} prices loaded`,
-      );
-    } catch (error) {
-      reportError(error);
-    }
-  }, []);
-
   const handlePickLogFile = useCallback(async () => {
     try {
       const path = await api.pickLogFile();
@@ -90,14 +65,6 @@ export function PricesAndData({
       reportError(error);
     }
   }, [patch]);
-
-  const handleOpenDataFolder = useCallback(async () => {
-    try {
-      await api.openDataFolder();
-    } catch (error) {
-      reportError(error);
-    }
-  }, []);
 
   const handleOpenGameLogFolder = useCallback(async () => {
     try {
@@ -258,33 +225,20 @@ export function PricesAndData({
             >
               Find It Automatically
             </Button>
+            <Button
+              variant="outline"
+              disabled={!status?.log_file}
+              onClick={handleOpenGameLogFolder}
+            >
+              <FolderOpen className="size-4" />
+              Open EE.log Folder
+            </Button>
           </div>
           <Hint className={cn(!status?.log_file && "italic")}>
             {status?.log_file
               ? `Watching ${status.log_file}`
               : "EE.log not found on this machine"}
           </Hint>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 @3xl:col-span-2">
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="size-4" />
-            Export Inventory JSON
-          </Button>
-          <Button variant="outline" onClick={handleRefreshPrices}>
-            Refresh Prices Now
-          </Button>
-          <Button variant="outline" onClick={handleOpenDataFolder}>
-            <FolderOpen className="size-4" />
-            Open Merframe Data Folder
-          </Button>
-          <Button
-            variant="outline"
-            disabled={!status?.log_file}
-            onClick={handleOpenGameLogFolder}
-          >
-            <FolderOpen className="size-4" />
-            Open EE.log Folder
-          </Button>
         </div>
         <div className="@3xl:col-span-2">
           <SwitchRow
