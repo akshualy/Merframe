@@ -375,6 +375,27 @@ impl Store {
         Ok(self.connection.last_insert_rowid())
     }
 
+    pub fn update_trade(
+        &self,
+        id: i64,
+        at: DateTime<Utc>,
+        partner: Option<&str>,
+        trade: &Trade,
+    ) -> Result<()> {
+        let items_json = serde_json::to_string(trade)?;
+        self.connection.execute(
+            "UPDATE trades SET at = ?2, partner = ?3, items_json = ?4, plat = ?5 WHERE id = ?1",
+            params![id, at.timestamp_millis(), partner, items_json, trade.plat],
+        )?;
+        Ok(())
+    }
+
+    pub fn delete_trade(&self, id: i64) -> Result<()> {
+        self.connection
+            .execute("DELETE FROM trades WHERE id = ?1", params![id])?;
+        Ok(())
+    }
+
     pub fn trades(&self, range: TimeRange) -> Result<Vec<StoredTrade>> {
         let mut statement = self.connection.prepare(
             "SELECT id, at, partner, items_json FROM trades \
@@ -774,6 +795,20 @@ mod tests {
         assert_eq!(trades[0].partner.as_deref(), Some("SomePlayer"));
         assert_eq!(trades[0].trade.plat, 45);
         assert_eq!(trades[0].trade.offered[0].count, 2);
+
+        let edited = Trade {
+            plat: 60,
+            ..trade.clone()
+        };
+        store
+            .update_trade(trades[0].id, at(5_500_000), None, &edited)
+            .unwrap();
+        let trades = store.trades(TimeRange::all()).unwrap();
+        assert_eq!(trades[0].at, at(5_500_000));
+        assert_eq!(trades[0].partner, None);
+        assert_eq!(trades[0].trade.plat, 60);
+        store.delete_trade(trades[0].id).unwrap();
+        assert!(store.trades(TimeRange::all()).unwrap().is_empty());
 
         store
             .record_relic_opening(at(6_000_000), "Lith K12", "Forma Blueprint", 4)

@@ -13,7 +13,7 @@ import {
   TableSkeleton,
 } from "@/components/page";
 import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
-import { Badge } from "@/components/ui/badge";
+import { TradesSection } from "@/components/trades-section";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
@@ -22,14 +22,7 @@ import { dateTime, dayLabel, num, percent, spansYears } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
-import type {
-  DailyCount,
-  RelicOpening,
-  StatPoint,
-  StoredDelta,
-  StoredTrade,
-  TradeItem,
-} from "@/types";
+import type { DailyCount, RelicOpening, StatPoint, StoredDelta } from "@/types";
 
 function fullDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -38,65 +31,6 @@ function fullDate(iso: string): string {
     year: "numeric",
   });
 }
-
-function tradeItemLabel(item: TradeItem): string {
-  return item.rank === null ? item.name : `${item.name} R${item.rank}`;
-}
-
-const TRADE_COLUMNS: ColumnDef<StoredTrade>[] = [
-  {
-    accessorKey: "at",
-    header: "When",
-    enableHiding: false,
-    cell: ({ row }) => dateTime(row.original.at),
-  },
-  {
-    accessorKey: "partner",
-    header: "Partner",
-    cell: ({ row }) => row.original.partner ?? "-",
-  },
-  {
-    id: "plat",
-    header: "Plat",
-    meta: { numeric: true },
-    accessorFn: (row) => row.trade.plat,
-    cell: ({ row }) => (
-      <span className="text-primary font-bold">
-        {num(row.original.trade.plat)}
-      </span>
-    ),
-  },
-  {
-    id: "offered",
-    header: "Offered",
-    enableSorting: false,
-    meta: { wrap: true },
-    cell: ({ row }) => (
-      <span className="flex flex-wrap gap-1">
-        {row.original.trade.offered.map((item) => (
-          <Badge key={tradeItemLabel(item)} variant="secondary">
-            {tradeItemLabel(item)} x{item.count}
-          </Badge>
-        ))}
-      </span>
-    ),
-  },
-  {
-    id: "received",
-    header: "Received",
-    enableSorting: false,
-    meta: { wrap: true },
-    cell: ({ row }) => (
-      <span className="flex flex-wrap gap-1">
-        {row.original.trade.received.map((item) => (
-          <Badge key={tradeItemLabel(item)} variant="accent">
-            {tradeItemLabel(item)} x{item.count}
-          </Badge>
-        ))}
-      </span>
-    ),
-  },
-];
 
 const OPENING_COLUMNS: ColumnDef<RelicOpening>[] = [
   {
@@ -357,17 +291,7 @@ export function StatsPage() {
         </Section>
       </div>
 
-      <Section title="Trades">
-        <DataTable
-          tableId="statsTrades"
-          columns={TRADE_COLUMNS}
-          data={data?.trades ?? []}
-          searchPlaceholder="Filter trades"
-          initialSorting={[{ id: "at", desc: true }]}
-          rowKey={(row) => String(row.id)}
-          emptyMessage="No trades recorded yet."
-        />
-      </Section>
+      <TradesSection tableId="statsTrades" trades={data?.trades ?? []} />
     </Page>
   );
 }

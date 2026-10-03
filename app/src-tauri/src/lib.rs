@@ -127,6 +127,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::analytics::market_movers,
             commands::analytics::trade_analytics,
+            commands::trades::record_trade,
+            commands::trades::update_trade,
+            commands::trades::delete_trade,
             commands::tabs::inventory_tab,
             commands::tabs::foundry_tab,
             commands::tabs::craft_tree,

@@ -98,6 +98,7 @@ pub struct TradeAnalytics {
     pub categories: Vec<CategoryStatement>,
     pub sold: Vec<TradedTotal>,
     pub bought: Vec<TradedTotal>,
+    pub trades: Vec<StoredTrade>,
 }
 
 fn add_traded(totals: &mut Vec<TradedTotal>, traded: TradedTotal) {
@@ -155,6 +156,7 @@ pub fn trade_analytics(
         }
     }
     analytics.categories = categories.into_values().collect();
+    analytics.trades = trades.to_vec();
     analytics
 }
 
@@ -318,5 +320,6 @@ mod tests {
             totals(&analytics.bought),
             [(String::from("Axi A21 Relic"), 3, 15)]
         );
+        assert_eq!(analytics.trades, trades);
     }
 }

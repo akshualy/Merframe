@@ -1,3 +1,5 @@
+import type { StoredTrade } from "@/types/stats";
+
 export type MarketWindow = "2" | "7" | "30" | "90";
 
 export type TradeCategory =
@@ -46,4 +48,5 @@ export interface TradeAnalytics {
   categories: CategoryStatement[];
   sold: TradedTotal[];
   bought: TradedTotal[];
+  trades: StoredTrade[];
 }

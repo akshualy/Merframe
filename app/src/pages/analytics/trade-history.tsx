@@ -10,6 +10,7 @@ import {
   TableSkeleton,
 } from "@/components/page";
 import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
+import { TradesSection } from "@/components/trades-section";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
@@ -174,6 +175,12 @@ export function TradeHistory() {
           </div>
         </>
       )}
+
+      <TradesSection
+        tableId="analyticsTrades"
+        trades={data.trades}
+        description="Every trade in this window, recorded from the game or by hand. Only trades of items for platinum feed the figures above."
+      />
     </>
   );
 }

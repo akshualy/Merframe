@@ -11,6 +11,7 @@ pub mod analytics;
 pub mod app;
 pub mod market;
 pub mod tabs;
+pub mod trades;
 pub mod world;
 
 pub use world::WorldStateView;

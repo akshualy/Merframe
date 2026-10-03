@@ -33,6 +33,7 @@ import type {
   RivensTab,
   Settings,
   StatsTab,
+  Trade,
   TradeAnalytics,
   WorldStateView,
 } from "@/types";
@@ -125,6 +126,15 @@ export const api = {
     call<MarketMover[]>("market_movers", { window }),
   tradeAnalytics: (sinceMs?: number) =>
     call<TradeAnalytics>("trade_analytics", { sinceMs: sinceMs ?? null }),
+  recordTrade: (atMs: number, partner: string | null, trade: Trade) =>
+    call<number>("record_trade", { atMs, partner, trade }),
+  updateTrade: (
+    id: number,
+    atMs: number,
+    partner: string | null,
+    trade: Trade,
+  ) => call<void>("update_trade", { id, atMs, partner, trade }),
+  deleteTrade: (id: number) => call<void>("delete_trade", { id }),
   toggleFavourite: (uniqueName: string) =>
     call<boolean>("toggle_favourite", { uniqueName }),
   relicsFor: (partUniqueName: string) =>
