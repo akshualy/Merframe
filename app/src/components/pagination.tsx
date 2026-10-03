@@ -18,7 +18,8 @@ import {
 import { num } from "@/lib/format";
 import { usePreferencesStore } from "@/stores/preferences-store";
 
-const PAGE_SIZES = [10, 25, 50, 100];
+export const TABLE_PAGE_SIZES = [10, 25, 50, 100];
+export const GRID_PAGE_SIZES = [12, 24, 48, 96];
 
 export function Pagination({
   page,
@@ -26,6 +27,7 @@ export function Pagination({
   total,
   fixedPageSize,
   pageSize: ownPageSize,
+  pageSizes = TABLE_PAGE_SIZES,
   onPageSizeChange,
   onPageChange,
 }: {
@@ -34,6 +36,7 @@ export function Pagination({
   total: number;
   fixedPageSize?: number;
   pageSize?: number;
+  pageSizes?: number[];
   onPageSizeChange?: (pageSize: number) => void;
   onPageChange: (page: number) => void;
 }) {
@@ -50,7 +53,7 @@ export function Pagination({
     setTyped(null);
   };
 
-  if (total <= (fixedPageSize ?? Math.min(...PAGE_SIZES))) {
+  if (total <= (fixedPageSize ?? Math.min(...pageSizes))) {
     return null;
   }
   return (
@@ -69,7 +72,7 @@ export function Pagination({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {PAGE_SIZES.map((size) => (
+              {pageSizes.map((size) => (
                 <SelectItem key={size} value={String(size)} className="text-xs">
                   {size}
                 </SelectItem>
