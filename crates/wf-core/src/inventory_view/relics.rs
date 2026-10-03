@@ -85,6 +85,7 @@ pub(crate) fn relics(view: &View) -> Vec<RelicRow> {
                         listings.orders_for(url_name)
                     }),
                     unique_name: unique_name.to_owned(),
+                    market_slug: market_name.unwrap_or_default().to_owned(),
                 },
             ))
         })
@@ -256,6 +257,12 @@ mod tests {
         assert_eq!(known.count, 3);
         assert_eq!(known.vault, VaultStatus::Available);
         assert_eq!(known.plat, Some(5.0));
+        assert_eq!(known.market_slug, "axi_a21_relic");
         assert!(known.image_name.is_some());
+        let unknown = rows
+            .iter()
+            .find(|row| row.vault == VaultStatus::Unknown)
+            .expect("relic outside the export");
+        assert_eq!(unknown.market_slug, "");
     }
 }

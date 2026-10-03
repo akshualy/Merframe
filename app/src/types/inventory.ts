@@ -83,9 +83,18 @@ export interface RelicRow {
   count: number;
   vault: VaultStatus;
   unique_name: string;
+  market_slug: string;
   plat: number | null;
   favourite: boolean;
   orders: PlacedOrders;
+}
+
+export interface SculptureStars {
+  filled: number;
+  amber: number;
+  cyan: number;
+  amber_filled: number;
+  cyan_filled: number;
 }
 
 export interface MiscRow {
@@ -97,6 +106,7 @@ export interface MiscRow {
   plat: number | null;
   market_slug: string;
   market_subtype: string | null;
+  stars: SculptureStars | null;
   favourite: boolean;
   orders: PlacedOrders;
 }

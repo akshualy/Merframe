@@ -24,7 +24,10 @@ import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/world";
 import { useAppStore } from "@/stores/app-store";
-import { useMarketPanelStore } from "@/stores/market-panel-store";
+import {
+  type ListingStars,
+  useMarketPanelStore,
+} from "@/stores/market-panel-store";
 import type { ItemListings, MarketItem, OrderType } from "@/types";
 
 function NumberField({
@@ -161,14 +164,15 @@ export function MarketPanel() {
       side: OrderType = "sell",
       rank: number | null = null,
       subtype: string | null = null,
+      stars: ListingStars | null = null,
     ) => {
       setSelected(item);
       setLoadingOrders(true);
       setSide(side);
       setRank(String(rank ?? 0));
       setSubtype(defaultSubtype(item, subtype));
-      setAmberStars("0");
-      setCyanStars("0");
+      setAmberStars(String(stars?.amber ?? 0));
+      setCyanStars(String(stars?.cyan ?? 0));
       try {
         const next = await api.marketItemOrders(item.slug);
         setListings(next);
@@ -191,7 +195,13 @@ export function MarketPanel() {
     takeRequest();
     const item = items.find((candidate) => candidate.slug === request.slug);
     if (item) {
-      handlePick(item, request.side, request.rank, request.subtype);
+      handlePick(
+        item,
+        request.side,
+        request.rank,
+        request.subtype,
+        request.stars,
+      );
     } else {
       toast.error("warframe.market does not list this item any more");
     }

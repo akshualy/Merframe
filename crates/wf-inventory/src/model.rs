@@ -97,6 +97,8 @@ impl EquipmentItem {
 pub struct CountedItem {
     pub item_type: String,
     pub item_count: i64,
+    #[serde(default)]
+    pub sockets: Option<u32>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

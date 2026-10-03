@@ -143,11 +143,18 @@ function Meta({
   );
 }
 
+function listingStars(row: Row) {
+  return row.stars
+    ? { amber: row.stars.amber_filled, cyan: row.stars.cyan_filled }
+    : null;
+}
+
 function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
   const openListing = useMarketPanelStore((state) => state.openListing);
   const isSet = tab === "sets" && row.set;
   const equipped = equippedLabel(row);
   const crafted = (tab === "parts" || tab === "sets") && row.itemOwned;
+  const stars = listingStars(row);
   return (
     <div className="bg-card hover:border-primary/50 flex gap-4 rounded-xl border p-4 transition-colors">
       <div className="relative shrink-0 self-start">
@@ -204,6 +211,16 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
                 />
               )}
               {row.refinement}
+            </Meta>
+          )}
+          {row.stars && (
+            <Meta
+              className={cn(
+                row.stars.filled === row.stars.amber + row.stars.cyan &&
+                  "text-accent",
+              )}
+            >
+              {row.stars.filled}/{row.stars.amber + row.stars.cyan} stars
             </Meta>
           )}
           {row.vault === "vaulted" && (
@@ -273,6 +290,7 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
                       "sell",
                       row.rank,
                       row.marketSubtype,
+                      stars,
                     )
                   }
                 />
@@ -286,6 +304,7 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
                       "buy",
                       row.rank,
                       row.marketSubtype,
+                      stars,
                     )
                   }
                 />

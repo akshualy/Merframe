@@ -2,11 +2,17 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { MarketItem, OrderType } from "@/types";
 
+export interface ListingStars {
+  amber: number;
+  cyan: number;
+}
+
 export interface ListingRequest {
   slug: string;
   side: OrderType;
   rank: number | null;
   subtype: string | null;
+  stars: ListingStars | null;
 }
 
 interface MarketPanelState {
@@ -21,6 +27,7 @@ interface MarketPanelState {
     side: OrderType,
     rank?: number | null,
     subtype?: string | null,
+    stars?: ListingStars | null,
   ) => void;
   takeRequest: () => void;
 }
@@ -34,8 +41,8 @@ export const useMarketPanelStore = create<MarketPanelState>()(
       show: () => set({ open: true }),
       hide: () => set({ open: false }),
       setItems: (items) => set({ items }),
-      openListing: (slug, side, rank = null, subtype = null) =>
-        set({ open: true, request: { slug, side, rank, subtype } }),
+      openListing: (slug, side, rank = null, subtype = null, stars = null) =>
+        set({ open: true, request: { slug, side, rank, subtype, stars } }),
       takeRequest: () => set({ request: null }),
     }),
     {

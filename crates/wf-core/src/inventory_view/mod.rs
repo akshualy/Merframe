@@ -97,9 +97,19 @@ pub struct RelicRow {
     pub count: i64,
     pub vault: VaultStatus,
     pub unique_name: String,
+    pub market_slug: String,
     pub plat: Option<f64>,
     pub favourite: bool,
     pub orders: PlacedOrders,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub struct SculptureStars {
+    pub filled: u32,
+    pub amber: u32,
+    pub cyan: u32,
+    pub amber_filled: u32,
+    pub cyan_filled: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -112,6 +122,7 @@ pub struct MiscRow {
     pub plat: Option<f64>,
     pub market_slug: String,
     pub market_subtype: Option<String>,
+    pub stars: Option<SculptureStars>,
     pub favourite: bool,
     pub orders: PlacedOrders,
 }

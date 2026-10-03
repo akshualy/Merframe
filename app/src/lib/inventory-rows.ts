@@ -14,6 +14,7 @@ import type {
   PartRow,
   PlacedOrders,
   RelicRow,
+  SculptureStars,
   SetRow,
   VaultStatus,
 } from "@/types";
@@ -43,6 +44,7 @@ export interface Row extends SortableRow {
   refinement: string | null;
   tier: string | null;
   set: SetRow | null;
+  stars: SculptureStars | null;
 }
 
 function partRows(rows: PartRow[]): Row[] {
@@ -76,6 +78,7 @@ function partRows(rows: PartRow[]): Row[] {
     refinement: null,
     tier: null,
     set: null,
+    stars: null,
   }));
 }
 
@@ -110,6 +113,7 @@ function setRows(rows: SetRow[]): Row[] {
     refinement: null,
     tier: null,
     set: row,
+    stars: null,
   }));
 }
 
@@ -148,6 +152,7 @@ function modRows(rows: ModRow[]): Row[] {
     refinement: null,
     tier: null,
     set: null,
+    stars: null,
   }));
 }
 
@@ -163,8 +168,8 @@ function relicRows(rows: RelicRow[]): Row[] {
     ducats: null,
     completion: 0,
     imageName: row.image_name,
-    marketSlug: "",
-    marketSubtype: null,
+    marketSlug: row.market_slug,
+    marketSubtype: row.refinement.toLowerCase(),
     prime: false,
     vault: row.vault,
     itemOwned: false,
@@ -182,12 +187,13 @@ function relicRows(rows: RelicRow[]): Row[] {
     refinement: row.refinement,
     tier: row.tier,
     set: null,
+    stars: null,
   }));
 }
 
 function miscRows(rows: MiscRow[]): Row[] {
   return rows.map((row) => ({
-    key: row.unique_name,
+    key: row.stars ? `${row.unique_name}-${row.stars.filled}` : row.unique_name,
     uniqueName: row.unique_name,
     favourite: row.favourite,
     orders: row.orders,
@@ -216,6 +222,7 @@ function miscRows(rows: MiscRow[]): Row[] {
     refinement: null,
     tier: null,
     set: null,
+    stars: row.stars,
   }));
 }
 

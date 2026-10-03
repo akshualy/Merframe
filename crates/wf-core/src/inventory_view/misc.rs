@@ -4,10 +4,42 @@ use wf_data::{Item, catch_grade, catch_size};
 use wf_inventory::{EquipmentItem, Inventory};
 
 use super::upgrades::upgrade_outside_the_export;
-use super::{MiscRow, catalogued_name, display_name};
+use super::{MiscRow, SculptureStars, catalogued_name, display_name};
 use crate::catalog::{Catalog, RELIC_PREFIX};
 use crate::prices::market_slug;
 use crate::view::View;
+
+const SCULPTURE_PREFIX: &str = "/Lotus/Types/Items/FusionTreasures/OroFusex";
+
+const SCULPTURE_SOCKETS: [(&str, u32, u32); 11] = [
+    ("A", 3, 0b010),
+    ("B", 3, 0b000),
+    ("C", 4, 0b0010),
+    ("D", 3, 0b100),
+    ("E", 3, 0b001),
+    ("F", 4, 0b0101),
+    ("G", 3, 0b001),
+    ("H", 3, 0b010),
+    ("I", 3, 0b010),
+    ("J", 3, 0b010),
+    ("Entrati", 5, 0b00010),
+];
+
+pub(super) fn sculpture_stars(item_type: &str, sockets: Option<u32>) -> Option<SculptureStars> {
+    let suffix = item_type.strip_prefix(SCULPTURE_PREFIX)?;
+    let (_, count, amber_mask) = SCULPTURE_SOCKETS
+        .into_iter()
+        .find(|(name, _, _)| *name == suffix)?;
+    let filled = sockets.unwrap_or_default();
+    let amber = amber_mask.count_ones();
+    Some(SculptureStars {
+        filled: filled.count_ones(),
+        amber,
+        cyan: count - amber,
+        amber_filled: (filled & amber_mask).count_ones(),
+        cyan_filled: (filled & !amber_mask).count_ones(),
+    })
+}
 
 fn is_catchable_fish(item_type: &str) -> bool {
     item_type.contains("/Items/Fish/") && !item_type.contains("Boot")
@@ -140,7 +172,7 @@ fn counted_rows(view: &View) -> Vec<MiscRow> {
         favourites,
         listings,
     } = *view;
-    let mut counted: BTreeMap<&str, i64> = BTreeMap::new();
+    let mut counted: BTreeMap<(&str, Option<SculptureStars>), i64> = BTreeMap::new();
     for item in inventory
         .misc_items
         .iter()
@@ -151,12 +183,13 @@ fn counted_rows(view: &View) -> Vec<MiscRow> {
         if !is_misc(&item.item_type) || !is_tradable_misc(catalog, &item.item_type) {
             continue;
         }
-        *counted.entry(item.item_type.as_str()).or_insert(0) += item.item_count;
+        let stars = sculpture_stars(&item.item_type, item.sockets);
+        *counted.entry((item.item_type.as_str(), stars)).or_insert(0) += item.item_count;
     }
     counted
         .into_iter()
         .filter(|(_, count)| *count > 0)
-        .map(|(unique_name, count)| {
+        .map(|((unique_name, stars), count)| {
             let slug = misc_market_slug(catalog, unique_name);
             MiscRow {
                 name: display_name(catalog, unique_name),
@@ -175,6 +208,7 @@ fn counted_rows(view: &View) -> Vec<MiscRow> {
                 favourite: favourites.contains(unique_name),
                 orders: listings.orders_for(&slug),
                 market_subtype: catch_size(unique_name),
+                stars,
                 unique_name: unique_name.to_owned(),
                 count,
                 market_slug: slug,
@@ -217,6 +251,7 @@ fn cosmetic_rows(view: &View) -> Vec<MiscRow> {
                 favourite: favourites.contains(unique_name),
                 orders: listings.orders_for(&slug),
                 market_subtype: None,
+                stars: None,
                 unique_name: unique_name.to_owned(),
                 market_slug: slug,
                 name,
@@ -255,6 +290,7 @@ fn pet_print_rows(view: &View) -> Vec<MiscRow> {
                 favourite: favourites.contains(unique_name),
                 orders: listings.orders_for(&slug),
                 market_subtype: None,
+                stars: None,
                 unique_name: unique_name.to_owned(),
                 market_slug: slug,
                 name,
@@ -295,6 +331,7 @@ fn spare_equipment_rows(view: &View) -> Vec<MiscRow> {
                 favourite: favourites.contains(unique_name),
                 orders: listings.orders_for(&slug),
                 market_subtype: None,
+                stars: None,
                 unique_name: unique_name.to_owned(),
                 market_slug: slug,
                 name,
@@ -843,6 +880,66 @@ mod tests {
     }
 
     #[test]
+    fn sculptures_split_by_filled_stars() {
+        let inventory = fixtures::inventory();
+        let catalog = misc_catalog();
+        let rows = misc(&View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &prices(),
+            favourites: &Favourites::default(),
+            listings: &no_listings(),
+        });
+        let sah: Vec<_> = rows
+            .iter()
+            .filter(|row| row.unique_name == "/Lotus/Types/Items/FusionTreasures/OroFusexA")
+            .map(|row| (row.stars, row.count))
+            .collect();
+        let sah_stars = |filled, amber_filled| {
+            Some(SculptureStars {
+                filled,
+                amber: 1,
+                cyan: 2,
+                amber_filled,
+                cyan_filled: filled - amber_filled,
+            })
+        };
+        assert_eq!(sah, vec![(sah_stars(0, 0), 9), (sah_stars(3, 1), 27)]);
+        let star = rows
+            .iter()
+            .find(|row| row.unique_name.ends_with("OroFusexOrnamentA"))
+            .expect("Ayatan Cyan Star");
+        assert_eq!(star.stars, None, "loose stars have no sockets");
+    }
+
+    #[test]
+    fn sculpture_sockets_from_bitmask() {
+        let kitha = sculpture_stars(
+            "/Lotus/Types/Items/FusionTreasures/OroFusexEntrati",
+            Some(0b1_0101),
+        )
+        .expect("Kitha");
+        assert_eq!((kitha.filled, kitha.amber, kitha.cyan), (3, 1, 4));
+        assert_eq!((kitha.amber_filled, kitha.cyan_filled), (0, 3));
+        let ayr =
+            sculpture_stars("/Lotus/Types/Items/FusionTreasures/OroFusexB", None).expect("Ayr");
+        assert_eq!((ayr.filled, ayr.amber, ayr.cyan), (0, 0, 3));
+        let vaya = sculpture_stars("/Lotus/Types/Items/FusionTreasures/OroFusexD", Some(0b100))
+            .expect("Vaya");
+        assert_eq!((vaya.amber_filled, vaya.cyan_filled), (1, 0));
+        let anasa = sculpture_stars("/Lotus/Types/Items/FusionTreasures/OroFusexF", Some(0b0110))
+            .expect("Anasa");
+        assert_eq!((anasa.amber_filled, anasa.cyan_filled), (1, 1));
+        assert_eq!(
+            sculpture_stars(
+                "/Lotus/Types/Items/FusionTreasures/OroFusexOrnamentB",
+                Some(1)
+            ),
+            None
+        );
+    }
+
+    #[test]
     fn is_misc_categories() {
         assert!(is_misc(
             "/Lotus/Types/Items/FusionTreasures/Ayatan/AyatanAnasaSculpture"
@@ -927,7 +1024,7 @@ mod tests {
             favourites: &Favourites::default(),
             listings: &no_listings(),
         });
-        assert_eq!(rows.len(), 42);
+        assert_eq!(rows.len(), 44);
         let expected: BTreeMap<&str, usize> = [
             ("faction weapons", 1),
             ("fish", 17),
@@ -936,7 +1033,7 @@ mod tests {
             ("keys", 1),
             ("necramech resources", 5),
             ("scenes", 3),
-            ("sculptures", 11),
+            ("sculptures", 13),
         ]
         .into_iter()
         .collect();
