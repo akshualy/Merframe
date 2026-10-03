@@ -148,6 +148,8 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
   const isSet = tab === "sets" && row.set;
   const equipped = equippedLabel(row);
   const crafted = (tab === "parts" || tab === "sets") && row.itemOwned;
+  console.log(`${row.name}: ${row.set?.orders.sell}`);
+
   return (
     <div className="bg-card hover:border-primary/50 flex gap-4 rounded-xl border p-4 transition-colors">
       <div className="relative shrink-0 self-start">
@@ -230,10 +232,22 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
               Selling
             </Meta>
           )}
+          {row.setOrders?.sell && (
+            <Meta className="text-primary">
+              <Tag className="size-3.5" />
+              Selling in set
+            </Meta>
+          )}
           {row.orders.buy && (
             <Meta className="text-primary">
               <Tag className="size-3.5" />
               Buying
+            </Meta>
+          )}
+          {row.setOrders?.buy && (
+            <Meta className="text-primary">
+              <Tag className="size-3.5" />
+              Buying in set
             </Meta>
           )}
         </div>

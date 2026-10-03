@@ -96,6 +96,7 @@ pub(crate) fn parts(view: &View) -> Vec<PartRow> {
                 set: PartSet {
                     name: item.name.clone(),
                     complete: set_is_complete(&stock, item),
+                    orders: listings.orders_for(&set_slug(&item.name)),
                 },
                 vault: vault_status(&name, item.vaulted),
                 item: ItemStatus {
@@ -108,7 +109,7 @@ pub(crate) fn parts(view: &View) -> Vec<PartRow> {
                     component.unique_name.as_str(),
                     item.unique_name.as_str(),
                 ]),
-                orders: listings.orders_for_part(&slug, &set_slug(&item.name)),
+                orders: listings.orders_for(&slug),
                 unique_name: unique_name.to_owned(),
                 image_name: component_image(item, component),
                 market_slug: slug,
@@ -705,5 +706,48 @@ mod tests {
             .all(|row| row.orders == PlacedOrders::default()),
             "without a market session no row claims an order"
         );
+    }
+
+    #[test]
+    fn set_order_reaches_every_part() {
+        let inventory = fixtures::inventory_owning(&[
+            (
+                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                3,
+            ),
+            (
+                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+                1,
+            ),
+        ]);
+        let catalog = fixtures::catalog();
+        let listings = MarketListings::new([("braton_prime_set", OrderType::Sell)], &[]);
+        let rows = parts(&View {
+            inventory: &inventory,
+            catalog: &catalog,
+            prices: &prices(),
+            favourites: &Favourites::default(),
+            listings: &listings,
+        });
+
+        let sell = PlacedOrders {
+            sell: true,
+            buy: false,
+        };
+        assert_eq!(rows.len(), 2, "only the two stocked parts survive");
+        for row in &rows {
+            assert_eq!(row.set.name, "Braton Prime");
+            assert_eq!(
+                row.set.orders, sell,
+                "{} reports the whole set as selling",
+                row.name
+            );
+            assert_eq!(
+                row.orders,
+                PlacedOrders::default(),
+                "{} itself is not listed",
+                row.name
+            );
+        }
     }
 }
