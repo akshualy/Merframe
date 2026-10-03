@@ -12,6 +12,7 @@ import type { InventoryTabKey } from "@/lib/inventory-filters";
 import { equippedLabel, type Row } from "@/lib/inventory-rows";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
+import { useAppStore } from "@/stores/app-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
 import type { OrderType, SetRow } from "@/types";
 
@@ -73,20 +74,26 @@ function RankedPlat({
 }
 
 function SetParts({ set }: { set: SetRow }) {
+  const openListing = useMarketPanelStore((state) => state.openListing);
+  const side = useAppStore((state) => state.settings?.set_part_click ?? "sell");
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-1">
         {set.components.map((part) => (
-          <span
+          <button
             key={part.unique_name}
-            title={`${part.name}: ${part.owned}/${part.required}`}
+            type="button"
+            onClick={() => openListing(part.market_slug, side)}
+            title={`${part.name}: ${part.owned}/${part.required}. Open on warframe.market`}
             className={cn(
-              "rounded-md",
-              part.enough ? "ring-primary ring-2" : "opacity-35 grayscale",
+              "hover:border-accent cursor-pointer rounded-md border-2 hover:opacity-100 hover:grayscale-0",
+              part.enough
+                ? "border-primary"
+                : "border-transparent opacity-35 grayscale",
             )}
           >
             <ItemImage imageName={part.image_name} size={26} />
-          </span>
+          </button>
         ))}
       </div>
       <div className="flex items-center gap-2">

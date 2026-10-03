@@ -105,6 +105,7 @@ export interface SetComponent {
   unique_name: string;
   name: string;
   image_name: string | null;
+  market_slug: string;
   owned: number;
   required: number;
   enough: boolean;

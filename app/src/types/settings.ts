@@ -1,3 +1,4 @@
+import type { OrderType } from "@/types/market";
 export type OverlayMode = "auto" | "windows" | "tab";
 export type TraderStatus = "ingame" | "online" | "any";
 
@@ -77,6 +78,7 @@ export interface Settings {
   take_rank_into_account: boolean;
   market_trader_status: TraderStatus;
   market_trader_locale: string | null;
+  set_part_click: OrderType;
   include_founders_items: boolean | null;
   include_forma_ranks: boolean;
   stats_tab_enabled: boolean;

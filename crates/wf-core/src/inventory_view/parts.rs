@@ -121,10 +121,10 @@ pub(crate) fn parts(view: &View) -> Vec<PartRow> {
 }
 
 fn set_parts(item: &Item) -> impl Iterator<Item = &Component> {
-    item.components
-        .iter()
-        .flatten()
-        .filter(|component| crate::catalog::is_part(component) && component.tradable)
+    let prime = is_prime(item);
+    item.components.iter().flatten().filter(move |component| {
+        crate::catalog::is_part(component) && (component.tradable || prime)
+    })
 }
 
 fn set_is_complete(stock: &Stock<'_>, item: &Item) -> bool {
@@ -143,6 +143,7 @@ fn set_components(item: &Item, stock: &Stock<'_>) -> Vec<SetComponent> {
                 unique_name: component.unique_name.clone(),
                 name: part_name(item, component),
                 image_name: component_image(item, component),
+                market_slug: part_market_slug(item, component),
                 owned,
                 required,
                 enough: owned >= required,
@@ -408,6 +409,37 @@ mod tests {
             braton_set.item.built,
             "the rifle is still owned, just not maxed"
         );
+    }
+
+    #[test]
+    fn untradable_prime_part_stays_in_set() {
+        let components = fixtures::COMPONENTS.replacen(
+            "\"uniqueName\": \"/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel\",\n    \"name\": \"Barrel\",\n    \"tradable\": true,",
+            "\"uniqueName\": \"/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel\",\n    \"name\": \"Barrel\",\n    \"tradable\": false,",
+            1,
+        );
+        assert_ne!(components, fixtures::COMPONENTS);
+        let catalog = Catalog::from_json(fixtures::ITEMS, fixtures::RELICS, &components).unwrap();
+        let stocked = fixtures::inventory_owning(&[(
+            "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+            1,
+        )]);
+        let rows = sets(&View {
+            inventory: &stocked,
+            catalog: &catalog,
+            prices: &prices(),
+            favourites: &Favourites::default(),
+            listings: &no_listings(),
+        });
+        let braton = &rows[0];
+        assert_eq!(braton.total_parts, 4);
+        let barrel = braton
+            .components
+            .iter()
+            .find(|part| part.name == "Braton Prime Barrel")
+            .unwrap();
+        assert_eq!(barrel.market_slug, "braton_prime_barrel");
+        assert!(!barrel.enough);
     }
 
     #[test]

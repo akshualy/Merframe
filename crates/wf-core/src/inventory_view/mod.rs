@@ -121,6 +121,7 @@ pub struct SetComponent {
     pub unique_name: String,
     pub name: String,
     pub image_name: Option<String>,
+    pub market_slug: String,
     pub owned: i64,
     pub required: i64,
     pub enough: bool,

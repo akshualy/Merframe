@@ -16,7 +16,7 @@ import { dateTime, num } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
-import type { Settings, TraderStatus } from "@/types";
+import type { OrderType, Settings, TraderStatus } from "@/types";
 import { CheckboxRow, MinutesSlider, type Patch, SwitchRow } from "./row";
 
 const ANY_LANGUAGE = "any";
@@ -25,6 +25,11 @@ const TRADER_STATUS: { value: TraderStatus; label: string }[] = [
   { value: "ingame", label: "In game" },
   { value: "online", label: "In game or online" },
   { value: "any", label: "Anyone" },
+];
+
+const SET_PART_CLICK: { value: OrderType; label: string }[] = [
+  { value: "sell", label: "Sellers, to whisper the cheapest one" },
+  { value: "buy", label: "Buyers, to post a buy order" },
 ];
 
 const TRADER_LANGUAGES: { value: string; label: string }[] = [
@@ -210,6 +215,26 @@ export function PricesAndData({
             >
               Hide auctions too
             </CheckboxRow>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="set-part-click">Clicking a set part opens</Label>
+            <Select
+              value={draft.set_part_click}
+              onValueChange={(value) =>
+                patch({ set_part_click: value as OrderType })
+              }
+            >
+              <SelectTrigger id="set-part-click" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SET_PART_CLICK.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <CheckboxRow
             checked={draft.take_rank_into_account}
