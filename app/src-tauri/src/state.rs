@@ -172,7 +172,11 @@ impl AppState {
             .with_context(|| format!("Creating {}", data_dir.display()))?;
 
         let http = reqwest::Client::builder()
-            .user_agent(concat!("merframe/", env!("CARGO_PKG_VERSION")))
+            .user_agent(concat!(
+                "Merframe/",
+                env!("CARGO_PKG_VERSION"),
+                " (+https://yareli.net/merframe)"
+            ))
             .connect_timeout(Duration::from_secs(10))
             .read_timeout(Duration::from_secs(30))
             .build()

@@ -13,18 +13,20 @@ pub enum OrderType {
 #[serde(rename_all = "lowercase")]
 pub enum Platform {
     Pc,
-    Xb1,
+    Xbox,
     Ps4,
     Switch,
+    Mobile,
 }
 
 impl Platform {
     pub fn as_wire_str(self) -> &'static str {
         match self {
             Platform::Pc => "pc",
-            Platform::Xb1 => "xb1",
+            Platform::Xbox => "xbox",
             Platform::Ps4 => "ps4",
             Platform::Switch => "switch",
+            Platform::Mobile => "mobile",
         }
     }
 }

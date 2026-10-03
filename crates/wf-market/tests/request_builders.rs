@@ -236,6 +236,16 @@ fn platform_header() {
 }
 
 #[test]
+fn item_orders_include_crossplay() {
+    let request = client()
+        .orders_for_item_request("secura_dual_cestra")
+        .unwrap();
+    assert_eq!(request.headers().get("Crossplay").unwrap(), "true");
+    let request = client().orders_my_request().unwrap();
+    assert!(request.headers().get("Crossplay").is_none());
+}
+
+#[test]
 fn my_auctions_request() {
     let client = client().with_token("abc.def.ghi".to_string());
     let request = client.auctions_my_request("merframetester").unwrap();

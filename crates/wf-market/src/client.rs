@@ -132,6 +132,7 @@ impl Client {
                 ApiFamily::V2,
                 &format!("/orders/item/{}", segment(slug)),
             )
+            .header("Crossplay", "true")
             .build()?)
     }
 
