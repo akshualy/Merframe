@@ -30,6 +30,7 @@ pub struct ItemStatus {
 pub struct PartSet {
     pub name: String,
     pub complete: bool,
+    pub orders: PlacedOrders,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

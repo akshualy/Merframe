@@ -45,6 +45,7 @@ export interface Row extends SortableRow {
   tier: string | null;
   set: SetRow | null;
   stars: SculptureStars | null;
+  setOrders: PlacedOrders | null;
 }
 
 function partRows(rows: PartRow[]): Row[] {
@@ -79,6 +80,7 @@ function partRows(rows: PartRow[]): Row[] {
     tier: null,
     set: null,
     stars: null,
+    setOrders: row.set.orders,
   }));
 }
 
@@ -114,6 +116,7 @@ function setRows(rows: SetRow[]): Row[] {
     tier: null,
     set: row,
     stars: null,
+    setOrders: null,
   }));
 }
 
@@ -153,6 +156,7 @@ function modRows(rows: ModRow[]): Row[] {
     tier: null,
     set: null,
     stars: null,
+    setOrders: null,
   }));
 }
 
@@ -188,6 +192,7 @@ function relicRows(rows: RelicRow[]): Row[] {
     tier: row.tier,
     set: null,
     stars: null,
+    setOrders: null,
   }));
 }
 
@@ -223,6 +228,7 @@ function miscRows(rows: MiscRow[]): Row[] {
     tier: null,
     set: null,
     stars: row.stars,
+    setOrders: null,
   }));
 }
 
