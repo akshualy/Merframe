@@ -143,18 +143,20 @@ function Meta({
   );
 }
 
-function listingStars(row: Row) {
-  return row.stars
-    ? { amber: row.stars.amber_filled, cyan: row.stars.cyan_filled }
-    : null;
-}
-
 function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
   const openListing = useMarketPanelStore((state) => state.openListing);
   const isSet = tab === "sets" && row.set;
   const equipped = equippedLabel(row);
   const crafted = (tab === "parts" || tab === "sets") && row.itemOwned;
-  const stars = listingStars(row);
+  const stars = row.stars
+    ? { amber: row.stars.amber_filled, cyan: row.stars.cyan_filled }
+    : null;
+  const starsFilled = row.stars
+    ? row.stars.amber_filled + row.stars.cyan_filled
+    : 0;
+  const starSockets = row.stars
+    ? row.stars.amber_sockets + row.stars.cyan_sockets
+    : 0;
 
   return (
     <div className="bg-card hover:border-primary/50 flex gap-4 rounded-xl border p-4 transition-colors">
@@ -215,13 +217,8 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
             </Meta>
           )}
           {row.stars && (
-            <Meta
-              className={cn(
-                row.stars.filled === row.stars.amber + row.stars.cyan &&
-                  "text-accent",
-              )}
-            >
-              {row.stars.filled}/{row.stars.amber + row.stars.cyan} stars
+            <Meta className={cn(starsFilled === starSockets && "text-accent")}>
+              {starsFilled}/{starSockets} stars
             </Meta>
           )}
           {row.vault === "vaulted" && (

@@ -198,7 +198,9 @@ function relicRows(rows: RelicRow[]): Row[] {
 
 function miscRows(rows: MiscRow[]): Row[] {
   return rows.map((row) => ({
-    key: row.stars ? `${row.unique_name}-${row.stars.filled}` : row.unique_name,
+    key: row.stars
+      ? `${row.unique_name}-${row.stars.amber_filled}-${row.stars.cyan_filled}`
+      : row.unique_name,
     uniqueName: row.unique_name,
     favourite: row.favourite,
     orders: row.orders,

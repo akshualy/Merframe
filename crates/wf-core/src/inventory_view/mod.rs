@@ -106,11 +106,10 @@ pub struct RelicRow {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub struct SculptureStars {
-    pub filled: u32,
-    pub amber: u32,
-    pub cyan: u32,
     pub amber_filled: u32,
     pub cyan_filled: u32,
+    pub amber_sockets: u32,
+    pub cyan_sockets: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

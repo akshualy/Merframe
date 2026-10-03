@@ -35,8 +35,8 @@ pub use foundry::{
     MasteryGate, NeededItem, NodeDrop, OwnedRelic, PendingBuild, Prime, Progress, WorldTimer,
 };
 pub use inventory_view::{
-    InventoryTab, ItemStatus, MiscRow, ModHolder, ModRow, PartRow, PartSet, RelicRow, SetComponent,
-    SetRow, TabTotals, UpgradePrices, market_icon,
+    InventoryTab, ItemStatus, MiscRow, ModHolder, ModRow, PartRow, PartSet, RelicRow,
+    SculptureStars, SetComponent, SetRow, TabTotals, UpgradePrices, market_icon,
 };
 pub use listings::{MarketListings, PlacedOrders};
 pub use market_stock::MarketStock;

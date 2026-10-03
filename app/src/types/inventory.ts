@@ -91,11 +91,10 @@ export interface RelicRow {
 }
 
 export interface SculptureStars {
-  filled: number;
-  amber: number;
-  cyan: number;
   amber_filled: number;
   cyan_filled: number;
+  amber_sockets: number;
+  cyan_sockets: number;
 }
 
 export interface MiscRow {

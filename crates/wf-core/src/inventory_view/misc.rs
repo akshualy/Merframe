@@ -9,8 +9,6 @@ use crate::catalog::{Catalog, RELIC_PREFIX};
 use crate::prices::market_slug;
 use crate::view::View;
 
-const SCULPTURE_PREFIX: &str = "/Lotus/Types/Items/FusionTreasures/OroFusex";
-
 const SCULPTURE_SOCKETS: [(&str, u32, u32); 11] = [
     ("A", 3, 0b010),
     ("B", 3, 0b000),
@@ -25,19 +23,17 @@ const SCULPTURE_SOCKETS: [(&str, u32, u32); 11] = [
     ("Entrati", 5, 0b00010),
 ];
 
-pub(super) fn sculpture_stars(item_type: &str, sockets: Option<u32>) -> Option<SculptureStars> {
-    let suffix = item_type.strip_prefix(SCULPTURE_PREFIX)?;
-    let (_, count, amber_mask) = SCULPTURE_SOCKETS
+fn sculpture_stars(item_type: &str, sockets: Option<u32>) -> Option<SculptureStars> {
+    let suffix = item_type.strip_prefix("/Lotus/Types/Items/FusionTreasures/OroFusex")?;
+    let (_, sockets_total, amber_mask) = SCULPTURE_SOCKETS
         .into_iter()
         .find(|(name, _, _)| *name == suffix)?;
     let filled = sockets.unwrap_or_default();
-    let amber = amber_mask.count_ones();
     Some(SculptureStars {
-        filled: filled.count_ones(),
-        amber,
-        cyan: count - amber,
         amber_filled: (filled & amber_mask).count_ones(),
         cyan_filled: (filled & !amber_mask).count_ones(),
+        amber_sockets: amber_mask.count_ones(),
+        cyan_sockets: sockets_total - amber_mask.count_ones(),
     })
 }
 
@@ -895,16 +891,15 @@ mod tests {
             .filter(|row| row.unique_name == "/Lotus/Types/Items/FusionTreasures/OroFusexA")
             .map(|row| (row.stars, row.count))
             .collect();
-        let sah_stars = |filled, amber_filled| {
+        let sah_stars = |amber_filled, cyan_filled| {
             Some(SculptureStars {
-                filled,
-                amber: 1,
-                cyan: 2,
                 amber_filled,
-                cyan_filled: filled - amber_filled,
+                cyan_filled,
+                amber_sockets: 1,
+                cyan_sockets: 2,
             })
         };
-        assert_eq!(sah, vec![(sah_stars(0, 0), 9), (sah_stars(3, 1), 27)]);
+        assert_eq!(sah, vec![(sah_stars(0, 0), 9), (sah_stars(1, 2), 27)]);
         let star = rows
             .iter()
             .find(|row| row.unique_name.ends_with("OroFusexOrnamentA"))
@@ -919,11 +914,26 @@ mod tests {
             Some(0b1_0101),
         )
         .expect("Kitha");
-        assert_eq!((kitha.filled, kitha.amber, kitha.cyan), (3, 1, 4));
-        assert_eq!((kitha.amber_filled, kitha.cyan_filled), (0, 3));
+        assert_eq!(
+            kitha,
+            SculptureStars {
+                amber_filled: 0,
+                cyan_filled: 3,
+                amber_sockets: 1,
+                cyan_sockets: 4,
+            }
+        );
         let ayr =
             sculpture_stars("/Lotus/Types/Items/FusionTreasures/OroFusexB", None).expect("Ayr");
-        assert_eq!((ayr.filled, ayr.amber, ayr.cyan), (0, 0, 3));
+        assert_eq!(
+            ayr,
+            SculptureStars {
+                amber_filled: 0,
+                cyan_filled: 0,
+                amber_sockets: 0,
+                cyan_sockets: 3,
+            }
+        );
         let vaya = sculpture_stars("/Lotus/Types/Items/FusionTreasures/OroFusexD", Some(0b100))
             .expect("Vaya");
         assert_eq!((vaya.amber_filled, vaya.cyan_filled), (1, 0));
