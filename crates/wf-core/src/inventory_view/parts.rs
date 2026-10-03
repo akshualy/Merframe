@@ -108,7 +108,7 @@ pub(crate) fn parts(view: &View) -> Vec<PartRow> {
                     component.unique_name.as_str(),
                     item.unique_name.as_str(),
                 ]),
-                orders: listings.orders_for(&slug),
+                orders: listings.orders_for_part(&slug, &set_slug(&item.name)),
                 unique_name: unique_name.to_owned(),
                 image_name: component_image(item, component),
                 market_slug: slug,

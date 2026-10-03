@@ -75,6 +75,16 @@ impl MarketListings {
         }
     }
 
+    /// A part counts as ordered when either the part or its whole set is
+    pub fn orders_for_part(&self, part_slug: &str, set_slug: &str) -> PlacedOrders {
+        let part = self.orders_for(part_slug);
+        let set = self.orders_for(set_slug);
+        PlacedOrders {
+            sell: part.sell || set.sell,
+            buy: part.buy || set.buy,
+        }
+    }
+
     pub fn lists_riven(&self, name: &str, weapon_slug: &str, mastery: u32, rerolls: u32) -> bool {
         self.rivens.contains(&ListedRiven {
             name: squashed(name),
@@ -127,6 +137,19 @@ mod tests {
             PlacedOrders::default()
         );
         assert_eq!(listings.orders_for(""), PlacedOrders::default());
+    }
+
+    #[test]
+    fn part_counts_whole_set_order() {
+        let listings = MarketListings::new([("vectis_prime_set", OrderType::Sell)], &[]);
+        let listed = PlacedOrders {
+            sell: true,
+            buy: false,
+        };
+        assert_eq!(
+            listings.orders_for_part("vectis_prime_barrel", "vectis_prime_set"),
+            listed
+        );
     }
 
     #[test]
