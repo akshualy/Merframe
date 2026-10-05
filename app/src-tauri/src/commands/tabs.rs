@@ -109,7 +109,7 @@ pub async fn toggle_favourite<R: Runtime>(
 ) -> CommandResult<bool> {
     let state = ready(&state).await?;
     let favourite = lock(&state.core).toggle_favourite(&unique_name)?;
-    runtime::emit(&app, runtime::INVENTORY_UPDATED, state.status_snapshot());
+    runtime::emit(&app, runtime::FAVOURITE_UPDATED, ());
     Ok(favourite)
 }
 

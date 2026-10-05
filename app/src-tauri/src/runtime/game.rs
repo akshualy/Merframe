@@ -442,17 +442,21 @@ where
         }
     };
 
-    let trades_remaining = lock(&state.core)
-        .inventory()
-        .map(|inventory| inventory.trades_remaining);
+    let (trades_remaining, snapshot) = {
+        let core = lock(&state.core);
+        (
+            core.inventory().map(|inventory| inventory.trades_remaining),
+            core.latest_snapshot().cloned(),
+        )
+    };
     let last_trade_done = {
         let mut status = write(&state.status);
         status.scanning = false;
         status.last_scan_at = Some(Utc::now());
         status.last_scan_error = None;
         status.source = InventorySource::Live;
-        if let Ingested::Newer { last_sync, .. } = &ingested {
-            status.last_sync_oid = Some(last_sync.clone());
+        if let Some(snapshot) = &snapshot {
+            status.remember_snapshot(snapshot);
         }
         let done =
             status.trades_remaining.is_some_and(|left| left > 0) && trades_remaining == Some(0);
@@ -465,7 +469,7 @@ where
 
     emit(app, STATUS_UPDATED, state.status_snapshot());
     match ingested {
-        Ingested::Newer { events, .. } => {
+        Ingested::Newer { events } => {
             emit(app, INVENTORY_UPDATED, state.status_snapshot());
             overlay::on_inventory_updated(app, state);
             state.prices_wake.notify_one();
@@ -477,10 +481,7 @@ where
 }
 
 enum Ingested {
-    Newer {
-        last_sync: String,
-        events: Vec<CoreEvent>,
-    },
+    Newer { events: Vec<CoreEvent> },
     Unchanged,
 }
 
@@ -517,10 +518,10 @@ fn ingest_window(state: &Arc<AppState>, window: Duration) -> anyhow::Result<Inge
         );
         return Ok(Ingested::Unchanged);
     };
-    ingest_buffer(state, buffer)
+    ingest_buffer(state, &buffer)
 }
 
-fn ingest_buffer(state: &Arc<AppState>, buffer: InventoryBuffer) -> anyhow::Result<Ingested> {
+fn ingest_buffer(state: &Arc<AppState>, buffer: &InventoryBuffer) -> anyhow::Result<Ingested> {
     debug!(
         addr = format!("{:#x}", buffer.addr),
         len = buffer.len,
@@ -540,10 +541,7 @@ fn ingest_buffer(state: &Arc<AppState>, buffer: InventoryBuffer) -> anyhow::Resu
     let events = core
         .ingest_inventory(&buffer.json, Utc::now())
         .context("Ingesting the inventory")?;
-    Ok(Ingested::Newer {
-        last_sync: buffer.last_sync,
-        events,
-    })
+    Ok(Ingested::Newer { events })
 }
 
 #[cfg(test)]

@@ -4,7 +4,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
@@ -37,6 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { usePagePosition } from "@/hooks/use-paged";
 import { num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -65,6 +65,7 @@ interface DataTableProps<TData, TValue> {
   rowKey?: (row: TData, index: number) => string;
   fixedPageSize?: number;
   initialPageSize?: number;
+  resetKey?: string;
 }
 
 function columnLabel<TData, TValue>(column: Column<TData, TValue>): string {
@@ -91,11 +92,11 @@ export function DataTable<TData, TValue>({
   rowKey,
   fixedPageSize,
   initialPageSize,
+  resetKey = "",
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [pageIndex, setPageIndex] = useState(0);
   const preferences = usePreferencesStore();
   const { hiddenColumns, setHiddenColumns } = preferences;
   const [ownPageSize, setOwnPageSize] = useState(initialPageSize);
@@ -117,7 +118,6 @@ export function DataTable<TData, TValue>({
       sorting: primarySort ? [...primarySort, ...chosenSorting] : chosenSorting,
       globalFilter,
       columnVisibility,
-      pagination: { pageIndex, pageSize },
     },
     globalFilterFn: searchValue
       ? (row, _columnId, filter: string) =>
@@ -126,14 +126,6 @@ export function DataTable<TData, TValue>({
             .includes(filter.trim().toLowerCase())
       : "auto",
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
-    onPaginationChange: (updater) => {
-      const next =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(next.pageIndex);
-    },
     onColumnVisibilityChange: (updater) => {
       const next =
         typeof updater === "function" ? updater(columnVisibility) : updater;
@@ -145,10 +137,15 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const rows = table.getRowModel().rows;
+  const shownRows = table.getRowModel().rows;
+  const { page, pageCount, setPage } = usePagePosition(
+    JSON.stringify([resetKey, sorting, globalFilter]),
+    shownRows.length,
+    pageSize,
+  );
+  const rows = shownRows.slice(page * pageSize, (page + 1) * pageSize);
   const span = table.getVisibleLeafColumns().length;
   const hideable = table
     .getAllLeafColumns()
@@ -164,7 +161,7 @@ export function DataTable<TData, TValue>({
         />
         {toolbar}
         <span className="text-muted-foreground ml-auto text-xs">
-          {num(table.getFilteredRowModel().rows.length)} rows
+          {num(shownRows.length)} rows
         </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -318,15 +315,15 @@ export function DataTable<TData, TValue>({
       </div>
 
       <Pagination
-        page={Math.min(pageIndex, table.getPageCount() - 1)}
-        pageCount={table.getPageCount()}
-        total={table.getFilteredRowModel().rows.length}
+        page={page}
+        pageCount={pageCount}
+        total={shownRows.length}
         fixedPageSize={fixedPageSize}
         pageSize={ownPageSize}
         onPageSizeChange={
           initialPageSize === undefined ? undefined : setOwnPageSize
         }
-        onPageChange={table.setPageIndex}
+        onPageChange={setPage}
       />
     </div>
   );

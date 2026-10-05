@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
 import { changeTone } from "@/lib/chart";
 import { num, plat } from "@/lib/format";
@@ -180,9 +179,7 @@ export function MarketMovers() {
     [compared],
   );
   const load = useCallback(() => api.marketMovers(range), [range]);
-  const { data, error, loading, reload } = useAsyncData(load);
-
-  useListen(events.pricesUpdated, reload);
+  const { data, error, loading } = useAsyncData(load, [events.pricesUpdated]);
 
   const slices = useMemo(
     () =>
@@ -267,6 +264,7 @@ export function MarketMovers() {
           tableId="analyticsMovers"
           columns={columns}
           data={rows}
+          resetKey={JSON.stringify([range, measure, category, price, volume])}
           filters={
             <FilterGrid
               activeFilters={

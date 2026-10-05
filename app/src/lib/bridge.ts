@@ -47,6 +47,7 @@ function call<T>(command: string, args?: Args): Promise<T> {
 export const events = {
   coreEvent: "core-event",
   inventoryUpdated: "inventory-updated",
+  favouriteUpdated: "favourite-updated",
   statusUpdated: "status-updated",
   worldStateUpdated: "worldstate-updated",
   pricesUpdated: "prices-updated",

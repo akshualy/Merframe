@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::Instant;
 
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use wf_core::{
@@ -14,7 +15,7 @@ use wf_market::{
 use super::{Shared, missing_inventory, ready};
 
 use crate::error::{CommandError, CommandResult};
-use crate::market::{self, MarketOrders, Presence};
+use crate::market::{self, MarketOrders, MarketSnapshot, Presence};
 use crate::runtime;
 use crate::settings::{self, MarketAccount};
 use crate::state::{lock, read, write};
@@ -156,10 +157,10 @@ pub async fn market_post_order<R: Runtime>(
     runtime::emit(
         &app,
         runtime::MARKET_UPDATED,
-        runtime::MarketSnapshot {
+        MarketSnapshot {
             orders: rows,
             auctions: None,
-            at: chrono::Utc::now(),
+            at: Utc::now(),
         },
     );
     Ok(posted)

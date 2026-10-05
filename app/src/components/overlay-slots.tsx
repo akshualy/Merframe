@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { EmptyNote } from "@/components/page";
 import {
   overlaySquadSize,
@@ -5,8 +6,9 @@ import {
 } from "@/components/relic-recommendation-overlay";
 import { RelicRewardOverlay } from "@/components/relic-reward-overlay";
 import { RivenOverlay, RivenRerollOverlay } from "@/components/riven-overlay";
+import { useListen } from "@/hooks/use-listen";
 import { useLoaded } from "@/hooks/use-loaded";
-import { api, logError } from "@/lib/bridge";
+import { api, events, logError } from "@/lib/bridge";
 import type {
   RecommendationTrigger,
   RewardScreen,
@@ -51,8 +53,16 @@ export function RecommendationSlot({
   trigger: RecommendationTrigger | null;
   compact?: boolean;
 }) {
+  const [favouriteChanges, setFavouriteChanges] = useState(0);
+  useListen(events.favouriteUpdated, () =>
+    setFavouriteChanges((count) => count + 1),
+  );
+  const reloadKey = useMemo(
+    () => (trigger ? { trigger, favouriteChanges } : null),
+    [trigger, favouriteChanges],
+  );
   const plans = useLoaded(
-    trigger,
+    reloadKey,
     async () => (await api.relicPlannerTab(overlaySquadSize())).plans,
     (cause) => {
       logError("Ranking the owned relics", cause);

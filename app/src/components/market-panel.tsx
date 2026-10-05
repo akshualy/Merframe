@@ -2,6 +2,7 @@ import { ExternalLink, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 import { ItemImage } from "@/components/item-image";
 import { OrderList } from "@/components/market-order-list";
 import { EmptyNote } from "@/components/page";
@@ -24,6 +25,7 @@ import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/world";
 import { useAppStore } from "@/stores/app-store";
+import { useMarketItemsStore } from "@/stores/market-items-store";
 import {
   type ListingStars,
   useMarketPanelStore,
@@ -62,13 +64,8 @@ function defaultSubtype(item: MarketItem, wanted: string | null) {
   return subtypes.includes("revealed") ? "revealed" : (subtypes[0] ?? "");
 }
 
-function ItemSearch({
-  items,
-  onPick,
-}: {
-  items: MarketItem[];
-  onPick: (item: MarketItem) => void;
-}) {
+function ItemSearch({ onPick }: { onPick: (item: MarketItem) => void }) {
+  const items = useMarketItemsStore((state) => state.items);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -137,7 +134,15 @@ function ItemSearch({
 }
 
 export function MarketPanel() {
-  const { open, items, request, takeRequest, hide } = useMarketPanelStore();
+  const { open, request, takeRequest, hide } = useMarketPanelStore(
+    useShallow((state) => ({
+      open: state.open,
+      request: state.request,
+      takeRequest: state.takeRequest,
+      hide: state.hide,
+    })),
+  );
+  const items = useMarketItemsStore((state) => state.bySlug);
   const signedIn = useAppStore((state) => state.status?.market_account) != null;
   const navigate = useNavigate();
   const [selected, setSelected] = useState<MarketItem | null>(null);
@@ -193,7 +198,7 @@ export function MarketPanel() {
       return;
     }
     takeRequest();
-    const item = items.find((candidate) => candidate.slug === request.slug);
+    const item = items.get(request.slug);
     if (item) {
       handlePick(
         item,
@@ -302,7 +307,7 @@ export function MarketPanel() {
         </Button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-        <ItemSearch items={items} onPick={handlePick} />
+        <ItemSearch onPick={handlePick} />
         {selected ? (
           <>
             <div className="flex items-center gap-2">

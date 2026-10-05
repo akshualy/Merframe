@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -7,8 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useListen } from "@/hooks/use-listen";
-import { api, events, logError, reportError } from "@/lib/bridge";
+import { api, logError, reportError } from "@/lib/bridge";
+import { usePresenceStore } from "@/stores/presence-store";
 import type { Presence, UserStatus } from "@/types";
 
 const UNSET = "unset";
@@ -20,11 +20,8 @@ const OPTIONS: { value: UserStatus; label: string }[] = [
 ];
 
 export function PresenceControl() {
-  const [presence, setPresence] = useState<Presence>({
-    status: null,
-    auto: false,
-    live: null,
-  });
+  const presence = usePresenceStore((state) => state.presence);
+  const setPresence = usePresenceStore((state) => state.setPresence);
 
   useEffect(() => {
     async function load() {
@@ -35,9 +32,7 @@ export function PresenceControl() {
       }
     }
     load();
-  }, []);
-
-  useListen<Presence>(events.marketPresence, setPresence);
+  }, [setPresence]);
 
   const push = async (next: Presence) => {
     setPresence(next);

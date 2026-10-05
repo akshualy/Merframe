@@ -15,7 +15,6 @@ import {
 import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
 import { TradesSection } from "@/components/trades-section";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
 import { changeTone } from "@/lib/chart";
 import { dateTime, dayLabel, num, percent, spansYears } from "@/lib/format";
@@ -68,10 +67,9 @@ export function StatsPage() {
   const quote = usePageQuote("stats");
   const { timeframe } = usePreferencesStore();
   const load = useCallback(() => api.statsTab(sinceMs(timeframe)), [timeframe]);
-  const { data, error, loading, reload } = useAsyncData(load);
-
-  useListen(events.inventoryUpdated, reload);
-  useListen(events.pricesUpdated, reload);
+  const { data, error, loading } = useAsyncData(load, [
+    events.inventoryUpdated,
+  ]);
 
   const points = data?.series ?? [];
   const summary = data?.summary ?? null;

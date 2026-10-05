@@ -14,9 +14,8 @@ import {
   TableSkeleton,
 } from "@/components/page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCommand } from "@/hooks/use-command";
-import { useListen } from "@/hooks/use-listen";
-import { events } from "@/lib/bridge";
+import { useAsyncData } from "@/hooks/use-async-data";
+import { api, events } from "@/lib/bridge";
 import { num } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import type { RivenRow } from "@/types";
@@ -27,13 +26,16 @@ import { VeiledChallenge } from "./veiled";
 
 export function RivensPage() {
   const quote = usePageQuote("rivens");
-  const { data, error, loading, reload } = useCommand("rivens");
+  const { data, error, loading } = useAsyncData(api.rivensTab, [
+    events.inventoryUpdated,
+    events.pricesUpdated,
+    events.rivenDataUpdated,
+    events.marketUpdated,
+  ]);
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") ?? "unveiled";
   const [listing, setListing] = useState<RivenRow | null>(null);
   const [weaponClass, setWeaponClass] = useState<string | null>(null);
-
-  useListen(events.marketUpdated, reload);
 
   useEffect(() => {
     if (!data) {
@@ -105,6 +107,7 @@ export function RivensPage() {
               tableId="rivens"
               columns={columns}
               data={unveiled}
+              resetKey={weaponClass ?? ""}
               searchPlaceholder="Filter rivens"
               searchValue={(row) =>
                 [

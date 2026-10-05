@@ -221,8 +221,10 @@ export function FoundryTreeDialog({
   const [hideCompleted, setHideCompleted] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
 
+  const uniqueName = item?.unique_name;
+
   useEffect(() => {
-    if (!item) {
+    if (!uniqueName) {
       return;
     }
     let cancelled = false;
@@ -242,11 +244,11 @@ export function FoundryTreeDialog({
         }
       }
     }
-    load(item.unique_name);
+    load(uniqueName);
     return () => {
       cancelled = true;
     };
-  }, [item]);
+  }, [uniqueName]);
 
   const selectedNode = useMemo(
     () => (details && selected ? nodeAt(details.tree, selected) : null),

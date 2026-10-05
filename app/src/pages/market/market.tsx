@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 import { GameIcon } from "@/components/game-icon";
 import { ErrorNote, Page, Quoted, Section, Stat } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +22,8 @@ import { usePageQuote } from "@/lib/quotes";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
+import { useMarketListingsStore } from "@/stores/market-listings-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
-import type { Auction, MarketOrders, MarketSnapshot } from "@/types";
 import { AuctionsTable } from "./auctions";
 import { LoginCard } from "./login-card";
 import { OrdersTable } from "./orders";
@@ -32,13 +33,22 @@ type MarketTab = "orders" | "auctions";
 
 export function MarketPage() {
   const quote = usePageQuote("market");
-  const { status, setStatus } = useAppStore();
-  const [orders, setOrders] = useState<MarketOrders>({ items: [], rows: [] });
-  const [auctions, setAuctions] = useState<Auction[]>([]);
-  const { items, openListing, show: showPanel } = useMarketPanelStore();
+  const status = useAppStore((state) => state.status);
+  const setStatus = useAppStore((state) => state.setStatus);
+  const { orders, auctions, refreshedAt, setListings, clearListings } =
+    useMarketListingsStore(
+      useShallow((state) => ({
+        orders: state.orders,
+        auctions: state.auctions,
+        refreshedAt: state.at,
+        setListings: state.setListings,
+        clearListings: state.clear,
+      })),
+    );
+  const openListing = useMarketPanelStore((state) => state.openListing);
+  const showPanel = useMarketPanelStore((state) => state.show);
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as MarketTab | null) ?? "orders";
-  const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [signedOut, setSignedOut] = useState(false);
@@ -73,9 +83,7 @@ export function MarketPage() {
         api.marketMyOrders(),
         api.marketMyAuctions(),
       ]);
-      setOrders(nextOrders);
-      setAuctions(nextAuctions);
-      setRefreshedAt(new Date().toISOString());
+      setListings(nextOrders, nextAuctions, new Date().toISOString());
       setError(null);
     } catch (error) {
       const message = errorMessage(error);
@@ -84,7 +92,7 @@ export function MarketPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setListings]);
 
   useEffect(() => {
     if (account) {
@@ -96,16 +104,7 @@ export function MarketPage() {
 
   useListen(events.marketSignedOut, () => setSignedOut(true));
 
-  useListen<MarketSnapshot>(events.marketUpdated, (snapshot) => {
-    if (snapshot.orders) {
-      setOrders(snapshot.orders);
-    }
-    if (snapshot.auctions) {
-      setAuctions(snapshot.auctions);
-    }
-    setRefreshedAt(snapshot.at);
-    setError(null);
-  });
+  useListen(events.marketUpdated, () => setError(null));
 
   const runMarketAction = useCallback(
     async (promise: Promise<unknown>, message: string) => {
@@ -159,11 +158,12 @@ export function MarketPage() {
   const handleSignOut = useCallback(async () => {
     try {
       await api.marketLogout();
+      clearListings();
       setStatus(await api.gameStatus());
     } catch (error) {
       reportError(error);
     }
-  }, [setStatus]);
+  }, [clearListings, setStatus]);
 
   const totals = useMemo(() => {
     const sell = orders.rows.filter((order) => order.order_type === "sell");
@@ -300,7 +300,6 @@ export function MarketPage() {
               <TabsContent value="auctions">
                 <AuctionsTable
                   auctions={auctions}
-                  items={items}
                   onRefresh={reload}
                   onSetVisibility={setAuctionsVisibility}
                   runMarketAction={runMarketAction}

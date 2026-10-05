@@ -152,7 +152,7 @@ fn is_necramech_set(category: MarketCategory, name: &str) -> bool {
             .any(|necramech| name.contains(necramech))
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct OrderRow {
     pub id: String,
@@ -180,11 +180,25 @@ pub enum Lowest {
     RankZero { plat: f64 },
 }
 
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct MarketOrders {
     pub items: Vec<ItemSummary>,
     pub rows: Vec<OrderRow>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct MarketSnapshot {
+    pub orders: Option<MarketOrders>,
+    pub auctions: Option<Vec<Auction>>,
+    pub at: DateTime<Utc>,
+}
+
+impl MarketSnapshot {
+    pub fn same_listings(&self, other: &Self) -> bool {
+        self.orders == other.orders && self.auctions == other.auctions
+    }
 }
 
 pub fn order_summary(item: &Item, record: &ItemRecord, catalog: &Catalog) -> ItemSummary {
@@ -886,6 +900,12 @@ mod tests {
         listings.remember(&core, Some(&orders), Some(&auctions));
         assert_eq!(listings.current().orders.rows.len(), 1);
         assert_eq!(listings.current().auctions.len(), 2);
+        assert!(
+            lock(&core)
+                .market_listings()
+                .orders_for("braton_prime_barrel")
+                .sell
+        );
 
         listings.remember(&core, Some(&MarketOrders::default()), None);
         let own = listings.current();
@@ -895,5 +915,39 @@ mod tests {
             2,
             "an order refresh leaves the riven auctions alone"
         );
+    }
+
+    #[test]
+    fn same_listings_ignores_time() {
+        const AUCTIONS: &str =
+            include_str!("../../../crates/wf-market/tests/fixtures/auctions_my.json");
+        let market = Market::new();
+        let snapshot = MarketSnapshot {
+            orders: Some(MarketOrders {
+                items: vec![market.summary("braton_prime_barrel")],
+                rows: vec![market.sell("braton_prime_barrel", 1)],
+            }),
+            auctions: Some(wf_market::parse_v1_auctions(AUCTIONS).unwrap()),
+            at: moment(),
+        };
+        let later = MarketSnapshot {
+            at: moment() + Duration::minutes(1),
+            ..snapshot.clone()
+        };
+        assert!(snapshot.same_listings(&later));
+
+        let mut repriced = later.clone();
+        repriced.orders.as_mut().unwrap().rows[0].platinum += 1;
+        assert!(!snapshot.same_listings(&repriced));
+
+        let mut closed = later.clone();
+        closed.auctions.as_mut().unwrap()[0].closed = true;
+        assert!(!snapshot.same_listings(&closed));
+
+        let orders_only = MarketSnapshot {
+            auctions: None,
+            ..later
+        };
+        assert!(!snapshot.same_listings(&orders_only));
     }
 }

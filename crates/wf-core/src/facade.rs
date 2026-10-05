@@ -27,7 +27,7 @@ use crate::relic_planner::{self, MissingPart, RelicPlan, RelicSource, RewardScre
 use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
 use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
-use crate::store::{Snapshot, SnapshotId, StatPoint, Store, StoredTrade, TimeRange};
+use crate::store::{Snapshot, StatPoint, Store, StoredTrade, TimeRange};
 use crate::trade::{Trade, player_name};
 use crate::view::View;
 
@@ -64,7 +64,7 @@ pub struct Core {
     world: Option<WorldState>,
     riven_attributes: Vec<RivenAttribute>,
     riven_data: Option<RivenData>,
-    latest_snapshot: Option<SnapshotId>,
+    latest_snapshot: Option<Snapshot>,
     own_relic_reward: Option<String>,
     reward_screen_recorded: bool,
     favourites: Favourites,
@@ -123,6 +123,10 @@ impl Core {
         self.listings = listings;
     }
 
+    pub fn market_listings(&self) -> &MarketListings {
+        &self.listings
+    }
+
     pub fn store(&self) -> &Store {
         &self.store
     }
@@ -141,6 +145,10 @@ impl Core {
         self.account.as_ref().map(|account| &account.inventory)
     }
 
+    pub fn latest_snapshot(&self) -> Option<&Snapshot> {
+        self.latest_snapshot.as_ref()
+    }
+
     pub fn load_snapshot(&mut self) -> Result<Option<Snapshot>> {
         let Some(snapshot) = self.store.latest_snapshot()? else {
             return Ok(None);
@@ -154,7 +162,7 @@ impl Core {
             last_sync = snapshot.last_sync_oid,
             "Snapshot restored as the current inventory"
         );
-        self.latest_snapshot = Some(snapshot.id);
+        self.latest_snapshot = Some(snapshot.clone());
         self.account = Some(Account::new(inventory));
         Ok(Some(snapshot))
     }
@@ -176,7 +184,7 @@ impl Core {
             self.store.cache_inventory(json)?;
         }
         tracing::info!(snapshot = id.0, changes, "Inventory ingested");
-        self.latest_snapshot = Some(id);
+        self.latest_snapshot = self.store.snapshot(id)?;
         let events = events::inventory_events(&inventory, changes);
         self.account = Some(Account::new(inventory));
         Ok(events)
@@ -459,8 +467,8 @@ impl Core {
     }
 
     pub fn stats_tab(&self, range: TimeRange, now: DateTime<Utc>) -> Result<StatsTab> {
-        let latest_deltas = match self.latest_snapshot {
-            Some(id) => stats::delta_rows(&self.catalog, self.store.deltas(id)?),
+        let latest_deltas = match &self.latest_snapshot {
+            Some(snapshot) => stats::delta_rows(&self.catalog, self.store.deltas(snapshot.id)?),
             None => Vec::new(),
         };
         let series = stats::daily_series(&self.store.stats_series(range)?);
@@ -605,6 +613,30 @@ mod tests {
     }
 
     #[test]
+    fn latest_snapshot_follows_ingest() {
+        let mut core = core();
+        assert!(core.latest_snapshot().is_none());
+        core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
+            .unwrap();
+        let first = core.latest_snapshot().unwrap().clone();
+        assert_eq!(first.taken_at, at(1_000_000));
+        assert_eq!(first.last_sync_oid, "6a9eeb1f000000000000c001");
+        assert_eq!(core.store().latest_snapshot().unwrap(), Some(first.clone()));
+
+        core.ingest_inventory(fixtures::INVENTORY, at(2_000_000))
+            .unwrap();
+        assert_eq!(core.latest_snapshot(), Some(&first));
+
+        let changed =
+            fixtures::INVENTORY.replacen("6a9eeb1f000000000000c001", "6a9eeb1f000000000000c002", 1);
+        core.ingest_inventory(&changed, at(3_000_000)).unwrap();
+        let second = core.latest_snapshot().unwrap();
+        assert_eq!(second.taken_at, at(3_000_000));
+        assert_eq!(second.last_sync_oid, "6a9eeb1f000000000000c002");
+        assert_ne!(second.id, first.id);
+    }
+
+    #[test]
     fn load_cached_snapshot() {
         let dir = std::env::temp_dir().join("wf-core-facade-cached-inventory");
         if dir.exists() {
@@ -625,7 +657,7 @@ mod tests {
         assert!(reader.inventory().is_none());
         let snapshot = reader.load_snapshot().unwrap().unwrap();
         assert_eq!(snapshot.last_sync_oid, "6a9eeb1f000000000000c001");
-        assert_eq!(reader.latest_snapshot, Some(snapshot.id));
+        assert_eq!(reader.latest_snapshot(), Some(&snapshot));
         assert!(reader.inventory().is_some());
         assert!(reader.inventory_tab().is_some());
         let stats = reader.stats_tab(TimeRange::all(), Utc::now()).unwrap();

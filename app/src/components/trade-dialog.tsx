@@ -1,5 +1,5 @@
 import { Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { api, logError } from "@/lib/bridge";
+import { useMarketItemsStore } from "@/stores/market-items-store";
 import type { StoredTrade, Trade, TradeItem } from "@/types";
 
 interface ItemDraft {
@@ -210,14 +210,7 @@ export function TradeDialog({
 }) {
   const [draft, setDraft] = useState(() => draftOf(stored));
   const [saving, setSaving] = useState(false);
-  const [itemNames, setItemNames] = useState<string[]>([]);
-
-  useEffect(() => {
-    api
-      .marketItems()
-      .then((items) => setItemNames(items.map((item) => item.name)))
-      .catch((error) => logError("Loading item names failed", error));
-  }, []);
+  const items = useMarketItemsStore((state) => state.items);
 
   const entry = entryOf(draft);
 
@@ -243,8 +236,8 @@ export function TradeDialog({
           </DialogDescription>
         </DialogHeader>
         <datalist id={ITEM_NAMES_ID}>
-          {itemNames.map((name) => (
-            <option key={name} value={name} />
+          {items.map((item) => (
+            <option key={item.id} value={item.name} />
           ))}
         </datalist>
         <div className="flex flex-col gap-4">

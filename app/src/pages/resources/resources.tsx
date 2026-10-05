@@ -17,7 +17,6 @@ import {
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { useListen } from "@/hooks/use-listen";
 import { usePaged } from "@/hooks/use-paged";
 import { api, events } from "@/lib/bridge";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
@@ -96,9 +95,10 @@ export function ResourcesPage() {
       }),
     [source, scope, kind, prime, owned],
   );
-  const { data, error, loading, reload } = useAsyncData(load);
-
-  useListen(events.inventoryUpdated, reload);
+  const { data, error, loading } = useAsyncData(load, [
+    events.inventoryUpdated,
+    events.favouriteUpdated,
+  ]);
 
   const resources = useMemo(
     () => visibleResources(data?.resources ?? [], show, query),

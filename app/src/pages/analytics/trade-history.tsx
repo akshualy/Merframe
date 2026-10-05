@@ -12,7 +12,6 @@ import {
 import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
 import { TradesSection } from "@/components/trades-section";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
 import { changeTone } from "@/lib/chart";
 import { num } from "@/lib/format";
@@ -86,9 +85,7 @@ export function TradeHistory() {
     () => api.tradeAnalytics(sinceMs(timeframe)),
     [timeframe],
   );
-  const { data, error, reload } = useAsyncData(load);
-
-  useListen(events.inventoryUpdated, reload);
+  const { data, error } = useAsyncData(load, [events.inventoryUpdated]);
 
   if (!data) {
     return error ? <ErrorNote message={error} /> : <TableSkeleton />;

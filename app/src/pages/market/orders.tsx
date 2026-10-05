@@ -378,6 +378,7 @@ export function OrdersTable({
         tableId="marketOrders"
         columns={columns}
         data={filteredEntries}
+        resetKey={JSON.stringify([category, side, missing])}
         searchPlaceholder="Filter orders"
         searchValue={({ item }) => item.name}
         initialSorting={[{ id: "updated_at", desc: true }]}

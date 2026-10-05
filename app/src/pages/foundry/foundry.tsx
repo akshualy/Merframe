@@ -14,8 +14,9 @@ import {
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCommand } from "@/hooks/use-command";
+import { useAsyncData } from "@/hooks/use-async-data";
 import { usePaged } from "@/hooks/use-paged";
+import { api, events } from "@/lib/bridge";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
@@ -34,7 +35,11 @@ import { FoundryTreeDialog } from "./tree-dialog";
 
 export function FoundryPage() {
   const quote = usePageQuote("foundry");
-  const { data, error, loading } = useCommand("foundry");
+  const { data, error, loading } = useAsyncData(api.foundryTab, [
+    events.inventoryUpdated,
+    events.pricesUpdated,
+    events.favouriteUpdated,
+  ]);
   const { foundryCategory: category, setFoundryCategory } =
     usePreferencesStore();
   const [query, setQuery] = useState("");

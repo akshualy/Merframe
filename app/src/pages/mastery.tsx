@@ -21,7 +21,6 @@ import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { useListen } from "@/hooks/use-listen";
 import { usePaged } from "@/hooks/use-paged";
 import { api, errorMessage, events } from "@/lib/bridge";
 import { num, percent } from "@/lib/format";
@@ -193,10 +192,11 @@ export function MasteryPage() {
     [settingsRead, ordering, founders, includeForma],
   );
 
-  const { data, error, loading, reload } = useAsyncData(load);
-
-  useListen(events.inventoryUpdated, reload);
-  useListen(events.pricesUpdated, reload);
+  const { data, error, loading } = useAsyncData(load, [
+    events.inventoryUpdated,
+    events.pricesUpdated,
+    events.favouriteUpdated,
+  ]);
 
   const { pageItems: topItems, pagination } = usePaged(
     data?.recommended ?? [],

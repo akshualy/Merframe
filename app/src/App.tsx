@@ -2,6 +2,7 @@ import { check } from "@tauri-apps/plugin-updater";
 import { useCallback, useEffect, useRef } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 import { AppSidebar } from "@/components/app-sidebar";
 import { EventBridge } from "@/components/event-bridge";
 import { MarketPanel } from "@/components/market-panel";
@@ -25,12 +26,20 @@ import { SettingsPage } from "@/pages/settings/settings";
 import { StatsPage } from "@/pages/stats";
 import { WorldPage } from "@/pages/world/world";
 import { useAppStore } from "@/stores/app-store";
-import { useMarketPanelStore } from "@/stores/market-panel-store";
+import { useMarketItemsStore } from "@/stores/market-items-store";
 
 function useBoot() {
   const newest = useRef(0);
   const { setReady, setBootError, setStatus, setWorld, setSettings } =
-    useAppStore();
+    useAppStore(
+      useShallow((state) => ({
+        setReady: state.setReady,
+        setBootError: state.setBootError,
+        setStatus: state.setStatus,
+        setWorld: state.setWorld,
+        setSettings: state.setSettings,
+      })),
+    );
 
   const boot = useCallback(async () => {
     newest.current += 1;
@@ -71,8 +80,15 @@ function useBoot() {
 
 function MainWindow() {
   const retry = useBoot();
-  const { ready, bootError, settings, setUpdate } = useAppStore();
-  const setItems = useMarketPanelStore((state) => state.setItems);
+  const { ready, bootError, settings, setUpdate } = useAppStore(
+    useShallow((state) => ({
+      ready: state.ready,
+      bootError: state.bootError,
+      settings: state.settings,
+      setUpdate: state.setUpdate,
+    })),
+  );
+  const setItems = useMarketItemsStore((state) => state.setItems);
   const statsTab = settings?.stats_tab_enabled ?? true;
   const checkForUpdates = settings?.check_for_updates ?? true;
 

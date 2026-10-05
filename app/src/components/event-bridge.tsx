@@ -5,11 +5,15 @@ import { api, events, reportError } from "@/lib/bridge";
 import { countdown, num } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import { useAppStore } from "@/stores/app-store";
+import { useMarketListingsStore } from "@/stores/market-listings-store";
+import { usePresenceStore } from "@/stores/presence-store";
 import type {
   CoreEvent,
   CoreEventEnvelope,
   GameStatus,
   MarketAutoClose,
+  MarketSnapshot,
+  Presence,
 } from "@/types";
 
 function createSeenGate() {
@@ -30,7 +34,11 @@ function createSeenGate() {
 }
 
 export function EventBridge() {
-  const { setStatus, setWorld } = useAppStore();
+  const setStatus = useAppStore((state) => state.setStatus);
+  const setWorld = useAppStore((state) => state.setWorld);
+  const applySnapshot = useMarketListingsStore((state) => state.applySnapshot);
+  const clearListings = useMarketListingsStore((state) => state.clear);
+  const setPresence = usePresenceStore((state) => state.setPresence);
   const [isNew] = useState(createSeenGate);
   useOverlayFeed();
 
@@ -43,6 +51,9 @@ export function EventBridge() {
       reportError(error);
     }
   });
+  useListen<MarketSnapshot>(events.marketUpdated, applySnapshot);
+  useListen(events.marketSignedOut, clearListings);
+  useListen<Presence>(events.marketPresence, setPresence);
   useListen<MarketAutoClose>(events.marketAutoClosed, (closed) => {
     const item =
       closed.quantity > 1 ? `${closed.quantity} x ${closed.item}` : closed.item;

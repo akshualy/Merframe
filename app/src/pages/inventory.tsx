@@ -11,8 +11,7 @@ import {
 } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCommand } from "@/hooks/use-command";
-import { useListen } from "@/hooks/use-listen";
+import { useAsyncData } from "@/hooks/use-async-data";
 import { api, events, reportError } from "@/lib/bridge";
 import { num } from "@/lib/format";
 import { entriesFor, inventoryFlags } from "@/lib/inventory-entries";
@@ -22,15 +21,18 @@ import { notify } from "@/lib/toast";
 
 export function InventoryPage() {
   const quote = usePageQuote("inventory");
-  const { data, error, loading, reload } = useCommand("inventory");
+  const { data, error, loading } = useAsyncData(api.inventoryTab, [
+    events.inventoryUpdated,
+    events.pricesUpdated,
+    events.favouriteUpdated,
+    events.marketUpdated,
+  ]);
   const [exporting, setExporting] = useState(false);
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as InventoryTabKey | null) ?? "parts";
 
   const entries = useMemo(() => entriesFor(tab, data), [tab, data]);
   const flags = useMemo(() => inventoryFlags(data), [data]);
-
-  useListen(events.marketUpdated, reload);
 
   const handleExport = useCallback(async () => {
     setExporting(true);

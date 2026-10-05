@@ -24,14 +24,15 @@ use game::{inventory_task, log_task, process_task};
 use market_loop::{auto_close, market_presence_task, market_task};
 
 pub use game::acquire;
+pub use market_loop::MarketAutoClose;
 pub(crate) use market_loop::trade_side;
-pub use market_loop::{MarketAutoClose, MarketSnapshot};
 
 pub const INVENTORY_UPDATED: &str = "inventory-updated";
 pub const STATUS_UPDATED: &str = "status-updated";
 pub const MARKET_AUTO_CLOSED: &str = "market-auto-closed";
 pub const MARKET_PRESENCE: &str = "market-presence";
 pub const MARKET_UPDATED: &str = "market-updated";
+pub const FAVOURITE_UPDATED: &str = "favourite-updated";
 
 const RIVEN_DATA_KEY: &str = "riven_data";
 const APP_TITLE: &str = "Merframe";
@@ -110,8 +111,7 @@ async fn load_cached_inventory<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSt
         Ok(Some(snapshot)) => {
             let mut status = write(&state.status);
             status.source = InventorySource::Cached;
-            status.last_sync_oid = Some(snapshot.last_sync_oid.clone());
-            status.last_sync_at = Some(snapshot.taken_at);
+            status.remember_snapshot(&snapshot);
             status.trades_remaining = lock(&state.core)
                 .inventory()
                 .map(|inventory| inventory.trades_remaining);

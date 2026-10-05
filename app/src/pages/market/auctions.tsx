@@ -15,6 +15,7 @@ import { api, reportError } from "@/lib/bridge";
 import { dateTime, num } from "@/lib/format";
 import { rivenAuctionUrl } from "@/lib/rivens";
 import { ListingDialog, type ListingForm } from "@/pages/rivens/listing-dialog";
+import { useMarketItemsStore } from "@/stores/market-items-store";
 import type { Auction, MarketItem } from "@/types";
 
 function titleCase(slug: string): string {
@@ -30,9 +31,12 @@ function titleCase(slug: string): string {
     .join(" ");
 }
 
-function auctionName(auction: Auction, items: MarketItem[]): string {
+function auctionName(
+  auction: Auction,
+  items: ReadonlyMap<string, MarketItem>,
+): string {
   const slug = auction.item.weapon_url_name;
-  const weapon = items.find((item) => item.slug === slug)?.name;
+  const weapon = items.get(slug)?.name;
   return `${weapon ?? titleCase(slug)} ${titleCase(auction.item.name)}`;
 }
 
@@ -51,13 +55,11 @@ function auctionForm(auction: Auction): ListingForm {
 
 export function AuctionsTable({
   auctions,
-  items,
   onRefresh,
   onSetVisibility,
   runMarketAction,
 }: {
   auctions: Auction[];
-  items: MarketItem[];
   onRefresh: () => void;
   onSetVisibility: (visible: boolean) => void;
   runMarketAction: (
@@ -65,6 +67,7 @@ export function AuctionsTable({
     message: string,
   ) => Promise<void>;
 }) {
+  const items = useMarketItemsStore((state) => state.bySlug);
   const [editing, setEditing] = useState<Auction | null>(null);
 
   const columns = useMemo<ColumnDef<Auction>[]>(

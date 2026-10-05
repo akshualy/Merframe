@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::{Mutex as AsyncMutex, Notify, SetOnce};
-use wf_core::{Catalog, Core, MarketWindow, PriceCache, PriceSource, Store, Turnover};
+use wf_core::{Catalog, Core, MarketWindow, PriceCache, PriceSource, Snapshot, Store, Turnover};
 use wf_data::load_or_fetch;
 use wf_market::{Client, Platform, PriceTable};
 use wf_worldstate::WorldState;
@@ -112,6 +112,18 @@ pub struct GameStatus {
     pub market_unread: u32,
     pub trades_remaining: Option<u32>,
     pub overlay_support: OverlaySupport,
+}
+
+impl GameStatus {
+    pub fn remember_snapshot(&mut self, snapshot: &Snapshot) {
+        self.last_sync_oid = Some(snapshot.last_sync_oid.clone());
+        self.last_sync_at = Some(snapshot.taken_at);
+    }
+
+    fn inventory_age(&self, now: DateTime<Utc>) -> Option<i64> {
+        self.last_sync_at
+            .map(|taken_at| now.signed_duration_since(taken_at).num_seconds())
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -243,20 +255,7 @@ impl AppState {
     pub fn status_snapshot(&self) -> GameStatus {
         let mut status = read(&self.status).clone();
         status.price_table_at = self.prices.checked_at();
-        let core = lock(&self.core);
-        match core.store().latest_snapshot() {
-            Ok(Some(snapshot)) => {
-                status.inventory_age_secs = Some(
-                    Utc::now()
-                        .signed_duration_since(snapshot.taken_at)
-                        .num_seconds(),
-                );
-                status.last_sync_oid = Some(snapshot.last_sync_oid);
-                status.last_sync_at = Some(snapshot.taken_at);
-            }
-            Ok(None) => {}
-            Err(error) => tracing::warn!(%error, "Latest snapshot lookup failed"),
-        }
+        status.inventory_age_secs = status.inventory_age(Utc::now());
         status
     }
 }
@@ -290,6 +289,28 @@ mod tests {
         prices.checked(later);
         assert_eq!(prices.checked_at(), Some(later));
         assert_eq!(prices.plat("arcane_energize"), Some(55.0));
+    }
+
+    #[test]
+    fn status_snapshot() {
+        let store = Store::in_memory().unwrap();
+        let inventory =
+            wf_inventory::Inventory::parse(include_str!("../../../fixtures/inventory.json"))
+                .unwrap();
+        let taken_at = DateTime::<Utc>::from_timestamp(1_757_410_800, 0).unwrap();
+        store.record_snapshot(&inventory, taken_at).unwrap();
+        let snapshot = store.latest_snapshot().unwrap().unwrap();
+
+        let mut status = GameStatus::default();
+        assert_eq!(status.inventory_age(taken_at), None);
+        status.remember_snapshot(&snapshot);
+        assert_eq!(
+            status.last_sync_oid.as_deref(),
+            Some("6a9eeb1f000000000000c001")
+        );
+        assert_eq!(status.last_sync_at, Some(taken_at));
+        let later = taken_at + chrono::TimeDelta::minutes(90);
+        assert_eq!(status.inventory_age(later), Some(5400));
     }
 
     #[test]

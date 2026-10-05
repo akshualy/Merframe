@@ -16,7 +16,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { useListen } from "@/hooks/use-listen";
 import { api, events } from "@/lib/bridge";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num, plat } from "@/lib/format";
@@ -74,9 +73,11 @@ export function RelicPlannerPage() {
     [squadSize, onlyOwned],
   );
 
-  const { data, error, loading, reload } = useAsyncData(load);
-
-  useListen(events.inventoryUpdated, reload);
+  const { data, error, loading } = useAsyncData(load, [
+    events.inventoryUpdated,
+    events.pricesUpdated,
+    events.favouriteUpdated,
+  ]);
 
   const scrollToPanel = (panel: RefObject<HTMLDivElement | null>) => {
     panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -251,6 +252,7 @@ export function RelicPlannerPage() {
           tableId="relicPlanner"
           columns={columns}
           data={rows}
+          resetKey={JSON.stringify([onlyOwned, era, filters])}
           searchPlaceholder="Filter relics and rewards"
           searchValue={searchValue}
           initialSearch={params.get("search") ?? ""}

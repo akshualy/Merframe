@@ -1,21 +1,12 @@
 import { useEffect, useRef } from "react";
-import {
-  CardGrid,
-  EmptyNote,
-  ErrorNote,
-  Page,
-  Quoted,
-  Section,
-  TableSkeleton,
-} from "@/components/page";
+import { CardGrid, EmptyNote, Page, Quoted, Section } from "@/components/page";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCommand } from "@/hooks/use-command";
-import { useListen } from "@/hooks/use-listen";
 import { useNow } from "@/hooks/use-now";
-import { events } from "@/lib/bridge";
+import { api, reportError } from "@/lib/bridge";
 import { secondsUntil } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
+import { useAppStore } from "@/stores/app-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import type { Fissure, FissurePath } from "@/types";
 import { FissuresByTier } from "./fissures";
@@ -41,11 +32,10 @@ const PATH_FILTERS: { value: FissurePath; label: string }[] = [
 
 export function WorldPage() {
   const quote = usePageQuote("world");
-  const { data, error, loading, reload } = useCommand("worldstate");
+  const data = useAppStore((state) => state.world);
+  const setWorld = useAppStore((state) => state.setWorld);
   const now = useNow();
   const { fissurePath, setFissurePath } = usePreferencesStore();
-
-  useListen(events.worldStateUpdated, reload);
 
   const nextCycleEnd = data?.timers.length
     ? Math.min(...data.timers.map((timer) => new Date(timer.ends).getTime()))
@@ -61,8 +51,8 @@ export function WorldPage() {
       return;
     }
     rolledOver.current = nextCycleEnd;
-    reload();
-  }, [now, nextCycleEnd, reload]);
+    api.worldstate().then(setWorld, reportError);
+  }, [now, nextCycleEnd, setWorld]);
 
   const shown: Record<FissurePath, (fissure: Fissure) => boolean> = {
     all: () => true,
@@ -78,14 +68,6 @@ export function WorldPage() {
         new Date(left.expiry).getTime() - new Date(right.expiry).getTime(),
     );
 
-  if (loading && !data) {
-    return (
-      <Page title="World" description={<Quoted quote={quote} />}>
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
   const sortie = data?.sortie ?? null;
   const baro = data?.baro ?? null;
   const baroPresent = baro !== null && "Present" in baro;
@@ -95,8 +77,6 @@ export function WorldPage() {
 
   return (
     <Page title="World" description={<Quoted quote={quote} />}>
-      {error && <ErrorNote message={error} />}
-
       {data?.timers.length ? (
         <CardGrid>
           {data.timers.map((timer) => (

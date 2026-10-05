@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use serde::Serialize;
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
@@ -12,7 +12,7 @@ use wf_market::{
 };
 
 use super::{MARKET_AUTO_CLOSED, MARKET_PRESENCE, STATUS_UPDATED, emit};
-use crate::market::{self, MarketCategory, MarketOrders};
+use crate::market::{self, MarketCategory, MarketSnapshot};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, lock, read, write};
 
@@ -31,14 +31,6 @@ impl MarketRefresh {
     fn is_complete(&self) -> bool {
         self.orders.is_some() && self.auctions.is_some()
     }
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-pub struct MarketSnapshot {
-    pub orders: Option<MarketOrders>,
-    pub auctions: Option<Vec<Auction>>,
-    pub at: DateTime<Utc>,
 }
 
 fn poll_backoff(interval: Duration, failures: u32) -> Duration {
@@ -406,6 +398,7 @@ async fn checked_session<R: Runtime>(
 pub(super) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut failures: u32 = 0;
     let mut verified_at: Option<Instant> = None;
+    let mut emitted: Option<MarketSnapshot> = None;
     loop {
         if !state.market().has_token() {
             failures = 0;
@@ -442,7 +435,13 @@ pub(super) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
                 auctions = snapshot.auctions.as_ref().map(Vec::len),
                 "Market listings refreshed"
             );
-            emit(&app, super::MARKET_UPDATED, snapshot);
+            if emitted
+                .as_ref()
+                .is_none_or(|last| !last.same_listings(&snapshot))
+            {
+                emit(&app, super::MARKET_UPDATED, &snapshot);
+                emitted = Some(snapshot);
+            }
         }
         tokio::time::sleep(poll_backoff(interval, failures)).await;
     }

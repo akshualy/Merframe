@@ -263,7 +263,7 @@ pub struct Chat {
     pub unread_count: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct RivenAttributeInstance {
     pub value: f64,
@@ -271,7 +271,7 @@ pub struct RivenAttributeInstance {
     pub url_name: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct AuctionItem {
     pub attributes: Vec<RivenAttributeInstance>,
@@ -283,7 +283,7 @@ pub struct AuctionItem {
     pub weapon_url_name: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[allow(
     clippy::struct_excessive_bools,
