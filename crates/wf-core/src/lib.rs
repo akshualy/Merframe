@@ -41,7 +41,7 @@ pub use inventory_view::{
     InventoryTab, ItemStatus, ItemSummary, MiscRow, ModHolder, ModRow, PartRow, RelicRow,
     SculptureStars, SetComponent, SetLink, SetRow, UpgradePrices,
 };
-pub use listings::{MarketListings, PlacedOrders};
+pub use listings::MarketListings;
 pub use mastery::{
     Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryComponent, MasteryGroup, MasteryItem,
     MasteryOptions, MasteryOrdering, MasterySummary, MasteryTab, RouteMember,

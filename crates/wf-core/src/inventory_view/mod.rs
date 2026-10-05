@@ -4,6 +4,7 @@ use std::ops::Index;
 use indexmap::{IndexMap, IndexSet};
 use serde::Serialize;
 use wf_data::{Rarity, Refinement, catch_grade, misc_item_name};
+use wf_market::OrderType;
 
 use crate::catalog::{Catalog, VaultStatus, display_name_from_path, part_name, refinement_name};
 use crate::identity::{ItemRecord, unlisted_upgrade};
@@ -225,17 +226,18 @@ pub(crate) fn tab(view: &View) -> InventoryTab {
     let relics = relics(view, &mut index);
     let misc = misc(view, &mut index);
     let sets = sets(view, &mut index);
+    let sold = view.listings.listed_slugs(OrderType::Sell, view.items);
+    let bought = view.listings.listed_slugs(OrderType::Buy, view.items);
     let mut selling = Vec::new();
     let mut buying = Vec::new();
     for (item, summary) in (0..).zip(&index.items) {
         let Some(slug) = summary.market_slug.as_deref() else {
             continue;
         };
-        let orders = view.listings.orders_for(slug);
-        if orders.sell {
+        if sold.contains(slug) {
             selling.push(item);
         }
-        if orders.buy {
+        if bought.contains(slug) {
             buying.push(item);
         }
     }
@@ -399,13 +401,27 @@ mod tests {
         let fixture = Fixture {
             listings: MarketListings::new(
                 [
-                    ("braton_prime_barrel", wf_market::OrderType::Sell),
-                    ("braton_prime_set", wf_market::OrderType::Buy),
+                    ("braton_prime_barrel", OrderType::Sell),
+                    ("braton_prime_set", OrderType::Buy),
                 ],
                 &[],
             ),
             ..Fixture::new(fixtures::catalog(), favourite_fixture()).with_prices(prices())
-        };
+        }
+        .with_market(&[
+            fixtures::market_item(
+                "braton_prime_barrel",
+                "Braton Prime Barrel",
+                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                &["component"],
+            ),
+            fixtures::market_item(
+                "braton_prime_set",
+                "Braton Prime Set",
+                "/Lotus/Weapons/Tenno/Rifle/BratonPrime",
+                &["set"],
+            ),
+        ]);
         let tab = tab(&fixture.view());
         let slugs = |items: &[usize]| -> Vec<Option<&str>> {
             items

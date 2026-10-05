@@ -290,12 +290,11 @@ impl Listings {
         if let Some(auctions) = auctions {
             own.auctions = auctions.to_vec();
         }
-        let MarketOrders { items, rows } = &own.orders;
         let listings = MarketListings::new(
-            rows.iter().filter_map(|row| {
-                let slug = items[row.item].market_slug.as_deref()?;
-                Some((slug, row.order_type))
-            }),
+            own.orders
+                .rows
+                .iter()
+                .map(|row| (row.item_id.as_str(), row.order_type)),
             &own.auctions,
         );
         drop(own);
@@ -900,12 +899,14 @@ mod tests {
         listings.remember(&core, Some(&orders), Some(&auctions));
         assert_eq!(listings.current().orders.rows.len(), 1);
         assert_eq!(listings.current().auctions.len(), 2);
+        let locked = lock(&core);
         assert!(
-            lock(&core)
+            locked
                 .market_listings()
-                .orders_for("braton_prime_barrel")
-                .sell
+                .listed_slugs(OrderType::Sell, locked.items())
+                .contains("braton_prime_barrel")
         );
+        drop(locked);
 
         listings.remember(&core, Some(&MarketOrders::default()), None);
         let own = listings.current();

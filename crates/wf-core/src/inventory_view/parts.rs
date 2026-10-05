@@ -618,7 +618,21 @@ mod tests {
                 ]),
             )
             .with_prices(prices())
-        };
+        }
+        .with_market(&[
+            fixtures::market_item(
+                "braton_prime_barrel",
+                "Braton Prime Barrel",
+                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                &["component"],
+            ),
+            fixtures::market_item(
+                "trinity_prime_systems",
+                "Trinity Prime Systems Blueprint",
+                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+                &["component", "blueprint"],
+            ),
+        ]);
         let listed = tab(&fixture.view());
         let ordered: Vec<(Option<&str>, bool, bool)> = listed
             .parts
@@ -638,7 +652,7 @@ mod tests {
                 (Some("braton_prime_barrel"), true, false),
                 (Some("trinity_prime_systems_blueprint"), false, true)
             ],
-            "an order on the part covers the row whose slug only differs by the blueprint suffix and keeps its side"
+            "orders follow the item id"
         );
         fixture.listings = MarketListings::default();
         let unlisted = tab(&fixture.view());
@@ -666,7 +680,13 @@ mod tests {
                 ]),
             )
             .with_prices(prices())
-        };
+        }
+        .with_market(&[fixtures::market_item(
+            "braton_prime_set",
+            "Braton Prime Set",
+            "/Lotus/Weapons/Tenno/Rifle/BratonPrime",
+            &["set"],
+        )]);
         let listed = tab(&fixture.view());
 
         assert_eq!(listed.parts.len(), 2, "only the two stocked parts survive");

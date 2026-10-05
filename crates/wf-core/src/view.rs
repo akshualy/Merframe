@@ -57,6 +57,11 @@ impl Fixture {
         Self { prices, ..self }
     }
 
+    pub(crate) fn with_market(mut self, listed: &[wf_market::Item]) -> Self {
+        self.items.index_market(listed);
+        self
+    }
+
     pub(crate) fn rows<R>(
         &self,
         build: fn(&View, &mut ItemIndex) -> Vec<R>,

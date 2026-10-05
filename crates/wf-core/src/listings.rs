@@ -2,18 +2,14 @@ use std::collections::HashSet;
 
 use wf_market::{Auction, OrderType};
 
+use crate::identity::ItemTable;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct ListedRiven {
     name: String,
     weapon: String,
     mastery: u32,
     rerolls: u32,
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct PlacedOrders {
-    pub sell: bool,
-    pub buy: bool,
 }
 
 #[derive(Debug, Default)]
@@ -30,22 +26,17 @@ fn squashed(text: &str) -> String {
         .collect()
 }
 
-fn ordered_item(market_slug: &str) -> String {
-    market_slug.to_lowercase().replace("_blueprint", "")
-}
-
 impl MarketListings {
-    pub fn new<S: AsRef<str>, I: IntoIterator<Item = (S, OrderType)>>(
+    pub fn new<S: Into<String>, I: IntoIterator<Item = (S, OrderType)>>(
         orders: I,
         auctions: &[Auction],
     ) -> Self {
         let mut selling = HashSet::new();
         let mut buying = HashSet::new();
-        for (slug, order_type) in orders {
-            let item = ordered_item(slug.as_ref());
+        for (item_id, order_type) in orders {
             match order_type {
-                OrderType::Sell => selling.insert(item),
-                OrderType::Buy => buying.insert(item),
+                OrderType::Sell => selling.insert(item_id.into()),
+                OrderType::Buy => buying.insert(item_id.into()),
             };
         }
         Self {
@@ -63,12 +54,15 @@ impl MarketListings {
         }
     }
 
-    pub fn orders_for(&self, market_slug: &str) -> PlacedOrders {
-        let item = ordered_item(market_slug);
-        PlacedOrders {
-            sell: self.selling.contains(&item),
-            buy: self.buying.contains(&item),
-        }
+    pub fn listed_slugs<'a>(&self, side: OrderType, items: &'a ItemTable) -> HashSet<&'a str> {
+        let item_ids = match side {
+            OrderType::Sell => &self.selling,
+            OrderType::Buy => &self.buying,
+        };
+        item_ids
+            .iter()
+            .filter_map(|item_id| items.by_market_id(item_id)?.market_slug.as_deref())
+            .collect()
     }
 
     pub fn lists_riven(&self, name: &str, weapon_slug: &str, mastery: u32, rerolls: u32) -> bool {
@@ -84,6 +78,7 @@ impl MarketListings {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::catalog::fixtures::{self, market_item};
 
     const AUCTIONS: &str = include_str!("../../wf-market/tests/fixtures/auctions_my.json");
 
@@ -92,35 +87,51 @@ mod tests {
     }
 
     #[test]
-    fn orders_for_blueprint_suffix_and_side() {
+    fn listed_slugs() {
+        let mut items = ItemTable::build(&fixtures::catalog());
+        let listed = [
+            market_item(
+                "trinity_prime_systems",
+                "Trinity Prime Systems Blueprint",
+                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+                &["component", "blueprint"],
+            ),
+            market_item(
+                "braton_prime_set",
+                "Braton Prime Set",
+                "/Lotus/Weapons/Tenno/Rifle/BratonPrime",
+                &["set"],
+            ),
+            market_item(
+                "braton_prime_barrel",
+                "Braton Prime Barrel",
+                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                &["component"],
+            ),
+        ];
+        items.index_market(&listed);
         let listings = MarketListings::new(
             [
-                ("ash_prime_systems_blueprint", OrderType::Sell),
+                ("trinity_prime_systems", OrderType::Sell),
                 ("braton_prime_set", OrderType::Buy),
-                ("Primed_Continuity", OrderType::Sell),
-                ("primed_continuity", OrderType::Buy),
+                ("braton_prime_barrel", OrderType::Sell),
+                ("braton_prime_barrel", OrderType::Buy),
+                ("unknown", OrderType::Sell),
             ],
             &[],
         );
-        let sell = PlacedOrders {
-            sell: true,
-            buy: false,
+        let sorted = |side| {
+            let mut slugs: Vec<&str> = listings.listed_slugs(side, &items).into_iter().collect();
+            slugs.sort_unstable();
+            slugs
         };
-        let buy = PlacedOrders {
-            sell: false,
-            buy: true,
-        };
-        let both = PlacedOrders {
-            sell: true,
-            buy: true,
-        };
-        assert_eq!(listings.orders_for("ash_prime_systems"), sell);
-        assert_eq!(listings.orders_for("ash_prime_systems_blueprint"), sell);
-        assert_eq!(listings.orders_for("braton_prime_set"), buy);
-        assert_eq!(listings.orders_for("primed_continuity"), both);
         assert_eq!(
-            listings.orders_for("braton_prime_barrel"),
-            PlacedOrders::default()
+            sorted(OrderType::Sell),
+            ["braton_prime_barrel", "trinity_prime_systems_blueprint"]
+        );
+        assert_eq!(
+            sorted(OrderType::Buy),
+            ["braton_prime_barrel", "braton_prime_set"]
         );
     }
 
@@ -147,10 +158,9 @@ mod tests {
     #[test]
     fn empty_listings() {
         let listings = MarketListings::default();
-        assert_eq!(
-            listings.orders_for("braton_prime_set"),
-            PlacedOrders::default()
-        );
+        let items = ItemTable::build(&fixtures::catalog());
+        assert!(listings.listed_slugs(OrderType::Sell, &items).is_empty());
+        assert!(listings.listed_slugs(OrderType::Buy, &items).is_empty());
         assert!(!listings.lists_riven("Acri-vexicak", "okina", 12, 86));
     }
 }
