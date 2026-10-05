@@ -6,7 +6,7 @@ use super::{ItemKind, ItemRecord, ItemRef, ItemTable, Variant, ambassador_bluepr
 use crate::catalog::{RECIPE_PREFIX, RELIC_PREFIX, projection_suffix};
 use crate::trade::name_key;
 
-static LISTINGS_OF_ANOTHER_ITEM: [(&str, &str); 2] = [
+static LISTINGS_OF_ANOTHER_ITEM: [(&str, &str); 3] = [
     (
         "Nihil's Oubliette (Key)",
         "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey",
@@ -14,6 +14,10 @@ static LISTINGS_OF_ANOTHER_ITEM: [(&str, &str); 2] = [
     (
         "Legendary Fusion Core",
         "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser",
+    ),
+    (
+        "Scan Aquatic Lifeforms",
+        "/Lotus/Types/Sentinels/SentinelPrecepts/LocateCreatures",
     ),
 ];
 
@@ -106,8 +110,8 @@ impl ItemTable {
                 record.market_slug = Some(item.slug.clone());
             }
             self.by_market_id.insert(item.id.clone(), target);
-            if !item.game_ref.is_empty() {
-                self.by_game_ref.insert(item.game_ref.clone(), target);
+            if !game_ref.is_empty() {
+                self.by_game_ref.insert(game_ref.into_owned(), target);
             }
             if let Some(english) = item.i18n.get("en") {
                 self.listing_by_name
@@ -224,7 +228,7 @@ mod tests {
                 &["imprint"],
             ),
         ];
-        assert_eq!(table.index_market(&items), 5);
+        assert_eq!(table.index_market(&items), 6);
         let record = |id: &str| table.by_market_id(id).unwrap();
 
         let systems = record("trinity_prime_systems_blueprint");

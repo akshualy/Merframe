@@ -39,13 +39,13 @@ pub(crate) fn arcanes(view: &View, index: &mut ItemIndex) -> Vec<ModRow> {
 fn equipped_holders(
     catalog: &Catalog,
     slots: &HashMap<&str, Vec<UpgradeSlot<'_>>>,
-    instances: &BTreeSet<&str>,
+    references: &BTreeSet<&str>,
     index: &mut ItemIndex,
 ) -> Vec<usize> {
     let mut configs_by_item: BTreeMap<&str, (&EquipmentItem, BTreeSet<usize>)> = BTreeMap::new();
-    for slot in instances
+    for slot in references
         .iter()
-        .filter_map(|item_id| slots.get(*item_id))
+        .filter_map(|reference| slots.get(*reference))
         .flatten()
     {
         configs_by_item
@@ -112,7 +112,7 @@ fn upgrade_prices(
 #[derive(Default)]
 struct Tally<'a> {
     count: i64,
-    holders: BTreeSet<&'a str>,
+    references: BTreeSet<&'a str>,
 }
 
 fn count_by_rank(
@@ -128,10 +128,11 @@ fn count_by_rank(
             } else {
                 None
             };
-            counted
-                .entry((item.item_type.as_str(), rank))
-                .or_default()
-                .count += item.item_count;
+            let tally = counted.entry((item.item_type.as_str(), rank)).or_default();
+            tally.count += item.item_count;
+            if rank.is_none() {
+                tally.references.insert(item.item_type.as_str());
+            }
         }
     }
     for upgrade in &inventory.upgrades {
@@ -157,7 +158,7 @@ fn count_by_rank(
             .entry((upgrade.item_type.as_str(), rank))
             .or_default();
         tally.count += 1;
-        tally.holders.insert(upgrade.item_id.as_str());
+        tally.references.insert(upgrade.item_id.as_str());
     }
     counted
 }
@@ -176,7 +177,7 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
     let mut rows: Vec<ModRow> = count_by_rank(inventory, wanted)
         .into_iter()
         .filter(|(_, tally)| tally.count > 0)
-        .map(|((unique_name, rank), Tally { count, holders })| {
+        .map(|((unique_name, rank), Tally { count, references })| {
             let riven = is_riven(unique_name);
             let record = match items.variant(unique_name, Variant::Veiled) {
                 Some(veiled) => Cow::Borrowed(veiled),
@@ -204,7 +205,7 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
                 max_rank,
                 prices: upgrade_prices(prices, slug, rank, max_rank, wanted),
                 rarity,
-                equipped_in: equipped_holders(catalog, &slots, &holders, index),
+                equipped_in: equipped_holders(catalog, &slots, &references, index),
             }
         })
         .collect();
@@ -527,12 +528,32 @@ mod tests {
                 .windows(2)
                 .all(|pair| index.holder(pair[0]).name <= index.holder(pair[1]).name)
         }));
-        assert!(
-            rows.iter()
-                .filter(|row| row.rank.is_none())
-                .all(|row| row.equipped_in.is_empty()),
-            "an unranked stack has no instance ids to trace"
-        );
+    }
+
+    #[test]
+    fn unranked_stack_equipped_by_type() {
+        const SCOURGE: &str = "/Lotus/Upgrades/Mods/Melee/DualStat/PoisonEventMeleeMod";
+        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
+        value["RawUpgrades"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({ "ItemType": SCOURGE, "ItemCount": 4 }));
+        let inventory = Inventory::parse(&value.to_string()).unwrap();
+        let fixture = Fixture::new(fixtures::mastery_catalog(), inventory);
+        let (rows, index) = fixture.rows(mods);
+        let stack = rows
+            .iter()
+            .find(|row| index[row.item].unique_name == SCOURGE && row.rank.is_none())
+            .unwrap();
+        assert_eq!(stack.count, 4);
+        let holders: Vec<&ModHolder> = stack
+            .equipped_in
+            .iter()
+            .map(|&holder| index.holder(holder))
+            .collect();
+        assert_eq!(holders.len(), 1);
+        assert_eq!(holders[0].name, "Wolf Sledge");
+        assert_eq!(holders[0].configs, [0]);
     }
 
     #[test]

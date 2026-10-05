@@ -447,17 +447,13 @@ impl ItemTable {
         unique_name: &str,
         name: impl FnOnce() -> String,
     ) -> Cow<'_, ItemRecord> {
-        if let Some(record) = self.get(unique_name) {
-            return Cow::Borrowed(record);
+        match self
+            .get(unique_name)
+            .or_else(|| self.by_game_ref(unique_name))
+        {
+            Some(record) => Cow::Borrowed(record),
+            None => Cow::Owned(ItemRecord::unknown(unique_name, name())),
         }
-        let record = ItemRecord::unknown(unique_name, name());
-        Cow::Owned(match self.by_game_ref(unique_name) {
-            Some(listed) => ItemRecord {
-                market_slug: listed.market_slug.clone(),
-                ..record
-            },
-            None => record,
-        })
     }
 
     pub fn by_market_id(&self, id: &str) -> Option<&ItemRecord> {
@@ -650,8 +646,23 @@ mod tests {
             market_item("clashing_forest", "Clashing Forest", unknown, &[]),
             market_item("zid_an_haras", "Zid-An Haras", HARAS, &[]),
             market_item("braton_prime_set", "Braton Prime Set", "", &["set"]),
+            market_item(
+                "scan_aquatic_lifeforms",
+                "Scan Aquatic Lifeforms",
+                "",
+                &["mod"],
+            ),
         ];
-        assert_eq!(table.index_market(&items), 3);
+        assert_eq!(table.index_market(&items), 4);
+        let precept = table.resolve(
+            "/Lotus/Types/Sentinels/SentinelPrecepts/LocateCreatures",
+            || "Locate Creatures".to_owned(),
+        );
+        assert_eq!(precept.name, "Scan Aquatic Lifeforms");
+        assert_eq!(
+            precept.market_slug.as_deref(),
+            Some("scan_aquatic_lifeforms")
+        );
         assert_eq!(
             slug_of(&table, ENERGIZE).as_deref(),
             Some("arcane\u{2019}energize")
@@ -667,12 +678,14 @@ mod tests {
         assert_eq!(listed.kind, ItemKind::Other);
         assert_eq!(table.by_market_id("clashing_forest"), Some(listed));
         assert!(table.get(unknown).is_none());
+        let resolved = table.resolve(unknown, || "Staff Cmb One Melee Tree".to_owned());
+        assert_eq!(resolved.name, "Clashing Forest");
+        assert_eq!(resolved.market_slug.as_deref(), Some("clashing_forest"));
         assert_eq!(
             table
-                .resolve(unknown, || "Staff Cmb One Melee Tree".to_owned())
-                .market_slug
-                .as_deref(),
-            Some("clashing_forest")
+                .resolve("/Lotus/Nowhere", || "Nowhere".to_owned())
+                .name,
+            "Nowhere"
         );
         assert_eq!(slug_of(&table, HARAS).as_deref(), Some("zid-an-haras"));
         assert_eq!(
