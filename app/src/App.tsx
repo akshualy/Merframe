@@ -30,32 +30,28 @@ import { useMarketItemsStore } from "@/stores/market-items-store";
 
 function useBoot() {
   const newest = useRef(0);
-  const { setReady, setBootError, setStatus, setWorld, setSettings } =
-    useAppStore(
-      useShallow((state) => ({
-        setReady: state.setReady,
-        setBootError: state.setBootError,
-        setStatus: state.setStatus,
-        setWorld: state.setWorld,
-        setSettings: state.setSettings,
-      })),
-    );
+  const { setReady, setBootError, setStatus, setSettings } = useAppStore(
+    useShallow((state) => ({
+      setReady: state.setReady,
+      setBootError: state.setBootError,
+      setStatus: state.setStatus,
+      setSettings: state.setSettings,
+    })),
+  );
 
   const boot = useCallback(async () => {
     newest.current += 1;
     const attempt = newest.current;
     setBootError(null);
     try {
-      const [status, world, settings] = await Promise.all([
+      const [status, settings] = await Promise.all([
         api.gameStatus(),
-        api.worldstate(),
         api.settingsGet(),
       ]);
       if (attempt !== newest.current) {
         return;
       }
       setStatus(status);
-      setWorld(world);
       setSettings(settings);
       setReady(true);
     } catch (error) {
@@ -66,7 +62,7 @@ function useBoot() {
       setBootError(message);
       toast.error(message);
     }
-  }, [setBootError, setReady, setSettings, setStatus, setWorld]);
+  }, [setBootError, setReady, setSettings, setStatus]);
 
   useEffect(() => {
     boot();
@@ -111,15 +107,20 @@ function MainWindow() {
       .then(setUpdate, (error) => logError("Update check", error));
   }, [ready, checkForUpdates, setUpdate]);
 
-  if (!ready) {
-    return (
-      <>
+  return (
+    <>
+      <EventBridge />
+      {ready ? (
+        <Shell statsTab={statsTab} />
+      ) : (
         <StartupScreen error={bootError} onRetry={retry} />
-        <Toaster />
-      </>
-    );
-  }
+      )}
+      <Toaster />
+    </>
+  );
+}
 
+function Shell({ statsTab }: { statsTab: boolean }) {
   return (
     <div className="flex h-full w-full overflow-hidden">
       <AppSidebar />
@@ -153,9 +154,7 @@ function MainWindow() {
         </main>
       </div>
       <MarketPanel />
-      <EventBridge />
       <UpdateDialog />
-      <Toaster />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-use std::fmt::Write as _;
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -11,6 +10,7 @@ use wf_core::CoreEvent;
 use wf_market::RivenData;
 
 use crate::envelope::CoreEventEnvelope;
+use crate::notice::Notice;
 use crate::overlay;
 use crate::settings::Settings;
 use crate::state::{AppState, InventorySource, lock, read, write};
@@ -154,9 +154,9 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             {
                 return;
             }
+            let notice = Notice::conversation(player);
             if settings.notifications.windows_notifications_enabled
-                && let Err(error) =
-                    show(app, APP_TITLE, &conversation_text(player), &settings).await
+                && let Err(error) = show(app, &notice.title, &notice.body, &settings).await
             {
                 warn!(?error, player, "Conversation notification not shown");
             }
@@ -185,10 +185,7 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
         }
         CoreEvent::FissureAlert { fissure } => {
             let mirrored = settings.discord.discord_fissure_alerts;
-            let title = fissure_title(fissure);
-            let body = fissure_body(fissure);
-            let message = mirrored.then(|| format!("{title}\n{body}"));
-            alert(app, state, &settings, &title, &body, message).await;
+            alert(app, state, &settings, &Notice::fissure(fissure), mirrored).await;
         }
         CoreEvent::TimerAlert {
             name,
@@ -196,12 +193,9 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             remaining_secs,
             ..
         } => {
-            let body = format!(
-                "{name} turns {next_state} in {} minutes",
-                remaining_secs / 60
-            );
-            let message = settings.discord.discord_timer_alerts.then(|| body.clone());
-            alert(app, state, &settings, APP_TITLE, &body, message).await;
+            let mirrored = settings.discord.discord_timer_alerts;
+            let notice = Notice::timer(name, next_state, *remaining_secs);
+            alert(app, state, &settings, &notice, mirrored).await;
         }
         CoreEvent::InventoryUpdated(_) => {}
     }
@@ -211,17 +205,20 @@ async fn alert<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
     settings: &Settings,
-    title: &str,
-    body: &str,
-    webhook_message: Option<String>,
+    notice: &Notice,
+    mirrored: bool,
 ) {
     if settings.notifications.windows_notifications_enabled
-        && let Err(error) = show(app, title, body, settings).await
+        && let Err(error) = show(app, &notice.title, &notice.body, settings).await
     {
-        warn!(?error, title, body, "Game event notification not shown");
+        warn!(
+            ?error,
+            notice.title, notice.body, "Game event notification not shown"
+        );
     }
-    if let Some(message) = webhook_message {
-        post_webhook(state, settings.discord.discord_webhook.as_deref(), message).await;
+    if mirrored {
+        let webhook = settings.discord.discord_webhook.as_deref();
+        post_webhook(state, webhook, notice.webhook_message()).await;
     }
 }
 
@@ -294,35 +291,6 @@ pub async fn test_notifications<R: Runtime>(
     Ok(())
 }
 
-pub fn conversation_text(player: &str) -> String {
-    format!("You have a new in-game conversation from {player}")
-}
-
-pub fn fissure_title(fissure: &wf_core::FissureInfo) -> String {
-    let node = fissure.node_name.unwrap_or(fissure.node_id.as_str());
-    let kind = if fissure.is_storm {
-        "Void Storm"
-    } else {
-        "Fissure"
-    };
-    format!("New {} {kind} - {node}", fissure.tier)
-}
-
-pub fn fissure_body(fissure: &wf_core::FissureInfo) -> String {
-    let mut body = fissure.mission_name.clone();
-    if let Some((min, max)) = fissure.levels {
-        let _ = write!(body, " ({min}-{max})");
-    }
-    if let Some(faction) = fissure.faction {
-        let _ = write!(body, " - {faction}");
-    }
-    if fissure.steel_path {
-        body.push_str(", Steel Path");
-    }
-    let _ = write!(body, ", {} min left", fissure.remaining_secs / 60);
-    body
-}
-
 async fn post_webhook(state: &Arc<AppState>, url: Option<&str>, message: String) {
     let Some(url) = url.filter(|url| !url.is_empty()) else {
         return;
@@ -363,62 +331,5 @@ where
             error!(task, %error, "Blocking task panicked");
             None
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use chrono::DateTime;
-    use wf_core::FissureInfo;
-
-    use super::*;
-
-    fn fissure() -> FissureInfo {
-        FissureInfo {
-            node_id: String::from("SolNode58"),
-            node_name: Some("Hellas (Mars)"),
-            mission_type: String::from("MT_EXTERMINATION"),
-            mission_name: String::from("Extermination"),
-            planet: Some("Mars"),
-            tier: String::from("Lith"),
-            steel_path: false,
-            is_storm: false,
-            faction: Some("Grineer"),
-            levels: Some((15, 17)),
-            expiry: DateTime::UNIX_EPOCH,
-            remaining_secs: 5400,
-        }
-    }
-
-    #[test]
-    fn fissure_title_names_tier_and_node() {
-        assert_eq!(
-            fissure_title(&fissure()),
-            "New Lith Fissure - Hellas (Mars)"
-        );
-    }
-
-    #[test]
-    fn fissure_body_lists_mission_levels_and_faction() {
-        assert_eq!(
-            fissure_body(&fissure()),
-            "Extermination (15-17) - Grineer, 90 min left"
-        );
-        let steel_path = FissureInfo {
-            steel_path: true,
-            levels: Some((115, 117)),
-            ..fissure()
-        };
-        assert_eq!(
-            fissure_body(&steel_path),
-            "Extermination (115-117) - Grineer, Steel Path, 90 min left"
-        );
-        let storm = FissureInfo {
-            is_storm: true,
-            levels: None,
-            ..fissure()
-        };
-        assert_eq!(fissure_body(&storm), "Extermination - Grineer, 90 min left");
-        assert_eq!(fissure_title(&storm), "New Lith Void Storm - Hellas (Mars)");
     }
 }

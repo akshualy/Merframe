@@ -8,7 +8,10 @@ type Tone = "success" | "info" | "warning";
 function show(
   tone: Tone,
   title: string,
-  { inGame, ...options }: { description?: string; inGame?: InGameToast } = {},
+  {
+    inGame,
+    ...options
+  }: { description?: string; inGame?: InGameToast | null } = {},
 ) {
   const settings = useAppStore.getState().settings;
   if (settings && !settings.toasts_enabled) {

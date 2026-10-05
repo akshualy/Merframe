@@ -3,6 +3,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use serde::Serialize;
 use wf_core::CoreEvent;
 
+use crate::notice::Notice;
+
 static NEXT_SEQUENCE: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Debug, Clone, Serialize)]
@@ -10,6 +12,7 @@ static NEXT_SEQUENCE: AtomicU64 = AtomicU64::new(1);
 pub struct CoreEventEnvelope {
     pub id: String,
     pub event: CoreEvent,
+    pub notice: Option<Notice>,
 }
 
 impl CoreEventEnvelope {
@@ -20,6 +23,7 @@ impl CoreEventEnvelope {
                 kind(&event),
                 NEXT_SEQUENCE.fetch_add(1, Ordering::Relaxed)
             ),
+            notice: Notice::for_event(&event),
             event,
         }
     }
@@ -87,5 +91,6 @@ mod tests {
         let json = serde_json::to_value(&envelope).unwrap();
         assert!(json["id"].is_string());
         assert!(json["event"]["InventoryUpdated"].is_object());
+        assert_eq!(json["notice"]["title"], "1 inventory changes");
     }
 }
