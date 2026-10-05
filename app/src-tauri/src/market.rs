@@ -2,8 +2,12 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex, RwLock};
 
 use chrono::{DateTime, Duration, Utc};
+use indexmap::IndexSet;
 use serde::Serialize;
-use wf_core::{Core, ItemRecord, ItemTable, MarketListings, PriceSource, market_icon, market_name};
+use wf_core::{
+    Catalog, Core, ItemRecord, ItemSummary, ItemTable, MarketListings, PriceSource, market_icon,
+    market_name,
+};
 use wf_market::{Auction, Item, Order, OrderType, UserStatus};
 
 use crate::state::{AppState, lock, read, write};
@@ -154,9 +158,7 @@ pub struct OrderRow {
     pub id: String,
     pub order_type: OrderType,
     pub item_id: String,
-    pub slug: String,
-    pub name: String,
-    pub image_name: Option<String>,
+    pub item: usize,
     pub category: MarketCategory,
     pub platinum: u32,
     pub quantity: u32,
@@ -167,8 +169,31 @@ pub struct OrderRow {
     pub updated_at: DateTime<Utc>,
     pub owned: i64,
     pub show_warning: bool,
-    pub lowest: Option<f64>,
-    pub lowest_from_rank_zero: bool,
+    pub lowest: Option<Lowest>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(tag = "from", rename_all = "snake_case")]
+pub enum Lowest {
+    AtRank { plat: f64 },
+    RankZero { plat: f64 },
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct MarketOrders {
+    pub items: Vec<ItemSummary>,
+    pub rows: Vec<OrderRow>,
+}
+
+pub fn order_summary(item: &Item, record: &ItemRecord, catalog: &Catalog) -> ItemSummary {
+    ItemSummary {
+        name: market_name(item).to_owned(),
+        image_name: market_icon(catalog, item),
+        market_slug: Some(item.slug.clone()),
+        ..ItemSummary::new(&record.unique_name, record)
+    }
 }
 
 pub fn order_row(
@@ -189,18 +214,17 @@ pub fn order_row(
     };
     let owned = core.market_owned(record, name, counted_rank, order.subtype.as_deref());
     let ranked = matches!(category, MarketCategory::Mods | MarketCategory::Arcanes);
-    let mut lowest = prices.plat(&item.slug);
-    let mut from_rank_zero = ranked && rank > 0;
-    if from_rank_zero
-        && item.max_rank == Some(rank)
-        && let Some(at_rank) = prices.plat_max_rank(&item.slug)
-    {
-        lowest = Some(at_rank);
-        from_rank_zero = false;
-    }
-    if lowest.is_none() {
-        from_rank_zero = false;
-    }
+    let off_rank_zero = ranked && rank > 0;
+    let at_max_rank = (off_rank_zero && item.max_rank == Some(rank))
+        .then(|| prices.plat_max_rank(&item.slug))
+        .flatten();
+    let lowest = match at_max_rank {
+        Some(plat) => Some(Lowest::AtRank { plat }),
+        None if off_rank_zero => prices
+            .plat(&item.slug)
+            .map(|plat| Lowest::RankZero { plat }),
+        None => prices.plat(&item.slug).map(|plat| Lowest::AtRank { plat }),
+    };
     let show_warning = order.order_type == OrderType::Sell
         && owned < i64::from(order.quantity)
         && !is_necramech_set(category, name);
@@ -208,9 +232,7 @@ pub fn order_row(
         id: order.id.clone(),
         order_type: order.order_type,
         item_id: order.item_id.clone(),
-        slug: item.slug.clone(),
-        name: name.to_owned(),
-        image_name: market_icon(core.catalog(), item),
+        item: 0,
         category,
         platinum: order.platinum,
         quantity: order.quantity,
@@ -222,13 +244,12 @@ pub fn order_row(
         owned,
         show_warning,
         lowest,
-        lowest_from_rank_zero: from_rank_zero,
     }
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct OwnListings {
-    pub orders: Vec<OrderRow>,
+    pub orders: MarketOrders,
     pub auctions: Vec<Auction>,
 }
 
@@ -245,20 +266,22 @@ impl Listings {
     pub fn remember(
         &self,
         core: &Mutex<Core>,
-        orders: Option<&[OrderRow]>,
+        orders: Option<&MarketOrders>,
         auctions: Option<&[Auction]>,
     ) {
         let mut own = write(&self.own);
         if let Some(orders) = orders {
-            own.orders = orders.to_vec();
+            own.orders = orders.clone();
         }
         if let Some(auctions) = auctions {
             own.auctions = auctions.to_vec();
         }
+        let MarketOrders { items, rows } = &own.orders;
         let listings = MarketListings::new(
-            own.orders
-                .iter()
-                .map(|row| (row.slug.as_str(), row.order_type)),
+            rows.iter().filter_map(|row| {
+                let slug = items[row.item].market_slug.as_deref()?;
+                Some((slug, row.order_type))
+            }),
             &own.auctions,
         );
         drop(own);
@@ -266,27 +289,35 @@ impl Listings {
     }
 }
 
-pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Vec<OrderRow>> {
+pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<MarketOrders> {
     let items = market_items(state).await?;
     let take_rank_into_account = read(&state.settings).market.take_rank_into_account;
     let core = lock(&state.core);
-    Some(
-        orders
-            .iter()
-            .filter_map(|order| {
-                let item = items.get(&order.item_id)?;
-                let record = core.items().by_market_id(&order.item_id)?;
-                Some(order_row(
+    let mut index = IndexSet::new();
+    let rows = orders
+        .iter()
+        .filter_map(|order| {
+            let item = items.get(&order.item_id)?;
+            let record = core.items().by_market_id(&order.item_id)?;
+            Some(OrderRow {
+                item: index
+                    .insert_full(order_summary(item, record, core.catalog()))
+                    .0,
+                ..order_row(
                     order,
                     item,
                     record,
                     &core,
                     state.prices.as_ref(),
                     take_rank_into_account,
-                ))
+                )
             })
-            .collect(),
-    )
+        })
+        .collect();
+    Some(MarketOrders {
+        items: index.into_iter().collect(),
+        rows,
+    })
 }
 
 #[cfg(test)]
@@ -295,7 +326,7 @@ mod tests {
 
     use chrono::{DateTime, Utc};
     use serde_json::{Value, json};
-    use wf_core::{AlertSettings, Catalog, Core, PriceCache, PriceSource, Store};
+    use wf_core::{AlertSettings, Core, PriceCache, PriceSource, Store};
     use wf_market::{Item, ItemLocalization, Order, OrderType};
 
     use super::*;
@@ -540,6 +571,15 @@ mod tests {
                 .owned
         }
 
+        fn summary(&self, slug: &str) -> ItemSummary {
+            let item = self.items.get(&format!("id-{slug}")).unwrap();
+            order_summary(
+                item,
+                self.core.items().by_market_id(&item.id).unwrap(),
+                self.core.catalog(),
+            )
+        }
+
         fn listed(&self, dialog_name: &str) -> Option<&str> {
             self.items
                 .listed(self.core.items(), dialog_name)
@@ -719,6 +759,10 @@ mod tests {
         );
         core.index_market(std::slice::from_ref(&barrel));
         let record = core.items().by_market_id(&barrel.id).unwrap();
+        let summary = order_summary(&barrel, record, &empty_catalog());
+        assert_eq!(summary.name, "Braton Prime Barrel");
+        assert_eq!(summary.market_slug.as_deref(), Some("braton_prime_barrel"));
+        assert_eq!(summary.unique_name, record.unique_name);
         let row = order_row(
             &order("braton_prime_barrel", 1, None),
             &barrel,
@@ -804,27 +848,24 @@ mod tests {
     #[test]
     fn lowest_price_at_rank() {
         let market = Market::new();
-        let row = |rank| market.row(&order("primed_continuity", 1, Some(rank)), true);
-
-        let unranked = row(0);
-        assert_eq!(unranked.lowest, Some(120.0));
-        assert!(!unranked.lowest_from_rank_zero);
-
-        let maxed = row(10);
-        assert_eq!(maxed.lowest, Some(320.0));
-        assert!(!maxed.lowest_from_rank_zero);
-
-        let halfway = row(5);
-        assert_eq!(halfway.lowest, Some(120.0));
-        assert!(halfway.lowest_from_rank_zero);
+        let lowest = |rank| {
+            market
+                .row(&order("primed_continuity", 1, Some(rank)), true)
+                .lowest
+        };
+        assert_eq!(lowest(0), Some(Lowest::AtRank { plat: 120.0 }));
+        assert_eq!(lowest(10), Some(Lowest::AtRank { plat: 320.0 }));
+        assert_eq!(lowest(5), Some(Lowest::RankZero { plat: 120.0 }));
+        assert_eq!(
+            serde_json::to_value(lowest(5)).unwrap(),
+            json!({ "from": "rank_zero", "plat": 120.0 })
+        );
     }
 
     #[test]
     fn unpriced_item() {
         let market = Market::new();
-        let row = market.sell("braton_prime_set", 1);
-        assert_eq!(row.lowest, None);
-        assert!(!row.lowest_from_rank_zero);
+        assert_eq!(market.sell("braton_prime_set", 1).lowest, None);
     }
 
     #[test]
@@ -833,19 +874,22 @@ mod tests {
             include_str!("../../../crates/wf-market/tests/fixtures/auctions_my.json");
         let auctions = wf_market::parse_v1_auctions(AUCTIONS).unwrap();
         let listings = Listings::default();
-        assert!(listings.current().orders.is_empty());
+        assert!(listings.current().orders.rows.is_empty());
         assert!(listings.current().auctions.is_empty());
 
         let market = Market::new();
-        let orders = vec![market.sell("braton_prime_barrel", 1)];
+        let orders = MarketOrders {
+            items: vec![market.summary("braton_prime_barrel")],
+            rows: vec![market.sell("braton_prime_barrel", 1)],
+        };
         let core = Mutex::new(market.core);
         listings.remember(&core, Some(&orders), Some(&auctions));
-        assert_eq!(listings.current().orders.len(), 1);
+        assert_eq!(listings.current().orders.rows.len(), 1);
         assert_eq!(listings.current().auctions.len(), 2);
 
-        listings.remember(&core, Some(&[]), None);
+        listings.remember(&core, Some(&MarketOrders::default()), None);
         let own = listings.current();
-        assert!(own.orders.is_empty());
+        assert!(own.orders.rows.is_empty());
         assert_eq!(
             own.auctions.len(),
             2,

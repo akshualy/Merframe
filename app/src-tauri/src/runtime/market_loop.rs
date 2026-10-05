@@ -12,7 +12,7 @@ use wf_market::{
 };
 
 use super::{MARKET_AUTO_CLOSED, MARKET_PRESENCE, STATUS_UPDATED, emit};
-use crate::market::{self, MarketCategory, OrderRow};
+use crate::market::{self, MarketCategory, MarketOrders};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, lock, read, write};
 
@@ -36,7 +36,7 @@ impl MarketRefresh {
 #[derive(Debug, Clone, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct MarketSnapshot {
-    pub orders: Option<Vec<OrderRow>>,
+    pub orders: Option<MarketOrders>,
     pub auctions: Option<Vec<Auction>>,
     pub at: DateTime<Utc>,
 }
@@ -86,7 +86,7 @@ async fn market_snapshot(state: &Arc<AppState>, refresh: MarketRefresh) -> Marke
     };
     state
         .listings
-        .remember(&state.core, orders.as_deref(), refresh.auctions.as_deref());
+        .remember(&state.core, orders.as_ref(), refresh.auctions.as_deref());
     MarketSnapshot {
         orders,
         auctions: refresh.auctions,
@@ -438,7 +438,7 @@ pub(super) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
         if !refresh.is_empty() {
             let snapshot = market_snapshot(&state, refresh).await;
             debug!(
-                orders = snapshot.orders.as_ref().map(Vec::len),
+                orders = snapshot.orders.as_ref().map(|orders| orders.rows.len()),
                 auctions = snapshot.auctions.as_ref().map(Vec::len),
                 "Market listings refreshed"
             );

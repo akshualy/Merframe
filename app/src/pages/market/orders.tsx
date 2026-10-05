@@ -22,9 +22,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { itemAt } from "@/lib/arrays";
 import { api } from "@/lib/bridge";
 import { dateTime, num } from "@/lib/format";
-import type { MarketCategory, OrderRow, OrderType } from "@/types";
+import type {
+  ItemSummary,
+  MarketCategory,
+  MarketOrders,
+  OrderRow,
+  OrderType,
+} from "@/types";
 
 const CATEGORIES: { value: MarketCategory; label: string }[] = [
   { value: "parts", label: "Parts" },
@@ -45,242 +52,270 @@ const MISSING = [
   { value: "no", label: "Fully stocked" },
 ];
 
-function detail(row: OrderRow) {
-  if (row.rank !== null) {
-    return `rank ${row.rank}`;
+interface ListedOrder {
+  order: OrderRow;
+  item: ItemSummary;
+}
+
+function detail(order: OrderRow) {
+  if (order.rank !== null) {
+    return `rank ${order.rank}`;
   }
-  return row.subtype;
+  return order.subtype;
 }
 
 export function OrdersTable({
-  rows,
+  orders,
   onCompare,
   onRefresh,
   onSetVisibility,
   runMarketAction,
 }: {
-  rows: OrderRow[];
+  orders: MarketOrders;
   onCompare: (slug: string, side: OrderType, rank: number | null) => void;
   onRefresh: () => void;
   onSetVisibility: (visible: boolean) => void;
   runMarketAction: (promise: Promise<unknown>, message: string) => void;
 }) {
+  const { items, rows } = orders;
   const [confirming, setConfirming] = useState<"fix" | "remove" | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [side, setSide] = useState<string | null>(null);
   const [missing, setMissing] = useState<string | null>(null);
 
-  const filteredRows = useMemo(
+  const entries = useMemo(
+    () => rows.map((order) => ({ order, item: itemAt(items, order.item) })),
+    [items, rows],
+  );
+
+  const filteredEntries = useMemo(
     () =>
-      rows.filter((row) => {
-        if (category && row.category !== category) {
+      entries.filter(({ order }) => {
+        if (category && order.category !== category) {
           return false;
         }
-        if (side && row.order_type !== side) {
+        if (side && order.order_type !== side) {
           return false;
         }
-        if (missing === "yes" && !row.show_warning) {
+        if (missing === "yes" && !order.show_warning) {
           return false;
         }
-        if (missing === "no" && row.show_warning) {
+        if (missing === "no" && order.show_warning) {
           return false;
         }
         return true;
       }),
-    [rows, category, side, missing],
+    [entries, category, side, missing],
   );
 
-  const columns = useMemo<ColumnDef<OrderRow>[]>(
+  const columns = useMemo<ColumnDef<ListedOrder>[]>(
     () => [
       {
-        accessorKey: "order_type",
+        id: "order_type",
+        accessorFn: ({ order }) => order.order_type,
         header: "Side",
-        cell: ({ row }) => (
-          <Badge
-            variant={
-              row.original.order_type === "sell" ? "default" : "secondary"
-            }
-          >
-            {row.original.order_type}
-          </Badge>
-        ),
+        cell: ({ row }) => {
+          const side = row.original.order.order_type;
+          return (
+            <Badge variant={side === "sell" ? "default" : "secondary"}>
+              {side}
+            </Badge>
+          );
+        },
       },
       {
-        accessorKey: "name",
+        id: "name",
+        accessorFn: ({ item }) => item.name,
         header: "Item",
         enableHiding: false,
         meta: { wrap: true },
-        cell: ({ row }) => (
-          <>
-            <ItemImage
-              imageName={row.original.image_name}
-              size={24}
-              alt={row.original.name}
-            />
-            <span className="font-medium">{row.original.name}</span>
-            {detail(row.original) && (
-              <Badge variant="muted">{detail(row.original)}</Badge>
-            )}
-          </>
-        ),
+        cell: ({ row }) => {
+          const { order, item } = row.original;
+          return (
+            <>
+              <ItemImage
+                imageName={item.image_name}
+                size={24}
+                alt={item.name}
+              />
+              <span className="font-medium">{item.name}</span>
+              {detail(order) && <Badge variant="muted">{detail(order)}</Badge>}
+            </>
+          );
+        },
       },
       {
-        accessorKey: "category",
+        id: "category",
+        accessorFn: ({ order }) => order.category,
         header: "Group",
         cell: ({ row }) => (
-          <span className="text-muted-foreground">{row.original.category}</span>
-        ),
-      },
-      {
-        accessorKey: "platinum",
-        header: "Plat",
-        meta: { numeric: true },
-        cell: ({ row }) => (
-          <span className="text-primary font-bold">
-            {num(row.original.platinum)}
+          <span className="text-muted-foreground">
+            {row.original.order.category}
           </span>
         ),
       },
       {
-        accessorKey: "lowest",
+        id: "platinum",
+        accessorFn: ({ order }) => order.platinum,
+        header: "Plat",
+        meta: { numeric: true },
+        cell: ({ row }) => (
+          <span className="text-primary font-bold">
+            {num(row.original.order.platinum)}
+          </span>
+        ),
+      },
+      {
+        id: "lowest",
+        accessorFn: ({ order }) => order.lowest?.plat ?? null,
         header: "Lowest",
         meta: { numeric: true, label: "Lowest price" },
-        cell: ({ row }) =>
-          row.original.lowest === null ? (
+        cell: ({ row }) => {
+          const { lowest } = row.original.order;
+          return lowest === null ? (
             <span className="text-muted-foreground">-</span>
           ) : (
             <span>
-              {num(row.original.lowest)}
-              {row.original.lowest_from_rank_zero ? "+" : ""}
+              {num(lowest.plat)}
+              {lowest.from === "rank_zero" ? "+" : ""}
             </span>
-          ),
+          );
+        },
       },
       {
-        accessorKey: "quantity",
+        id: "quantity",
+        accessorFn: ({ order }) => order.quantity,
         header: "Qty",
         meta: { numeric: true, label: "Quantity" },
-        cell: ({ row }) => num(row.original.quantity),
+        cell: ({ row }) => num(row.original.order.quantity),
       },
       {
-        accessorKey: "owned",
+        id: "owned",
+        accessorFn: ({ order }) => order.owned,
         header: "Owned",
         meta: { numeric: true },
-        cell: ({ row }) =>
-          row.original.show_warning ? (
+        cell: ({ row }) => {
+          const { owned, show_warning } = row.original.order;
+          return show_warning ? (
             <Badge variant="warning">
               <TriangleAlert />
-              {num(row.original.owned)}
+              {num(owned)}
             </Badge>
           ) : (
-            num(row.original.owned)
-          ),
+            num(owned)
+          );
+        },
       },
       {
-        accessorKey: "visible",
+        id: "visible",
+        accessorFn: ({ order }) => order.visible,
         header: "Visible",
         cell: ({ row }) =>
-          row.original.visible ? (
+          row.original.order.visible ? (
             <Badge variant="accent">visible</Badge>
           ) : (
             <Badge variant="muted">hidden</Badge>
           ),
       },
       {
-        accessorKey: "updated_at",
+        id: "updated_at",
+        accessorFn: ({ order }) => order.updated_at,
         header: "Updated",
-        cell: ({ row }) => dateTime(row.original.updated_at),
+        cell: ({ row }) => dateTime(row.original.order.updated_at),
       },
       {
         id: "actions",
         header: "",
         enableSorting: false,
         enableHiding: false,
-        cell: ({ row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                aria-label="Order actions"
-              >
-                <Ellipsis className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onSelect={() =>
-                  onCompare(
-                    row.original.slug,
-                    row.original.order_type,
-                    row.original.rank,
-                  )
-                }
-              >
-                Compare on the market
-              </DropdownMenuItem>
-              {row.original.show_warning && (
+        cell: ({ row }) => {
+          const { order, item } = row.original;
+          const slug = item.market_slug;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Order actions"
+                >
+                  <Ellipsis className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {slug && (
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      onCompare(slug, order.order_type, order.rank)
+                    }
+                  >
+                    Compare on the market
+                  </DropdownMenuItem>
+                )}
+                {order.show_warning && (
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      runMarketAction(
+                        api.marketFixOrders(order.id),
+                        "Listing matched to the inventory",
+                      )
+                    }
+                  >
+                    Fix the missing items
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={() =>
                     runMarketAction(
-                      api.marketFixOrders(row.original.id),
-                      "Listing matched to the inventory",
+                      api.marketUpdateOrder(order.id, {
+                        platinum: Math.max(1, order.platinum - 1),
+                      }),
+                      "Price lowered by 1",
                     )
                   }
                 >
-                  Fix the missing items
+                  Lower price by 1
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() =>
-                  runMarketAction(
-                    api.marketUpdateOrder(row.original.id, {
-                      platinum: Math.max(1, row.original.platinum - 1),
-                    }),
-                    "Price lowered by 1",
-                  )
-                }
-              >
-                Lower price by 1
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() =>
-                  runMarketAction(
-                    api.marketUpdateOrder(row.original.id, {
-                      visible: !row.original.visible,
-                    }),
-                    row.original.visible ? "Order hidden" : "Order shown",
-                  )
-                }
-              >
-                {row.original.visible ? "Hide order" : "Show order"}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() =>
-                  runMarketAction(
-                    api.marketCloseOrder(row.original.id, 1),
-                    "Order closed for one unit",
-                  )
-                }
-              >
-                Mark one as sold
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() =>
-                  runMarketAction(
-                    api.marketDeleteOrder(row.original.id),
-                    "Order deleted",
-                  )
-                }
-              >
-                Delete order
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
+                <DropdownMenuItem
+                  onSelect={() =>
+                    runMarketAction(
+                      api.marketUpdateOrder(order.id, {
+                        visible: !order.visible,
+                      }),
+                      order.visible ? "Order hidden" : "Order shown",
+                    )
+                  }
+                >
+                  {order.visible ? "Hide order" : "Show order"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() =>
+                    runMarketAction(
+                      api.marketCloseOrder(order.id, 1),
+                      "Order closed for one unit",
+                    )
+                  }
+                >
+                  Mark one as sold
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() =>
+                    runMarketAction(
+                      api.marketDeleteOrder(order.id),
+                      "Order deleted",
+                    )
+                  }
+                >
+                  Delete order
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
       },
     ],
     [onCompare, runMarketAction],
@@ -342,11 +377,11 @@ export function OrdersTable({
       <DataTable
         tableId="marketOrders"
         columns={columns}
-        data={filteredRows}
+        data={filteredEntries}
         searchPlaceholder="Filter orders"
-        searchValue={(row) => row.name}
+        searchValue={({ item }) => item.name}
         initialSorting={[{ id: "updated_at", desc: true }]}
-        rowKey={(row) => row.id}
+        rowKey={({ order }) => order.id}
         emptyMessage="No order matches these filters."
         toolbar={
           <>

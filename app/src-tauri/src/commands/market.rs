@@ -14,7 +14,7 @@ use wf_market::{
 use super::{Shared, missing_inventory, ready};
 
 use crate::error::{CommandError, CommandResult};
-use crate::market::{self, OrderRow, Presence};
+use crate::market::{self, MarketOrders, Presence};
 use crate::runtime;
 use crate::settings::{self, MarketAccount};
 use crate::state::{lock, read, write};
@@ -106,13 +106,15 @@ pub async fn market_logout<R: Runtime>(app: AppHandle<R>, state: Shared<'_>) -> 
     status.market_account = None;
     status.market_unread = 0;
     drop(status);
-    state.listings.remember(&state.core, Some(&[]), Some(&[]));
+    state
+        .listings
+        .remember(&state.core, Some(&MarketOrders::default()), Some(&[]));
     runtime::emit(&app, runtime::STATUS_UPDATED, state.status_snapshot());
     Ok(())
 }
 
 #[tauri::command]
-pub async fn market_my_orders(state: Shared<'_>) -> CommandResult<Vec<OrderRow>> {
+pub async fn market_my_orders(state: Shared<'_>) -> CommandResult<MarketOrders> {
     let state = ready(&state).await?;
     let orders = state.market().orders_my().await?;
     let rows = market::order_rows(&state, &orders)
@@ -150,7 +152,7 @@ pub async fn market_post_order<R: Runtime>(
         })?;
     let orders = state.market().orders_my().await?;
     let rows = market::order_rows(&state, &orders).await;
-    state.listings.remember(&state.core, rows.as_deref(), None);
+    state.listings.remember(&state.core, rows.as_ref(), None);
     runtime::emit(
         &app,
         runtime::MARKET_UPDATED,
@@ -244,10 +246,11 @@ pub async fn market_fix_orders(state: Shared<'_>, id: Option<String>) -> Command
     let state = ready(&state).await?;
     let client = state.market();
     let orders = client.orders_my().await?;
-    let rows = market::order_rows(&state, &orders)
+    let listed = market::order_rows(&state, &orders)
         .await
         .ok_or_else(unlisted_items)?;
-    let wanted = rows
+    let wanted = listed
+        .rows
         .iter()
         .filter(|row| row.show_warning)
         .filter(|row| id.as_ref().is_none_or(|wanted| wanted == &row.id));

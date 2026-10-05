@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { num } from "@/lib/format";
-import type { Row } from "@/lib/inventory-rows";
 import type { ModHolder } from "@/types";
 
 const CONFIG_LETTERS = "ABCDEF";
@@ -19,7 +18,17 @@ function orokinUpgrade(holder: ModHolder): string {
   return holder.takes_orokin_reactor ? "Orokin Reactor" : "Orokin Catalyst";
 }
 
-export function EquippedDialog({ row, label }: { row: Row; label: string }) {
+export function EquippedDialog({
+  name,
+  rank,
+  holders,
+  label,
+}: {
+  name: string;
+  rank: number | null;
+  holders: ModHolder[];
+  label: string;
+}) {
   return (
     <Dialog>
       <DialogTrigger className="text-muted-foreground hover:text-foreground -mt-1 cursor-pointer truncate text-left text-xs transition-colors">
@@ -27,15 +36,14 @@ export function EquippedDialog({ row, label }: { row: Row; label: string }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{row.name}</DialogTitle>
+          <DialogTitle>{name}</DialogTitle>
           <DialogDescription>
-            {row.rank === null ? "Equipped" : `Rank ${row.rank}, equipped`} in{" "}
-            {num(row.equippedIn.length)}{" "}
-            {row.equippedIn.length === 1 ? "item" : "items"}
+            {rank === null ? "Equipped" : `Rank ${rank}, equipped`} in{" "}
+            {num(holders.length)} {holders.length === 1 ? "item" : "items"}
           </DialogDescription>
         </DialogHeader>
         <ul className="-mr-2 flex max-h-96 flex-col gap-1 overflow-y-auto pr-2">
-          {row.equippedIn.map((holder) => (
+          {holders.map((holder) => (
             <li
               key={holder.item_id}
               className="flex items-center gap-3 rounded-md border p-2"

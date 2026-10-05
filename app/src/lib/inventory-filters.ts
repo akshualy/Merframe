@@ -1,4 +1,18 @@
-import type { YesNo } from "@/lib/filters";
+import { passesYesNo, type YesNo } from "@/lib/filters";
+import {
+  completion,
+  crafted,
+  ducats,
+  equippedIn,
+  hasOrder,
+  type InventoryEntry,
+  type InventoryFlags,
+  rank,
+  refinement,
+  sellPlat,
+  setComplete,
+  vault,
+} from "@/lib/inventory-entries";
 import { REFINEMENTS } from "@/lib/relics";
 import { readStoredJson, writeStoredJson } from "@/lib/storage";
 
@@ -189,48 +203,81 @@ export function saveFilters(tab: InventoryTabKey, filters: TabFilters) {
   writeStoredJson(`${STORAGE_KEY}.${tab}`, filters);
 }
 
-export interface SortableRow {
-  name: string;
-  count: number;
-  plat: number | null;
-  ducats: number | null;
-  completion: number;
-  refinement: string | null;
+const TRAITS: Record<
+  YesNoKey,
+  (entry: InventoryEntry, flags: InventoryFlags) => boolean
+> = {
+  itemOwned: crafted,
+  duplicates: (entry) =>
+    entry.kind === "upgrade" ? entry.moreThanOne : entry.row.count > 1,
+  vaulted: (entry) => vault(entry) === "vaulted",
+  prime: (entry) => entry.item.prime,
+  fullSet: (entry) => setComplete(entry) === true,
+  ranked: (entry) => Boolean(rank(entry)),
+  equipped: (entry) => equippedIn(entry).length > 0,
+  orderPlaced: hasOrder,
+  favourite: (entry, flags) => flags.favourites.has(entry.row.item),
+};
+
+function matchesSearch(entry: InventoryEntry, search: string): boolean {
+  if (!search) {
+    return true;
+  }
+  const setName = entry.kind === "part" ? entry.set.name : "";
+  const haystack = `${entry.item.name} ${setName} ${refinement(entry) ?? ""}`;
+  return haystack.toLowerCase().includes(search.toLowerCase());
+}
+
+export function keeps(
+  entry: InventoryEntry,
+  filters: TabFilters,
+  flags: InventoryFlags,
+): boolean {
+  if (!matchesSearch(entry, filters.search)) {
+    return false;
+  }
+  if (filters.refinement !== null && refinement(entry) !== filters.refinement) {
+    return false;
+  }
+  if (!passesYesNo(filters.yesNo, (key) => TRAITS[key](entry, flags))) {
+    return false;
+  }
+  return filters.minPlat === null || (sellPlat(entry) ?? 0) >= filters.minPlat;
 }
 
 function orderValue(
-  row: SortableRow,
+  entry: InventoryEntry,
   ordering: Ordering,
   tab: InventoryTabKey,
 ): number | string {
   switch (ordering) {
     case "plat":
-      return row.plat ?? 0;
+      return sellPlat(entry) ?? 0;
     case "ducats":
-      return row.ducats ?? 0;
+      return ducats(entry) ?? 0;
     case "count":
-      return row.count;
+      return entry.row.count;
     case "ducatsPerPlat": {
       if (tab === "sets") {
-        return (row.plat ?? 0) / (row.ducats ?? 0);
+        return (sellPlat(entry) ?? 0) / (ducats(entry) ?? 0);
       }
-      const plat = row.plat ?? 0;
-      return (row.ducats ?? 0) / (plat > 0 ? plat : UNPRICED_PLAT);
+      const plat = sellPlat(entry) ?? 0;
+      return (ducats(entry) ?? 0) / (plat > 0 ? plat : UNPRICED_PLAT);
     }
     case "setProgress":
-      return tab === "sets" ? row.completion : row.name;
-    case "refinement":
-      return row.refinement === null
-        ? row.name
-        : REFINEMENT_ORDER.indexOf(row.refinement);
+      return tab === "sets" ? completion(entry) : entry.item.name;
+    case "refinement": {
+      const value = refinement(entry);
+      return value === null ? entry.item.name : REFINEMENT_ORDER.indexOf(value);
+    }
     default:
-      return row.name;
+      return entry.item.name;
   }
 }
 
-export function compareRows(
-  left: SortableRow,
-  right: SortableRow,
+export function compareEntries(
+  left: InventoryEntry,
+  right: InventoryEntry,
   ordering: Ordering,
   desc: boolean,
   tab: InventoryTabKey,
@@ -251,5 +298,5 @@ export function compareRows(
   if (primary !== 0) {
     return primary;
   }
-  return left.name.localeCompare(right.name);
+  return left.item.name.localeCompare(right.item.name);
 }

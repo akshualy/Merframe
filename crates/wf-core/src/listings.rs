@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use serde::Serialize;
 use wf_market::{Auction, OrderType};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -11,8 +10,7 @@ struct ListedRiven {
     rerolls: u32,
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
-#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct PlacedOrders {
     pub sell: bool,
     pub buy: bool,
@@ -66,9 +64,6 @@ impl MarketListings {
     }
 
     pub fn orders_for(&self, market_slug: &str) -> PlacedOrders {
-        if market_slug.is_empty() {
-            return PlacedOrders::default();
-        }
         let item = ordered_item(market_slug);
         PlacedOrders {
             sell: self.selling.contains(&item),
@@ -102,7 +97,7 @@ mod tests {
             [
                 ("ash_prime_systems_blueprint", OrderType::Sell),
                 ("braton_prime_set", OrderType::Buy),
-                ("primed_continuity", OrderType::Sell),
+                ("Primed_Continuity", OrderType::Sell),
                 ("primed_continuity", OrderType::Buy),
             ],
             &[],
@@ -127,7 +122,6 @@ mod tests {
             listings.orders_for("braton_prime_barrel"),
             PlacedOrders::default()
         );
-        assert_eq!(listings.orders_for(""), PlacedOrders::default());
     }
 
     #[test]

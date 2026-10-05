@@ -21,6 +21,7 @@ pub(crate) fn export(dir: &Path, bundle: &ExportBundle<'_>) -> Result<()> {
     })?;
     let path = dir.join("inventory.json");
     std::fs::write(&path, bundle.document).map_err(|source| CoreError::Io { path, source })?;
+    write(dir, "items.json", &bundle.inventory.items)?;
     write(dir, "parts.json", &bundle.inventory.parts)?;
     write(dir, "mods.json", &bundle.inventory.mods)?;
     write(dir, "arcanes.json", &bundle.inventory.arcanes)?;
@@ -69,6 +70,7 @@ mod tests {
         .unwrap();
 
         for name in [
+            "items.json",
             "parts.json",
             "mods.json",
             "arcanes.json",

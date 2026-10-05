@@ -21,6 +21,7 @@ rusqlite = { version = "0.37", features = ["bundled"] }
 chrono = { version = "0.4", features = ["serde"] }
 ts-rs = { version = "12", features = ["serde-compat", "chrono-impl"] }
 flate2 = "1"
+indexmap = "2.14"
 notify = "8"
 notify-rust = "4"
 gdk = "0.18"

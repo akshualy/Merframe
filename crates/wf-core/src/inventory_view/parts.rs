@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, HashSet};
 use wf_data::{Component, Item};
 
 use super::misc::is_landing_craft_part;
-use super::{ItemStatus, PartRow, PartSet, SetComponent, SetRow};
+use super::{ItemIndex, ItemStatus, ItemSummary, PartRow, SetComponent, SetLink, SetRow};
 use crate::catalog::{Catalog, Stock, is_prime};
 use crate::identity::{ItemRecord, ItemTable, Variant};
 use crate::prices::Prices;
@@ -39,14 +39,14 @@ pub(super) fn is_part_stock(item_type: &str) -> bool {
     is_weapon_part(item_type) || item_type.contains("/Archwing/Primary/")
 }
 
-pub(crate) fn parts(view: &View) -> Vec<PartRow> {
+pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
     let View {
         account,
         catalog,
         items,
         prices,
         favourites,
-        listings,
+        ..
     } = *view;
     let inventory = &account.inventory;
     let building: HashSet<&str> = inventory
@@ -76,39 +76,32 @@ pub(crate) fn parts(view: &View) -> Vec<PartRow> {
             }
             let part = items.part(item, component)?;
             let set = items.variant(&item.unique_name, Variant::Set)?;
-            let slug = part.market_slug.as_deref().unwrap_or_default();
+            let slug = part.market_slug.as_deref();
+            let favourite = favourites.any([
+                unique_name,
+                component.unique_name.as_str(),
+                item.unique_name.as_str(),
+            ]);
             Some(PartRow {
+                item: index.add_marked(ItemSummary::new(unique_name, part), favourite),
                 count,
                 prices: Prices {
-                    sell: prices.plat(slug),
-                    buy: prices.buy_plat(slug),
+                    sell: slug.and_then(|slug| prices.plat(slug)),
+                    buy: slug.and_then(|slug| prices.buy_plat(slug)),
                     ducats: component.ducats,
                 },
-                set: PartSet {
-                    name: set.name.clone(),
+                set: SetLink {
+                    item: index.add(ItemSummary::new(&item.unique_name, set)),
                     complete: set_is_complete(&account.stock, item),
-                    orders: listings.orders_for(set.market_slug.as_deref().unwrap_or_default()),
                 },
-                vault: part.vault,
-                item: ItemStatus {
+                status: ItemStatus {
                     built: account.built(&item.unique_name),
                     mastered: account.mastered(item),
                 },
-                prime: part.prime,
-                favourite: favourites.any([
-                    unique_name,
-                    component.unique_name.as_str(),
-                    item.unique_name.as_str(),
-                ]),
-                orders: listings.orders_for(slug),
-                unique_name: unique_name.to_owned(),
-                image_name: part.image_name.clone(),
-                market_slug: slug.to_owned(),
-                name: part.name.clone(),
             })
         })
         .collect();
-    rows.sort_by(|a, b| a.name.cmp(&b.name));
+    rows.sort_by(|a, b| index[a.item].name.cmp(&index[b.item].name));
     rows
 }
 
@@ -181,14 +174,14 @@ fn set_ducats(catalog: &Catalog, parts: &[HeldPart]) -> u32 {
         .sum()
 }
 
-pub(crate) fn sets(view: &View) -> Vec<SetRow> {
+pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
     let View {
         account,
         catalog,
         items,
         prices,
         favourites,
-        listings,
+        ..
     } = *view;
     let mut rows: Vec<SetRow> = catalog
         .items()
@@ -204,35 +197,29 @@ pub(crate) fn sets(view: &View) -> Vec<SetRow> {
             let complete = owned_parts == parts.len();
             let count = complete_sets(&parts);
             let set = items.variant(&item.unique_name, Variant::Set)?;
-            let slug = set.market_slug.as_deref().unwrap_or_default();
+            let slug = set.market_slug.as_deref();
             Some(SetRow {
-                set_name: set.name.clone(),
-                unique_name: item.unique_name.clone(),
-                image_name: set.image_name.clone(),
+                item: index.add_marked(
+                    ItemSummary::new(&item.unique_name, set),
+                    favourites.contains(&item.unique_name),
+                ),
                 owned_parts,
                 total_parts: parts.len(),
                 count,
                 complete,
-                item: ItemStatus {
+                status: ItemStatus {
                     built: account.built(&item.unique_name),
                     mastered: account.mastered(item),
                 },
-                vault: set.vault,
                 prices: Prices {
-                    sell: prices.plat(slug),
-                    buy: prices.buy_plat(slug),
+                    sell: slug.and_then(|slug| prices.plat(slug)),
+                    buy: slug.and_then(|slug| prices.buy_plat(slug)),
                     ducats: Some(set_ducats(catalog, &parts)),
                 },
-                orders: listings.orders_for(slug),
-                market_slug: slug.to_owned(),
-                favourite: favourites.contains(&item.unique_name),
                 components: parts
                     .iter()
                     .map(|part| SetComponent {
-                        unique_name: part.component.unique_name.clone(),
-                        name: part.record.name.clone(),
-                        image_name: part.record.image_name.clone(),
-                        market_slug: part.record.market_slug.clone().unwrap_or_default(),
+                        item: index.add(ItemSummary::new(&part.component.unique_name, part.record)),
                         owned: part.owned,
                         required: part.required,
                         enough: part.enough(),
@@ -241,7 +228,7 @@ pub(crate) fn sets(view: &View) -> Vec<SetRow> {
             })
         })
         .collect();
-    rows.sort_by(|a, b| a.set_name.cmp(&b.set_name));
+    rows.sort_by(|a, b| index[a.item].name.cmp(&index[b.item].name));
     rows
 }
 
@@ -251,7 +238,8 @@ mod tests {
     use super::*;
     use crate::account::Account;
     use crate::catalog::fixtures;
-    use crate::listings::{MarketListings, PlacedOrders};
+    use crate::inventory_view::tab;
+    use crate::listings::MarketListings;
     use crate::view::Fixture;
     use wf_market::OrderType;
 
@@ -259,7 +247,7 @@ mod tests {
     fn owned_parts_only() {
         let fixture =
             Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
-        let rows = parts(&fixture.view());
+        let (rows, _) = fixture.rows(parts);
         assert!(
             rows.is_empty(),
             "the fixture account holds no tradable prime parts"
@@ -279,20 +267,28 @@ mod tests {
             ]),
         )
         .with_prices(prices());
-        let rows = parts(&stocked.view());
+        let (rows, index) = stocked.rows(parts);
         assert_eq!(rows.len(), 2);
         assert!(rows.iter().all(|row| row.count > 0));
-        assert!(!rows.iter().any(|row| row.name.contains("Orokin Cell")));
-        assert!(!rows.iter().any(|row| row.set.name == "Excalibur"));
-        assert_eq!(rows[0].name, "Braton Prime Barrel");
-        assert_eq!(rows[1].name, "Trinity Prime Systems");
+        assert!(
+            !rows
+                .iter()
+                .any(|row| index[row.item].name.contains("Orokin Cell"))
+        );
+        assert!(
+            !rows
+                .iter()
+                .any(|row| index[row.set.item].name == "Excalibur")
+        );
+        assert_eq!(index[rows[0].item].name, "Braton Prime Barrel");
+        assert_eq!(index[rows[1].item].name, "Trinity Prime Systems");
 
         let barrel = &rows[0];
         assert_eq!(barrel.count, 3);
         assert_eq!(barrel.prices.sell, Some(8.0));
-        assert_eq!(barrel.set.name, "Braton Prime");
-        assert!(barrel.prime);
-        assert!(barrel.image_name.is_some());
+        assert_eq!(index[barrel.set.item].name, "Braton Prime");
+        assert!(index[barrel.item].prime);
+        assert!(index[barrel.item].image_name.is_some());
     }
 
     #[test]
@@ -320,7 +316,7 @@ mod tests {
             wf_inventory::Inventory::parse(&value.to_string()).unwrap(),
         )
         .with_prices(prices());
-        assert!(parts(&fixture.view()).is_empty());
+        assert!(fixture.rows(parts).0.is_empty());
     }
 
     #[test]
@@ -342,17 +338,18 @@ mod tests {
         let mut fixture = Fixture::new(fixtures::catalog(), fixtures::inventory_owning(&held))
             .with_prices(prices());
         let braton_set = |fixture: &Fixture| {
-            sets(&fixture.view())
+            let (found, index) = fixture.rows(sets);
+            found
                 .into_iter()
-                .find(|row| row.set_name == "Braton Prime")
+                .find(|row| index[row.item].name == "Braton Prime")
                 .expect("Braton Prime")
         };
-        let rows = parts(&fixture.view());
+        let (rows, _) = fixture.rows(parts);
         assert!(
-            rows.iter().all(|row| row.item.mastered),
+            rows.iter().all(|row| row.status.mastered),
             "the fixture account has Braton Prime and Trinity Prime at max rank"
         );
-        assert!(braton_set(&fixture).item.mastered);
+        assert!(braton_set(&fixture).status.mastered);
 
         let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
         for entry in value
@@ -372,20 +369,20 @@ mod tests {
             misc.push(serde_json::json!({ "ItemType": item_type, "ItemCount": count }));
         }
         fixture.account = Account::new(wf_inventory::Inventory::parse(&value.to_string()).unwrap());
-        let rows = parts(&fixture.view());
+        let (rows, index) = fixture.rows(parts);
         for row in &rows {
             assert_eq!(
-                row.item.mastered,
-                row.set.name == "Trinity Prime",
+                row.status.mastered,
+                index[row.set.item].name == "Trinity Prime",
                 "{} tracks the rank of {}",
-                row.name,
-                row.set.name
+                index[row.item].name,
+                index[row.set.item].name
             );
         }
         let braton_set = braton_set(&fixture);
-        assert!(!braton_set.item.mastered);
+        assert!(!braton_set.status.mastered);
         assert!(
-            braton_set.item.built,
+            braton_set.status.built,
             "the rifle is still owned, just not maxed"
         );
     }
@@ -407,15 +404,15 @@ mod tests {
             )]),
         )
         .with_prices(prices());
-        let rows = sets(&stocked.view());
+        let (rows, index) = stocked.rows(sets);
         let braton = &rows[0];
         assert_eq!(braton.total_parts, 4);
         let barrel = braton
             .components
             .iter()
-            .find(|part| part.name == "Braton Prime Barrel")
+            .find(|part| index[part.item].market_slug.as_deref() == Some("braton_prime_barrel"))
             .unwrap();
-        assert_eq!(barrel.market_slug, "braton_prime_barrel");
+        assert_eq!(index[barrel.item].name, "Braton Prime Barrel");
         assert!(!barrel.enough);
     }
 
@@ -432,50 +429,45 @@ mod tests {
             ),
         ]);
         assert!(
-            sets(
-                &Fixture::new(fixtures::catalog(), fixtures::inventory())
-                    .with_prices(prices())
-                    .view()
-            )
-            .is_empty()
+            Fixture::new(fixtures::catalog(), fixtures::inventory())
+                .with_prices(prices())
+                .rows(sets)
+                .0
+                .is_empty()
         );
 
-        let rows = sets(
-            &Fixture::new(fixtures::catalog(), stocked_inventory.clone())
-                .with_prices(prices())
-                .view(),
-        );
+        let (rows, index) = Fixture::new(fixtures::catalog(), stocked_inventory.clone())
+            .with_prices(prices())
+            .rows(sets);
         assert_eq!(rows.len(), 1);
         let braton = &rows[0];
-        assert_eq!(braton.set_name, "Braton Prime");
+        assert_eq!(index[braton.item].name, "Braton Prime");
         assert_eq!(braton.total_parts, 4);
         assert_eq!(braton.owned_parts, 2);
         assert!(!braton.complete);
         assert_eq!(braton.count, 0);
         assert_eq!(braton.prices.sell, Some(45.0));
-        assert!(braton.item.built);
+        assert!(braton.status.built);
         assert_eq!(braton.components.len(), 4);
         assert_eq!(
             braton.components.iter().filter(|part| part.enough).count(),
             2
         );
-        assert!(braton.image_name.is_some());
+        assert!(index[braton.item].image_name.is_some());
 
         let with_skins = || fixtures::with_skins(fixtures::ITEMS);
         assert!(
-            sets(
-                &Fixture::new(with_skins(), fixtures::inventory())
-                    .with_prices(prices())
-                    .view()
-            )
-            .is_empty()
+            Fixture::new(with_skins(), fixtures::inventory())
+                .with_prices(prices())
+                .rows(sets)
+                .0
+                .is_empty()
         );
         assert_eq!(
-            sets(
-                &Fixture::new(with_skins(), stocked_inventory)
-                    .with_prices(prices())
-                    .view()
-            ),
+            Fixture::new(with_skins(), stocked_inventory)
+                .with_prices(prices())
+                .rows(sets)
+                .0,
             rows
         );
     }
@@ -496,7 +488,7 @@ mod tests {
             ]),
         )
         .with_prices(prices());
-        let rows = sets(&stocked.view());
+        let (rows, _) = stocked.rows(sets);
         assert_eq!(rows[0].prices.ducats, Some(110));
     }
 
@@ -561,14 +553,15 @@ mod tests {
             )]),
         )
         .with_prices(prices());
-        let row = parts(&stocked.view())
+        let (found, index) = stocked.rows(parts);
+        let row = found
             .into_iter()
-            .find(|row| row.name == "Braton Prime Barrel")
+            .find(|row| index[row.item].name == "Braton Prime Barrel")
             .unwrap();
-        assert!(row.item.built);
-        assert!(row.item.mastered);
-        assert!(row.item.built || row.item.mastered);
-        assert!(row.vault.is_some(), "the part names a prime");
+        assert!(row.status.built);
+        assert!(row.status.mastered);
+        assert!(row.status.built || row.status.mastered);
+        assert!(index[row.item].vault.is_some(), "the part names a prime");
 
         let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
         for key in ["LongGuns", "XPInfo"] {
@@ -591,13 +584,14 @@ mod tests {
             wf_inventory::Inventory::parse(&value.to_string()).unwrap(),
         )
         .with_prices(prices());
-        let row = parts(&never_built.view())
+        let (found, index) = never_built.rows(parts);
+        let row = found
             .into_iter()
-            .find(|row| row.name == "Braton Prime Barrel")
+            .find(|row| index[row.item].name == "Braton Prime Barrel")
             .unwrap();
-        assert!(!row.item.built);
-        assert!(!row.item.mastered);
-        assert!(!row.item.built && !row.item.mastered);
+        assert!(!row.status.built);
+        assert!(!row.status.mastered);
+        assert!(!row.status.built && !row.status.mastered);
     }
 
     #[test]
@@ -625,37 +619,31 @@ mod tests {
             )
             .with_prices(prices())
         };
-        let rows = parts(&fixture.view());
-        let ordered: Vec<(&str, PlacedOrders)> = rows
+        let listed = tab(&fixture.view());
+        let ordered: Vec<(Option<&str>, bool, bool)> = listed
+            .parts
             .iter()
-            .filter(|row| row.orders != PlacedOrders::default())
-            .map(|row| (row.market_slug.as_str(), row.orders))
+            .map(|row| {
+                (
+                    listed.items[row.item].market_slug.as_deref(),
+                    listed.selling.contains(&row.item),
+                    listed.buying.contains(&row.item),
+                )
+            })
+            .filter(|(_, sell, buy)| *sell || *buy)
             .collect();
         assert_eq!(
             ordered,
             [
-                (
-                    "braton_prime_barrel",
-                    PlacedOrders {
-                        sell: true,
-                        buy: false
-                    }
-                ),
-                (
-                    "trinity_prime_systems_blueprint",
-                    PlacedOrders {
-                        sell: false,
-                        buy: true
-                    }
-                )
+                (Some("braton_prime_barrel"), true, false),
+                (Some("trinity_prime_systems_blueprint"), false, true)
             ],
             "an order on the part covers the row whose slug only differs by the blueprint suffix and keeps its side"
         );
         fixture.listings = MarketListings::default();
+        let unlisted = tab(&fixture.view());
         assert!(
-            parts(&fixture.view())
-                .iter()
-                .all(|row| row.orders == PlacedOrders::default()),
+            unlisted.selling.is_empty() && unlisted.buying.is_empty(),
             "without a market session no row claims an order"
         );
     }
@@ -679,25 +667,19 @@ mod tests {
             )
             .with_prices(prices())
         };
-        let rows = parts(&fixture.view());
+        let listed = tab(&fixture.view());
 
-        let sell = PlacedOrders {
-            sell: true,
-            buy: false,
-        };
-        assert_eq!(rows.len(), 2, "only the two stocked parts survive");
-        for row in &rows {
-            assert_eq!(row.set.name, "Braton Prime");
-            assert_eq!(
-                row.set.orders, sell,
-                "{} reports the whole set as selling",
-                row.name
+        assert_eq!(listed.parts.len(), 2, "only the two stocked parts survive");
+        for row in &listed.parts {
+            let name = &listed.items[row.item].name;
+            assert_eq!(listed.items[row.set.item].name, "Braton Prime");
+            assert!(
+                listed.selling.contains(&row.set.item) && !listed.buying.contains(&row.set.item),
+                "{name} reports the whole set as selling"
             );
-            assert_eq!(
-                row.orders,
-                PlacedOrders::default(),
-                "{} itself is not listed",
-                row.name
+            assert!(
+                !listed.selling.contains(&row.item) && !listed.buying.contains(&row.item),
+                "{name} itself is not listed"
             );
         }
     }

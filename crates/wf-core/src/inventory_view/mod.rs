@@ -1,11 +1,12 @@
-use std::collections::BTreeMap;
+use std::collections::BTreeSet;
+use std::ops::Index;
 
+use indexmap::{IndexMap, IndexSet};
 use serde::Serialize;
 use wf_data::{Rarity, Refinement, catch_grade, misc_item_name};
 
 use crate::catalog::{Catalog, VaultStatus, display_name_from_path, part_name, refinement_name};
-use crate::identity::unlisted_upgrade;
-use crate::listings::PlacedOrders;
+use crate::identity::{ItemRecord, unlisted_upgrade};
 use crate::prices::Prices;
 use crate::view::View;
 
@@ -19,6 +20,74 @@ pub(crate) use parts::{complete_sets, held_parts, parts, sets};
 pub(crate) use relics::relics;
 pub(crate) use upgrades::{UpgradeKind, arcanes, mods, upgrade_kind};
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct ItemSummary {
+    pub unique_name: String,
+    pub name: String,
+    pub image_name: Option<String>,
+    pub market_slug: Option<String>,
+    pub prime: bool,
+    pub vault: Option<VaultStatus>,
+}
+
+impl ItemSummary {
+    pub fn new(unique_name: &str, record: &ItemRecord) -> Self {
+        Self {
+            unique_name: unique_name.to_owned(),
+            name: record.name.clone(),
+            image_name: record.image_name.clone(),
+            market_slug: record.market_slug.clone(),
+            prime: record.prime,
+            vault: record.vault,
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub(crate) struct ItemIndex {
+    items: IndexSet<ItemSummary>,
+    holders: IndexMap<(String, Vec<usize>), ModHolder>,
+    favourites: BTreeSet<usize>,
+}
+
+impl Index<usize> for ItemIndex {
+    type Output = ItemSummary;
+
+    fn index(&self, item: usize) -> &ItemSummary {
+        &self.items[item]
+    }
+}
+
+impl ItemIndex {
+    fn add(&mut self, summary: ItemSummary) -> usize {
+        self.items.insert_full(summary).0
+    }
+
+    fn add_marked(&mut self, summary: ItemSummary, favourite: bool) -> usize {
+        let item = self.add(summary);
+        if favourite {
+            self.favourites.insert(item);
+        }
+        item
+    }
+
+    fn add_holder(
+        &mut self,
+        key: (String, Vec<usize>),
+        holder: impl FnOnce() -> ModHolder,
+    ) -> usize {
+        let entry = self.holders.entry(key);
+        let position = entry.index();
+        entry.or_insert_with(holder);
+        position
+    }
+
+    fn holder(&self, holder: usize) -> &ModHolder {
+        &self.holders[holder]
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct ItemStatus {
@@ -26,29 +95,21 @@ pub struct ItemStatus {
     pub mastered: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-pub struct PartSet {
-    pub name: String,
+pub struct SetLink {
+    pub item: usize,
     pub complete: bool,
-    pub orders: PlacedOrders,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct PartRow {
-    pub name: String,
-    pub unique_name: String,
-    pub image_name: Option<String>,
+    pub item: usize,
     pub count: i64,
     pub prices: Prices,
-    pub set: PartSet,
-    pub vault: Option<VaultStatus>,
-    pub item: ItemStatus,
-    pub prime: bool,
-    pub market_slug: String,
-    pub favourite: bool,
-    pub orders: PlacedOrders,
+    pub set: SetLink,
+    pub status: ItemStatus,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
@@ -60,7 +121,7 @@ pub struct UpgradePrices {
     pub buy: Option<f64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct ModHolder {
     pub item_id: String,
@@ -79,35 +140,23 @@ pub struct ModHolder {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct ModRow {
-    pub name: String,
-    pub unique_name: String,
-    pub image_name: Option<String>,
+    pub item: usize,
     pub count: i64,
     pub rank: Option<u32>,
     pub max_rank: Option<u32>,
     pub prices: UpgradePrices,
     pub rarity: Option<Rarity>,
-    pub prime: bool,
-    pub equipped_in: Vec<ModHolder>,
-    pub market_slug: String,
-    pub favourite: bool,
-    pub orders: PlacedOrders,
+    pub equipped_in: Vec<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct RelicRow {
-    pub relic: String,
+    pub item: usize,
     pub tier: String,
     pub refinement: Refinement,
-    pub image_name: Option<String>,
     pub count: i64,
-    pub vault: VaultStatus,
-    pub unique_name: String,
-    pub market_slug: String,
     pub plat: Option<f64>,
-    pub favourite: bool,
-    pub orders: PlacedOrders,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -122,26 +171,18 @@ pub struct SculptureStars {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct MiscRow {
-    pub name: String,
-    pub unique_name: String,
-    pub image_name: Option<String>,
+    pub item: usize,
     pub count: i64,
     pub ducats: Option<u32>,
     pub plat: Option<f64>,
-    pub market_slug: String,
     pub market_subtype: Option<String>,
     pub stars: Option<SculptureStars>,
-    pub favourite: bool,
-    pub orders: PlacedOrders,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct SetComponent {
-    pub unique_name: String,
-    pub name: String,
-    pub image_name: Option<String>,
-    pub market_slug: String,
+    pub item: usize,
     pub owned: i64,
     pub required: i64,
     pub enough: bool,
@@ -150,102 +191,67 @@ pub struct SetComponent {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct SetRow {
-    pub set_name: String,
-    pub unique_name: String,
-    pub image_name: Option<String>,
+    pub item: usize,
     pub owned_parts: usize,
     pub total_parts: usize,
     pub count: i64,
     pub complete: bool,
-    pub item: ItemStatus,
-    pub vault: Option<VaultStatus>,
+    pub status: ItemStatus,
     pub prices: Prices,
-    pub market_slug: String,
-    pub favourite: bool,
-    pub orders: PlacedOrders,
     pub components: Vec<SetComponent>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
-#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-pub struct TabTotals {
-    pub ducats: i64,
-    pub plat: f64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct InventoryTab {
+    pub items: Vec<ItemSummary>,
+    pub holders: Vec<ModHolder>,
+    pub favourites: Vec<usize>,
+    pub selling: Vec<usize>,
+    pub buying: Vec<usize>,
     pub parts: Vec<PartRow>,
     pub mods: Vec<ModRow>,
     pub arcanes: Vec<ModRow>,
     pub relics: Vec<RelicRow>,
     pub misc: Vec<MiscRow>,
     pub sets: Vec<SetRow>,
-    pub totals: BTreeMap<String, TabTotals>,
 }
 
 pub(crate) fn tab(view: &View) -> InventoryTab {
-    let parts = parts(view);
-    let mods = mods(view);
-    let arcanes = arcanes(view);
-    let relics = relics(view);
-    let misc = misc(view);
-    let sets = sets(view);
-
-    let mut totals = BTreeMap::new();
-    totals.insert(
-        "parts".to_owned(),
-        sum(parts
-            .iter()
-            .map(|row| (row.count, row.prices.ducats, row.prices.sell))),
-    );
-    totals.insert(
-        "mods".to_owned(),
-        sum(mods.iter().map(|row| (row.count, None, row.prices.sell))),
-    );
-    totals.insert(
-        "arcanes".to_owned(),
-        sum(arcanes.iter().map(|row| (row.count, None, row.prices.sell))),
-    );
-    totals.insert(
-        "relics".to_owned(),
-        sum(relics.iter().map(|row| (row.count, None, row.plat))),
-    );
-    totals.insert(
-        "misc".to_owned(),
-        sum(misc.iter().map(|row| (row.count, row.ducats, row.plat))),
-    );
-    totals.insert(
-        "sets".to_owned(),
-        sum(sets
-            .iter()
-            .map(|row| (row.count, row.prices.ducats, row.prices.sell))),
-    );
-
+    let mut index = ItemIndex::default();
+    let parts = parts(view, &mut index);
+    let mods = mods(view, &mut index);
+    let arcanes = arcanes(view, &mut index);
+    let relics = relics(view, &mut index);
+    let misc = misc(view, &mut index);
+    let sets = sets(view, &mut index);
+    let mut selling = Vec::new();
+    let mut buying = Vec::new();
+    for (item, summary) in (0..).zip(&index.items) {
+        let Some(slug) = summary.market_slug.as_deref() else {
+            continue;
+        };
+        let orders = view.listings.orders_for(slug);
+        if orders.sell {
+            selling.push(item);
+        }
+        if orders.buy {
+            buying.push(item);
+        }
+    }
     InventoryTab {
+        favourites: index.favourites.into_iter().collect(),
+        items: index.items.into_iter().collect(),
+        holders: index.holders.into_values().collect(),
+        selling,
+        buying,
         parts,
         mods,
         arcanes,
         relics,
         misc,
         sets,
-        totals,
     }
-}
-
-#[allow(
-    clippy::cast_precision_loss,
-    reason = "item counts stay far below 2^53"
-)]
-fn sum(rows: impl Iterator<Item = (i64, Option<u32>, Option<f64>)>) -> TabTotals {
-    let mut ducats = 0;
-    let mut plat = 0.0;
-    for (count, row_ducats, row_plat) in rows {
-        ducats += i64::from(row_ducats.unwrap_or(0)) * count;
-        plat += row_plat.unwrap_or(0.0) * count as f64;
-    }
-    TabTotals { ducats, plat }
 }
 
 pub(crate) fn catalogued_name(catalog: &Catalog, unique_name: &str) -> Option<String> {
@@ -285,6 +291,8 @@ pub(crate) fn display_name(catalog: &Catalog, unique_name: &str) -> String {
 mod tests {
     use super::*;
     use crate::catalog::{fixtures, names_a_prime};
+    use crate::identity::ItemTable;
+    use crate::listings::MarketListings;
     use crate::prices::FixedPrices;
     use crate::view::Fixture;
 
@@ -297,6 +305,12 @@ mod tests {
         ])
     }
 
+    impl ItemIndex {
+        pub(super) fn favourite(&self, item: usize) -> bool {
+            self.favourites.contains(&item)
+        }
+    }
+
     #[test]
     fn vault_pill() {
         let stocked = Fixture::new(
@@ -307,34 +321,100 @@ mod tests {
             )]),
         )
         .with_prices(prices());
-        let row = &parts(&stocked.view())[0];
-        assert!(row.vault.is_some());
+        let (rows, index) = stocked.rows(parts);
+        assert!(index[rows[0].item].vault.is_some());
 
-        let mod_rows = mods(
-            &Fixture::new(fixtures::catalog(), fixtures::inventory())
-                .with_prices(prices())
-                .view(),
-        );
+        let (mod_rows, _) = Fixture::new(fixtures::catalog(), fixtures::inventory())
+            .with_prices(prices())
+            .rows(mods);
         assert!(!mod_rows.is_empty());
 
-        let sets = sets(&stocked.view());
-        assert!(
-            sets.iter()
-                .all(|row| row.vault.is_some() == names_a_prime(&row.set_name))
-        );
+        let (sets, index) = stocked.rows(sets);
+        assert!(sets.iter().all(|row| {
+            let set = &index[row.item];
+            set.vault.is_some() == names_a_prime(&set.name)
+        }));
     }
 
     #[test]
-    fn tab_totals() {
+    fn index_shares_equal_summaries() {
+        let catalog = fixtures::catalog();
+        let items = ItemTable::build(&catalog);
+        let barrel = items
+            .get("/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel")
+            .unwrap();
+        let mut index = ItemIndex::default();
+        let first = index.add(ItemSummary::new(&barrel.unique_name, barrel));
+        let again = index.add(ItemSummary::new(&barrel.unique_name, barrel));
+        let renamed = index.add(ItemSummary {
+            name: "Braton Prime Barrel Listing".to_owned(),
+            ..ItemSummary::new(&barrel.unique_name, barrel)
+        });
+        assert_eq!(first, again);
+        assert_ne!(first, renamed);
+        assert_eq!(index[renamed].name, "Braton Prime Barrel Listing");
+        assert_eq!(index.items.len(), 2);
+    }
+
+    #[test]
+    fn one_entry_per_item() {
         let fixture =
             Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
         let tab = tab(&fixture.view());
         assert!(!tab.misc.is_empty());
-        assert_eq!(tab.totals.len(), 6);
-        let relics = tab.totals.get("relics").unwrap();
-        assert!(relics.plat >= 5.0);
-        let parts = tab.totals.get("parts").unwrap();
-        assert!(parts.ducats >= 0);
+        let distinct: std::collections::HashSet<&ItemSummary> = tab.items.iter().collect();
+        assert_eq!(distinct.len(), tab.items.len());
+        let referenced: BTreeSet<usize> = tab
+            .parts
+            .iter()
+            .flat_map(|row| [row.item, row.set.item])
+            .chain(tab.mods.iter().map(|row| row.item))
+            .chain(tab.arcanes.iter().map(|row| row.item))
+            .chain(tab.relics.iter().map(|row| row.item))
+            .chain(tab.misc.iter().map(|row| row.item))
+            .chain(tab.sets.iter().flat_map(|row| {
+                std::iter::once(row.item).chain(row.components.iter().map(|part| part.item))
+            }))
+            .collect();
+        assert_eq!(referenced, (0..).take(tab.items.len()).collect());
+        let held: BTreeSet<usize> = tab
+            .mods
+            .iter()
+            .chain(&tab.arcanes)
+            .flat_map(|row| row.equipped_in.iter().copied())
+            .collect();
+        assert_eq!(held, (0..).take(tab.holders.len()).collect());
+        let distinct: std::collections::HashSet<&ModHolder> = tab.holders.iter().collect();
+        assert_eq!(distinct.len(), tab.holders.len());
+        assert!(
+            tab.relics
+                .iter()
+                .any(|row| row.count > 0 && row.plat.is_some_and(|plat| plat >= 5.0))
+        );
+        assert!(tab.favourites.is_empty());
+    }
+
+    #[test]
+    fn orders_mark_items() {
+        let fixture = Fixture {
+            listings: MarketListings::new(
+                [
+                    ("braton_prime_barrel", wf_market::OrderType::Sell),
+                    ("braton_prime_set", wf_market::OrderType::Buy),
+                ],
+                &[],
+            ),
+            ..Fixture::new(fixtures::catalog(), favourite_fixture()).with_prices(prices())
+        };
+        let tab = tab(&fixture.view());
+        let slugs = |items: &[usize]| -> Vec<Option<&str>> {
+            items
+                .iter()
+                .map(|&item| tab.items[item].market_slug.as_deref())
+                .collect()
+        };
+        assert_eq!(slugs(&tab.selling), [Some("braton_prime_barrel")]);
+        assert_eq!(slugs(&tab.buying), [Some("braton_prime_set")]);
     }
 
     fn favourite_fixture() -> wf_inventory::Inventory {
@@ -359,37 +439,38 @@ mod tests {
         let mut fixture =
             Fixture::new(fixtures::catalog(), favourite_fixture()).with_prices(prices());
         let plain = tab(&fixture.view());
-        for rows in [&plain.mods, &plain.arcanes] {
-            assert!(!rows.is_empty());
-            assert!(rows.iter().all(|row| !row.favourite));
-        }
-        assert!(plain.parts.iter().all(|row| !row.favourite));
-        assert!(plain.relics.iter().all(|row| !row.favourite));
-        assert!(plain.misc.iter().all(|row| !row.favourite));
-        assert!(plain.sets.iter().all(|row| !row.favourite));
+        assert!(!plain.mods.is_empty());
+        assert!(!plain.arcanes.is_empty());
+        assert!(plain.favourites.is_empty());
 
+        let name = |item: usize| plain.items[item].unique_name.clone();
         fixture.favourites = [
-            plain.parts[0].unique_name.clone(),
-            plain.mods[0].unique_name.clone(),
-            plain.arcanes[0].unique_name.clone(),
-            plain.relics[0].unique_name.clone(),
-            plain.misc[0].unique_name.clone(),
+            name(plain.parts[0].item),
+            name(plain.mods[0].item),
+            name(plain.arcanes[0].item),
+            name(plain.relics[0].item),
+            name(plain.misc[0].item),
         ]
         .into_iter()
         .collect();
         let marked = tab(&fixture.view());
-        assert!(marked.parts[0].favourite);
-        assert!(marked.mods[0].favourite);
-        assert!(marked.arcanes[0].favourite);
-        assert!(marked.relics[0].favourite);
-        assert!(marked.misc[0].favourite);
+        let favourite = |item: usize| marked.favourites.contains(&item);
+        assert!(favourite(marked.parts[0].item));
+        assert!(favourite(marked.mods[0].item));
+        assert!(favourite(marked.arcanes[0].item));
+        assert!(favourite(marked.relics[0].item));
+        assert!(favourite(marked.misc[0].item));
         assert_eq!(
-            marked.relics.iter().filter(|row| row.favourite).count(),
+            marked
+                .relics
+                .iter()
+                .filter(|row| favourite(row.item))
+                .count(),
             1,
             "a favourited relic stack leaves the other refinements alone"
         );
         assert_eq!(
-            marked.misc.iter().filter(|row| row.favourite).count(),
+            marked.misc.iter().filter(|row| favourite(row.item)).count(),
             1,
             "a favourited misc item marks one row"
         );
@@ -399,29 +480,29 @@ mod tests {
     fn favourite_set_marks_parts() {
         let mut fixture =
             Fixture::new(fixtures::catalog(), favourite_fixture()).with_prices(prices());
-        let set = sets(&fixture.view())
+        let (rows, index) = fixture.rows(sets);
+        let set = rows
             .into_iter()
-            .find(|row| row.set_name == "Braton Prime")
+            .find(|row| index[row.item].name == "Braton Prime")
             .expect("Braton Prime");
-        assert!(!set.favourite);
+        assert!(!index.favourite(set.item));
 
-        fixture.favourites = [set.unique_name.clone()].into_iter().collect();
-        let marked = sets(&fixture.view())
+        fixture.favourites = [index[set.item].unique_name.clone()].into_iter().collect();
+        let (rows, index) = fixture.rows(sets);
+        let marked = rows
             .into_iter()
-            .find(|row| row.set_name == "Braton Prime")
+            .find(|row| index[row.item].name == "Braton Prime")
             .expect("Braton Prime");
-        assert!(marked.favourite);
+        assert!(index.favourite(marked.item));
 
-        let rows = parts(&fixture.view());
-        let owned_parts: Vec<&PartRow> = rows
-            .iter()
-            .filter(|row| row.set.name == "Braton Prime")
-            .collect();
+        let (rows, index) = fixture.rows(parts);
+        let in_braton = |row: &PartRow| index[row.set.item].name == "Braton Prime";
+        let owned_parts: Vec<&PartRow> = rows.iter().filter(|row| in_braton(row)).collect();
         assert!(!owned_parts.is_empty());
-        assert!(owned_parts.iter().all(|row| row.favourite));
+        assert!(owned_parts.iter().all(|row| index.favourite(row.item)));
         assert!(
             rows.iter()
-                .any(|row| row.set.name != "Braton Prime" && !row.favourite)
+                .any(|row| !in_braton(row) && !index.favourite(row.item))
         );
     }
 }

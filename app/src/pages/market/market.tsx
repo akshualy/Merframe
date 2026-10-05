@@ -22,7 +22,7 @@ import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
-import type { Auction, MarketSnapshot, OrderRow } from "@/types";
+import type { Auction, MarketOrders, MarketSnapshot } from "@/types";
 import { AuctionsTable } from "./auctions";
 import { LoginCard } from "./login-card";
 import { OrdersTable } from "./orders";
@@ -33,7 +33,7 @@ type MarketTab = "orders" | "auctions";
 export function MarketPage() {
   const quote = usePageQuote("market");
   const { status, setStatus } = useAppStore();
-  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [orders, setOrders] = useState<MarketOrders>({ items: [], rows: [] });
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const { items, openListing, show: showPanel } = useMarketPanelStore();
   const [params, setParams] = useSearchParams();
@@ -166,15 +166,15 @@ export function MarketPage() {
   }, [setStatus]);
 
   const totals = useMemo(() => {
-    const sell = orders.filter((order) => order.order_type === "sell");
+    const sell = orders.rows.filter((order) => order.order_type === "sell");
     return {
       sell: sell.length,
-      buy: orders.length - sell.length,
+      buy: orders.rows.length - sell.length,
       plat: sell.reduce(
         (total, order) => total + order.platinum * order.quantity,
         0,
       ),
-      missing: orders.filter((order) => order.show_warning).length,
+      missing: orders.rows.filter((order) => order.show_warning).length,
     };
   }, [orders]);
 
@@ -270,7 +270,7 @@ export function MarketPage() {
           </dl>
         }
       >
-        {loading && orders.length === 0 && auctions.length === 0 ? (
+        {loading && orders.rows.length === 0 && auctions.length === 0 ? (
           <Skeleton className="h-48 w-full" />
         ) : (
           <div className={cn("transition-opacity", loading && "opacity-60")}>
@@ -282,7 +282,7 @@ export function MarketPage() {
             >
               <TabsList className="mb-4">
                 <TabsTrigger value="orders">
-                  Orders ({num(orders.length)})
+                  Orders ({num(orders.rows.length)})
                 </TabsTrigger>
                 <TabsTrigger value="auctions">
                   Auctions ({num(auctions.length)})
@@ -290,7 +290,7 @@ export function MarketPage() {
               </TabsList>
               <TabsContent value="orders">
                 <OrdersTable
-                  rows={orders}
+                  orders={orders}
                   onCompare={openListing}
                   onRefresh={reload}
                   onSetVisibility={setOrdersVisibility}

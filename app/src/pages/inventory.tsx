@@ -15,8 +15,8 @@ import { useCommand } from "@/hooks/use-command";
 import { useListen } from "@/hooks/use-listen";
 import { api, events, reportError } from "@/lib/bridge";
 import { num } from "@/lib/format";
+import { entriesFor, inventoryFlags } from "@/lib/inventory-entries";
 import type { InventoryTabKey } from "@/lib/inventory-filters";
-import { rowsFor } from "@/lib/inventory-rows";
 import { usePageQuote } from "@/lib/quotes";
 import { notify } from "@/lib/toast";
 
@@ -27,7 +27,8 @@ export function InventoryPage() {
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as InventoryTabKey | null) ?? "parts";
 
-  const rows = useMemo(() => rowsFor(tab, data), [tab, data]);
+  const entries = useMemo(() => entriesFor(tab, data), [tab, data]);
+  const flags = useMemo(() => inventoryFlags(data), [data]);
 
   useListen(events.marketUpdated, reload);
 
@@ -95,7 +96,12 @@ export function InventoryPage() {
           </TabsList>
 
           <TabsContent value={tab}>
-            <InventoryTabView key={tab} tab={tab} rows={rows} />
+            <InventoryTabView
+              key={tab}
+              tab={tab}
+              entries={entries}
+              flags={flags}
+            />
           </TabsContent>
         </Tabs>
       </Section>

@@ -2465,6 +2465,7 @@ dependencies = [
  "futures-util",
  "gdk",
  "gtk",
+ "indexmap 2.14.2",
  "notify-rust",
  "reqwest 0.12.28",
  "serde",
@@ -5852,6 +5853,7 @@ version = "0.3.0"
 dependencies = [
  "chrono",
  "flate2",
+ "indexmap 2.14.2",
  "rusqlite",
  "serde",
  "serde_json",

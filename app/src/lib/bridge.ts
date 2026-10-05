@@ -14,13 +14,13 @@ import type {
   MarketAccount,
   MarketItem,
   MarketMover,
+  MarketOrders,
   MarketWindow,
   MasteryOrdering,
   MasteryTab,
   NewOrder,
   Order,
   OrderPatch,
-  OrderRow,
   OverlayState,
   Presence,
   RelicPlannerTab,
@@ -159,7 +159,7 @@ export const api = {
   marketLogin: (email: string, password: string) =>
     call<MarketAccount>("market_login", { email, password }),
   marketLogout: () => call<void>("market_logout"),
-  marketMyOrders: () => call<OrderRow[]>("market_my_orders"),
+  marketMyOrders: () => call<MarketOrders>("market_my_orders"),
   marketPostOrder: (order: NewOrder) =>
     call<Order>("market_post_order", { order }),
   marketUpdateOrder: (id: string, patch: OrderPatch) =>

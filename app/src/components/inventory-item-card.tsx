@@ -8,8 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
 import { num } from "@/lib/format";
+import {
+  buyPlat,
+  crafted,
+  ducats,
+  equippedIn,
+  equippedLabel,
+  type InventoryEntry,
+  type InventoryFlags,
+  rank,
+  refinement,
+  type SetPart,
+  sellPlat,
+  vault,
+} from "@/lib/inventory-entries";
 import type { InventoryTabKey } from "@/lib/inventory-filters";
-import { equippedLabel, type Row } from "@/lib/inventory-rows";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
@@ -73,28 +86,32 @@ function RankedPlat({
   return <span className="flex items-baseline gap-1 text-xs">{body}</span>;
 }
 
-function SetParts({ set }: { set: SetRow }) {
+function SetParts({ set, parts }: { set: SetRow; parts: SetPart[] }) {
   const openListing = useMarketPanelStore((state) => state.openListing);
   const side = useAppStore((state) => state.settings?.set_part_click ?? "sell");
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-1">
-        {set.components.map((part) => (
-          <button
-            key={part.unique_name}
-            type="button"
-            onClick={() => openListing(part.market_slug, side)}
-            title={`${part.name}: ${part.owned}/${part.required}. Open on warframe.market`}
-            className={cn(
-              "hover:border-accent cursor-pointer rounded-md border-2 hover:opacity-100 hover:grayscale-0",
-              part.enough
-                ? "border-primary"
-                : "border-transparent opacity-35 grayscale",
-            )}
-          >
-            <ItemImage imageName={part.image_name} size={26} />
-          </button>
-        ))}
+        {parts.map(({ component, item }) => {
+          const slug = item.market_slug;
+          return (
+            <button
+              key={item.unique_name}
+              type="button"
+              disabled={slug === null}
+              onClick={slug ? () => openListing(slug, side) : undefined}
+              title={`${item.name}: ${component.owned}/${component.required}. Open on warframe.market`}
+              className={cn(
+                "hover:border-accent cursor-pointer rounded-md border-2 hover:opacity-100 hover:grayscale-0",
+                component.enough
+                  ? "border-primary"
+                  : "border-transparent opacity-35 grayscale",
+              )}
+            >
+              <ItemImage imageName={item.image_name} size={26} />
+            </button>
+          );
+        })}
       </div>
       <div className="flex items-center gap-2">
         <Progress
@@ -143,37 +160,65 @@ function Meta({
   );
 }
 
-function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
+function marketSubtype(entry: InventoryEntry): string | null {
+  switch (entry.kind) {
+    case "relic":
+      return entry.row.refinement.toLowerCase();
+    case "misc":
+      return entry.row.market_subtype;
+    default:
+      return null;
+  }
+}
+
+function ItemCardInner({
+  entry,
+  tab,
+  flags,
+}: {
+  entry: InventoryEntry;
+  tab: InventoryTabKey;
+  flags: InventoryFlags;
+}) {
   const openListing = useMarketPanelStore((state) => state.openListing);
-  const isSet = tab === "sets" && row.set;
-  const equipped = equippedLabel(row);
-  const crafted = (tab === "parts" || tab === "sets") && row.itemOwned;
-  const stars = row.stars
-    ? { amber: row.stars.amber_filled, cyan: row.stars.cyan_filled }
+  const { item, row } = entry;
+  const slug = item.market_slug;
+  const set = entry.kind === "set" ? entry : null;
+  const upgrade = entry.kind === "upgrade" ? entry.row : null;
+  const sculpture = entry.kind === "misc" ? entry.row.stars : null;
+  const tier = entry.kind === "relic" ? entry.row.tier : null;
+  const setItem = entry.kind === "part" ? entry.row.set.item : null;
+  const holders = equippedIn(entry);
+  const equipped = equippedLabel(holders);
+  const itemRank = rank(entry);
+  const itemRefinement = refinement(entry);
+  const itemDucats = ducats(entry);
+  const stars = sculpture
+    ? { amber: sculpture.amber_filled, cyan: sculpture.cyan_filled }
     : null;
-  const starsFilled = row.stars
-    ? row.stars.amber_filled + row.stars.cyan_filled
+  const starsFilled = sculpture
+    ? sculpture.amber_filled + sculpture.cyan_filled
     : 0;
-  const starSockets = row.stars
-    ? row.stars.amber_sockets + row.stars.cyan_sockets
+  const starSockets = sculpture
+    ? sculpture.amber_sockets + sculpture.cyan_sockets
     : 0;
 
   return (
     <div className="bg-card hover:border-primary/50 flex gap-4 rounded-xl border p-4 transition-colors">
       <div className="relative shrink-0 self-start">
         <ArcaneImage
-          imageName={row.imageName}
-          rarity={tab === "arcanes" ? row.rarity : null}
-          size={isSet ? 96 : 80}
-          alt={row.name}
+          imageName={item.image_name}
+          rarity={tab === "arcanes" ? (upgrade?.rarity ?? null) : null}
+          size={set ? 96 : 80}
+          alt={item.name}
           className={cn((tab === "mods" || tab === "arcanes") && "bg-muted/60")}
         />
-        {(!isSet || row.count > 0) && (
+        {(!set || row.count > 0) && (
           <ImageTag className="top-1 right-1">x{num(row.count)}</ImageTag>
         )}
-        {row.ducats ? (
+        {itemDucats ? (
           <ImageTag className="text-accent bottom-1 left-1/2 -translate-x-1/2">
-            {num(row.ducats)}
+            {num(itemDucats)}
             <GameIcon name="ducats" size={14} alt="Ducats" />
           </ImageTag>
         ) : null}
@@ -183,108 +228,109 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
           <span className="flex min-w-0 items-center gap-1.5">
             <span
               className="truncate text-sm leading-tight font-semibold"
-              title={row.name}
+              title={item.name}
             >
-              {row.name}
+              {item.name}
             </span>
-            {row.rank !== null && (
+            {itemRank !== null && (
               <span className="text-muted-foreground shrink-0 text-sm">
-                R{row.rank}
+                R{itemRank}
               </span>
             )}
-            {isSet && row.mastered && (
+            {set?.row.status.mastered && (
               <GameIcon name="mastered" size={16} alt="Mastered" />
             )}
           </span>
           <span className="-mt-1 -mr-1 flex shrink-0 items-center">
             <FavouriteStar
-              uniqueName={row.uniqueName}
-              favourite={row.favourite}
+              uniqueName={item.unique_name}
+              favourite={flags.favourites.has(row.item)}
             />
           </span>
         </div>
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm tabular-nums">
-          {row.refinement && (
-            <Meta className={cn("font-medium", refinementTone(row.refinement))}>
-              {row.tier && (
-                <GameIcon
-                  name={relicTierIcon(row.tier)}
-                  size={14}
-                  alt={row.tier}
-                />
+          {itemRefinement && (
+            <Meta className={cn("font-medium", refinementTone(itemRefinement))}>
+              {tier && (
+                <GameIcon name={relicTierIcon(tier)} size={14} alt={tier} />
               )}
-              {row.refinement}
+              {itemRefinement}
             </Meta>
           )}
-          {row.stars && (
+          {sculpture && (
             <Meta className={cn(starsFilled === starSockets && "text-accent")}>
               {starsFilled}/{starSockets} stars
             </Meta>
           )}
-          {row.vault === "vaulted" && (
+          {vault(entry) === "vaulted" && (
             <Meta className="text-vaulted">
               <Archive className="size-3.5" />
               Vaulted
             </Meta>
           )}
-          {crafted && (
+          {crafted(entry) && (
             <Meta className="text-accent">
               <CircleCheck className="size-3.5" />
               Crafted
             </Meta>
           )}
-          {isSet && row.setComplete && (
+          {set?.row.complete && (
             <Meta className="text-accent">
               <CircleCheck className="size-3.5" />
               Complete
             </Meta>
           )}
-          {row.orders.sell && (
+          {flags.selling.has(row.item) && (
             <Meta className="text-primary">
               <Tag className="size-3.5" />
               Selling
             </Meta>
           )}
-          {row.setOrders?.sell && (
+          {setItem !== null && flags.selling.has(setItem) && (
             <Meta className="text-primary">
               <Tag className="size-3.5" />
               Selling in set
             </Meta>
           )}
-          {row.orders.buy && (
+          {flags.buying.has(row.item) && (
             <Meta className="text-primary">
               <Tag className="size-3.5" />
               Buying
             </Meta>
           )}
-          {row.setOrders?.buy && (
+          {setItem !== null && flags.buying.has(setItem) && (
             <Meta className="text-primary">
               <Tag className="size-3.5" />
               Buying in set
             </Meta>
           )}
         </div>
-        {equipped && <EquippedDialog row={row} label={equipped} />}
-        {isSet && row.set && <SetParts set={row.set} />}
-        {row.marketSlug && (
+        {equipped && (
+          <EquippedDialog
+            name={item.name}
+            rank={itemRank}
+            holders={holders}
+            label={equipped}
+          />
+        )}
+        {set && <SetParts set={set.row} parts={set.parts} />}
+        {slug && (
           <div className="mt-auto flex flex-wrap items-center justify-end gap-2 pt-1.5">
-            {tab === "arcanes" ? (
+            {upgrade && tab === "arcanes" ? (
               <>
                 <RankedPlat
                   side="sell"
                   label="R0"
-                  value={row.plat}
-                  floor={row.platIsFloor}
-                  onOpen={() => openListing(row.marketSlug, "sell", 0)}
+                  value={upgrade.prices.sell}
+                  floor={upgrade.prices.is_floor}
+                  onOpen={() => openListing(slug, "sell", 0)}
                 />
-                {(row.maxRank ?? 0) > 0 && (
+                {(upgrade.max_rank ?? 0) > 0 && (
                   <RankedPlat
                     side="sell"
-                    label={`R${row.maxRank}`}
-                    value={row.platMaxRank}
-                    onOpen={() =>
-                      openListing(row.marketSlug, "sell", row.maxRank)
-                    }
+                    label={`R${upgrade.max_rank}`}
+                    value={upgrade.prices.sell_max_rank}
+                    onOpen={() => openListing(slug, "sell", upgrade.max_rank)}
                   />
                 )}
               </>
@@ -292,28 +338,28 @@ function ItemCardInner({ row, tab }: { row: Row; tab: InventoryTabKey }) {
               <>
                 <RankedPlat
                   side="sell"
-                  value={row.plat}
-                  floor={row.platIsFloor}
+                  value={sellPlat(entry)}
+                  floor={upgrade?.prices.is_floor}
                   onOpen={() =>
                     openListing(
-                      row.marketSlug,
+                      slug,
                       "sell",
-                      row.rank,
-                      row.marketSubtype,
+                      itemRank,
+                      marketSubtype(entry),
                       stars,
                     )
                   }
                 />
                 <RankedPlat
                   side="buy"
-                  value={row.buyPlat}
+                  value={buyPlat(entry)}
                   tone="text-accent"
                   onOpen={() =>
                     openListing(
-                      row.marketSlug,
+                      slug,
                       "buy",
-                      row.rank,
-                      row.marketSubtype,
+                      itemRank,
+                      marketSubtype(entry),
                       stars,
                     )
                   }

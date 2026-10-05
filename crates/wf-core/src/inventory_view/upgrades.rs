@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use wf_data::Item;
 use wf_inventory::{EquipmentItem, Inventory, RivenFingerprint, UpgradeSlot};
 
-use super::{ModHolder, ModRow, UpgradePrices, display_name};
+use super::{ItemIndex, ItemSummary, ModHolder, ModRow, UpgradePrices, display_name};
 use crate::catalog::{ARCANE_PREFIX, Catalog, display_name_from_path};
 use crate::identity::{ItemKind, Variant, is_riven};
 use crate::prices::PriceSource;
@@ -28,19 +28,20 @@ pub(crate) fn upgrade_kind(item_type: &str) -> UpgradeKind {
     UpgradeKind::Mod
 }
 
-pub(crate) fn mods(view: &View) -> Vec<ModRow> {
-    upgrade_rows(view, UpgradeKind::Mod)
+pub(crate) fn mods(view: &View, index: &mut ItemIndex) -> Vec<ModRow> {
+    upgrade_rows(view, index, UpgradeKind::Mod)
 }
 
-pub(crate) fn arcanes(view: &View) -> Vec<ModRow> {
-    upgrade_rows(view, UpgradeKind::Arcane)
+pub(crate) fn arcanes(view: &View, index: &mut ItemIndex) -> Vec<ModRow> {
+    upgrade_rows(view, index, UpgradeKind::Arcane)
 }
 
 fn equipped_holders(
     catalog: &Catalog,
     slots: &HashMap<&str, Vec<UpgradeSlot<'_>>>,
     instances: &BTreeSet<&str>,
-) -> Vec<ModHolder> {
+    index: &mut ItemIndex,
+) -> Vec<usize> {
     let mut configs_by_item: BTreeMap<&str, (&EquipmentItem, BTreeSet<usize>)> = BTreeMap::new();
     for slot in instances
         .iter()
@@ -53,43 +54,48 @@ fn equipped_holders(
             .1
             .insert(slot.config);
     }
-    let mut holders: Vec<ModHolder> = configs_by_item
+    let mut holders: Vec<usize> = configs_by_item
         .into_iter()
         .map(|(item_id, (item, configs))| {
-            let identity = item.identity_type();
-            let known = catalog.item(identity);
-            ModHolder {
-                item_id: item_id.to_owned(),
-                name: display_name(catalog, identity),
-                custom_name: item.custom_name().map(str::to_owned),
-                image_name: known.and_then(|known| known.image_name.clone()),
-                rank: known.map(|known| known.mastery_rank_at(item.xp)),
-                takes_orokin_reactor: known.is_some_and(Item::takes_orokin_reactor),
-                orokin_upgrade: item.has_orokin_upgrade(),
-                exilus_adapter: item.has_exilus_adapter(),
-                configs: configs.into_iter().collect(),
-                forma: item.polarized.unwrap_or_default(),
-                archon_shards: item.archon_shards(),
-            }
+            let configs: Vec<usize> = configs.into_iter().collect();
+            index.add_holder((item_id.to_owned(), configs.clone()), || {
+                let identity = item.identity_type();
+                let known = catalog.item(identity);
+                ModHolder {
+                    item_id: item_id.to_owned(),
+                    name: display_name(catalog, identity),
+                    custom_name: item.custom_name().map(str::to_owned),
+                    image_name: known.and_then(|known| known.image_name.clone()),
+                    rank: known.map(|known| known.mastery_rank_at(item.xp)),
+                    takes_orokin_reactor: known.is_some_and(Item::takes_orokin_reactor),
+                    orokin_upgrade: item.has_orokin_upgrade(),
+                    exilus_adapter: item.has_exilus_adapter(),
+                    configs,
+                    forma: item.polarized.unwrap_or_default(),
+                    archon_shards: item.archon_shards(),
+                }
+            })
         })
         .collect();
-    holders.sort_by(|a, b| a.name.cmp(&b.name));
+    holders.sort_by(|a, b| index.holder(*a).name.cmp(&index.holder(*b).name));
     holders
 }
 
 fn upgrade_prices(
     prices: &dyn PriceSource,
-    slug: &str,
+    slug: Option<&str>,
     rank: Option<u32>,
     max_rank: Option<u32>,
     wanted: UpgradeKind,
 ) -> UpgradePrices {
-    let at_max_rank = prices.plat_max_rank(slug).filter(|p| *p > 0.0);
+    let at_max_rank = slug
+        .and_then(|slug| prices.plat_max_rank(slug))
+        .filter(|p| *p > 0.0);
     let maxed = rank.is_some() && rank == max_rank && at_max_rank.is_some();
     let sell = if maxed && wanted == UpgradeKind::Mod {
         at_max_rank
     } else {
-        prices.plat(slug)
+        slug.and_then(|slug| prices.plat(slug))
     };
     UpgradePrices {
         sell,
@@ -99,7 +105,7 @@ fn upgrade_prices(
             None
         },
         is_floor: rank.is_some_and(|rank| rank > 0) && !maxed && sell.is_some_and(|p| p > 0.0),
-        buy: prices.buy_plat(slug),
+        buy: slug.and_then(|slug| prices.buy_plat(slug)),
     }
 }
 
@@ -156,14 +162,14 @@ fn count_by_rank(
     counted
 }
 
-fn upgrade_rows(view: &View, wanted: UpgradeKind) -> Vec<ModRow> {
+fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<ModRow> {
     let View {
         account,
         catalog,
         items,
         prices,
         favourites,
-        listings,
+        ..
     } = *view;
     let inventory = &account.inventory;
     let slots = inventory.upgrade_slots();
@@ -187,25 +193,27 @@ fn upgrade_rows(view: &View, wanted: UpgradeKind) -> Vec<ModRow> {
                 ItemKind::Upgrade { rarity, max_rank } => (rarity, max_rank),
                 _ => (None, None),
             };
-            let slug = record.market_slug.as_deref().unwrap_or_default();
+            let slug = record.market_slug.as_deref();
             ModRow {
+                item: index.add_marked(
+                    ItemSummary::new(unique_name, &record),
+                    favourites.contains(unique_name),
+                ),
                 count,
                 rank,
                 max_rank,
                 prices: upgrade_prices(prices, slug, rank, max_rank, wanted),
-                equipped_in: equipped_holders(catalog, &slots, &holders),
-                image_name: record.image_name.clone(),
                 rarity,
-                prime: record.prime,
-                favourite: favourites.contains(unique_name),
-                orders: listings.orders_for(slug),
-                unique_name: unique_name.to_owned(),
-                market_slug: slug.to_owned(),
-                name: record.name.clone(),
+                equipped_in: equipped_holders(catalog, &slots, &holders, index),
             }
         })
         .collect();
-    rows.sort_by(|a, b| a.name.cmp(&b.name).then(a.rank.cmp(&b.rank)));
+    rows.sort_by(|a, b| {
+        index[a.item]
+            .name
+            .cmp(&index[b.item].name)
+            .then(a.rank.cmp(&b.rank))
+    });
     rows
 }
 
@@ -223,26 +231,30 @@ mod tests {
         let fixture =
             Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
         let view = fixture.view();
-        let rows = [mods(&view), arcanes(&view)].concat();
+        let mut index = ItemIndex::default();
+        let rows = [mods(&view, &mut index), arcanes(&view, &mut index)].concat();
         let unresolved: Vec<&str> = rows
             .iter()
-            .filter(|row| fixture.items.get(&row.unique_name).is_none())
-            .map(|row| row.unique_name.as_str())
+            .filter(|row| fixture.items.get(&index[row.item].unique_name).is_none())
+            .map(|row| index[row.item].unique_name.as_str())
             .collect();
         assert!(unresolved.is_empty(), "{unresolved:?}");
-        assert!(rows.iter().all(|row| !row.name.is_empty()));
+        assert!(rows.iter().all(|row| !index[row.item].name.is_empty()));
     }
 
     #[test]
     fn stances_and_precepts_are_mods() {
         let fixture =
             Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
-        let rows = mods(&fixture.view());
+        let (rows, index) = fixture.rows(mods);
         let stance = rows
             .iter()
-            .find(|row| row.name == "Gaia's Tragedy")
+            .find(|row| index[row.item].name == "Gaia's Tragedy")
             .unwrap();
-        assert_eq!(stance.market_slug, "gaias_tragedy");
+        assert_eq!(
+            index[stance.item].market_slug.as_deref(),
+            Some("gaias_tragedy")
+        );
         assert!(stance.count > 0);
     }
 
@@ -250,24 +262,27 @@ mod tests {
     fn starter_only_mods() {
         let fixture =
             Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
-        let rows = mods(&fixture.view());
+        let (rows, index) = fixture.rows(mods);
         let maglev = rows
             .iter()
-            .find(|row| row.unique_name == "/Lotus/Upgrades/Mods/Warframe/AvatarSlideBoostMod")
+            .find(|row| {
+                index[row.item].unique_name == "/Lotus/Upgrades/Mods/Warframe/AvatarSlideBoostMod"
+            })
             .unwrap();
-        assert_eq!(maglev.name, "Maglev");
+        assert_eq!(index[maglev.item].name, "Maglev");
         assert_eq!(
-            maglev.image_name.as_deref(),
+            index[maglev.item].image_name.as_deref(),
             Some("SlideResistanceDecreaseMod.jpg")
         );
         assert!(
-            rows.iter().any(|row| row.name == "Quick Thinking"),
+            rows.iter()
+                .any(|row| index[row.item].name == "Quick Thinking"),
             "the other starter-only mod resolves as well"
         );
         assert!(
             !rows
                 .iter()
-                .any(|row| row.unique_name.contains("/Beginner/")),
+                .any(|row| index[row.item].unique_name.contains("/Beginner/")),
             "the starter copies themselves stay out of the tab"
         );
     }
@@ -276,27 +291,40 @@ mod tests {
     fn unlisted_upgrades() {
         let fixture =
             Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
-        let arcane = arcanes(&fixture.view())
+        let (found, index) = fixture.rows(arcanes);
+        let arcane = found
             .into_iter()
             .find(|row| {
-                row.unique_name
+                index[row.item].unique_name
                     == "/Lotus/Upgrades/CosmeticEnhancers/Antiques/AmmoEfficencyDuringUltimate"
                     && row.rank.is_none()
             })
             .unwrap();
-        assert_eq!(arcane.name, "Zid-An Haras");
+        assert_eq!(index[arcane.item].name, "Zid-An Haras");
         assert_eq!(arcane.rarity, Some(Rarity::Rare));
         assert_eq!(arcane.count, 94);
-        assert_eq!(arcane.market_slug, "zid-an-haras");
+        assert_eq!(
+            index[arcane.item].market_slug.as_deref(),
+            Some("zid-an-haras")
+        );
 
-        let core = mods(&fixture.view())
+        let (found, index) = fixture.rows(mods);
+        let core = found
             .into_iter()
-            .find(|row| row.unique_name == "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser")
+            .find(|row| {
+                index[row.item].unique_name == "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser"
+            })
             .expect("Legendary Core");
-        assert_eq!(core.name, "Legendary Core");
+        assert_eq!(index[core.item].name, "Legendary Core");
         assert_eq!(core.count, 6);
-        assert_eq!(core.market_slug, "legendary_fusion_core");
-        assert_eq!(core.image_name.as_deref(), Some("game/legendary-core.png"));
+        assert_eq!(
+            index[core.item].market_slug.as_deref(),
+            Some("legendary_fusion_core")
+        );
+        assert_eq!(
+            index[core.item].image_name.as_deref(),
+            Some("game/legendary-core.png")
+        );
     }
 
     #[test]
@@ -307,11 +335,11 @@ mod tests {
                 .with_buy([("arcane_energize", 7.0)]),
             ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
         };
-        let rows = arcanes(&fixture.view());
+        let (rows, index) = fixture.rows(arcanes);
 
         let energize: Vec<&ModRow> = rows
             .iter()
-            .filter(|row| row.market_slug == "arcane_energize")
+            .filter(|row| index[row.item].market_slug.as_deref() == Some("arcane_energize"))
             .collect();
         assert!(!energize.is_empty());
         for row in &energize {
@@ -324,7 +352,7 @@ mod tests {
 
         let surge = rows
             .iter()
-            .find(|row| row.market_slug == "virtuos_surge")
+            .find(|row| index[row.item].market_slug.as_deref() == Some("virtuos_surge"))
             .expect("Virtuos Surge");
         assert_eq!(surge.prices.sell, Some(9.0));
         assert_eq!(
@@ -338,7 +366,7 @@ mod tests {
             "an arcane that tops out at rank 3 says so"
         );
 
-        let mod_rows = mods(&fixture.view());
+        let (mod_rows, _) = fixture.rows(mods);
         assert!(
             mod_rows
                 .iter()
@@ -357,11 +385,15 @@ mod tests {
         )
         .unwrap();
         fixture.items.index_market(&listed);
-        let energize = arcanes(&fixture.view())
+        let (found, index) = fixture.rows(arcanes);
+        let energize = found
             .into_iter()
-            .find(|row| row.name == "Arcane Energize")
+            .find(|row| index[row.item].name == "Arcane Energize")
             .expect("Arcane Energize");
-        assert_eq!(energize.market_slug, "arcane\u{2019}energize");
+        assert_eq!(
+            index[energize.item].market_slug.as_deref(),
+            Some("arcane\u{2019}energize")
+        );
         assert_eq!(energize.prices.sell, Some(30.0));
     }
 
@@ -369,18 +401,23 @@ mod tests {
     fn rank_groups_sorted_by_name() {
         let fixture =
             Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
-        let mod_rows = mods(&fixture.view());
-        let arcane_rows = arcanes(&fixture.view());
+        let (mod_rows, mod_index) = fixture.rows(mods);
+        let (arcane_rows, arcane_index) = fixture.rows(arcanes);
 
         assert!(
             mod_rows
                 .iter()
-                .all(|row| upgrade_kind(&row.unique_name) == UpgradeKind::Mod && row.count > 0)
+                .all(
+                    |row| upgrade_kind(&mod_index[row.item].unique_name) == UpgradeKind::Mod
+                        && row.count > 0
+                )
         );
         assert!(
             arcane_rows
                 .iter()
-                .all(|row| upgrade_kind(&row.unique_name) == UpgradeKind::Arcane && row.count > 0)
+                .all(|row| upgrade_kind(&arcane_index[row.item].unique_name)
+                    == UpgradeKind::Arcane
+                    && row.count > 0)
         );
         assert!(!mod_rows.is_empty());
         assert!(!arcane_rows.is_empty());
@@ -388,13 +425,19 @@ mod tests {
         let unranked = mod_rows
             .iter()
             .find(|row| {
-                row.unique_name.ends_with("Warframe/AvatarShieldMaxMod") && row.rank.is_none()
+                mod_index[row.item]
+                    .unique_name
+                    .ends_with("Warframe/AvatarShieldMaxMod")
+                    && row.rank.is_none()
             })
             .expect("unranked row");
         assert_eq!(unranked.count, 6288);
-        assert_eq!(unranked.name, "Avatar Shield Max Mod");
+        assert_eq!(mod_index[unranked.item].name, "Avatar Shield Max Mod");
         assert!(arcane_rows.iter().any(|row| row.rank == Some(5)));
-        let names: Vec<&str> = mod_rows.iter().map(|row| row.name.as_str()).collect();
+        let names: Vec<&str> = mod_rows
+            .iter()
+            .map(|row| mod_index[row.item].name.as_str())
+            .collect();
         let mut sorted = names.clone();
         sorted.sort_unstable();
         assert_eq!(names, sorted);
@@ -440,16 +483,16 @@ mod tests {
     fn veiled_rivens_only() {
         let fixture =
             Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
-        let rows = mods(&fixture.view());
+        let (rows, index) = fixture.rows(mods);
         let riven_rows: Vec<&ModRow> = rows
             .iter()
-            .filter(|row| is_riven(&row.unique_name))
+            .filter(|row| is_riven(&index[row.item].unique_name))
             .collect();
         assert!(!riven_rows.is_empty());
         assert!(
             riven_rows
                 .iter()
-                .all(|row| row.name.ends_with(" (Veiled)") && row.rank == Some(0))
+                .all(|row| index[row.item].name.ends_with(" (Veiled)") && row.rank == Some(0))
         );
         let veiled_total: i64 = riven_rows.iter().map(|row| row.count).sum();
         assert_eq!(
@@ -462,7 +505,7 @@ mod tests {
     fn equipped_in() {
         let fixture =
             Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
-        let rows = mods(&fixture.view());
+        let (rows, index) = fixture.rows(mods);
         let equipped: Vec<&ModRow> = rows
             .iter()
             .filter(|row| !row.equipped_in.is_empty())
@@ -472,7 +515,8 @@ mod tests {
         assert!(
             equipped
                 .iter()
-                .all(|row| row.equipped_in.iter().all(|holder| {
+                .all(|row| row.equipped_in.iter().all(|&holder| {
+                    let holder = index.holder(holder);
                     !holder.name.is_empty()
                         && !holder.configs.is_empty()
                         && holder.configs.is_sorted()
@@ -481,7 +525,7 @@ mod tests {
         assert!(equipped.iter().all(|row| {
             row.equipped_in
                 .windows(2)
-                .all(|pair| pair[0].name <= pair[1].name)
+                .all(|pair| index.holder(pair[0]).name <= index.holder(pair[1]).name)
         }));
         assert!(
             rows.iter()
@@ -495,10 +539,11 @@ mod tests {
     fn equipped_holders() {
         let fixture =
             Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
-        let rows = mods(&fixture.view());
+        let (rows, index) = fixture.rows(mods);
         let braton = rows
             .iter()
             .flat_map(|row| &row.equipped_in)
+            .map(|&holder| index.holder(holder))
             .find(|holder| holder.name == "Braton Prime")
             .unwrap();
         assert_eq!(braton.image_name.as_deref(), Some("BratonPrime.png"));
@@ -510,9 +555,11 @@ mod tests {
         assert!(!braton.orokin_upgrade);
         assert!(!braton.exilus_adapter);
         assert_eq!(braton.custom_name, None);
-        let equinox = arcanes(&fixture.view())
-            .into_iter()
-            .flat_map(|row| row.equipped_in)
+        let (found, arcane_index) = fixture.rows(arcanes);
+        let equinox = found
+            .iter()
+            .flat_map(|row| &row.equipped_in)
+            .map(|&holder| arcane_index.holder(holder))
             .find(|holder| holder.name == "Equinox Prime")
             .unwrap();
         assert_eq!(equinox.forma, 1);
@@ -530,17 +577,23 @@ mod tests {
                 .with_max_rank([("arcane_energize", 240.0)]),
             ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
         };
-        let rows = arcanes(&fixture.view());
+        let (rows, index) = fixture.rows(arcanes);
 
         let at_max = rows
             .iter()
-            .find(|row| row.market_slug == "arcane_energize" && row.rank == Some(5))
+            .find(|row| {
+                index[row.item].market_slug.as_deref() == Some("arcane_energize")
+                    && row.rank == Some(5)
+            })
             .expect("maxed Energize");
         assert!(!at_max.prices.is_floor);
 
         let ranked_without_max_price = rows
             .iter()
-            .find(|row| row.market_slug == "virtuos_surge" && row.rank.is_some_and(|rank| rank > 0))
+            .find(|row| {
+                index[row.item].market_slug.as_deref() == Some("virtuos_surge")
+                    && row.rank.is_some_and(|rank| rank > 0)
+            })
             .expect("ranked Surge");
         assert!(ranked_without_max_price.prices.is_floor);
 
@@ -562,10 +615,10 @@ mod tests {
             prices: FixedPrices::new([("serration", 10.0)]).with_max_rank([("serration", 90.0)]),
             ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
         };
-        let rows = mods(&fixture.view());
+        let (rows, index) = fixture.rows(mods);
         let serration: Vec<&ModRow> = rows
             .iter()
-            .filter(|row| row.market_slug == "serration")
+            .filter(|row| index[row.item].market_slug.as_deref() == Some("serration"))
             .collect();
         assert_eq!(serration.len(), 3);
         assert!(serration.iter().all(|row| row.max_rank == Some(10)));
@@ -596,10 +649,12 @@ mod tests {
             prices: FixedPrices::new([("serration", 10.0)]),
             ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
         };
-        let rows = mods(&fixture.view());
+        let (rows, index) = fixture.rows(mods);
         let maxed = rows
             .iter()
-            .find(|row| row.market_slug == "serration" && row.rank == Some(10))
+            .find(|row| {
+                index[row.item].market_slug.as_deref() == Some("serration") && row.rank == Some(10)
+            })
             .unwrap();
         assert_eq!(maxed.prices.sell, Some(10.0));
         assert!(maxed.prices.is_floor);

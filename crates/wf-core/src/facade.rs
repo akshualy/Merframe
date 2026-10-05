@@ -749,13 +749,12 @@ mod tests {
 
         assert!(core.toggle_favourite(relic).unwrap());
         assert!(core.favourites.contains(relic));
-        let starred = core
-            .inventory_tab()
-            .unwrap()
+        let tab = core.inventory_tab().unwrap();
+        let starred = tab
             .relics
-            .into_iter()
-            .filter(|row| row.favourite)
-            .map(|row| row.unique_name)
+            .iter()
+            .filter(|row| tab.favourites.contains(&row.item))
+            .map(|row| tab.items[row.item].unique_name.clone())
             .collect::<Vec<_>>();
         assert_eq!(starred, vec![relic.to_owned()]);
         assert!(
@@ -768,13 +767,7 @@ mod tests {
 
         assert!(!core.toggle_favourite(relic).unwrap());
         assert!(core.favourites.is_empty());
-        assert!(
-            core.inventory_tab()
-                .unwrap()
-                .relics
-                .iter()
-                .all(|row| !row.favourite)
-        );
+        assert!(core.inventory_tab().unwrap().favourites.is_empty());
     }
 
     #[test]

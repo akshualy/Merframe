@@ -20,9 +20,17 @@ import { usePaged } from "@/hooks/use-paged";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
-  compareRows,
+  ducats,
+  entryKey,
+  type InventoryEntry,
+  type InventoryFlags,
+  totalPlat,
+} from "@/lib/inventory-entries";
+import {
+  compareEntries,
   descending,
   type InventoryTabKey,
+  keeps,
   loadFilters,
   ORDERINGS,
   type Ordering,
@@ -31,16 +39,17 @@ import {
   type TabFilters,
   yesNoFiltersFor,
 } from "@/lib/inventory-filters";
-import { keeps, type Row, rowPlat } from "@/lib/inventory-rows";
 
 const MIN_PLAT_CHOICES = [5, 10, 15];
 
 export function InventoryTabView({
   tab,
-  rows,
+  entries,
+  flags,
 }: {
   tab: InventoryTabKey;
-  rows: Row[];
+  entries: InventoryEntry[];
+  flags: InventoryFlags;
 }) {
   const [filters, setFilters] = useState<TabFilters>(() => loadFilters(tab));
 
@@ -54,14 +63,14 @@ export function InventoryTabView({
 
   const visible = useMemo(() => {
     const desc = descending(filters);
-    return rows
-      .filter((row) => keeps(row, filters))
+    return entries
+      .filter((entry) => keeps(entry, filters, flags))
       .sort((left, right) =>
-        compareRows(left, right, filters.ordering, desc, tab),
+        compareEntries(left, right, filters.ordering, desc, tab),
       );
-  }, [rows, filters, tab]);
+  }, [entries, filters, flags, tab]);
 
-  const { pageItems: pageRows, pagination } = usePaged(
+  const { pageItems: pageEntries, pagination } = usePaged(
     visible,
     JSON.stringify(filters),
   );
@@ -69,10 +78,10 @@ export function InventoryTabView({
   const selection = useMemo(
     () =>
       visible.reduce(
-        (accumulator, row) => ({
-          ducats: accumulator.ducats + (row.ducats ?? 0) * row.count,
-          plat: accumulator.plat + (rowPlat(row) ?? 0) * row.count,
-          priced: accumulator.priced + (rowPlat(row) === null ? 0 : 1),
+        (accumulator, entry) => ({
+          ducats: accumulator.ducats + (ducats(entry) ?? 0) * entry.row.count,
+          plat: accumulator.plat + (totalPlat(entry) ?? 0) * entry.row.count,
+          priced: accumulator.priced + (totalPlat(entry) === null ? 0 : 1),
         }),
         { ducats: 0, plat: 0, priced: 0 },
       ),
@@ -81,12 +90,14 @@ export function InventoryTabView({
 
   useEffect(() => {
     prefetchImages([
-      ...pageRows.map((row) => row.imageName),
-      ...pageRows.flatMap(
-        (row) => row.set?.components.map((part) => part.image_name) ?? [],
+      ...pageEntries.map((entry) => entry.item.image_name),
+      ...pageEntries.flatMap((entry) =>
+        entry.kind === "set"
+          ? entry.parts.map((part) => part.item.image_name)
+          : [],
       ),
     ]);
-  }, [pageRows]);
+  }, [pageEntries]);
 
   const refinements = refinementsFor(tab);
   const activeFilters =
@@ -133,7 +144,7 @@ export function InventoryTabView({
         </Button>
 
         <span className="text-muted-foreground ml-auto text-xs">
-          {num(visible.length)} of {num(rows.length)} shown
+          {num(visible.length)} of {num(entries.length)} shown
           {selection.priced < visible.length
             ? `, ${num(visible.length - selection.priced)} without a price yet`
             : ""}
@@ -182,12 +193,17 @@ export function InventoryTabView({
         />
       </FilterGrid>
 
-      {pageRows.length === 0 ? (
+      {pageEntries.length === 0 ? (
         <EmptyPanel>Nothing matches these filters.</EmptyPanel>
       ) : (
         <CardGrid className="@sm:grid-cols-1 @2xl:grid-cols-2 @6xl:grid-cols-3 @7xl:grid-cols-3">
-          {pageRows.map((row) => (
-            <ItemCard key={row.key} row={row} tab={tab} />
+          {pageEntries.map((entry) => (
+            <ItemCard
+              key={entryKey(entry)}
+              entry={entry}
+              tab={tab}
+              flags={flags}
+            />
           ))}
         </CardGrid>
       )}

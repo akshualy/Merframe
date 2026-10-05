@@ -183,7 +183,7 @@ pub(crate) fn names_a_prime(name: &str) -> bool {
     name.to_lowercase().contains("prime")
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[serde(rename_all = "snake_case")]
 pub enum VaultStatus {

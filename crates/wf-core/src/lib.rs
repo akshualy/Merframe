@@ -38,8 +38,8 @@ pub use foundry::{
 };
 pub use identity::{ItemRecord, ItemTable, market_icon, market_name};
 pub use inventory_view::{
-    InventoryTab, ItemStatus, MiscRow, ModHolder, ModRow, PartRow, PartSet, RelicRow,
-    SculptureStars, SetComponent, SetRow, TabTotals, UpgradePrices,
+    InventoryTab, ItemStatus, ItemSummary, MiscRow, ModHolder, ModRow, PartRow, RelicRow,
+    SculptureStars, SetComponent, SetLink, SetRow, UpgradePrices,
 };
 pub use listings::{MarketListings, PlacedOrders};
 pub use mastery::{
