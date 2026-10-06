@@ -4,11 +4,9 @@ import {
   highestOwnedRefinement,
   isFavourite,
   matchesRelicFilters,
-  partIdentity,
   type RelicFilters,
   refinementValue,
   wantedChance,
-  wantedKeysOf,
 } from "@/lib/relic-filters";
 import type { RelicPlan } from "@/types";
 import planner from "./relic-filters.test-data.json";
@@ -34,39 +32,6 @@ const open: RelicFilters = {
   tierOwned: null,
   wanted: [],
 };
-
-describe("partIdentity", () => {
-  it("strips the blueprint suffix", () => {
-    expect(
-      partIdentity("/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint"),
-    ).toBe("/Lotus/Types/Recipes/Weapons/AlternoxPrime");
-  });
-
-  it("strips the component suffix", () => {
-    expect(
-      partIdentity(
-        "/Lotus/Types/Recipes/WarframeRecipes/LavosPrimeSystemsComponent",
-      ),
-    ).toBe("/Lotus/Types/Recipes/WarframeRecipes/LavosPrimeSystems");
-  });
-
-  it("leaves other parts alone", () => {
-    const receiver =
-      "/Lotus/Types/Recipes/Weapons/WeaponParts/KompressaPrimeReceiver";
-    expect(partIdentity(receiver)).toBe(receiver);
-  });
-});
-
-describe("wantedKeysOf", () => {
-  it("one key per part identity", () => {
-    expect(
-      wantedKeysOf([
-        "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
-        "/Lotus/Types/Recipes/Weapons/AlternoxPrimeComponent",
-      ]),
-    ).toEqual(new Set(["/Lotus/Types/Recipes/Weapons/AlternoxPrime"]));
-  });
-});
 
 describe("refinementValue", () => {
   const axi = relic("Axi A20");
@@ -108,7 +73,7 @@ describe("highestOwnedRefinement", () => {
 describe("wantedChance", () => {
   const axi = relic("Axi A20");
   const intact = refinementValue(axi, "Intact");
-  const alternox = wantedKeysOf([
+  const alternox = new Set([
     "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
   ]);
 
@@ -152,7 +117,7 @@ describe("matchesRelicFilters", () => {
   });
 
   it("wanted parts must drop", () => {
-    const alternox = wantedKeysOf([
+    const alternox = new Set([
       "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
     ]);
     expect(matchesRelicFilters(axi, open, alternox)).toBe(true);

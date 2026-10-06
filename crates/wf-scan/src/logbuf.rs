@@ -2,7 +2,7 @@ use memchr::memmem;
 use wf_mem::{MemoryReader, Region};
 
 use crate::Result;
-use crate::chunks::{Step, scan_regions, to_u64, to_usize};
+use crate::chunks::{Step, scan_regions, to_usize};
 
 pub const PATH_ANCHOR: &[u8] = b"\\EE.log\0";
 pub const CURSOR_FIELD: usize = 8;
@@ -92,7 +92,7 @@ fn buffer_at(data: &[u8], base: usize, run_end: usize) -> Option<LogBuffer> {
             && line_heads(&data[base..base + size]) >= MIN_LINE_HEADS
         {
             return Some(LogBuffer {
-                base: to_u64(base).ok()?,
+                base: base as u64,
                 size,
             });
         }

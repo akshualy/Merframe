@@ -9,7 +9,7 @@ use wf_core::CoreEvent;
 use wf_market::{Etagged, PriceTable, RivenData, bulk_prices, bulk_riven_data};
 use wf_worldstate::WorldState;
 
-use super::{RIVEN_DATA_KEY, STATUS_UPDATED, dispatch, emit};
+use super::{AppEvent, RIVEN_DATA_KEY, dispatch, emit};
 use crate::market;
 use crate::state::{AppState, lock, read, write};
 
@@ -50,7 +50,7 @@ async fn refresh_world_state<R: Runtime>(
         core.ingest_world_state(&body, now)
             .context("Ingesting the world state")?
     };
-    emit(app, "worldstate-updated", state.status_snapshot());
+    emit(app, AppEvent::WorldStateUpdated);
     Ok(events)
 }
 
@@ -117,7 +117,7 @@ async fn load_riven_data<R: Runtime>(
     }
     core.set_riven_data(data);
     drop(core);
-    emit(app, "riven-data-updated", state.status_snapshot());
+    emit(app, AppEvent::RivenDataUpdated);
     Ok(())
 }
 
@@ -131,7 +131,7 @@ async fn load_price_table<R: Runtime>(
     let Some(table) = client.fetch().await? else {
         state.prices.checked(now);
         debug!("Bulk price table not modified since the last fetch");
-        emit(app, STATUS_UPDATED, state.status_snapshot());
+        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
         return Ok(0);
     };
     let loaded = state.prices.load(&table, now);
@@ -141,7 +141,7 @@ async fn load_price_table<R: Runtime>(
         updated_at = table.updated_at,
         "Prices refreshed from the bulk table"
     );
-    emit(app, "prices-updated", loaded);
-    emit(app, STATUS_UPDATED, state.status_snapshot());
+    emit(app, AppEvent::PricesUpdated);
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
     Ok(loaded)
 }

@@ -25,7 +25,7 @@ where
     let mut bytes = 0u64;
     let mut pos = range.start;
     while pos < range.end {
-        let want = to_usize((range.end - pos).min(to_u64(buffer.len())?))?;
+        let want = to_usize((range.end - pos).min(buffer.len() as u64))?;
         let read = match reader.read(pos, &mut buffer[..want]) {
             Ok(read) => read,
             Err(error) => {
@@ -40,14 +40,14 @@ where
         if read == 0 {
             break;
         }
-        bytes += to_u64(read)?;
+        bytes += read as u64;
         if matches!(visit(pos, &buffer[..read])?, Step::Stop) {
             return Ok((bytes, Step::Stop));
         }
         if read <= overlap {
             break;
         }
-        pos += to_u64(read - overlap)?;
+        pos += (read - overlap) as u64;
     }
     Ok((bytes, Step::Continue))
 }
@@ -74,10 +74,6 @@ where
 
 pub fn to_usize(value: u64) -> Result<usize> {
     usize::try_from(value).map_err(|_| ScanError::Length(value))
-}
-
-pub fn to_u64(value: usize) -> Result<u64> {
-    u64::try_from(value).map_err(|_| ScanError::Size(value))
 }
 
 #[cfg(test)]

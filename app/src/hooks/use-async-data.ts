@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useListen } from "@/hooks/use-listen";
-import { type AppEvent, errorMessage } from "@/lib/bridge";
+import { type EventName, errorMessage } from "@/lib/bridge";
 
 export interface AsyncData<T> {
   data: T | null;
@@ -12,7 +12,7 @@ export interface AsyncData<T> {
 
 export function useAsyncData<T>(
   load: (() => Promise<T>) | null,
-  reloadOn: readonly AppEvent[] = [],
+  reloadOn: readonly EventName[] = [],
 ): AsyncData<T> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);

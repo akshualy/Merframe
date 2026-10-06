@@ -16,7 +16,7 @@ use super::{Shared, missing_inventory, ready};
 
 use crate::error::{CommandError, CommandResult};
 use crate::market::{self, MarketOrders, MarketSnapshot, Presence};
-use crate::runtime;
+use crate::runtime::{self, AppEvent};
 use crate::settings::{self, MarketAccount};
 use crate::state::{lock, read, write};
 
@@ -93,7 +93,7 @@ pub async fn market_login<R: Runtime>(
     };
     settings::set_account(&app, Some(&account))?;
     write(&state.status).market_account = Some(account.clone());
-    runtime::emit(&app, runtime::STATUS_UPDATED, state.status_snapshot());
+    runtime::emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
     Ok(account)
 }
 
@@ -110,7 +110,7 @@ pub async fn market_logout<R: Runtime>(app: AppHandle<R>, state: Shared<'_>) -> 
     state
         .listings
         .remember(&state.core, Some(&MarketOrders::default()), Some(&[]));
-    runtime::emit(&app, runtime::STATUS_UPDATED, state.status_snapshot());
+    runtime::emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
     Ok(())
 }
 
@@ -156,12 +156,11 @@ pub async fn market_post_order<R: Runtime>(
     state.listings.remember(&state.core, rows.as_ref(), None);
     runtime::emit(
         &app,
-        runtime::MARKET_UPDATED,
-        MarketSnapshot {
+        AppEvent::MarketUpdated(MarketSnapshot {
             orders: rows,
             auctions: None,
             at: Utc::now(),
-        },
+        }),
     );
     Ok(posted)
 }

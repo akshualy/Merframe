@@ -11,7 +11,7 @@ use wf_core::{CoreEvent, RivenRow};
 use wf_log::{DialogButtons, Event as LogEvent, MonitorRect};
 use wf_worldstate::RelicTier;
 
-use crate::runtime::emit;
+use crate::runtime::{AppEvent, emit};
 use crate::settings::{
     OVERLAY_OPACITY_DEFAULT, OverlayPlacement, RecommendationRefinement, Settings,
 };
@@ -695,7 +695,10 @@ fn follow_game_monitor<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, re
 }
 
 fn broadcast<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    emit(app, "overlay-state", state.overlays.snapshot());
+    emit(
+        app,
+        AppEvent::OverlayState(Box::new(state.overlays.snapshot())),
+    );
 }
 
 #[cfg(test)]

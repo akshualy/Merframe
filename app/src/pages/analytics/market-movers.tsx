@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { api, events } from "@/lib/bridge";
+import { api } from "@/lib/bridge";
 import { changeTone } from "@/lib/chart";
 import { num, plat } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -179,7 +179,7 @@ export function MarketMovers() {
     [compared],
   );
   const load = useCallback(() => api.marketMovers(range), [range]);
-  const { data, error, loading } = useAsyncData(load, [events.pricesUpdated]);
+  const { data, error, loading } = useAsyncData(load, ["pricesUpdated"]);
 
   const slices = useMemo(
     () =>

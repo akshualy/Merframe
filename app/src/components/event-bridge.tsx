@@ -1,24 +1,11 @@
 import { useEffect, useState } from "react";
 import { useListen } from "@/hooks/use-listen";
 import { useOverlayFeed } from "@/hooks/use-overlay-feed";
-import {
-  api,
-  events,
-  listenTo,
-  reportError,
-  type Unlisten,
-} from "@/lib/bridge";
+import { api, listenTo, reportError, type Unlisten } from "@/lib/bridge";
 import { notify } from "@/lib/toast";
 import { useAppStore } from "@/stores/app-store";
 import { useMarketListingsStore } from "@/stores/market-listings-store";
 import { usePresenceStore } from "@/stores/presence-store";
-import type {
-  CoreEventEnvelope,
-  GameStatus,
-  MarketAutoClose,
-  MarketSnapshot,
-  Presence,
-} from "@/types";
 
 function createSeenGate() {
   const seen = new Set<string>();
@@ -46,13 +33,13 @@ export function EventBridge() {
   const [isNew] = useState(createSeenGate);
   useOverlayFeed();
 
-  useListen<GameStatus>(events.statusUpdated, setStatus);
-  useListen<GameStatus>(events.inventoryUpdated, setStatus);
+  useListen("statusUpdated", setStatus);
+  useListen("inventoryUpdated", setStatus);
   useEffect(() => {
     let cancelled = false;
     let stop: Unlisten | null = null;
     const load = () => api.worldstate().then(setWorld, reportError);
-    listenTo(events.worldStateUpdated, load).then((unlisten) => {
+    listenTo("worldStateUpdated", load).then((unlisten) => {
       if (cancelled) {
         unlisten();
         return;
@@ -65,10 +52,10 @@ export function EventBridge() {
       stop?.();
     };
   }, [setWorld]);
-  useListen<MarketSnapshot>(events.marketUpdated, applySnapshot);
-  useListen(events.marketSignedOut, clearListings);
-  useListen<Presence>(events.marketPresence, setPresence);
-  useListen<MarketAutoClose>(events.marketAutoClosed, (closed) => {
+  useListen("marketUpdated", applySnapshot);
+  useListen("marketSignedOut", clearListings);
+  useListen("marketPresence", setPresence);
+  useListen("marketAutoClosed", (closed) => {
     const item =
       closed.quantity > 1 ? `${closed.quantity} x ${closed.item}` : closed.item;
     const titles = {
@@ -87,7 +74,7 @@ export function EventBridge() {
     });
   });
 
-  useListen<CoreEventEnvelope>(events.coreEvent, ({ id, notice }) => {
+  useListen("coreEvent", ({ id, notice }) => {
     if (!isNew(id) || !notice) {
       return;
     }

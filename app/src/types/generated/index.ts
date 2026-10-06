@@ -2,6 +2,7 @@ export type * from "./AccountBalance";
 export type * from "./Acquisition";
 export type * from "./AlertSettings";
 export type * from "./AlternativeMatch";
+export type * from "./AppEvent";
 export type * from "./ArchonHunt";
 export type * from "./ArchonMission";
 export type * from "./AttributeGrade";

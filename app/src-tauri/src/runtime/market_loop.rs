@@ -11,7 +11,7 @@ use wf_market::{
     StatusSetPayload, UserStatus,
 };
 
-use super::{MARKET_AUTO_CLOSED, MARKET_PRESENCE, STATUS_UPDATED, emit};
+use super::{AppEvent, emit};
 use crate::market::{self, MarketCategory, MarketSnapshot};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, lock, read, write};
@@ -253,12 +253,11 @@ pub(super) async fn auto_close<R: Runtime>(
                     );
                     emit(
                         app,
-                        MARKET_AUTO_CLOSED,
-                        MarketAutoClose {
+                        AppEvent::MarketAutoClosed(MarketAutoClose {
                             item: item.name.clone(),
                             quantity: 1,
                             kind: AutoCloseKind::Auction,
-                        },
+                        }),
                     );
                 }
                 Err(error) => warn!(
@@ -299,12 +298,11 @@ pub(super) async fn auto_close<R: Runtime>(
                 );
                 emit(
                     app,
-                    MARKET_AUTO_CLOSED,
-                    MarketAutoClose {
+                    AppEvent::MarketAutoClosed(MarketAutoClose {
                         item: item.name.clone(),
                         quantity,
                         kind,
-                    },
+                    }),
                 );
             }
             Err(error) => warn!(
@@ -325,7 +323,7 @@ async fn refresh_unread<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let unread = chats.iter().map(|chat| chat.unread_count).sum();
     if read(&state.status).market_unread != unread {
         write(&state.status).market_unread = unread;
-        emit(app, STATUS_UPDATED, state.status_snapshot());
+        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
     }
 }
 
@@ -341,8 +339,8 @@ fn sign_out<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     status.market_account = None;
     status.market_unread = 0;
     drop(status);
-    emit(app, STATUS_UPDATED, state.status_snapshot());
-    emit(app, "market-signed-out", ());
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(app, AppEvent::MarketSignedOut);
 }
 
 fn account_of(session: &Session) -> MarketAccount {
@@ -390,7 +388,7 @@ async fn checked_session<R: Runtime>(
             warn!(%error, "Market account save failed");
         }
         write(&state.status).market_account = Some(account.clone());
-        emit(app, STATUS_UPDATED, state.status_snapshot());
+        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
     }
     Some(account.slug)
 }
@@ -439,7 +437,7 @@ pub(super) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
                 .as_ref()
                 .is_none_or(|last| !last.same_listings(&snapshot))
             {
-                emit(&app, super::MARKET_UPDATED, &snapshot);
+                emit(&app, AppEvent::MarketUpdated(snapshot.clone()));
                 emitted = Some(snapshot);
             }
         }
@@ -528,7 +526,7 @@ async fn presence_session<R: Runtime>(
                         reported = Some(payload.status);
                         let mut presence = write(&state.market_presence);
                         presence.live = reported;
-                        emit(app, MARKET_PRESENCE, *presence);
+                        emit(app, AppEvent::MarketPresence(*presence));
                     }
                     Some(_) => {}
                     None => return Ok(()),
@@ -580,11 +578,8 @@ async fn hide_listings<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, au
     }
     let refresh = market_refresh(state, &slug).await;
     if !refresh.is_empty() {
-        emit(
-            app,
-            super::MARKET_UPDATED,
-            market_snapshot(state, refresh).await,
-        );
+        let snapshot = market_snapshot(state, refresh).await;
+        emit(app, AppEvent::MarketUpdated(snapshot));
     }
 }
 
@@ -597,7 +592,7 @@ fn offline_after_last_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState
     let presence = *presence;
     state.market_presence_wake.notify_one();
     info!("Last trade of the day completed, warframe.market status set to offline");
-    emit(app, MARKET_PRESENCE, presence);
+    emit(app, AppEvent::MarketPresence(presence));
 }
 
 pub(super) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {

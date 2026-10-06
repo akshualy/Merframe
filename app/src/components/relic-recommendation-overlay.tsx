@@ -12,7 +12,6 @@ import {
   readOverlayFilters,
   refinementValue,
   wantedChance,
-  wantedKeysOf,
 } from "@/lib/relic-filters";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
@@ -44,7 +43,7 @@ function recommended(
   limit: number,
 ) {
   const filters = readOverlayFilters();
-  const wantedKeys = wantedKeysOf(filters?.wanted ?? []);
+  const wantedKeys = new Set(filters?.wanted ?? []);
   const squadSize = overlaySquadSize();
   const rows: RecommendedRelic[] = [];
   for (const plan of plans) {

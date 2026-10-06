@@ -1,9 +1,11 @@
 use std::time::Duration;
 
+#[cfg(feature = "fetch")]
 use reqwest::StatusCode;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MarketError {
+    #[cfg(feature = "fetch")]
     #[error("Warframe.market {0}: {1}")]
     Http(StatusCode, String),
     #[error("Rate limited, next request in {} s", .0.as_secs())]
@@ -14,8 +16,10 @@ pub enum MarketError {
     Decode(#[from] serde_json::Error),
     #[error("Response without a data field")]
     MissingData,
+    #[cfg(feature = "fetch")]
     #[error(transparent)]
     Transport(#[from] reqwest::Error),
+    #[cfg(feature = "fetch")]
     #[error("Websocket: {0}")]
     WebSocket(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("Login response without a JWT authorization header")]
@@ -24,6 +28,7 @@ pub enum MarketError {
     LimiterClosed,
 }
 
+#[cfg(feature = "fetch")]
 impl MarketError {
     pub fn brief(&self) -> String {
         match self {
@@ -35,6 +40,7 @@ impl MarketError {
 
 pub type Result<T> = std::result::Result<T, MarketError>;
 
+#[cfg(feature = "fetch")]
 const ORDER_REJECTIONS: [(&str, &str); 5] = [
     (
         "app.order.error.exceededOrderLimitSameItem",
@@ -52,6 +58,7 @@ const ORDER_REJECTIONS: [(&str, &str); 5] = [
     ("app.form.invalid", "A value in the order was rejected"),
 ];
 
+#[cfg(feature = "fetch")]
 pub fn order_rejection(error: &MarketError) -> Option<&'static str> {
     let MarketError::Http(_, body) = error else {
         return None;
@@ -62,7 +69,7 @@ pub fn order_rejection(error: &MarketError) -> Option<&'static str> {
         .map(|(_, cause)| *cause)
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "fetch"))]
 mod tests {
     use super::*;
 

@@ -15,7 +15,7 @@ import {
 } from "@/components/page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { api, events } from "@/lib/bridge";
+import { api } from "@/lib/bridge";
 import { num } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import type { RivenRow } from "@/types";
@@ -27,10 +27,10 @@ import { VeiledChallenge } from "./veiled";
 export function RivensPage() {
   const quote = usePageQuote("rivens");
   const { data, error, loading } = useAsyncData(api.rivensTab, [
-    events.inventoryUpdated,
-    events.pricesUpdated,
-    events.rivenDataUpdated,
-    events.marketUpdated,
+    "inventoryUpdated",
+    "pricesUpdated",
+    "rivenDataUpdated",
+    "marketUpdated",
   ]);
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") ?? "unveiled";

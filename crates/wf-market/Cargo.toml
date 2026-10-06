@@ -9,11 +9,11 @@ rust-version.workspace = true
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
-reqwest = { workspace = true }
 chrono = { workspace = true }
-tokio-tungstenite = { workspace = true }
-futures-util = { workspace = true }
+tokio = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true }
+tokio-tungstenite = { workspace = true, optional = true }
+futures-util = { workspace = true, optional = true }
 ts-rs = { workspace = true, optional = true }
 
 [dev-dependencies]
@@ -21,6 +21,11 @@ tokio = { workspace = true, features = ["test-util", "rt"] }
 
 [features]
 bindings = ["dep:ts-rs"]
+fetch = ["dep:reqwest", "dep:tokio", "dep:tokio-tungstenite", "dep:futures-util"]
+
+[[test]]
+name = "request_builders"
+required-features = ["fetch"]
 
 [lints]
 workspace = true

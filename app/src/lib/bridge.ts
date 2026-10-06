@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import type {
+  AppEvent,
   Auction,
   CommandError,
   ComparedStat,
@@ -44,30 +45,25 @@ function call<T>(command: string, args?: Args): Promise<T> {
   return invoke<T>(command, args);
 }
 
-export const events = {
-  coreEvent: "core-event",
-  inventoryUpdated: "inventory-updated",
-  favouriteUpdated: "favourite-updated",
-  statusUpdated: "status-updated",
-  worldStateUpdated: "worldstate-updated",
-  pricesUpdated: "prices-updated",
-  rivenDataUpdated: "riven-data-updated",
-  marketUpdated: "market-updated",
-  marketAutoClosed: "market-auto-closed",
-  marketSignedOut: "market-signed-out",
-  marketPresence: "market-presence",
-  overlayState: "overlay-state",
-} as const;
+export type EventName = AppEvent["event"];
 
-export type AppEvent = (typeof events)[keyof typeof events];
+export type EventData<K extends EventName> = K extends EventName
+  ? Extract<AppEvent, { event: K }> extends { data: infer D }
+    ? D
+    : undefined
+  : never;
 
 export type Unlisten = () => void;
 
-export function listenTo<T>(
-  event: AppEvent,
-  handler: (payload: T) => void,
+export function listenTo<K extends EventName>(
+  event: K,
+  handler: (data: EventData<K>) => void,
 ): Promise<Unlisten> {
-  return listen<T>(event, (message) => handler(message.payload));
+  return listen<AppEvent>("app-event", ({ payload }) => {
+    if (payload.event === event) {
+      handler(("data" in payload ? payload.data : undefined) as EventData<K>);
+    }
+  });
 }
 
 function commandError(error: unknown): CommandError | null {

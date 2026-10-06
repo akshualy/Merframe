@@ -1,7 +1,7 @@
 import type { YesNo } from "@/lib/filters";
 import { REFINEMENTS } from "@/lib/relics";
 import { readStoredJson, writeStoredJson } from "@/lib/storage";
-import type { RefinementValue, RelicPlan } from "@/types";
+import type { RefinementValue, RelicPlan, RewardBreakdown } from "@/types";
 
 const OVERLAY_FILTERS_KEY = "merframe.relicPlanner.overlayFilters";
 export const ANY_REFINEMENT = "any";
@@ -22,12 +22,11 @@ export interface RelicFilters {
   wanted: string[];
 }
 
-export function partIdentity(uniqueName: string): string {
-  return uniqueName.replace(/(?:Blueprint|Component)$/, "");
-}
-
-export function wantedKeysOf(wanted: string[]): Set<string> {
-  return new Set(wanted.map(partIdentity));
+export function isWanted(
+  reward: RewardBreakdown,
+  wanted: Set<string>,
+): boolean {
+  return reward.component !== null && wanted.has(reward.component);
 }
 
 export function readOverlayFilters(): RelicFilters | null {
@@ -63,7 +62,7 @@ export function wantedChance(
 ): number {
   let missed = 1;
   plan.rewards.forEach((reward, index) => {
-    if (!wantedKeys.has(partIdentity(reward.unique_name))) {
+    if (!isWanted(reward, wantedKeys)) {
       return;
     }
     missed *= (1 - (value.chances[index] ?? 0) / 100) ** squadSize;
@@ -92,9 +91,7 @@ export function isFavourite(plan: RelicPlan): boolean {
 }
 
 function dropsWanted(plan: RelicPlan, wantedKeys: Set<string>): boolean {
-  return plan.rewards.some((reward) =>
-    wantedKeys.has(partIdentity(reward.unique_name)),
-  );
+  return plan.rewards.some((reward) => isWanted(reward, wantedKeys));
 }
 
 export function matchesRelicFilters(

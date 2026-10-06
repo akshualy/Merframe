@@ -19,6 +19,7 @@ pub struct RewardOwnership {
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct RewardBreakdown {
     pub unique_name: String,
+    pub component: Option<String>,
     pub name: String,
     pub image_name: Option<String>,
     pub rarity: &'static str,
@@ -85,6 +86,7 @@ pub(super) fn reward_breakdown(view: &View, reward: &RelicReward) -> RewardBreak
     RewardBreakdown {
         forma: name.contains("Forma"),
         unique_name: reward.item_unique_name.clone(),
+        component: component.map(|(_, component, _)| component.unique_name.clone()),
         name,
         image_name,
         rarity: rarity_name(reward.rarity),

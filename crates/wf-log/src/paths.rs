@@ -1,8 +1,8 @@
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(windows))]
 use std::path::Path;
 use std::path::PathBuf;
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(windows))]
 fn parse_vdf_library_paths(vdf: &str) -> Vec<PathBuf> {
     vdf.lines()
         .filter_map(|line| {
@@ -20,7 +20,7 @@ fn parse_vdf_library_paths(vdf: &str) -> Vec<PathBuf> {
         .collect()
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(windows))]
 fn steam_default_roots() -> Vec<PathBuf> {
     let Some(home) = std::env::var_os("HOME") else {
         return Vec::new();
@@ -33,7 +33,7 @@ fn steam_default_roots() -> Vec<PathBuf> {
     ]
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(windows))]
 fn steam_library_roots() -> Vec<PathBuf> {
     let mut roots = Vec::new();
     for root in steam_default_roots() {
@@ -52,7 +52,7 @@ fn steam_library_roots() -> Vec<PathBuf> {
     roots
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(windows))]
 fn warframe_prefix_dir(steam_library: &Path) -> PathBuf {
     steam_library
         .join("steamapps/compatdata/230410/pfx/drive_c/users/steamuser/AppData/Local/Warframe")
@@ -60,13 +60,13 @@ fn warframe_prefix_dir(steam_library: &Path) -> PathBuf {
 
 const LOG_FILE: &str = "EE.log";
 
-#[cfg(target_os = "windows")]
+#[cfg(windows)]
 fn default_log_dir() -> Option<PathBuf> {
     let local_app_data = std::env::var_os("LOCALAPPDATA")?;
     Some(PathBuf::from(local_app_data).join("Warframe"))
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(windows))]
 fn prefix_with_log(prefixes: &[PathBuf]) -> Option<PathBuf> {
     prefixes
         .iter()
@@ -75,7 +75,7 @@ fn prefix_with_log(prefixes: &[PathBuf]) -> Option<PathBuf> {
         .cloned()
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(windows))]
 fn default_log_dir() -> Option<PathBuf> {
     let prefixes: Vec<PathBuf> = steam_library_roots()
         .iter()
@@ -88,7 +88,7 @@ pub fn default_log_path() -> Option<PathBuf> {
     Some(default_log_dir()?.join(LOG_FILE))
 }
 
-#[cfg(all(test, not(target_os = "windows")))]
+#[cfg(all(test, not(windows)))]
 mod tests {
     use super::*;
 

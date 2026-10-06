@@ -1,8 +1,8 @@
 use wf_mem::{GAME_PROCESS, MemoryReader, Region, read_u32_le, read_u64_le};
 
 use crate::Result;
-use crate::chunks::{to_u64, to_usize};
-use crate::roots::{image_data, in_heap, words};
+use crate::chunks::to_usize;
+use crate::roots::{POINTER, image_data, in_heap, words};
 
 const STRING_TAG: u8 = 6;
 const STRING_HEADER: usize = 24;
@@ -35,7 +35,6 @@ const UPVALUE_SLOT: u64 = 8;
 
 const THREAD_FIELDS: usize = 0x100;
 const GLOBAL_STATE_FIELDS: usize = 0x1000;
-const POINTER: usize = 8;
 const SHARED_KEY_TAG: u32 = 1;
 const SHARED_KEY: u32 = 0x9828_c6d9;
 
@@ -107,9 +106,7 @@ fn read_text<R: MemoryReader + ?Sized>(reader: &R, object: u64) -> Option<String
     if len > MAX_STRING {
         return None;
     }
-    let text = reader
-        .read_vec(object + to_u64(STRING_HEADER).ok()?, len)
-        .ok()?;
+    let text = reader.read_vec(object + STRING_HEADER as u64, len).ok()?;
     String::from_utf8(text).ok()
 }
 
@@ -298,7 +295,7 @@ impl LuaState {
             .find_map(|(_, state)| Self::registry(reader, state, globals))?;
         Some(Self {
             thread,
-            globals_field: to_u64(globals_field).ok()?,
+            globals_field: globals_field as u64,
             globals,
             registry,
         })

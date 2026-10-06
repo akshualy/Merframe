@@ -9,7 +9,7 @@ use wf_core::{KeptRoll, RivenRow, riven_display_name, riven_kept_roll};
 use super::{
     Kind, Marks, PendingAnswer, RivenTrigger, attached_game, broadcast, enabled, show, since,
 };
-use crate::runtime::{INVENTORY_UPDATED, blocking, emit};
+use crate::runtime::{AppEvent, blocking, emit};
 use crate::state::{AppState, lock, read};
 
 const PURCHASE_DIALOG_WINDOW: f64 = 2.0;
@@ -148,7 +148,7 @@ fn hold_cycled_roll<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: 
             drop(slots);
             if held {
                 broadcast(&app, &owned);
-                emit(&app, INVENTORY_UPDATED, owned.status_snapshot());
+                emit(&app, AppEvent::InventoryUpdated(owned.status_snapshot()));
             }
             return;
         }
@@ -179,7 +179,7 @@ fn settle_choice<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kept: &s
         }
     };
     if applied {
-        emit(app, INVENTORY_UPDATED, state.status_snapshot());
+        emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
     }
 }
 

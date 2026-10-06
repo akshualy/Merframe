@@ -1,6 +1,6 @@
 use wf_mem::{Module, Region};
 
-const POINTER: usize = 8;
+pub const POINTER: usize = 8;
 
 pub fn image_data<'a>(regions: &'a [Region], image: &Module) -> impl Iterator<Item = &'a Region> {
     let image = image.base..image.base + image.size;

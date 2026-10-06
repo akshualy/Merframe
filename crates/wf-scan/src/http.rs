@@ -5,14 +5,13 @@ use std::time::{Duration, Instant};
 use wf_mem::{GAME_PROCESS, MemoryReader, Region, read_u32_le, read_u64_le};
 
 use crate::Result;
-use crate::chunks::{to_u64, to_usize};
+use crate::chunks::to_usize;
 use crate::inventory::{InventoryBuffer, MAX_INVENTORY_BODY, accept};
-use crate::roots::{image_data, in_heap, words};
+use crate::roots::{POINTER, image_data, in_heap, words};
 
 const CLIENT_FIELDS: usize = 0xc0;
 const REQUESTS: usize = 0x18;
 const ENTRY_FIELDS: usize = 0x100;
-const POINTER: usize = 8;
 const STRING: usize = 16;
 const STRING_LENGTH: usize = 8;
 const STRING_TAG: usize = 15;
@@ -64,15 +63,13 @@ fn queue(fields: &[u8], at: usize) -> Option<Queue> {
 }
 
 fn requests<R: MemoryReader + ?Sized>(reader: &R, fields: &[u8], object: u64) -> Option<bool> {
-    let head = object.checked_add(to_u64(REQUESTS).ok()?)?;
+    let head = object.checked_add(REQUESTS as u64)?;
     let next = read_u64_le(fields, REQUESTS)?;
     let prev = read_u64_le(fields, REQUESTS + POINTER)?;
     if next == head && prev == head {
         return Some(true);
     }
-    let back = reader
-        .read_u64(next.checked_add(to_u64(POINTER).ok()?)?)
-        .ok()?;
+    let back = reader.read_u64(next.checked_add(POINTER as u64)?).ok()?;
     Some(back == head && reader.read_u64(prev).ok()? == head)
 }
 
@@ -93,7 +90,7 @@ fn client_at<R: MemoryReader + ?Sized>(
 }
 
 fn entry<R: MemoryReader + ?Sized>(reader: &R, queue: &Queue, index: u64) -> Option<u64> {
-    let pointer = to_u64(POINTER).ok()?;
+    let pointer = POINTER as u64;
     let block = (index / BLOCK_ENTRIES) & (queue.blocks - 1);
     let block = reader
         .read_u64(queue.map.checked_add(block.checked_mul(pointer)?)?)
@@ -110,9 +107,9 @@ fn strings(fields: &[u8]) -> Vec<(u64, u64)> {
             let length = u64::from(read_u32_le(raw, STRING_LENGTH)? & LENGTH_MASK);
             (raw[STRING_TAG] == HEAP_STRING
                 && pointer != 0
-                && length >= to_u64(DOCUMENT_HEAD.len()).ok()?
-                && length <= to_u64(MAX_INVENTORY_BODY).ok()?)
-            .then_some((pointer, length))
+                && length >= DOCUMENT_HEAD.len() as u64
+                && length <= MAX_INVENTORY_BODY as u64)
+                .then_some((pointer, length))
         })
         .collect()
 }
@@ -143,7 +140,7 @@ impl HttpClients {
                 }
                 if let Some(queues) = client_at(reader, &heap, object) {
                     clients.push(Client {
-                        slot: region.range.start + to_u64(at)?,
+                        slot: region.range.start + at as u64,
                         queues,
                     });
                 }
@@ -186,7 +183,7 @@ impl HttpClients {
     fn idle<R: MemoryReader + ?Sized>(&self, reader: &R) -> bool {
         self.clients.iter().all(|client| {
             let list = reader.read_u64(client.slot).ok().and_then(|object| {
-                let head = object.checked_add(to_u64(REQUESTS).ok()?)?;
+                let head = object.checked_add(REQUESTS as u64)?;
                 Some((head, reader.read_u64(head).ok()?))
             });
             list.is_none_or(|(head, first)| first == head)

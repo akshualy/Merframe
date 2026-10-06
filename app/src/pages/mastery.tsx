@@ -22,7 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { usePaged } from "@/hooks/use-paged";
-import { api, errorMessage, events } from "@/lib/bridge";
+import { api, errorMessage } from "@/lib/bridge";
 import { num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
 import { usePageQuote } from "@/lib/quotes";
@@ -193,9 +193,9 @@ export function MasteryPage() {
   );
 
   const { data, error, loading } = useAsyncData(load, [
-    events.inventoryUpdated,
-    events.pricesUpdated,
-    events.favouriteUpdated,
+    "inventoryUpdated",
+    "pricesUpdated",
+    "favouriteUpdated",
   ]);
 
   const { pageItems: topItems, pagination } = usePaged(

@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { num, percent, plat } from "@/lib/format";
-import { partIdentity } from "@/lib/relic-filters";
+import { isWanted } from "@/lib/relic-filters";
 import { REFINEMENTS, refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import type { RefinementValue, RelicPlan, RewardBreakdown } from "@/types";
@@ -46,7 +46,7 @@ export function rewardViews(
       chance,
       squadChance: (1 - (1 - chance / 100) ** squadSize) * 100,
       share: value.expected_plat_shares[index] ?? 0,
-      wanted: wantedKeys.has(partIdentity(reward.unique_name)),
+      wanted: isWanted(reward, wantedKeys),
     };
   });
 }

@@ -1,9 +1,15 @@
 import { useEffect, useRef } from "react";
-import { type AppEvent, listenTo, logError, type Unlisten } from "@/lib/bridge";
+import {
+  type EventData,
+  type EventName,
+  listenTo,
+  logError,
+  type Unlisten,
+} from "@/lib/bridge";
 
-export function useListen<T>(
-  subscribed: AppEvent | readonly AppEvent[],
-  handler: (payload: T) => void,
+export function useListen<K extends EventName>(
+  subscribed: K | readonly K[],
+  handler: (data: EventData<K>) => void,
 ) {
   const latest = useRef(handler);
   latest.current = handler;
@@ -15,11 +21,9 @@ export function useListen<T>(
     let cancelled = false;
     const stops: Unlisten[] = [];
 
-    async function subscribe(event: AppEvent) {
+    async function subscribe(event: K) {
       try {
-        const unlisten = await listenTo<T>(event, (payload) =>
-          latest.current(payload),
-        );
+        const unlisten = await listenTo(event, (data) => latest.current(data));
         if (cancelled) {
           unlisten();
           return;
@@ -29,7 +33,7 @@ export function useListen<T>(
         logError(`Listener for ${event}`, error);
       }
     }
-    for (const event of names.split(" ") as AppEvent[]) {
+    for (const event of names.split(" ") as K[]) {
       subscribe(event);
     }
 

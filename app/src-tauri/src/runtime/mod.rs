@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Context;
+use serde::Serialize;
 use tauri::{AppHandle, Emitter, Runtime};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 #[cfg(not(target_os = "linux"))]
@@ -10,10 +11,11 @@ use wf_core::CoreEvent;
 use wf_market::RivenData;
 
 use crate::envelope::CoreEventEnvelope;
+use crate::market::{MarketSnapshot, Presence};
 use crate::notice::Notice;
-use crate::overlay;
+use crate::overlay::{self, OverlayState};
 use crate::settings::Settings;
-use crate::state::{AppState, InventorySource, lock, read, write};
+use crate::state::{AppState, GameStatus, InventorySource, lock, read, write};
 
 mod feeds;
 mod game;
@@ -27,12 +29,23 @@ pub use game::acquire;
 pub use market_loop::MarketAutoClose;
 pub(crate) use market_loop::trade_side;
 
-pub const INVENTORY_UPDATED: &str = "inventory-updated";
-pub const STATUS_UPDATED: &str = "status-updated";
-pub const MARKET_AUTO_CLOSED: &str = "market-auto-closed";
-pub const MARKET_PRESENCE: &str = "market-presence";
-pub const MARKET_UPDATED: &str = "market-updated";
-pub const FAVOURITE_UPDATED: &str = "favourite-updated";
+#[derive(Clone, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(tag = "event", content = "data", rename_all = "camelCase")]
+pub enum AppEvent {
+    CoreEvent(CoreEventEnvelope),
+    StatusUpdated(GameStatus),
+    InventoryUpdated(GameStatus),
+    WorldStateUpdated,
+    RivenDataUpdated,
+    PricesUpdated,
+    FavouriteUpdated,
+    MarketUpdated(MarketSnapshot),
+    MarketAutoClosed(MarketAutoClose),
+    MarketSignedOut,
+    MarketPresence(Presence),
+    OverlayState(Box<OverlayState>),
+}
 
 const RIVEN_DATA_KEY: &str = "riven_data";
 const APP_TITLE: &str = "Merframe";
@@ -68,7 +81,7 @@ async fn bootstrap<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
         }
     }
     load_cached_riven_data(&state).await;
-    emit(&app, STATUS_UPDATED, state.status_snapshot());
+    emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
 }
 
 async fn load_cached_riven_data(state: &Arc<AppState>) {
@@ -122,8 +135,8 @@ async fn load_cached_inventory<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSt
                 taken_at = snapshot.taken_at.to_rfc3339(),
                 "Last inventory snapshot restored from the store"
             );
-            emit(app, STATUS_UPDATED, state.status_snapshot());
-            emit(app, INVENTORY_UPDATED, state.status_snapshot());
+            emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+            emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
             state.prices_wake.notify_one();
         }
         Ok(None) => debug!("No stored inventory snapshot yet"),
@@ -138,7 +151,10 @@ pub async fn dispatch<R: Runtime>(
 ) {
     for event in events {
         debug!(event = event.label(), "Core event");
-        emit(app, "core-event", CoreEventEnvelope::wrap(event.clone()));
+        emit(
+            app,
+            AppEvent::CoreEvent(CoreEventEnvelope::wrap(event.clone())),
+        );
         overlay::on_core_event(app, state, &event);
         deliver(app, state, &event).await;
     }
@@ -314,9 +330,9 @@ async fn send_webhook(state: &Arc<AppState>, url: &str, message: &str) -> anyhow
     Ok(())
 }
 
-pub fn emit<R: Runtime, T: serde::Serialize + Clone>(app: &AppHandle<R>, event: &str, payload: T) {
-    if let Err(error) = app.emit(event, payload) {
-        warn!(event, %error, "Webview emit failed");
+pub fn emit<R: Runtime>(app: &AppHandle<R>, event: AppEvent) {
+    if let Err(error) = app.emit("app-event", event) {
+        warn!(%error, "Webview emit failed");
     }
 }
 

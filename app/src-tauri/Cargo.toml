@@ -37,7 +37,7 @@ wf-core = { workspace = true }
 wf-data = { workspace = true, features = ["fetch"] }
 wf-inventory = { workspace = true }
 wf-log = { workspace = true }
-wf-market = { workspace = true }
+wf-market = { workspace = true, features = ["fetch"] }
 wf-mem = { workspace = true }
 wf-scan = { workspace = true }
 wf-worldstate = { workspace = true, features = ["fetch"] }

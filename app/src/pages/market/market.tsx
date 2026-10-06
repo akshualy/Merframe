@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useListen } from "@/hooks/use-listen";
-import { api, errorMessage, events, logError, reportError } from "@/lib/bridge";
+import { api, errorMessage, logError, reportError } from "@/lib/bridge";
 import { ago, MARKET_CHATS_URL, num } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import { notify } from "@/lib/toast";
@@ -102,9 +102,9 @@ export function MarketPage() {
     }
   }, [account, reload]);
 
-  useListen(events.marketSignedOut, () => setSignedOut(true));
+  useListen("marketSignedOut", () => setSignedOut(true));
 
-  useListen(events.marketUpdated, () => setError(null));
+  useListen("marketUpdated", () => setError(null));
 
   const runMarketAction = useCallback(
     async (promise: Promise<unknown>, message: string) => {

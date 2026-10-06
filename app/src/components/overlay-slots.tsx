@@ -8,7 +8,7 @@ import { RelicRewardOverlay } from "@/components/relic-reward-overlay";
 import { RivenOverlay, RivenRerollOverlay } from "@/components/riven-overlay";
 import { useListen } from "@/hooks/use-listen";
 import { useLoaded } from "@/hooks/use-loaded";
-import { api, events, logError } from "@/lib/bridge";
+import { api, logError } from "@/lib/bridge";
 import type {
   RecommendationTrigger,
   RewardScreen,
@@ -54,7 +54,7 @@ export function RecommendationSlot({
   compact?: boolean;
 }) {
   const [favouriteChanges, setFavouriteChanges] = useState(0);
-  useListen(events.favouriteUpdated, () =>
+  useListen("favouriteUpdated", () =>
     setFavouriteChanges((count) => count + 1),
   );
   const reloadKey = useMemo(

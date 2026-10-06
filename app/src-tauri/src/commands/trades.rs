@@ -4,7 +4,7 @@ use wf_core::Trade;
 
 use super::{Shared, ready};
 use crate::error::{CommandError, CommandResult};
-use crate::runtime;
+use crate::runtime::{self, AppEvent};
 use crate::state::lock;
 
 fn trade_time(at_ms: i64) -> CommandResult<DateTime<Utc>> {
@@ -25,7 +25,7 @@ pub async fn record_trade<R: Runtime>(
     let id = lock(&state.core)
         .store()
         .record_trade(at, partner.as_deref(), &trade)?;
-    runtime::emit(&app, runtime::INVENTORY_UPDATED, state.status_snapshot());
+    runtime::emit(&app, AppEvent::InventoryUpdated(state.status_snapshot()));
     Ok(id)
 }
 
@@ -43,7 +43,7 @@ pub async fn update_trade<R: Runtime>(
     lock(&state.core)
         .store()
         .update_trade(id, at, partner.as_deref(), &trade)?;
-    runtime::emit(&app, runtime::INVENTORY_UPDATED, state.status_snapshot());
+    runtime::emit(&app, AppEvent::InventoryUpdated(state.status_snapshot()));
     Ok(())
 }
 
@@ -55,6 +55,6 @@ pub async fn delete_trade<R: Runtime>(
 ) -> CommandResult<()> {
     let state = ready(&state).await?;
     lock(&state.core).store().delete_trade(id)?;
-    runtime::emit(&app, runtime::INVENTORY_UPDATED, state.status_snapshot());
+    runtime::emit(&app, AppEvent::InventoryUpdated(state.status_snapshot()));
     Ok(())
 }

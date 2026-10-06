@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { api, events, reportError } from "@/lib/bridge";
+import { api, reportError } from "@/lib/bridge";
 import { num } from "@/lib/format";
 import { entriesFor, inventoryFlags } from "@/lib/inventory-entries";
 import type { InventoryTabKey } from "@/lib/inventory-filters";
@@ -22,10 +22,10 @@ import { notify } from "@/lib/toast";
 export function InventoryPage() {
   const quote = usePageQuote("inventory");
   const { data, error, loading } = useAsyncData(api.inventoryTab, [
-    events.inventoryUpdated,
-    events.pricesUpdated,
-    events.favouriteUpdated,
-    events.marketUpdated,
+    "inventoryUpdated",
+    "pricesUpdated",
+    "favouriteUpdated",
+    "marketUpdated",
   ]);
   const [exporting, setExporting] = useState(false);
   const [params, setParams] = useSearchParams();

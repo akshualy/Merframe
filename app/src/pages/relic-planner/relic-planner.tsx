@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { api, events } from "@/lib/bridge";
+import { api } from "@/lib/bridge";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num, plat } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
@@ -27,7 +27,6 @@ import {
   type RelicFilters,
   refinementValue,
   wantedChance,
-  wantedKeysOf,
   writeOverlayFilters,
 } from "@/lib/relic-filters";
 import { REFINEMENTS, RELIC_TIERS } from "@/lib/relics";
@@ -74,9 +73,9 @@ export function RelicPlannerPage() {
   );
 
   const { data, error, loading } = useAsyncData(load, [
-    events.inventoryUpdated,
-    events.pricesUpdated,
-    events.favouriteUpdated,
+    "inventoryUpdated",
+    "pricesUpdated",
+    "favouriteUpdated",
   ]);
 
   const scrollToPanel = (panel: RefObject<HTMLDivElement | null>) => {
@@ -85,7 +84,7 @@ export function RelicPlannerPage() {
 
   const missing = data?.missing_parts ?? [];
 
-  const wantedKeys = useMemo(() => wantedKeysOf(wanted), [wanted]);
+  const wantedKeys = useMemo(() => new Set(wanted), [wanted]);
 
   const filters = useMemo<RelicFilters>(
     () => ({

@@ -16,7 +16,7 @@ import { SearchInput } from "@/components/search-input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { usePaged } from "@/hooks/use-paged";
-import { api, events } from "@/lib/bridge";
+import { api } from "@/lib/bridge";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
@@ -36,9 +36,9 @@ import { FoundryTreeDialog } from "./tree-dialog";
 export function FoundryPage() {
   const quote = usePageQuote("foundry");
   const { data, error, loading } = useAsyncData(api.foundryTab, [
-    events.inventoryUpdated,
-    events.pricesUpdated,
-    events.favouriteUpdated,
+    "inventoryUpdated",
+    "pricesUpdated",
+    "favouriteUpdated",
   ]);
   const { foundryCategory: category, setFoundryCategory } =
     usePreferencesStore();

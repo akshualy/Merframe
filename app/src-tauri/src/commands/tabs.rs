@@ -8,7 +8,7 @@ use wf_core::{
 
 use super::{Shared, compute, ready, since};
 use crate::error::CommandResult;
-use crate::runtime;
+use crate::runtime::{self, AppEvent};
 use crate::state::{lock, read};
 
 #[tauri::command]
@@ -109,7 +109,7 @@ pub async fn toggle_favourite<R: Runtime>(
 ) -> CommandResult<bool> {
     let state = ready(&state).await?;
     let favourite = lock(&state.core).toggle_favourite(&unique_name)?;
-    runtime::emit(&app, runtime::FAVOURITE_UPDATED, ());
+    runtime::emit(&app, AppEvent::FavouriteUpdated);
     Ok(favourite)
 }
 
