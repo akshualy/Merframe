@@ -70,6 +70,12 @@ impl LuaValue {
         }
     }
 
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    pub fn whole(self) -> Option<u32> {
+        let number = self.number()?;
+        (number >= 0.0 && number.fract() == 0.0).then_some(number as u32)
+    }
+
     pub fn table(self) -> Option<LuaTable> {
         match self {
             Self::Table(table) => Some(table),

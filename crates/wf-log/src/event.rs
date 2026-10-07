@@ -41,6 +41,10 @@ pub enum Event {
     TradeScreen {
         visible: bool,
     },
+    DucatKiosk {
+        visible: bool,
+    },
+    DucatSale,
     ConfirmDialog {
         buttons: DialogButtons,
     },
@@ -103,6 +107,8 @@ impl Event {
             Self::MissionCleared => "MissionCleared",
             Self::SquadMissionPending { .. } => "SquadMissionPending",
             Self::TradeScreen { .. } => "TradeScreen",
+            Self::DucatKiosk { .. } => "DucatKiosk",
+            Self::DucatSale => "DucatSale",
             Self::ConfirmDialog { .. } => "ConfirmDialog",
             Self::DialogAnswered { .. } => "DialogAnswered",
             Self::ChatTabAdded { .. } => "ChatTabAdded",
@@ -318,6 +324,15 @@ pub fn classify(line: &LogLine) -> Option<Event> {
         Some("0") => return Some(Event::TradeScreen { visible: false }),
         Some("1") => return Some(Event::TradeScreen { visible: true }),
         _ => {}
+    }
+    if message == "InventoryTest.lua: InventoryTest - CurrMode: Selling Prime Parts" {
+        return Some(Event::DucatKiosk { visible: true });
+    }
+    if message == "InventoryTest.lua: OnSellCompleted(result=true, body={})" {
+        return Some(Event::DucatSale);
+    }
+    if message == "InventoryTest.lua: DBG: HudVis 0" {
+        return Some(Event::DucatKiosk { visible: false });
     }
     if message.ends_with("Mission Succeeded") {
         return Some(Event::MissionSucceeded);
@@ -547,6 +562,46 @@ mod tests {
         assert_eq!(
             classify(&log_line("Trade.lua: DBG: HudVis 0")),
             Some(Event::TradeScreen { visible: false })
+        );
+    }
+
+    #[test]
+    fn ducat_sale() {
+        assert_eq!(
+            classify(&log_line(
+                "InventoryTest.lua: OnSellCompleted(result=true, body={})"
+            )),
+            Some(Event::DucatSale)
+        );
+        assert_eq!(
+            classify(&log_line(
+                "InventoryTest.lua: OnSellCompleted(result=false, body={})"
+            )),
+            None
+        );
+    }
+
+    #[test]
+    fn ducat_kiosk_visibility() {
+        assert_eq!(
+            classify(&log_line(
+                "InventoryTest.lua: InventoryTest - CurrMode: Selling Prime Parts"
+            )),
+            Some(Event::DucatKiosk { visible: true })
+        );
+        assert_eq!(
+            classify(&log_line("InventoryTest.lua: DBG: HudVis 0")),
+            Some(Event::DucatKiosk { visible: false })
+        );
+        assert_eq!(
+            classify(&log_line(
+                "InventoryTest.lua: InventoryTest - CurrMode: Inventory"
+            )),
+            None
+        );
+        assert_eq!(
+            classify(&log_line("InventoryTest.lua: DBG: HudVis 1")),
+            None
         );
     }
 

@@ -80,16 +80,11 @@ impl TradeScreen {
     }
 }
 
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-fn whole(number: f32) -> Option<u32> {
-    (number >= 0.0 && number.fract() == 0.0).then_some(number as u32)
-}
-
 fn slot<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<TradeSlot> {
     Some(TradeSlot {
         name: element.field(reader, NAME)?.text()?,
         item_type: element.field(reader, FULL_NAME).and_then(LuaValue::text),
-        count: whole(element.field(reader, COUNT)?.number()?)?,
+        count: element.field(reader, COUNT)?.whole()?,
         fingerprint: element
             .field(reader, FINGERPRINT)
             .and_then(LuaValue::text)
@@ -203,10 +198,10 @@ mod tests {
 
     #[test]
     fn counts_are_whole_numbers() {
-        assert_eq!(whole(84.0), Some(84));
-        assert_eq!(whole(0.0), Some(0));
-        assert_eq!(whole(1.5), None);
-        assert_eq!(whole(-1.0), None);
+        assert_eq!(LuaValue::Number(84.0).whole(), Some(84));
+        assert_eq!(LuaValue::Number(0.0).whole(), Some(0));
+        assert_eq!(LuaValue::Number(1.5).whole(), None);
+        assert_eq!(LuaValue::Number(-1.0).whole(), None);
     }
 
     #[test]
