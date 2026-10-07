@@ -79,23 +79,6 @@ export function DucateringOverlay({
           </span>
         </div>
       )}
-      {sold.length > 0 && (
-        <div className="bg-muted/40 flex flex-col gap-1 rounded-xl border p-3 text-sm">
-          <span className="flex items-center gap-1 font-semibold tabular-nums">
-            Sold {num(soldCount)} items for {num(ducats)}
-            <GameIcon name="ducats" size={16} alt="Ducats" />
-          </span>
-          <span className="text-muted-foreground truncate text-xs">
-            {sold
-              .map((sale) =>
-                sale.count > 1
-                  ? `${num(sale.count)} x ${sale.name}`
-                  : sale.name,
-              )
-              .join(", ")}
-          </span>
-        </div>
-      )}
       {items.length > 0 && <Progress value={(done / items.length) * 100} />}
       <ul
         ref={list}
@@ -123,6 +106,15 @@ export function DucateringOverlay({
           </li>
         ))}
       </ul>
+      {soldCount > 0 && (
+        <div className="text-muted-foreground flex items-center justify-end gap-1 text-xs">
+          <span>Sold {num(soldCount)}</span> items for
+          <span className="text-accent flex items-center gap-0.5 tabular-nums">
+            {num(ducats)}
+            <GameIcon name="ducats" size={14} alt="Ducats" />
+          </span>
+        </div>
+      )}
     </div>
   );
 }
