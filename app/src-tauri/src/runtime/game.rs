@@ -265,31 +265,17 @@ fn scanned_trade(screen: TradeScreen) -> ScannedTrade {
     }
 }
 
-async fn attach() -> anyhow::Result<(Arc<dyn MemoryReader>, LuaState)> {
-    tauri::async_runtime::spawn_blocking(|| {
-        let reader: Arc<dyn MemoryReader> =
-            Arc::from(open_game().context("Attaching to the game process")?);
-        let lua =
-            LuaState::locate(reader.as_ref())?.context("The game's Lua state was not found")?;
-        Ok((reader, lua))
-    })
-    .await
-    .map_err(anyhow::Error::from)
-    .flatten()
+fn attach() -> anyhow::Result<(Arc<dyn MemoryReader>, LuaState)> {
+    let reader: Arc<dyn MemoryReader> =
+        Arc::from(open_game().context("Attaching to the game process")?);
+    let lua = LuaState::locate(reader.as_ref())?.context("The game's Lua state was not found")?;
+    Ok((reader, lua))
 }
 
-async fn read_screen<T, F>(
-    task: &'static str,
-    reader: &Arc<dyn MemoryReader>,
-    lua: LuaState,
-    read: F,
-) -> Option<T>
-where
-    T: Send + 'static,
-    F: FnOnce(&dyn MemoryReader, &LuaState) -> T + Send + 'static,
-{
-    let reader = Arc::clone(reader);
-    blocking(task, move || read(reader.as_ref(), &lua)).await
+fn ticks(period: Duration) -> tokio::time::Interval {
+    let mut tick = tokio::time::interval(period);
+    tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+    tick
 }
 
 async fn still_open(open: &mut watch::Receiver<bool>, tick: &mut tokio::time::Interval) -> bool {
@@ -313,10 +299,11 @@ async fn completed_trade(
     lua: LuaState,
     open: &mut watch::Receiver<bool>,
 ) -> Option<ScannedTrade> {
-    let mut tick = tokio::time::interval(TRADE_TICK);
+    let mut tick = ticks(TRADE_TICK);
     while still_open(open, &mut tick).await {
-        let trade = read_screen("read trade screen", reader, lua, |reader, lua| {
-            TradeScreen::read(reader, lua)
+        let owned = Arc::clone(reader);
+        let trade = blocking("read trade screen", move || {
+            TradeScreen::read(owned.as_ref(), &lua)
         })
         .await;
         if let Some(trade) = trade.flatten().filter(|trade| trade.completed) {
@@ -346,15 +333,16 @@ async fn watch_trade<R: Runtime>(
     state: &Arc<AppState>,
     open: &mut watch::Receiver<bool>,
 ) {
-    let (reader, lua) = match attach().await {
-        Ok(attached) => attached,
-        Err(error) => {
+    let (reader, lua) = match blocking("attach to the game", attach).await {
+        Some(Ok(attached)) => attached,
+        Some(Err(error)) => {
             warn!(
                 ?error,
                 "Trade screen not watched, the trade is not recorded"
             );
             return;
         }
+        None => return,
     };
     let completed = completed_trade(&reader, lua, open);
     let screen = match tokio::time::timeout(TRADE_WATCH_LIFETIME, completed).await {
@@ -364,7 +352,10 @@ async fn watch_trade<R: Runtime>(
             return;
         }
         Err(_) => {
-            debug!("Trade screen watched for 10 minutes without a completed trade");
+            debug!(
+                seconds = TRADE_WATCH_LIFETIME.as_secs(),
+                "Trade screen watched to the limit without a completed trade"
+            );
             return;
         }
     };
