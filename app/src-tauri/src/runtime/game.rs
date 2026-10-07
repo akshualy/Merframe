@@ -8,12 +8,16 @@ use chrono::Utc;
 use futures_util::StreamExt;
 use futures_util::pin_mut;
 use tauri::{AppHandle, Runtime};
+use tauri_plugin_clipboard_manager::ClipboardExt;
 use tokio::sync::watch;
 use tracing::{debug, info, warn};
-use wf_core::{CoreEvent, ScannedRewards, ScannedTrade, ScannedTradeItem};
+use wf_core::{
+    CoreEvent, Ducatering, DucateringStep, ScannedKiosk, ScannedKioskItem, ScannedRewards,
+    ScannedTrade, ScannedTradeItem,
+};
 use wf_log::Event as LogEvent;
 use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_game};
-use wf_scan::{HttpClients, InventoryBuffer, LuaState, TradeScreen};
+use wf_scan::{DucatKiosk, HttpClients, InventoryBuffer, LuaState, TradeScreen};
 
 use super::{AppEvent, blocking, dispatch, emit, market_loop};
 use crate::overlay;
@@ -27,6 +31,7 @@ const PICKER_LIFETIME: Duration = Duration::from_secs(600);
 const PICKER_GRACE: Duration = Duration::from_secs(2);
 const TRADE_TICK: Duration = Duration::from_millis(50);
 const TRADE_WATCH_LIFETIME: Duration = Duration::from_secs(600);
+const KIOSK_TICK: Duration = Duration::from_millis(100);
 
 pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut missing_reported = false;
@@ -165,6 +170,16 @@ async fn handle_log_event<R: Runtime>(
     }
     if let LogEvent::TradeScreen { visible } = event {
         state.trade_screen_open.send_replace(visible);
+    }
+    if let LogEvent::DucatKiosk { visible } = event {
+        state.kiosk_open.send_replace(visible);
+    }
+    if matches!(event, LogEvent::DucatSale)
+        && state
+            .ducatering
+            .send_if_modified(|run| run.as_mut().is_some_and(Ducatering::sold))
+    {
+        debug!("Ducatering sale recorded");
     }
     let scan_rewards = matches!(
         event,
@@ -381,6 +396,115 @@ async fn watch_trade<R: Runtime>(
         }
         Some(Err(error)) => warn!(%error, "Core rejected the completed trade"),
         None => {}
+    }
+}
+
+fn scanned_kiosk(kiosk: &DucatKiosk) -> ScannedKiosk {
+    let items = |items: &[wf_scan::KioskItem]| {
+        items
+            .iter()
+            .map(|item| ScannedKioskItem {
+                item_type: item.item_type.clone(),
+                name: item.name.clone(),
+                count: item.count,
+                ducats: item.ducats,
+            })
+            .collect()
+    };
+    ScannedKiosk {
+        owned: items(&kiosk.owned),
+        marked: items(&kiosk.marked),
+    }
+}
+
+fn step_ducatering<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kiosk: &ScannedKiosk) {
+    let mut step = DucateringStep::Waiting;
+    let moved = state.ducatering.send_if_modified(|run| {
+        let Some(run) = run.as_mut() else {
+            return false;
+        };
+        let before = run.state();
+        step = run.advance(kiosk);
+        run.state() != before
+    });
+    if !moved {
+        return;
+    }
+    match step {
+        DucateringStep::Waiting => {}
+        DucateringStep::Search { position, name } => {
+            debug!(position, "Ducatering moved");
+            if let Err(error) = app.clipboard().write_text(name) {
+                warn!(%error, "Item name not copied to the clipboard");
+            }
+        }
+        DucateringStep::Finished => debug!("Ducatering finished"),
+    }
+}
+
+pub(super) async fn kiosk_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+    let mut open = state.kiosk_open.subscribe();
+    while open.changed().await.is_ok() {
+        if *open.borrow_and_update() {
+            watch_kiosk(&app, &state, &mut open).await;
+        }
+    }
+}
+
+async fn watch_kiosk<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    open: &mut watch::Receiver<bool>,
+) {
+    let (reader, lua) = match blocking("attach to the game", attach).await {
+        Some(Ok(attached)) => attached,
+        Some(Err(error)) => {
+            warn!(
+                ?error,
+                "Ducat Kiosk not watched, Ducatering does not advance"
+            );
+            return;
+        }
+        None => return,
+    };
+    let filter = {
+        let settings = read(&state.settings);
+        if !overlay::enabled(&settings, overlay::Kind::Ducatering) {
+            return;
+        }
+        settings.overlays.ducatering.filter()
+    };
+    let owned = Arc::clone(state);
+    let run = blocking("build the ducatering run", move || {
+        lock(&owned.core).ducatering(&filter)
+    })
+    .await
+    .flatten();
+    state.ducatering.send_replace(run);
+    let mut tick = ticks(KIOSK_TICK);
+    let mut last = None;
+    while still_open(open, &mut tick).await {
+        let owned = Arc::clone(&reader);
+        let kiosk = blocking("read ducat kiosk", move || {
+            DucatKiosk::read(owned.as_ref(), &lua)
+        })
+        .await
+        .flatten();
+        if let Some(settled) = &kiosk
+            && last.as_ref() == Some(settled)
+        {
+            step_ducatering(app, state, &scanned_kiosk(settled));
+        }
+        last = kiosk;
+    }
+    state.ducatering.send_replace(None);
+}
+
+pub(super) async fn ducatering_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+    let mut run = state.ducatering.subscribe();
+    while run.changed().await.is_ok() {
+        let progress = run.borrow_and_update().as_ref().map(Ducatering::progress);
+        overlay::on_ducatering(&app, &state, progress);
     }
 }
 

@@ -13,6 +13,7 @@ use crate::account::Account;
 use crate::catalog::{Catalog, REQUIEM_MARKER};
 use crate::comparables::{self, ComparedStat, RivenComparables};
 use crate::delta;
+use crate::ducatering::{self, Ducatering, DucateringFilter};
 use crate::error::Result;
 use crate::events::{self, AlertSettings, CoreEvent, Engine, ScannedRewards, ScannedTrade};
 use crate::export::{ExportBundle, export};
@@ -133,6 +134,10 @@ impl Core {
 
     pub fn catalog(&self) -> &Catalog {
         &self.catalog
+    }
+
+    pub fn ducatering(&self, filter: &DucateringFilter) -> Option<Ducatering> {
+        Some(Ducatering::new(ducatering::entries(&self.view()?, filter)))
     }
 
     pub fn inventory(&self) -> Option<&Inventory> {

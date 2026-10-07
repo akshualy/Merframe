@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tracing::{debug, info, warn};
-use wf_core::{CoreEvent, RivenRow};
+use wf_core::{CoreEvent, DucateringProgress, RivenRow};
 use wf_log::{DialogButtons, Event as LogEvent, MonitorRect};
 use wf_worldstate::RelicTier;
 
@@ -37,10 +37,11 @@ use riven::{
 };
 use window::{bounds_for, logical, open, park, retire, reveal, screen_of};
 
-pub const KINDS: [Kind; 4] = [
+pub const KINDS: [Kind; 5] = [
     Kind::RelicReward,
     Kind::RelicRecommendation,
     Kind::Riven,
+    Kind::Ducatering,
     Kind::Notification,
 ];
 
@@ -51,6 +52,7 @@ pub enum Kind {
     RelicReward,
     RelicRecommendation,
     Riven,
+    Ducatering,
     Notification,
 }
 
@@ -60,6 +62,7 @@ impl Kind {
             Self::RelicReward => "overlay-relic",
             Self::RelicRecommendation => "overlay-recommend",
             Self::Riven => "overlay-riven",
+            Self::Ducatering => "overlay-ducatering",
             Self::Notification => "overlay-notify",
         }
     }
@@ -73,6 +76,7 @@ impl Kind {
             Self::RelicReward => "index.html#/overlay/relic",
             Self::RelicRecommendation => "index.html#/overlay/recommend",
             Self::Riven => "index.html#/overlay/riven",
+            Self::Ducatering => "index.html#/overlay/ducatering",
             Self::Notification => "index.html#/overlay/notify",
         }
     }
@@ -82,6 +86,7 @@ impl Kind {
             Self::RelicReward => "Merframe relic rewards",
             Self::RelicRecommendation => "Merframe relic recommendation",
             Self::Riven => "Merframe riven",
+            Self::Ducatering => "Merframe Ducatering",
             Self::Notification => "Merframe notification",
         }
     }
@@ -93,6 +98,7 @@ pub fn enabled(settings: &Settings, kind: Kind) -> bool {
             Kind::RelicReward => settings.overlays.shown.overlay_relic_reward,
             Kind::RelicRecommendation => settings.overlays.shown.overlay_relic_recommendation,
             Kind::Riven => settings.overlays.shown.overlay_riven,
+            Kind::Ducatering => settings.overlays.ducatering.overlay_ducatering,
             Kind::Notification => settings.toasts.toasts_in_game,
         }
 }
@@ -107,6 +113,7 @@ fn placement_of(settings: &Settings, kind: Kind) -> OverlayPlacement {
         Kind::RelicReward => placements.overlay_relic_reward_placement,
         Kind::RelicRecommendation => placements.overlay_relic_recommendation_placement,
         Kind::Riven => placements.overlay_riven_placement,
+        Kind::Ducatering => settings.overlays.ducatering.overlay_ducatering_placement,
         Kind::Notification => settings.toasts.toasts_in_game_position.into(),
     }
 }
@@ -150,6 +157,7 @@ pub struct OverlayState {
     pub reward: Option<RewardTrigger>,
     pub recommendation: Option<RecommendationTrigger>,
     pub riven: Option<RivenTrigger>,
+    pub ducatering: Option<DucateringProgress>,
     pub notification: Option<NotificationTrigger>,
 }
 
@@ -161,6 +169,7 @@ impl Default for OverlayState {
             reward: None,
             recommendation: None,
             riven: None,
+            ducatering: None,
             notification: None,
         }
     }
@@ -172,6 +181,7 @@ impl OverlayState {
             Kind::RelicReward => self.reward.is_some(),
             Kind::RelicRecommendation => self.recommendation.is_some(),
             Kind::Riven => self.riven.is_some(),
+            Kind::Ducatering => self.ducatering.is_some(),
             Kind::Notification => self.notification.is_some(),
         }
     }
@@ -181,6 +191,7 @@ impl OverlayState {
             Kind::RelicReward => self.reward = None,
             Kind::RelicRecommendation => self.recommendation = None,
             Kind::Riven => self.riven = None,
+            Kind::Ducatering => self.ducatering = None,
             Kind::Notification => self.notification = None,
         }
     }
@@ -402,6 +413,19 @@ async fn show_queued_notifications<R: Runtime>(app: AppHandle<R>, state: Arc<App
             hide(&app, &state, Kind::Notification);
             break;
         }
+    }
+}
+
+pub fn on_ducatering<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    progress: Option<DucateringProgress>,
+) {
+    match progress {
+        Some(progress) => show(app, state, Kind::Ducatering, |slots| {
+            slots.ducatering = Some(progress);
+        }),
+        None => hide(app, state, Kind::Ducatering),
     }
 }
 
@@ -712,6 +736,7 @@ mod tests {
         assert!(enabled(&settings, Kind::RelicReward));
         assert!(enabled(&settings, Kind::RelicRecommendation));
         assert!(enabled(&settings, Kind::Riven));
+        assert!(enabled(&settings, Kind::Ducatering));
         assert!(!enabled(&settings, Kind::Notification));
 
         let notification_on: Settings = serde_json::from_str(r#"{"toasts_in_game":true}"#).unwrap();
@@ -721,11 +746,13 @@ mod tests {
         assert!(!enabled(&master_off, Kind::RelicReward));
         assert!(!enabled(&master_off, Kind::RelicRecommendation));
         assert!(!enabled(&master_off, Kind::Riven));
+        assert!(!enabled(&master_off, Kind::Ducatering));
         assert!(!enabled(&master_off, Kind::Notification));
 
         let one_toggle_off: Settings = serde_json::from_str(r#"{"overlay_riven":false}"#).unwrap();
         assert!(!enabled(&one_toggle_off, Kind::Riven));
         assert!(enabled(&one_toggle_off, Kind::RelicReward));
+        assert!(enabled(&one_toggle_off, Kind::Ducatering));
     }
 
     #[test]
@@ -750,6 +777,7 @@ mod tests {
                 "overlay-relic",
                 "overlay-recommend",
                 "overlay-riven",
+                "overlay-ducatering",
                 "overlay-notify"
             ]
         );

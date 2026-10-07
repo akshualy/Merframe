@@ -7,6 +7,7 @@ const IDLE: OverlayState = {
   reward: null,
   recommendation: null,
   riven: null,
+  ducatering: null,
   notification: null,
 };
 
