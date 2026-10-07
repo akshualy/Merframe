@@ -18,7 +18,7 @@ prepare() {
 
 build() {
   cd "Merframe-$pkgver/app"
-  pnpm tauri build --no-bundle
+  CFLAGS="${CFLAGS/-O2/}" pnpm tauri build --no-bundle
 }
 
 package() {
