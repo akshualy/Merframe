@@ -2,4 +2,4 @@
 import type { DucateringHidden } from "./DucateringHidden";
 import type { OverlayPlacement } from "./OverlayPlacement";
 
-export type DucateringSettings = { overlay_ducatering: boolean, overlay_ducatering_placement: OverlayPlacement, ducatering_most_ducats_first: boolean, ducatering_max_plat: number, ducatering_hidden: Array<DucateringHidden>, ducatering_hidden_set_plat: number | null, };
+export type DucateringSettings = { overlay_ducatering: boolean, overlay_ducatering_placement: OverlayPlacement, ducatering_most_ducats_first: boolean, ducatering_max_plat: number, ducatering_hidden: Array<DucateringHidden>, ducatering_hidden_set_plat: number, };

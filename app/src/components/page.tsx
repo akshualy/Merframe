@@ -62,11 +62,11 @@ export function Section({
       {(title || description || action || controls) && (
         <CardHeader
           className={cn(
-            "flex flex-wrap justify-between gap-3",
+            "flex justify-between gap-3",
             controls ? "items-start" : "items-center",
           )}
         >
-          <div className="flex flex-col gap-1">
+          <div className="flex min-w-0 flex-col gap-1">
             {title && <CardTitle>{title}</CardTitle>}
             {description && (
               <p className="text-muted-foreground text-sm">{description}</p>

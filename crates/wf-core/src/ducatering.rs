@@ -19,7 +19,7 @@ pub struct DucateringFilter {
     pub most_ducats_first: bool,
     pub max_plat: u32,
     pub hidden: Vec<DucateringHidden>,
-    pub hidden_set_plat: Option<u32>,
+    pub hidden_set_plat: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -85,18 +85,19 @@ pub(crate) fn entries(view: &View, filter: &DucateringFilter) -> Vec<DucateringE
     let listed = view.listings.listed_slugs(OrderType::Sell, view.items);
     let hide_listed = filter.hidden.contains(&DucateringHidden::Listed);
     let hide_complete = filter.hidden.contains(&DucateringHidden::CompleteSets);
-    let expensive_sets: Vec<usize> = match (hide_complete, filter.hidden_set_plat) {
-        (true, Some(limit)) => sets(view, &mut index)
+    let expensive_sets: Vec<usize> = if hide_complete && filter.hidden_set_plat > 0 {
+        sets(view, &mut index)
             .iter()
-            .filter(|set| set.prices.sell.unwrap_or(0.0) > f64::from(limit))
+            .filter(|set| set.prices.sell.unwrap_or(0.0) > f64::from(filter.hidden_set_plat))
             .map(|set| set.item)
-            .collect(),
-        _ => Vec::new(),
+            .collect()
+    } else {
+        Vec::new()
     };
     let hidden_set = |row: &PartRow| {
         hide_complete
             && row.set.complete
-            && (filter.hidden_set_plat.is_none() || expensive_sets.contains(&row.set.item))
+            && (filter.hidden_set_plat == 0 || expensive_sets.contains(&row.set.item))
     };
     let mut entries: Vec<DucateringEntry> = rows
         .iter()
@@ -384,7 +385,7 @@ mod tests {
             most_ducats_first: true,
             max_plat: 10,
             hidden: Vec::new(),
-            hidden_set_plat: None,
+            hidden_set_plat: 0,
         };
         let cheap = entries(&fixture.view(), &filter);
         assert_eq!(cheap.len(), 1);
@@ -427,8 +428,8 @@ mod tests {
             hidden: vec![DucateringHidden::CompleteSets],
             hidden_set_plat,
         };
-        assert!(entries(&fixture.view(), &hiding(None)).is_empty());
-        assert!(entries(&fixture.view(), &hiding(Some(10))).is_empty());
-        assert_eq!(entries(&fixture.view(), &hiding(Some(50))).len(), 4);
+        assert!(entries(&fixture.view(), &hiding(0)).is_empty());
+        assert!(entries(&fixture.view(), &hiding(10)).is_empty());
+        assert_eq!(entries(&fixture.view(), &hiding(50)).len(), 4);
     }
 }

@@ -206,7 +206,7 @@ pub struct DucateringSettings {
     pub ducatering_most_ducats_first: bool,
     pub ducatering_max_plat: u32,
     pub ducatering_hidden: Vec<DucateringHidden>,
-    pub ducatering_hidden_set_plat: Option<u32>,
+    pub ducatering_hidden_set_plat: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -341,7 +341,7 @@ impl Default for DucateringSettings {
             ducatering_most_ducats_first: true,
             ducatering_max_plat: 10,
             ducatering_hidden: Vec::new(),
-            ducatering_hidden_set_plat: None,
+            ducatering_hidden_set_plat: 0,
         }
     }
 }
@@ -575,10 +575,7 @@ mod tests {
         assert!(settings.overlays.ducatering.ducatering_most_ducats_first);
         assert_eq!(settings.overlays.ducatering.ducatering_max_plat, 10);
         assert!(settings.overlays.ducatering.ducatering_hidden.is_empty());
-        assert_eq!(
-            settings.overlays.ducatering.ducatering_hidden_set_plat,
-            None
-        );
+        assert_eq!(settings.overlays.ducatering.ducatering_hidden_set_plat, 0);
         assert_eq!(
             settings.overlays.placements.overlay_relic_reward_placement,
             OverlayPlacement::Centre

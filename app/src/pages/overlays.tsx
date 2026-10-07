@@ -447,7 +447,7 @@ export function OverlaysPage() {
         }
         description={
           ducatering
-            ? "Shown while the Ducat Kiosk is open. The filters decide which parts are offered."
+            ? "Shown while the Ducat Kiosk is open. Filter changes only apply on new Kiosk screens."
             : OFF
         }
       >

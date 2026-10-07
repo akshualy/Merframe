@@ -77,12 +77,6 @@ async fn bootstrap<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     } else {
         info!(riven_types, "Riven stat tables loaded");
     }
-    match state.market().riven_attributes().await {
-        Ok(attributes) => lock(&state.core).set_riven_attributes(attributes),
-        Err(error) => {
-            warn!(error = %error.brief(), "Riven attribute list request to warframe.market failed");
-        }
-    }
     load_cached_riven_data(&state).await;
     emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
 }

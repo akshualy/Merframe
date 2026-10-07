@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import type { DucateringHidden, Settings } from "@/types";
 
 const HIDDEN: { value: DucateringHidden; label: string }[] = [
-  { value: "listed", label: "Hide items listed on the market" },
+  { value: "listed", label: "Hide items you are selling" },
   { value: "complete_sets", label: "Hide parts of complete sets" },
 ];
 
@@ -102,24 +102,14 @@ export function DucateringFilters({
           />
         </Field>
       ))}
-      {hidesCompleteSets && (
-        <Field id="ducatering-set-plat-enabled" label="Hide sets above">
-          <Switch
-            id="ducatering-set-plat-enabled"
-            checked={settings.ducatering_hidden_set_plat !== null}
-            disabled={disabled}
-            onCheckedChange={(checked) =>
-              update({ ducatering_hidden_set_plat: checked ? 0 : null })
-            }
-          />
-          <PlatInput
-            id="ducatering-set-plat"
-            value={settings.ducatering_hidden_set_plat ?? 0}
-            disabled={disabled || settings.ducatering_hidden_set_plat === null}
-            onChange={(value) => update({ ducatering_hidden_set_plat: value })}
-          />
-        </Field>
-      )}
+      <Field id="ducatering-set-plat" label="Hide sets above">
+        <PlatInput
+          id="ducatering-set-plat"
+          value={settings.ducatering_hidden_set_plat}
+          disabled={disabled || !hidesCompleteSets}
+          onChange={(value) => update({ ducatering_hidden_set_plat: value })}
+        />
+      </Field>
     </div>
   );
 }
