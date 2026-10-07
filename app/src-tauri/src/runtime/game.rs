@@ -8,6 +8,7 @@ use chrono::Utc;
 use futures_util::StreamExt;
 use futures_util::pin_mut;
 use tauri::{AppHandle, Runtime};
+use tokio::sync::watch;
 use tracing::{debug, info, warn};
 use wf_core::{CoreEvent, ScannedRewards, ScannedTrade, ScannedTradeItem};
 use wf_log::Event as LogEvent;
@@ -163,12 +164,7 @@ async fn handle_log_event<R: Runtime>(
         watch_relic_picker(state);
     }
     if let LogEvent::TradeScreen { visible } = event {
-        state.trade_screen_open.store(visible, Ordering::SeqCst);
-        if visible {
-            let app = app.clone();
-            let state = Arc::clone(state);
-            tauri::async_runtime::spawn(async move { watch_trade(&app, &state).await });
-        }
+        state.trade_screen_open.send_replace(visible);
     }
     let scan_rewards = matches!(
         event,
@@ -269,18 +265,52 @@ fn scanned_trade(screen: TradeScreen) -> ScannedTrade {
     }
 }
 
-fn completed_trade(state: &Arc<AppState>) -> anyhow::Result<Option<ScannedTrade>> {
-    let reader = open_game().context("Attaching to the game process")?;
+fn attach() -> anyhow::Result<(Arc<dyn MemoryReader>, LuaState)> {
+    let reader: Arc<dyn MemoryReader> =
+        Arc::from(open_game().context("Attaching to the game process")?);
     let lua = LuaState::locate(reader.as_ref())?.context("The game's Lua state was not found")?;
-    let started = Instant::now();
-    loop {
-        let open = state.trade_screen_open.load(Ordering::SeqCst);
-        let completed = TradeScreen::read(reader.as_ref(), &lua).filter(|screen| screen.completed);
-        if completed.is_some() || !open || started.elapsed() >= TRADE_WATCH_LIFETIME {
-            return Ok(completed.map(scanned_trade));
-        }
-        std::thread::sleep(TRADE_TICK);
+    Ok((reader, lua))
+}
+
+fn ticks(period: Duration) -> tokio::time::Interval {
+    let mut tick = tokio::time::interval(period);
+    tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+    tick
+}
+
+async fn still_open(open: &mut watch::Receiver<bool>, tick: &mut tokio::time::Interval) -> bool {
+    tokio::select! {
+        _ = open.wait_for(|open| !*open) => false,
+        _ = tick.tick() => true,
     }
+}
+
+pub(super) async fn trade_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+    let mut open = state.trade_screen_open.subscribe();
+    while open.changed().await.is_ok() {
+        if *open.borrow_and_update() {
+            watch_trade(&app, &state, &mut open).await;
+        }
+    }
+}
+
+async fn completed_trade(
+    reader: &Arc<dyn MemoryReader>,
+    lua: LuaState,
+    open: &mut watch::Receiver<bool>,
+) -> Option<ScannedTrade> {
+    let mut tick = ticks(TRADE_TICK);
+    while still_open(open, &mut tick).await {
+        let owned = Arc::clone(reader);
+        let trade = blocking("read trade screen", move || {
+            TradeScreen::read(owned.as_ref(), &lua)
+        })
+        .await;
+        if let Some(trade) = trade.flatten().filter(|trade| trade.completed) {
+            return Some(scanned_trade(trade));
+        }
+    }
+    None
 }
 
 fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
@@ -298,19 +328,33 @@ fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     }
 }
 
-async fn watch_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    let owned = Arc::clone(state);
-    let screen = match blocking("watch trade screen", move || completed_trade(&owned)).await {
-        Some(Ok(Some(screen))) => screen,
-        Some(Ok(None)) => {
-            debug!("Trade screen closed without a completed trade");
-            return;
-        }
-        None => return,
+async fn watch_trade<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    open: &mut watch::Receiver<bool>,
+) {
+    let (reader, lua) = match blocking("attach to the game", attach).await {
+        Some(Ok(attached)) => attached,
         Some(Err(error)) => {
             warn!(
                 ?error,
                 "Trade screen not watched, the trade is not recorded"
+            );
+            return;
+        }
+        None => return,
+    };
+    let completed = completed_trade(&reader, lua, open);
+    let screen = match tokio::time::timeout(TRADE_WATCH_LIFETIME, completed).await {
+        Ok(Some(screen)) => screen,
+        Ok(None) => {
+            debug!("Trade screen closed without a completed trade");
+            return;
+        }
+        Err(_) => {
+            debug!(
+                seconds = TRADE_WATCH_LIFETIME.as_secs(),
+                "Trade screen watched to the limit without a completed trade"
             );
             return;
         }
