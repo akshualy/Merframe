@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { num, percent, plat } from "@/lib/format";
-import { refinementTone } from "@/lib/relics";
+import { REFINEMENTS } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
-import type { RelicPlan } from "@/types";
+import type { RefinementValue, RelicPlan } from "@/types";
 import type { PlannerRow, RewardView } from "./columns";
 
 function rarityVariant(
@@ -65,31 +65,80 @@ function RewardRow({ view }: { view: RewardView }) {
   );
 }
 
-function RelicMarket({ plan }: { plan: RelicPlan }) {
+function RefinementCard({
+  entry,
+  chosen,
+}: {
+  entry: RefinementValue;
+  chosen: boolean;
+}) {
+  const litDots = REFINEMENTS.indexOf(entry.refinement);
+  return (
+    <span
+      title={entry.refinement}
+      className={cn(
+        "flex h-8 items-center gap-2 rounded-md border px-2.5",
+        chosen && "border-primary font-bold",
+      )}
+    >
+      <span className="flex flex-col gap-0.5" aria-hidden="true">
+        {REFINEMENTS.slice(1).map((step, dot) => (
+          <span
+            key={step}
+            className={cn(
+              "size-1.5 rounded-full",
+              dot < litDots ? "bg-primary" : "bg-muted-foreground/40",
+            )}
+          />
+        ))}
+      </span>
+      <span className="sr-only">{entry.refinement}</span>
+      <span className="flex items-center gap-0.5">
+        {plat(entry.expected_plat)}
+        <GameIcon name="platinum" size={16} alt="Platinum" />
+      </span>
+      {entry.plat_per_trace !== null && (
+        <span className="text-muted-foreground font-normal">
+          {entry.plat_per_trace.toFixed(2)}/trace
+        </span>
+      )}
+    </span>
+  );
+}
+
+function RelicValues({ row }: { row: PlannerRow }) {
   const openListing = useMarketPanelStore((state) => state.openListing);
-  const market = plan.market;
-  if (!market) {
-    return null;
-  }
+  const { plan } = row;
+  const { market } = plan;
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
-      <span className="text-muted-foreground">{plan.relic} Relic</span>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => openListing(market.slug, "sell")}
-      >
-        Sell {num(market.sell)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => openListing(market.slug, "buy")}
-      >
-        Buy {num(market.buy)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
-      </Button>
+      {market && (
+        <>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openListing(market.slug, "sell")}
+          >
+            Sell {num(market.sell)}
+            <GameIcon name="platinum" size={16} alt="Platinum" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openListing(market.slug, "buy")}
+          >
+            Buy {num(market.buy)}
+            <GameIcon name="platinum" size={16} alt="Platinum" />
+          </Button>
+        </>
+      )}
+      {plan.values.map((entry) => (
+        <RefinementCard
+          key={entry.refinement}
+          entry={entry}
+          chosen={entry.refinement === row.value.refinement}
+        />
+      ))}
     </div>
   );
 }
@@ -127,41 +176,12 @@ function DropLocations({ plan }: { plan: RelicPlan }) {
 export function PlannerRowDetails({ row }: { row: PlannerRow }) {
   return (
     <div className="flex flex-col gap-2 py-2">
-      <RelicMarket plan={row.plan} />
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-        {row.plan.values.map((entry) => (
-          <span
-            key={entry.refinement}
-            className={cn(
-              "flex items-center gap-1.5",
-              entry.refinement === row.value.refinement && "font-bold",
-            )}
-          >
-            <span className={refinementTone(entry.refinement)}>
-              {entry.refinement}
-            </span>
-            <span className="flex items-center gap-0.5">
-              {plat(entry.expected_plat)}
-              <GameIcon name="platinum" size={16} alt="Platinum" />
-            </span>
-            <span className="text-muted-foreground">
-              {num(entry.traces)} traces
-              {entry.plat_per_trace === null
-                ? ""
-                : `, ${entry.plat_per_trace.toFixed(2)} platinum per trace`}
-            </span>
-          </span>
-        ))}
-      </div>
+      <RelicValues row={row} />
       <ul className="flex flex-col">
         <li className="text-muted-foreground flex items-center gap-2 pb-1 text-xs">
           <span className="w-6" />
           <span className="w-6" />
-          <span className="flex flex-1 items-center gap-0.5">
-            {row.value.refinement} rewards, {plat(row.value.expected_plat)}
-            <GameIcon name="platinum" size={16} alt="Platinum" />
-            expected in total
-          </span>
+          <span className="flex-1" />
           <span className="w-20">Rarity</span>
           <span className="w-16 text-right">Chance</span>
           <span className="w-16 text-right">In squad</span>
