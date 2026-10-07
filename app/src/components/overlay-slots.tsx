@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { DucateringOverlay } from "@/components/ducatering-overlay";
 import { EmptyNote } from "@/components/page";
 import {
   overlaySquadSize,
@@ -10,6 +11,7 @@ import { useListen } from "@/hooks/use-listen";
 import { useLoaded } from "@/hooks/use-loaded";
 import { api, logError } from "@/lib/bridge";
 import type {
+  DucateringProgress,
   RecommendationTrigger,
   RewardScreen,
   RewardTrigger,
@@ -138,4 +140,21 @@ export function RivenSlot({
       compact={compact}
     />
   );
+}
+
+export function DucateringSlot({
+  trigger,
+  compact = false,
+}: {
+  trigger: DucateringProgress | null;
+  compact?: boolean;
+}) {
+  if (!trigger) {
+    return (
+      <EmptyNote>
+        Open the Ducat Kiosk in a relay to start Ducatering.
+      </EmptyNote>
+    );
+  }
+  return <DucateringOverlay progress={trigger} compact={compact} />;
 }

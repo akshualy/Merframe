@@ -6,7 +6,7 @@ use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
-use wf_core::{AlertSettings, MasteryOptions, MasteryOrdering};
+use wf_core::{AlertSettings, DucateringFilter, DucateringHidden, MasteryOptions, MasteryOrdering};
 use wf_market::{OrderType, Reach, TraderStatus};
 
 pub const STORE_FILE: &str = "merframe.json";
@@ -193,6 +193,20 @@ pub struct OverlaySettings {
     pub overlay_mode: OverlayMode,
     pub overlay_only_while_game_active: bool,
     pub overlay_account_balance: bool,
+    #[serde(flatten)]
+    pub ducatering: DucateringSettings,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(default)]
+pub struct DucateringSettings {
+    pub overlay_ducatering: bool,
+    pub overlay_ducatering_placement: OverlayPlacement,
+    pub ducatering_most_ducats_first: bool,
+    pub ducatering_max_plat: u32,
+    pub ducatering_hidden: Vec<DucateringHidden>,
+    pub ducatering_hidden_set_plat: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -303,6 +317,31 @@ impl Default for OverlaySettings {
             overlay_mode: OverlayMode::Auto,
             overlay_only_while_game_active: true,
             overlay_account_balance: true,
+            ducatering: DucateringSettings::default(),
+        }
+    }
+}
+
+impl DucateringSettings {
+    pub fn filter(&self) -> DucateringFilter {
+        DucateringFilter {
+            most_ducats_first: self.ducatering_most_ducats_first,
+            max_plat: self.ducatering_max_plat,
+            hidden: self.ducatering_hidden.clone(),
+            hidden_set_plat: self.ducatering_hidden_set_plat,
+        }
+    }
+}
+
+impl Default for DucateringSettings {
+    fn default() -> Self {
+        Self {
+            overlay_ducatering: true,
+            overlay_ducatering_placement: OverlayPlacement::TopRight,
+            ducatering_most_ducats_first: true,
+            ducatering_max_plat: 10,
+            ducatering_hidden: Vec::new(),
+            ducatering_hidden_set_plat: 0,
         }
     }
 }
@@ -528,6 +567,15 @@ mod tests {
         assert!(settings.overlays.shown.overlay_relic_reward);
         assert!(settings.overlays.shown.overlay_relic_recommendation);
         assert!(settings.overlays.shown.overlay_riven);
+        assert!(settings.overlays.ducatering.overlay_ducatering);
+        assert_eq!(
+            settings.overlays.ducatering.overlay_ducatering_placement,
+            OverlayPlacement::TopRight
+        );
+        assert!(settings.overlays.ducatering.ducatering_most_ducats_first);
+        assert_eq!(settings.overlays.ducatering.ducatering_max_plat, 10);
+        assert!(settings.overlays.ducatering.ducatering_hidden.is_empty());
+        assert_eq!(settings.overlays.ducatering.ducatering_hidden_set_plat, 0);
         assert_eq!(
             settings.overlays.placements.overlay_relic_reward_placement,
             OverlayPlacement::Centre

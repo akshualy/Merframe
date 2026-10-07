@@ -1,0 +1,435 @@
+use serde::{Deserialize, Serialize};
+use wf_market::OrderType;
+
+use crate::ItemSummary;
+use crate::inventory_view::PartRow;
+use crate::inventory_view::{ItemIndex, parts, sets};
+use crate::view::View;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(rename_all = "snake_case")]
+pub enum DucateringHidden {
+    Listed,
+    CompleteSets,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DucateringFilter {
+    pub most_ducats_first: bool,
+    pub max_plat: u32,
+    pub hidden: Vec<DucateringHidden>,
+    pub hidden_set_plat: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct DucateringEntry {
+    pub item: ItemSummary,
+    pub count: u32,
+    pub ducats: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct ScannedKioskItem {
+    pub item_type: String,
+    pub name: String,
+    pub count: u32,
+    pub ducats: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScannedKiosk {
+    pub owned: Vec<ScannedKioskItem>,
+    pub marked: Vec<ScannedKioskItem>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DucateringStep {
+    Waiting,
+    Search { position: usize, name: String },
+    Finished,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(tag = "state", content = "position", rename_all = "camelCase")]
+pub enum DucateringState {
+    Waiting(usize),
+    Searching(usize),
+    Finished,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct DucateringProgress {
+    pub state: DucateringState,
+    pub items: Vec<DucateringEntry>,
+    pub sold: Vec<ScannedKioskItem>,
+    pub ducats: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Ducatering {
+    items: Vec<DucateringEntry>,
+    position: usize,
+    searching: Option<usize>,
+    marked: Vec<ScannedKioskItem>,
+    sold: Vec<ScannedKioskItem>,
+}
+
+pub(crate) fn entries(view: &View, filter: &DucateringFilter) -> Vec<DucateringEntry> {
+    let mut index = ItemIndex::default();
+    let rows = parts(view, &mut index);
+    let listed = view.listings.listed_slugs(OrderType::Sell, view.items);
+    let hide_listed = filter.hidden.contains(&DucateringHidden::Listed);
+    let hide_complete = filter.hidden.contains(&DucateringHidden::CompleteSets);
+    let expensive_sets: Vec<usize> = if hide_complete && filter.hidden_set_plat > 0 {
+        sets(view, &mut index)
+            .iter()
+            .filter(|set| set.prices.sell.unwrap_or(0.0) > f64::from(filter.hidden_set_plat))
+            .map(|set| set.item)
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let hidden_set = |row: &PartRow| {
+        hide_complete
+            && row.set.complete
+            && (filter.hidden_set_plat == 0 || expensive_sets.contains(&row.set.item))
+    };
+    let mut entries: Vec<DucateringEntry> = rows
+        .iter()
+        .filter(|row| row.count > 0)
+        .filter(|row| row.prices.sell.unwrap_or(0.0) <= f64::from(filter.max_plat))
+        .filter(|row| !hidden_set(row))
+        .filter(|row| {
+            !(hide_listed
+                && index[row.item]
+                    .market_slug
+                    .as_deref()
+                    .is_some_and(|slug| listed.contains(slug)))
+        })
+        .filter_map(|row| {
+            let ducats = row.prices.ducats.filter(|ducats| *ducats > 0)?;
+            Some(DucateringEntry {
+                item: index[row.item].clone(),
+                count: u32::try_from(row.count).ok()?,
+                ducats,
+            })
+        })
+        .collect();
+    if filter.most_ducats_first {
+        entries.sort_by_key(|entry| std::cmp::Reverse(entry.ducats));
+    }
+    entries
+}
+
+fn find<'a>(items: &'a [ScannedKioskItem], unique_name: &str) -> Option<&'a ScannedKioskItem> {
+    items.iter().find(|item| item.item_type == unique_name)
+}
+
+impl Ducatering {
+    pub fn new(items: Vec<DucateringEntry>) -> Self {
+        Self {
+            items,
+            position: 0,
+            searching: None,
+            marked: Vec::new(),
+            sold: Vec::new(),
+        }
+    }
+
+    pub fn sold(&mut self) -> bool {
+        let marked = std::mem::take(&mut self.marked);
+        let any = !marked.is_empty();
+        for item in marked {
+            if let Some(entry) = self
+                .items
+                .iter_mut()
+                .find(|entry| entry.item.unique_name == item.item_type)
+            {
+                entry.count = entry.count.saturating_sub(item.count);
+            }
+            match self
+                .sold
+                .iter_mut()
+                .find(|sale| sale.item_type == item.item_type)
+            {
+                Some(sale) => sale.count += item.count,
+                None => self.sold.push(item),
+            }
+        }
+        if any {
+            self.searching = None;
+        }
+        any
+    }
+
+    pub fn state(&self) -> DucateringState {
+        if self.position >= self.items.len() {
+            DucateringState::Finished
+        } else {
+            self.searching.map_or(
+                DucateringState::Waiting(self.position),
+                DucateringState::Searching,
+            )
+        }
+    }
+
+    pub fn progress(&self) -> DucateringProgress {
+        DucateringProgress {
+            state: self.state(),
+            items: self.items.clone(),
+            sold: self.sold.clone(),
+            ducats: self.sold.iter().map(|sale| sale.count * sale.ducats).sum(),
+        }
+    }
+
+    pub fn advance(&mut self, kiosk: &ScannedKiosk) -> DucateringStep {
+        if !kiosk.marked.is_empty() {
+            self.marked.clone_from(&kiosk.marked);
+        }
+        while let Some(item) = self.items.get(self.position) {
+            let Some(owned) = find(&kiosk.owned, &item.item.unique_name) else {
+                self.position += 1;
+                continue;
+            };
+            let marked =
+                find(&kiosk.marked, &item.item.unique_name).map_or(0, |marked| marked.count);
+            if marked >= item.count.min(owned.count) {
+                self.position += 1;
+                continue;
+            }
+            if self.searching == Some(self.position) {
+                return DucateringStep::Waiting;
+            }
+            self.searching = Some(self.position);
+            return DucateringStep::Search {
+                position: self.position,
+                name: owned.name.clone(),
+            };
+        }
+        DucateringStep::Finished
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::catalog::fixtures;
+    use crate::prices::FixedPrices;
+    use crate::view::Fixture;
+
+    const BRATON_BARREL: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel";
+
+    const STOCK: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
+    const LINK: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/AkboltoPrimeLink";
+    const EPITAPH_BARREL: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/EpitaphPrimeBarrel";
+
+    fn scanned(items: &[(&str, &str, u32)]) -> Vec<ScannedKioskItem> {
+        items
+            .iter()
+            .map(|(item_type, name, count)| ScannedKioskItem {
+                item_type: (*item_type).to_owned(),
+                name: (*name).to_owned(),
+                count: *count,
+                ducats: if *item_type == STOCK { 15 } else { 45 },
+            })
+            .collect()
+    }
+
+    fn kiosk(marked: &[(&str, &str, u32)]) -> ScannedKiosk {
+        ScannedKiosk {
+            owned: scanned(&[
+                (STOCK, "Braton Prime Stock", 7),
+                (LINK, "Akbolto Prime Link", 2),
+            ]),
+            marked: scanned(marked),
+        }
+    }
+
+    fn run(items: &[(&str, u32)]) -> Ducatering {
+        Ducatering::new(
+            items
+                .iter()
+                .map(|(unique_name, count)| DucateringEntry {
+                    item: ItemSummary {
+                        unique_name: (*unique_name).to_owned(),
+                        name: String::new(),
+                        image_name: None,
+                        market_slug: None,
+                        prime: true,
+                        vault: None,
+                    },
+                    count: *count,
+                    ducats: 0,
+                })
+                .collect(),
+        )
+    }
+
+    fn search(position: usize, name: &str) -> DucateringStep {
+        DucateringStep::Search {
+            position,
+            name: name.to_owned(),
+        }
+    }
+
+    #[test]
+    fn items_in_order() {
+        let mut run = run(&[(STOCK, 3), (LINK, 1)]);
+        assert_eq!(run.advance(&kiosk(&[])), search(0, "Braton Prime Stock"));
+        assert_eq!(run.advance(&kiosk(&[])), DucateringStep::Waiting);
+        let partly = kiosk(&[(STOCK, "Braton Prime Stock", 2)]);
+        assert_eq!(run.advance(&partly), DucateringStep::Waiting);
+        let stock = kiosk(&[(STOCK, "Braton Prime Stock", 3)]);
+        assert_eq!(run.advance(&stock), search(1, "Akbolto Prime Link"));
+        let both = kiosk(&[
+            (STOCK, "Braton Prime Stock", 3),
+            (LINK, "Akbolto Prime Link", 1),
+        ]);
+        assert_eq!(run.advance(&both), DucateringStep::Finished);
+    }
+
+    #[test]
+    fn sold_items_stay_done() {
+        let mut run = run(&[(STOCK, 3), (LINK, 1)]);
+        let stock = kiosk(&[(STOCK, "Braton Prime Stock", 3)]);
+        assert_eq!(run.advance(&stock), search(1, "Akbolto Prime Link"));
+        assert_eq!(run.advance(&kiosk(&[])), DucateringStep::Waiting);
+    }
+
+    #[test]
+    fn asks_for_no_more_than_is_owned() {
+        let mut run = run(&[(LINK, 5), (STOCK, 1)]);
+        let links = kiosk(&[(LINK, "Akbolto Prime Link", 2)]);
+        assert_eq!(run.advance(&links), search(1, "Braton Prime Stock"));
+    }
+
+    #[test]
+    fn skips_items_the_kiosk_does_not_offer() {
+        let mut run = run(&[(EPITAPH_BARREL, 1), (LINK, 1)]);
+        assert_eq!(run.advance(&kiosk(&[])), search(1, "Akbolto Prime Link"));
+    }
+
+    #[test]
+    fn state_follows_the_search() {
+        let mut run = run(&[(STOCK, 1)]);
+        assert_eq!(run.state(), DucateringState::Waiting(0));
+        run.advance(&kiosk(&[]));
+        assert_eq!(run.state(), DucateringState::Searching(0));
+        run.advance(&kiosk(&[(STOCK, "Braton Prime Stock", 1)]));
+        assert_eq!(run.state(), DucateringState::Finished);
+    }
+
+    #[test]
+    fn sales_add_up() {
+        let mut run = run(&[(STOCK, 3), (LINK, 1)]);
+        assert!(!run.sold());
+        run.advance(&kiosk(&[(STOCK, "Braton Prime Stock", 2)]));
+        assert!(run.sold());
+        assert_eq!(run.advance(&kiosk(&[])), search(0, "Braton Prime Stock"));
+        assert_eq!(run.progress().items[0].count, 1);
+        run.advance(&kiosk(&[
+            (STOCK, "Braton Prime Stock", 1),
+            (LINK, "Akbolto Prime Link", 1),
+        ]));
+        assert!(run.sold());
+        assert_eq!(run.advance(&kiosk(&[])), DucateringStep::Finished);
+        let progress = run.progress();
+        assert_eq!(progress.ducats, 3 * 15 + 45);
+        assert_eq!(
+            progress
+                .sold
+                .iter()
+                .map(|sale| (sale.name.as_str(), sale.count))
+                .collect::<Vec<_>>(),
+            vec![("Braton Prime Stock", 3), ("Akbolto Prime Link", 1)]
+        );
+        assert!(!run.sold());
+    }
+
+    #[test]
+    fn sale_survives_an_empty_read() {
+        let mut run = run(&[(STOCK, 3)]);
+        run.advance(&kiosk(&[(STOCK, "Braton Prime Stock", 3)]));
+        run.advance(&kiosk(&[]));
+        assert!(run.sold());
+        assert_eq!(run.progress().ducats, 3 * 15);
+    }
+
+    #[test]
+    fn empty_run_is_finished() {
+        assert_eq!(run(&[]).advance(&kiosk(&[])), DucateringStep::Finished);
+    }
+
+    #[test]
+    fn entries_follow_the_filter() {
+        let fixture = Fixture::new(
+            fixtures::catalog(),
+            fixtures::inventory_owning(&[
+                (BRATON_BARREL, 3),
+                (
+                    "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+                    1,
+                ),
+            ]),
+        )
+        .with_prices(FixedPrices::new([
+            ("trinity_prime_systems_blueprint", 14.0),
+            ("braton_prime_barrel", 8.0),
+        ]));
+        let filter = DucateringFilter {
+            most_ducats_first: true,
+            max_plat: 10,
+            hidden: Vec::new(),
+            hidden_set_plat: 0,
+        };
+        let cheap = entries(&fixture.view(), &filter);
+        assert_eq!(cheap.len(), 1);
+        assert_eq!(cheap[0].item.name, "Braton Prime Barrel");
+        assert_eq!(cheap[0].count, 3);
+        assert!(cheap[0].ducats > 0);
+
+        let all = entries(
+            &fixture.view(),
+            &DucateringFilter {
+                max_plat: 100,
+                ..filter.clone()
+            },
+        );
+        assert_eq!(all.len(), 2);
+        assert!(all[0].ducats >= all[1].ducats);
+    }
+
+    #[test]
+    fn complete_sets_hide_by_set_price() {
+        let fixture = Fixture::new(
+            fixtures::catalog(),
+            fixtures::inventory_owning(&[
+                (BRATON_BARREL, 1),
+                (
+                    "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
+                    1,
+                ),
+                (
+                    "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeReceiver",
+                    1,
+                ),
+                ("/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint", 1),
+            ]),
+        )
+        .with_prices(FixedPrices::new([("braton_prime_set", 45.0)]));
+        let hiding = |hidden_set_plat| DucateringFilter {
+            most_ducats_first: false,
+            max_plat: 100,
+            hidden: vec![DucateringHidden::CompleteSets],
+            hidden_set_plat,
+        };
+        assert!(entries(&fixture.view(), &hiding(0)).is_empty());
+        assert!(entries(&fixture.view(), &hiding(10)).is_empty());
+        assert_eq!(entries(&fixture.view(), &hiding(50)).len(), 4);
+    }
+}

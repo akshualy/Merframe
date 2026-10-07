@@ -5,6 +5,7 @@ import {
   NotificationOverlay,
 } from "@/components/notification-overlay";
 import {
+  DucateringSlot,
   RecommendationSlot,
   RewardSlot,
   RivenSlot,
@@ -111,6 +112,16 @@ export function OverlayWindow() {
             overlays.riven && (
               <OverlayFrame opacity={overlays.opacity} fit>
                 <RivenSlot trigger={overlays.riven} compact />
+              </OverlayFrame>
+            )
+          }
+        />
+        <Route
+          path="ducatering"
+          element={
+            overlays.ducatering && (
+              <OverlayFrame opacity={overlays.opacity}>
+                <DucateringSlot trigger={overlays.ducatering} compact />
               </OverlayFrame>
             )
           }

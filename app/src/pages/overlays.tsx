@@ -1,5 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { DucateringFilters } from "@/components/ducatering-filters";
 import {
+  DucateringSlot,
   RecommendationSlot,
   RewardSlot,
   RivenSlot,
@@ -160,6 +162,7 @@ export function OverlaysPage() {
   const reward = master && settings.overlay_relic_reward;
   const recommendation = master && settings.overlay_relic_recommendation;
   const riven = master && settings.overlay_riven;
+  const ducatering = master && settings.overlay_ducatering;
 
   return (
     <Page title="Overlays" description={<Quoted quote={quote} />}>
@@ -410,6 +413,46 @@ export function OverlaysPage() {
       >
         <Focused trigger={riven ? overlays.riven : null}>
           <RivenSlot trigger={riven ? overlays.riven : null} />
+        </Focused>
+      </Section>
+
+      <Section
+        title="Ducatering"
+        controls={
+          <>
+            <CardControls
+              name="ducatering"
+              enabled={settings.overlay_ducatering}
+              disabled={!master}
+              onEnabled={(enabled) => update({ overlay_ducatering: enabled })}
+            />
+            <DucateringFilters
+              settings={settings}
+              disabled={!master}
+              update={update}
+            />
+          </>
+        }
+        action={
+          <PositionPicker
+            id="ducatering-placement"
+            label="Placement"
+            value={settings.overlay_ducatering_placement}
+            options={PLACEMENTS}
+            disabled={!master}
+            onChange={(value) =>
+              update({ overlay_ducatering_placement: value })
+            }
+          />
+        }
+        description={
+          ducatering
+            ? "Shown while the Ducat Kiosk is open. Filter changes only apply on new Kiosk screens."
+            : OFF
+        }
+      >
+        <Focused trigger={ducatering ? overlays.ducatering : null}>
+          <DucateringSlot trigger={ducatering ? overlays.ducatering : null} />
         </Focused>
       </Section>
     </Page>

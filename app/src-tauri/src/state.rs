@@ -9,7 +9,9 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::{Mutex as AsyncMutex, Notify, SetOnce, watch};
-use wf_core::{Catalog, Core, MarketWindow, PriceCache, PriceSource, Snapshot, Store, Turnover};
+use wf_core::{
+    Catalog, Core, Ducatering, MarketWindow, PriceCache, PriceSource, Snapshot, Store, Turnover,
+};
 use wf_data::load_or_fetch;
 use wf_market::{Client, Platform, PriceTable};
 use wf_worldstate::WorldState;
@@ -155,6 +157,8 @@ pub struct AppState {
     pub relic_picks: Mutex<HashMap<u64, String>>,
     pub watching_picker: AtomicBool,
     pub trade_screen_open: watch::Sender<bool>,
+    pub kiosk_open: watch::Sender<bool>,
+    pub ducatering: watch::Sender<Option<Ducatering>>,
     pub prices_wake: Notify,
     pub overlays: Overlays,
     pub auctions: AuctionCache,
@@ -239,6 +243,8 @@ impl AppState {
             relic_picks: Mutex::new(HashMap::new()),
             watching_picker: AtomicBool::new(false),
             trade_screen_open: watch::Sender::new(false),
+            kiosk_open: watch::Sender::new(false),
+            ducatering: watch::Sender::new(None),
             prices_wake: Notify::new(),
             overlays: Overlays::default(),
             auctions: AuctionCache::default(),

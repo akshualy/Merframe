@@ -81,6 +81,7 @@ pub(super) fn bounds_for(
             700.0,
             (900.0 * scale).min(screen.height - 2.0 * MARGIN).round(),
         ),
+        Kind::Ducatering => (420.0, 460.0),
         Kind::Notification => (380.0, 100.0),
     };
     let middle = (screen.width / 2.0 - width / 2.0).round();
@@ -95,7 +96,7 @@ pub(super) fn bounds_for(
         OverlayPlacement::BottomRight => (right, bottom),
         OverlayPlacement::Centre => match kind {
             Kind::RelicReward => (middle - 15.0, (630.0 * scale).round()),
-            Kind::RelicRecommendation | Kind::Riven | Kind::Notification => {
+            Kind::RelicRecommendation | Kind::Riven | Kind::Ducatering | Kind::Notification => {
                 (middle, (screen.height / 2.0 - height / 2.0).round())
             }
         },

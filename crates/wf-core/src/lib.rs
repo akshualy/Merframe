@@ -2,6 +2,7 @@ mod account;
 mod catalog;
 mod comparables;
 mod delta;
+mod ducatering;
 mod error;
 mod events;
 mod export;
@@ -25,6 +26,10 @@ mod view;
 pub use catalog::{Catalog, VaultStatus};
 pub use comparables::{ComparableAttribute, ComparableListing, ComparedStat, RivenComparables};
 pub use delta::ItemDelta;
+pub use ducatering::{
+    Ducatering, DucateringEntry, DucateringFilter, DucateringHidden, DucateringProgress,
+    DucateringState, DucateringStep, ScannedKiosk, ScannedKioskItem,
+};
 pub use error::{CoreError, Result};
 pub use events::{
     AlertSettings, CoreEvent, CyclePhase, FissureFilter, FissureInfo, FissureSubtype,
