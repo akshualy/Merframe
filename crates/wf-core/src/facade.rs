@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
-use wf_market::{RivenAttribute, RivenData, WeaponAuctions};
+use wf_market::{RivenData, WeaponAuctions};
 use wf_worldstate::WorldState;
 
 use crate::account::Account;
@@ -62,7 +62,6 @@ pub struct Core {
     engine: Engine,
     account: Option<Account>,
     world: Option<WorldState>,
-    riven_attributes: Vec<RivenAttribute>,
     riven_data: Option<RivenData>,
     latest_snapshot: Option<Snapshot>,
     own_relic_reward: Option<String>,
@@ -88,7 +87,6 @@ impl Core {
             engine: Engine::new(alerts),
             account: None,
             world: None,
-            riven_attributes: Vec::new(),
             riven_data: None,
             latest_snapshot: None,
             own_relic_reward: None,
@@ -101,10 +99,6 @@ impl Core {
 
     pub fn set_alert_settings(&mut self, settings: AlertSettings) {
         self.engine.set_settings(settings);
-    }
-
-    pub fn set_riven_attributes(&mut self, attributes: Vec<RivenAttribute>) {
-        self.riven_attributes = attributes;
     }
 
     pub fn set_riven_data(&mut self, data: RivenData) {
@@ -392,12 +386,7 @@ impl Core {
     }
 
     fn grader(&self) -> Grader<'_> {
-        Grader::new(
-            &self.catalog,
-            &self.items,
-            &self.riven_attributes,
-            self.riven_data.as_ref(),
-        )
+        Grader::new(&self.catalog, &self.items, self.riven_data.as_ref())
     }
 
     pub fn rivens_tab(&self) -> Option<RivensTab> {
@@ -424,7 +413,11 @@ impl Core {
         stats: &[ComparedStat],
         auctions: &WeaponAuctions,
     ) -> RivenComparables {
-        comparables::comparables(stats, auctions, &self.riven_attributes)
+        let attributes = self
+            .riven_data
+            .as_ref()
+            .map_or(&[][..], |data| data.attributes.as_slice());
+        comparables::comparables(stats, auctions, attributes)
     }
 
     pub fn riven_in_dialog(&self, mod_type: &str, fingerprint: &str) -> Option<RivenRow> {

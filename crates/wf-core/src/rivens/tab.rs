@@ -1,6 +1,7 @@
 use wf_inventory::{Inventory, Upgrade};
 
 use super::grading::{compat_path, perfectness, polarity, riven_name};
+use super::listing::unlisted_stat;
 use super::{Grader, RIVEN_MOD_SUFFIX, RivenRow, RivensTab, VeiledGroup, VeiledRiven};
 use crate::catalog::display_name_from_path;
 use crate::identity::ItemTable;
@@ -170,6 +171,7 @@ impl Grader<'_> {
             polarity: fingerprint.pol.as_deref().and_then(polarity),
             grade: perfectness(&graded),
             good_roll: self.good_roll(weapon_path, &graded, riven_type),
+            unlisted_stat: unlisted_stat(&graded),
             attributes: graded,
             listed_in_wfm,
             pending: None,
@@ -446,7 +448,7 @@ mod tests {
         );
 
         let fixture = fixture();
-        let without = Grader::new(&fixture.catalog, &fixture.items, &fixture.attributes, None)
+        let without = Grader::new(&fixture.catalog, &fixture.items, None)
             .tab(&fixtures::inventory(), &MarketListings::default());
         assert!(without.attribution.is_none());
         assert!(without.unveiled.iter().all(|row| row.good_roll.is_none()));

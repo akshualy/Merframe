@@ -49,7 +49,7 @@ mod tests {
     fn one_file_per_tab() {
         let fixture = Fixture::new(fixtures::catalog(), fixtures::inventory());
         let inventory_tab = inventory_view::tab(&fixture.view());
-        let rivens_tab = rivens::Grader::new(&fixture.catalog, &fixture.items, &[], None)
+        let rivens_tab = rivens::Grader::new(&fixture.catalog, &fixture.items, None)
             .tab(&fixture.account.inventory, &fixture.listings);
         let now = chrono::DateTime::from_timestamp_millis(1_788_807_069_000).unwrap();
         let foundry_tab = foundry::tab(&fixture.view(), None, None, now);

@@ -1045,6 +1045,264 @@
    "mastery_rank": 6
   }
  ],
+ "attributes": [
+  {
+   "slug": "ammo_maximum",
+   "game_ref": "WeaponAmmoMaxMod",
+   "name": "Ammo Maximum",
+   "prefix": "Ampi",
+   "suffix": "Bin",
+   "unit": "percent"
+  },
+  {
+   "slug": "base_damage_/_melee_damage",
+   "game_ref": "WeaponDamageAmountMod",
+   "name": "Damage",
+   "prefix": "Visi",
+   "suffix": "Ata",
+   "unit": "percent"
+  },
+  {
+   "slug": "chance_to_gain_combo_count",
+   "game_ref": "WeaponMeleeComboPointsOnHitMod",
+   "name": "Chance to Gain Combo Count",
+   "prefix": "",
+   "suffix": "",
+   "unit": "percent"
+  },
+  {
+   "slug": "chance_to_gain_extra_combo_count",
+   "game_ref": "WeaponMeleeComboBonusOnHitMod",
+   "name": "Additional Combo Count Chance",
+   "prefix": "Laci",
+   "suffix": "Nus",
+   "unit": "percent"
+  },
+  {
+   "slug": "channeling_damage",
+   "game_ref": "WeaponMeleeComboInitialBonusMod",
+   "name": "Initial combo",
+   "prefix": "Para",
+   "suffix": "Um",
+   "unit": null
+  },
+  {
+   "slug": "channeling_efficiency",
+   "game_ref": "WeaponMeleeComboEfficiencyMod",
+   "name": "Heavy Attack Efficiency",
+   "prefix": "Forti",
+   "suffix": "Us",
+   "unit": "percent"
+  },
+  {
+   "slug": "cold_damage",
+   "game_ref": "WeaponFreezeDamageMod",
+   "name": "Cold",
+   "prefix": "Geli",
+   "suffix": "Do",
+   "unit": "percent"
+  },
+  {
+   "slug": "combo_duration",
+   "game_ref": "ComboDurationMod",
+   "name": "Combo Duration",
+   "prefix": "Tempi",
+   "suffix": "Nem",
+   "unit": "seconds"
+  },
+  {
+   "slug": "critical_chance",
+   "game_ref": "WeaponCritChanceMod",
+   "name": "Critical Chance",
+   "prefix": "Crita",
+   "suffix": "Cron",
+   "unit": "percent"
+  },
+  {
+   "slug": "critical_chance_on_slide_attack",
+   "game_ref": "SlideAttackCritChanceMod",
+   "name": "Critical Chance for Slide Attack",
+   "prefix": "Pleci",
+   "suffix": "Nent",
+   "unit": "percent"
+  },
+  {
+   "slug": "critical_damage",
+   "game_ref": "WeaponCritDamageMod",
+   "name": "Critical Damage",
+   "prefix": "Acri",
+   "suffix": "Tis",
+   "unit": "percent"
+  },
+  {
+   "slug": "damage_vs_corpus",
+   "game_ref": "WeaponFactionDamageCorpus",
+   "name": "Damage to Corpus",
+   "prefix": "Manti",
+   "suffix": "Tron",
+   "unit": "multiply"
+  },
+  {
+   "slug": "damage_vs_grineer",
+   "game_ref": "WeaponFactionDamageGrineer",
+   "name": "Damage to Grineer",
+   "prefix": "Argi",
+   "suffix": "Con",
+   "unit": "multiply"
+  },
+  {
+   "slug": "damage_vs_infested",
+   "game_ref": "WeaponFactionDamageInfested",
+   "name": "Damage to Infested",
+   "prefix": "Pura",
+   "suffix": "Ada",
+   "unit": "multiply"
+  },
+  {
+   "slug": "electric_damage",
+   "game_ref": "WeaponElectricityDamageMod",
+   "name": "Electricity",
+   "prefix": "Vexi",
+   "suffix": "Tio",
+   "unit": "percent"
+  },
+  {
+   "slug": "finisher_damage",
+   "game_ref": "WeaponMeleeFinisherDamageMod",
+   "name": "Finisher Damage",
+   "prefix": "Exi",
+   "suffix": "Cta",
+   "unit": "percent"
+  },
+  {
+   "slug": "fire_rate_/_attack_speed",
+   "game_ref": "WeaponFireRateMod",
+   "name": "Fire Rate / Attack Speed",
+   "prefix": "Croni",
+   "suffix": "Dra",
+   "unit": "percent"
+  },
+  {
+   "slug": "heat_damage",
+   "game_ref": "WeaponFireDamageMod",
+   "name": "Heat",
+   "prefix": "Igni",
+   "suffix": "Pha",
+   "unit": "percent"
+  },
+  {
+   "slug": "impact_damage",
+   "game_ref": "WeaponImpactDamageMod",
+   "name": "Impact",
+   "prefix": "Magna",
+   "suffix": "Ton",
+   "unit": "percent"
+  },
+  {
+   "slug": "magazine_capacity",
+   "game_ref": "WeaponClipMaxMod",
+   "name": "Magazine Capacity",
+   "prefix": "Arma",
+   "suffix": "Tin",
+   "unit": "percent"
+  },
+  {
+   "slug": "multishot",
+   "game_ref": "WeaponFireIterationsMod",
+   "name": "Multishot",
+   "prefix": "Sati",
+   "suffix": "Can",
+   "unit": "percent"
+  },
+  {
+   "slug": "projectile_speed",
+   "game_ref": "WeaponProjectileSpeedMod",
+   "name": "Projectile speed",
+   "prefix": "Conci",
+   "suffix": "Nak",
+   "unit": "percent"
+  },
+  {
+   "slug": "punch_through",
+   "game_ref": "WeaponPunctureDepthMod",
+   "name": "Punch Through",
+   "prefix": "Lexi",
+   "suffix": "Nok",
+   "unit": null
+  },
+  {
+   "slug": "puncture_damage",
+   "game_ref": "WeaponArmorPiercingDamageMod",
+   "name": "Puncture",
+   "prefix": "Insi",
+   "suffix": "Cak",
+   "unit": "percent"
+  },
+  {
+   "slug": "range",
+   "game_ref": "WeaponMeleeRangeIncMod",
+   "name": "Range",
+   "prefix": "Locti",
+   "suffix": "Tor",
+   "unit": null
+  },
+  {
+   "slug": "recoil",
+   "game_ref": "WeaponRecoilReductionMod",
+   "name": "Weapon Recoil",
+   "prefix": "Zeti",
+   "suffix": "Mag",
+   "unit": "percent"
+  },
+  {
+   "slug": "reload_speed",
+   "game_ref": "WeaponReloadSpeedMod",
+   "name": "Reload Speed",
+   "prefix": "Feva",
+   "suffix": "Tak",
+   "unit": "percent"
+  },
+  {
+   "slug": "slash_damage",
+   "game_ref": "WeaponSlashDamageMod",
+   "name": "Slash",
+   "prefix": "Sci",
+   "suffix": "Sus",
+   "unit": "percent"
+  },
+  {
+   "slug": "status_chance",
+   "game_ref": "WeaponStunChanceMod",
+   "name": "Status Chance",
+   "prefix": "Hexa",
+   "suffix": "Dex",
+   "unit": "percent"
+  },
+  {
+   "slug": "status_duration",
+   "game_ref": "WeaponProcTimeMod",
+   "name": "Status Duration",
+   "prefix": "Deci",
+   "suffix": "Des",
+   "unit": "percent"
+  },
+  {
+   "slug": "toxin_damage",
+   "game_ref": "WeaponToxinDamageMod",
+   "name": "Toxin",
+   "prefix": "Toxi",
+   "suffix": "Tox",
+   "unit": "percent"
+  },
+  {
+   "slug": "zoom",
+   "game_ref": "WeaponZoomFovMod",
+   "name": "Zoom",
+   "prefix": "Hera",
+   "suffix": "Lis",
+   "unit": "percent"
+  }
+ ],
  "good_rolls": {
   "acceltra": {
    "weapon": "acceltra",

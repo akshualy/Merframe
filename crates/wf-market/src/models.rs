@@ -132,27 +132,6 @@ pub struct Item {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RivenAttributeLocalization {
-    pub name: String,
-    pub icon: String,
-    pub thumb: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RivenAttribute {
-    pub id: String,
-    pub slug: String,
-    #[serde(rename = "gameRef")]
-    pub game_ref: String,
-    pub group: String,
-    pub prefix: String,
-    pub suffix: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub unit: Option<String>,
-    pub i18n: HashMap<String, RivenAttributeLocalization>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct Order {
     pub id: String,
@@ -416,7 +395,19 @@ pub struct RivenData {
     pub good_rolls_updated_at: i64,
     pub attribution: String,
     pub weapons: Vec<RivenWeapon>,
+    #[serde(default)]
+    pub attributes: Vec<RivenAttribute>,
     pub good_rolls: HashMap<String, GoodRoll>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RivenAttribute {
+    pub slug: String,
+    pub game_ref: String,
+    pub name: String,
+    pub prefix: String,
+    pub suffix: String,
+    pub unit: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

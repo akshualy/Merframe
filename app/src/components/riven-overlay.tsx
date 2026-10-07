@@ -8,6 +8,7 @@ import {
 } from "@/components/good-roll";
 import { ItemImage, prefetchImages } from "@/components/item-image";
 import { RivenListings } from "@/components/riven-listings";
+import { SplicedMark } from "@/components/spliced-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
@@ -52,7 +53,10 @@ function Attribute({
       >
         {attributeValue(attribute) ?? percent(attribute.percentile, 0)}
       </span>
-      <span className="truncate">{attributeLabel(attribute)}</span>
+      <span className="flex min-w-0 items-center gap-1">
+        <span className="truncate">{attributeLabel(attribute)}</span>
+        <SplicedMark attribute={attribute} />
+      </span>
       <span className={cn("w-6 shrink-0", gradeTone(attribute.grade))}>
         {attribute.grade}
       </span>

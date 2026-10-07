@@ -138,8 +138,7 @@ fn listing(
                 let known = names.get(attribute.url_name.as_str());
                 ComparableAttribute {
                     name: known
-                        .and_then(|known| known.i18n.get("en"))
-                        .map_or_else(|| attribute.url_name.clone(), |text| text.name.clone()),
+                        .map_or_else(|| attribute.url_name.clone(), |known| known.name.clone()),
                     abbr: abbreviation(&attribute.url_name).map(str::to_owned),
                     unit: known.and_then(|known| known.unit.clone()),
                     value: attribute.value,
@@ -190,14 +189,14 @@ pub(crate) fn comparables(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wf_market::{RivenAttribute, envelope, parse_riven_auctions};
+    use wf_market::{parse_riven_auctions, parse_riven_data};
 
     const AUCTIONS: &str = include_str!("../../../fixtures/riven_auctions.json");
-    const ATTRIBUTES: &str = include_str!("../../wf-market/tests/fixtures/riven_attributes.json");
+    const RIVEN_DATA: &str = include_str!("../../../fixtures/riven_data.json");
 
     fn compared(stats: &[(&str, bool)]) -> RivenComparables {
         let auctions = parse_riven_auctions(AUCTIONS).unwrap();
-        let attributes = envelope::<Vec<RivenAttribute>>(ATTRIBUTES).unwrap();
+        let attributes = parse_riven_data(RIVEN_DATA).unwrap().attributes;
         let shown: Vec<ComparedStat> = stats
             .iter()
             .map(|(slug, positive)| ComparedStat {

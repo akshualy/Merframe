@@ -4,16 +4,38 @@ use serde::{Deserialize, Serialize};
 
 use crate::item::Item;
 
-pub const COMBO_POINTS_TAG: &str = "WeaponMeleeComboPointsOnHitMod";
 const ROLL_MIN: f64 = 0.9;
 const ROLL_MAX: f64 = 1.1;
 pub const MAX_RANK: u32 = 8;
+
+pub const SPLICED_TAGS: [&str; 18] = [
+    "WeaponWeakpointDamage",
+    "WeaponWeakpointCriticalChance",
+    "WeaponAmmoEfficiency",
+    "WeaponMagazineReloadHolstered",
+    "WeaponStatusDamage",
+    "WeaponMeleeHeavyAttackDamageMod",
+    "WeaponMeleeHeavyAttackChargeMod",
+    "WeaponMeleeSlamDamageMod",
+    "WeaponMeleeParryAngleMod",
+    "WeaponGasDamageMod",
+    "WeaponCorrosiveDamageMod",
+    "WeaponViralDamageMod",
+    "WeaponRadiationDamageMod",
+    "WeaponBlastDamageMod",
+    "WeaponMagneticDamageMod",
+    "WeaponFactionDamageOrokin",
+    "WeaponFactionDamageTechrot",
+    "WeaponFactionDamageScaldra",
+];
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct UpgradeValue {
     pub value: f64,
     #[serde(rename = "locTag")]
     pub loc_tag: Option<String>,
+    #[serde(rename = "reverseValueSymbol", default)]
+    pub reverse_value_symbol: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -51,6 +73,8 @@ pub struct RivenStat {
     pub suffix: String,
     pub base_value: f64,
     pub localization: String,
+    pub reversed: bool,
+    pub spliced: bool,
 }
 
 impl RivenStat {
@@ -62,17 +86,36 @@ impl RivenStat {
         self.localization.contains("Damage to")
     }
 
-    pub fn prefix_suffix(&self) -> String {
-        format!(
-            "{}|{}",
-            self.prefix.to_lowercase(),
-            self.suffix.to_lowercase()
-        )
+    pub fn unit(&self) -> Option<&'static str> {
+        if self.multiplier_display() {
+            Some("multiply")
+        } else if self.percent() {
+            Some("percent")
+        } else {
+            None
+        }
     }
 
-    pub fn base_at_rank_nine(&self, disposition: f64, multiplier: f64, curse: bool) -> f64 {
+    pub fn name(&self) -> String {
+        let mut name = String::with_capacity(self.localization.len());
+        let mut in_markup = false;
+        for character in self.localization.chars() {
+            match character {
+                '<' => in_markup = true,
+                '>' => in_markup = false,
+                _ if !in_markup => name.push(character),
+                _ => {}
+            }
+        }
+        name.replace("|val|%", "")
+            .replace("|val|", "")
+            .trim()
+            .to_owned()
+    }
+
+    pub fn base_at_rank_nine(&self, disposition: f64, multiplier: f64) -> f64 {
         let mut base = 90.0 * self.base_value * disposition * multiplier;
-        if curse && self.tag == COMBO_POINTS_TAG && base > 0.0 {
+        if self.reversed {
             base = -base;
         }
         if self.percent() {
@@ -112,6 +155,8 @@ impl RivenData {
                                 suffix: entry.suffix_tag.clone(),
                                 base_value: first.value,
                                 localization: first.loc_tag.clone().unwrap_or_default(),
+                                reversed: first.reverse_value_symbol,
+                                spliced: SPLICED_TAGS.contains(&entry.tag.as_str()),
                             },
                         ))
                     })
@@ -131,6 +176,10 @@ impl RivenData {
 
     pub fn riven_type(&self, unique_name: &str) -> Option<&RivenType> {
         self.types.get(unique_name)
+    }
+
+    pub fn types(&self) -> impl Iterator<Item = &RivenType> {
+        self.types.values()
     }
 
     pub fn stat(&self, riven_type: &str, tag: &str) -> Option<&RivenStat> {
@@ -183,7 +232,8 @@ mod tests {
         assert!(!data.is_empty());
         let rifle = data.riven_type(RIFLE).unwrap();
         assert_eq!(rifle.name, "Rifle Riven Mod");
-        assert_eq!(rifle.stats.len(), 24);
+        assert_eq!(rifle.stats.len(), 38);
+        assert_eq!(data.types().count(), 7);
         assert!(data.riven_type("/Lotus/Nope").is_none());
     }
 
@@ -193,20 +243,80 @@ mod tests {
         let crit = data.stat(RIFLE, "WeaponCritChanceMod").unwrap();
         assert_eq!(crit.prefix, "crita");
         assert_eq!(crit.suffix, "cron");
-        assert_eq!(crit.prefix_suffix(), "crita|cron");
         assert!((crit.base_value - 0.016_666).abs() < 1e-6);
         assert_eq!(crit.localization, "|val|% Critical Chance");
         assert!(crit.percent());
         assert!(!crit.multiplier_display());
+        assert!(!crit.reversed);
+        assert!(!crit.spliced);
 
         let corpus = data.stat(RIFLE, "WeaponFactionDamageCorpus").unwrap();
         assert!(!corpus.percent());
         assert!(corpus.multiplier_display());
 
-        let combo = data.stat(MELEE, COMBO_POINTS_TAG).unwrap();
+        let combo = data.stat(MELEE, "WeaponMeleeComboPointsOnHitMod").unwrap();
         assert_eq!(combo.prefix, "");
         assert_eq!(combo.suffix, "");
         assert!(combo.base_value < 0.0);
+    }
+
+    #[test]
+    fn spliced_stats() {
+        let data = data();
+        let scaldra = data.stat(RIFLE, "WeaponFactionDamageScaldra").unwrap();
+        assert!(scaldra.spliced);
+        assert_eq!(scaldra.prefix, "exsi");
+        assert_eq!(scaldra.suffix, "llo");
+        assert_eq!(scaldra.name(), "Damage to Scaldra");
+        assert_eq!(scaldra.unit(), Some("multiply"));
+
+        let gas = data.stat(RIFLE, "WeaponGasDamageMod").unwrap();
+        assert_eq!(gas.localization, "|val|% <DT_GAS_COLOR>Gas");
+        assert_eq!(gas.name(), "Gas");
+        assert_eq!(gas.unit(), Some("percent"));
+
+        let parry = data.stat(MELEE, "WeaponMeleeParryAngleMod").unwrap();
+        assert!(parry.spliced);
+        assert_eq!(parry.name(), "Parry Angle");
+        assert_eq!(parry.unit(), None);
+        assert_eq!(
+            data.stat(MELEE, "WeaponMeleeSlamDamageMod")
+                .map(|stat| (stat.prefix.as_str(), stat.suffix.as_str())),
+            Some(("laci", "nus"))
+        );
+        assert_eq!(
+            (parry.prefix.as_str(), parry.suffix.as_str()),
+            ("laci", "nus")
+        );
+
+        let weakpoint = data.stat(RIFLE, "WeaponWeakpointDamage").unwrap();
+        assert_eq!(weakpoint.name(), "Weak Point Damage");
+        assert_eq!(
+            SPLICED_TAGS
+                .iter()
+                .filter(|tag| data.stat(RIFLE, tag).is_some())
+                .count(),
+            14
+        );
+        assert_eq!(
+            SPLICED_TAGS
+                .iter()
+                .filter(|tag| data.stat(MELEE, tag).is_some())
+                .count(),
+            14
+        );
+    }
+
+    #[test]
+    fn reversed_sign_reads_as_buff() {
+        let data = data();
+        let efficiency = data.stat(RIFLE, "WeaponAmmoEfficiency").unwrap();
+        assert!(efficiency.reversed);
+        assert!(efficiency.base_value < 0.0);
+        let multipliers = trait_multipliers(2, 1).unwrap();
+        assert!(efficiency.base_at_rank_nine(1.0, multipliers.good) > 0.0);
+        assert!(efficiency.base_at_rank_nine(1.0, multipliers.bad) < 0.0);
+        assert_eq!(efficiency.name(), "Ammo Efficiency");
     }
 
     #[test]
@@ -268,23 +378,24 @@ mod tests {
         let data = data();
         let damage = data.stat(RIFLE, "WeaponDamageAmountMod").unwrap();
         let multipliers = trait_multipliers(2, 1).unwrap();
-        let base = damage.base_at_rank_nine(1.0, multipliers.good, false);
+        let base = damage.base_at_rank_nine(1.0, multipliers.good);
         assert!((base * 0.9 - 183.77).abs() < 0.01, "{}", base * 0.9);
         assert!((base * 1.1 - 224.61).abs() < 0.01, "{}", base * 1.1);
 
         let recoil = data.stat(RIFLE, "WeaponRecoilReductionMod").unwrap();
         assert!(recoil.base_value < 0.0);
-        assert!(recoil.base_at_rank_nine(1.0, multipliers.good, false) < 0.0);
+        assert!(recoil.base_at_rank_nine(1.0, multipliers.good) < 0.0);
     }
 
     #[test]
     fn combo_points_curse() {
         let data = data();
-        let combo = data.stat(MELEE, COMBO_POINTS_TAG).unwrap();
+        let combo = data.stat(MELEE, "WeaponMeleeComboPointsOnHitMod").unwrap();
+        assert!(combo.reversed);
         let multipliers = trait_multipliers(2, 1).unwrap();
-        let as_curse = combo.base_at_rank_nine(1.0, multipliers.bad, true);
+        let as_curse = combo.base_at_rank_nine(1.0, multipliers.bad);
         assert!(as_curse < 0.0, "{as_curse}");
-        let unfixed = combo.base_at_rank_nine(1.0, multipliers.bad, false);
-        assert!(unfixed > 0.0, "{unfixed}");
+        let as_buff = combo.base_at_rank_nine(1.0, multipliers.good);
+        assert!(as_buff > 0.0, "{as_buff}");
     }
 }

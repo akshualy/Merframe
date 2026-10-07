@@ -18,10 +18,9 @@ pub use models::{
     Auction, AuctionItem, Chat, CloseOrderRequest, CreateAuctionItem, CreateAuctionRequest,
     CreateOrderRequest, GoodRoll, GoodRollAlternative, Item, ItemLocalization, Order, OrderType,
     OrdersGroupUpdate, Platform, Polarity, PriceEntry, PriceTable, Rarity, RivenAttribute,
-    RivenAttributeInstance, RivenAttributeLocalization, RivenAuction, RivenAuctionAttribute,
-    RivenData, RivenWeapon, Session, SetAuctionsVisibilityRequest, SetGroupVisibilityRequest,
-    SignInRequest, StatRef, UpdateAuctionRequest, UpdateOrderRequest, User, UserPrivate,
-    UserStatus, WeaponAuctions,
+    RivenAttributeInstance, RivenAuction, RivenAuctionAttribute, RivenData, RivenWeapon, Session,
+    SetAuctionsVisibilityRequest, SetGroupVisibilityRequest, SignInRequest, StatRef,
+    UpdateAuctionRequest, UpdateOrderRequest, User, UserPrivate, UserStatus, WeaponAuctions,
 };
 pub use parse::{
     envelope, parse_chats, parse_price_table, parse_riven_auctions, parse_riven_data,

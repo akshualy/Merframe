@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::Serialize;
+use wf_data::{RivenStat, RivenType};
 use wf_market::{Polarity, RivenAttribute, RivenData as RivenTable};
 
 use crate::catalog::Catalog;
@@ -23,39 +24,94 @@ pub use tab::display_name;
 
 const RIVEN_MOD_SUFFIX: &str = " Riven Mod";
 
+type AttributeIndex<'a> = HashMap<&'a str, HashMap<&'a str, &'a RivenAttribute>>;
+
 pub(crate) struct Grader<'a> {
     catalog: &'a Catalog,
     items: &'a ItemTable,
-    by_combo: HashMap<String, &'a RivenAttribute>,
+    attributes: AttributeIndex<'a>,
     table: Option<&'a RivenTable>,
+}
+
+fn market_attribute<'a>(
+    stat: &RivenStat,
+    riven_type: &RivenType,
+    by_game_ref: &HashMap<&str, &'a RivenAttribute>,
+    by_affixes: &HashMap<(String, String), &'a RivenAttribute>,
+) -> Option<&'a RivenAttribute> {
+    if let Some(attribute) = by_game_ref.get(stat.tag.as_str()) {
+        return Some(attribute);
+    }
+    if stat.prefix.is_empty() {
+        return None;
+    }
+    let shared = by_affixes.get(&(stat.prefix.to_lowercase(), stat.suffix.to_lowercase()))?;
+    let owned_by_another_stat = riven_type.stats.contains_key(&shared.game_ref);
+    (!owned_by_another_stat).then_some(shared)
+}
+
+fn attribute_index<'a>(
+    riven_data: &'a wf_data::RivenData,
+    table: Option<&'a RivenTable>,
+) -> AttributeIndex<'a> {
+    let attributes = table.map_or(&[][..], |table| table.attributes.as_slice());
+    let by_game_ref: HashMap<&str, &RivenAttribute> = attributes
+        .iter()
+        .map(|attribute| (attribute.game_ref.as_str(), attribute))
+        .collect();
+    let by_affixes: HashMap<(String, String), &RivenAttribute> = attributes
+        .iter()
+        .map(|attribute| {
+            let affixes = (
+                attribute.prefix.to_lowercase(),
+                attribute.suffix.to_lowercase(),
+            );
+            (affixes, attribute)
+        })
+        .collect();
+    riven_data
+        .types()
+        .map(|riven_type| {
+            let joined = riven_type
+                .stats
+                .values()
+                .filter_map(|stat| {
+                    let attribute = market_attribute(stat, riven_type, &by_game_ref, &by_affixes)?;
+                    Some((stat.tag.as_str(), attribute))
+                })
+                .collect();
+            (riven_type.unique_name.as_str(), joined)
+        })
+        .collect()
 }
 
 impl<'a> Grader<'a> {
     pub(crate) fn new(
         catalog: &'a Catalog,
         items: &'a ItemTable,
-        attributes: &'a [RivenAttribute],
         table: Option<&'a RivenTable>,
     ) -> Self {
-        let by_combo = attributes
-            .iter()
-            .map(|attribute| {
-                (
-                    format!(
-                        "{}|{}",
-                        attribute.prefix.to_lowercase(),
-                        attribute.suffix.to_lowercase()
-                    ),
-                    attribute,
-                )
-            })
-            .collect();
         Self {
             catalog,
             items,
-            by_combo,
+            attributes: attribute_index(catalog.data().riven_data(), table),
             table,
         }
+    }
+
+    fn attribute(&self, riven_type: &RivenType, tag: &str) -> Option<&'a RivenAttribute> {
+        self.attributes
+            .get(riven_type.unique_name.as_str())?
+            .get(tag)
+            .copied()
+    }
+
+    fn stat_name(&self, riven_type: &RivenType, tag: &str) -> Option<String> {
+        let modifier = riven_type.stats.get(tag)?;
+        Some(match self.attribute(riven_type, tag) {
+            Some(attribute) => attribute.name.clone(),
+            None => modifier.name(),
+        })
     }
 }
 
@@ -93,6 +149,7 @@ pub struct RivenRow {
     pub attributes: Vec<AttributeGrade>,
     pub good_roll: Option<GoodRollView>,
     pub listed_in_wfm: bool,
+    pub unlisted_stat: Option<String>,
     pub pending: Option<PendingRoll>,
 }
 
@@ -134,10 +191,7 @@ pub(crate) mod support {
     use super::*;
     use crate::catalog::{Catalog, fixtures};
     use crate::listings::MarketListings;
-    use wf_market::{RivenAttribute, RivenData as RivenTable, RivenWeapon};
-
-    pub(crate) const ATTRIBUTES: &str =
-        include_str!("../../../wf-market/tests/fixtures/riven_attributes.json");
+    use wf_market::{RivenData as RivenTable, RivenWeapon};
 
     pub(crate) const RIVEN_DATA: &str = include_str!("../../../../fixtures/riven_data.json");
 
@@ -214,13 +268,12 @@ pub(crate) mod support {
 
     pub(crate) const RIFLE_RIVEN: &str = "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare";
 
+    pub(crate) const MELEE_RIVEN: &str =
+        "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare";
+
     pub(crate) const MIDDLE_ROLL: i64 = 536_870_910;
 
     pub(crate) const BEST_ROLL: i64 = 1_073_741_820;
-
-    pub(crate) fn attributes() -> Vec<RivenAttribute> {
-        wf_market::envelope::<Vec<RivenAttribute>>(ATTRIBUTES).unwrap()
-    }
 
     pub(crate) fn riven_table() -> RivenTable {
         wf_market::parse_riven_data(RIVEN_DATA).expect("riven data")
@@ -261,18 +314,12 @@ pub(crate) mod support {
     pub(crate) struct Fixture {
         pub(crate) catalog: Catalog,
         pub(crate) items: ItemTable,
-        pub(crate) attributes: Vec<RivenAttribute>,
         pub(crate) table: RivenTable,
     }
 
     impl Fixture {
         pub(crate) fn grader(&self) -> Grader<'_> {
-            Grader::new(
-                &self.catalog,
-                &self.items,
-                &self.attributes,
-                Some(&self.table),
-            )
+            Grader::new(&self.catalog, &self.items, Some(&self.table))
         }
     }
 
@@ -281,7 +328,6 @@ pub(crate) mod support {
         Fixture {
             items: ItemTable::build(&catalog),
             catalog,
-            attributes: attributes(),
             table: riven_table(),
         }
     }

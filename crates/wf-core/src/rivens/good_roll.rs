@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use serde::Serialize;
 use wf_data::RivenType;
-use wf_market::{RivenAttribute, StatRef};
+use wf_market::StatRef;
 
 use super::Grader;
 use super::grading::AttributeGrade;
@@ -32,43 +30,29 @@ pub struct GoodRollView {
     pub matches: bool,
 }
 
-fn stat_name(
-    tag: &str,
-    riven_type: Option<&RivenType>,
-    by_combo: &HashMap<String, &RivenAttribute>,
-) -> Option<String> {
-    let modifier = riven_type?.stats.get(tag)?;
-    by_combo
-        .get(&modifier.prefix_suffix())?
-        .i18n
-        .get("en")
-        .map(|localized| localized.name.clone())
-}
-
-fn stat_match(
-    stat: &StatRef,
-    present: &[&str],
-    riven_type: Option<&RivenType>,
-    by_combo: &HashMap<String, &RivenAttribute>,
-) -> StatMatch {
-    StatMatch {
-        abbr: stat.abbr.clone(),
-        name: match stat.tags.as_slice() {
-            [tag] => stat_name(tag, riven_type, by_combo),
-            _ => None,
-        },
-        matches: stat.tags.iter().any(|tag| present.contains(&tag.as_str())),
-    }
-}
-
 impl Grader<'_> {
+    fn stat_match(
+        &self,
+        stat: &StatRef,
+        present: &[&str],
+        riven_type: Option<&RivenType>,
+    ) -> StatMatch {
+        StatMatch {
+            abbr: stat.abbr.clone(),
+            name: match stat.tags.as_slice() {
+                [tag] => riven_type.and_then(|found| self.stat_name(found, tag)),
+                _ => None,
+            },
+            matches: stat.tags.iter().any(|tag| present.contains(&tag.as_str())),
+        }
+    }
+
     pub(super) fn good_roll(
         &self,
         weapon_path: Option<&str>,
         attributes: &[AttributeGrade],
         riven_type: Option<&RivenType>,
     ) -> Option<GoodRollView> {
-        let by_combo = &self.by_combo;
         let table = self.table?;
         let path = weapon_path?;
         let weapon = table
@@ -92,7 +76,7 @@ impl Grader<'_> {
                 let matched = |stats: &[StatRef]| -> Vec<StatMatch> {
                     stats
                         .iter()
-                        .map(|stat| stat_match(stat, &buffs, riven_type, by_combo))
+                        .map(|stat| self.stat_match(stat, &buffs, riven_type))
                         .collect()
                 };
                 let mandatory = matched(&alternative.mandatory);
@@ -110,7 +94,7 @@ impl Grader<'_> {
         let accepted_bad: Vec<StatMatch> = good
             .accepted_bad
             .iter()
-            .map(|stat| stat_match(stat, &curses, riven_type, by_combo))
+            .map(|stat| self.stat_match(stat, &curses, riven_type))
             .collect();
         Some(GoodRollView {
             matches: alternatives.iter().any(|alternative| alternative.complete)

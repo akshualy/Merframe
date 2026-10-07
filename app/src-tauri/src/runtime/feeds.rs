@@ -15,6 +15,7 @@ use crate::state::{AppState, lock, read, write};
 
 const PRICE_RETRY: Duration = Duration::from_secs(60);
 const PRICE_INTERVAL: Duration = Duration::from_mins(15);
+const RIVEN_INTERVAL: Duration = Duration::from_hours(24);
 
 pub(super) async fn world_state_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut fetched_at: Option<Instant> = None;
@@ -75,7 +76,7 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
                 }
             }
         }
-        if rivens_checked_at.is_none_or(|at| at.elapsed() >= Duration::from_hours(24)) {
+        if rivens_checked_at.is_none_or(|at| at.elapsed() >= RIVEN_INTERVAL) {
             match load_riven_data(&app, &state, &mut rivens).await {
                 Ok(()) => rivens_checked_at = Some(Instant::now()),
                 Err(error) => {
@@ -107,6 +108,7 @@ async fn load_riven_data<R: Runtime>(
     };
     info!(
         weapons = data.weapons.len(),
+        attributes = data.attributes.len(),
         good_rolls = data.good_rolls.len(),
         updated_at = data.updated_at,
         "Riven weapon and roll data downloaded"

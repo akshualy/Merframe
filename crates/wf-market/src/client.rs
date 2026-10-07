@@ -7,8 +7,8 @@ use crate::error::{MarketError, Result};
 use crate::listings::{ItemListings, Reach, item_listings};
 use crate::models::{
     Auction, Chat, CloseOrderRequest, CreateAuctionRequest, CreateOrderRequest, Item, Order,
-    OrdersGroupUpdate, Platform, RivenAttribute, Session, SetAuctionsVisibilityRequest,
-    SetGroupVisibilityRequest, SignInRequest, UpdateAuctionRequest, UpdateOrderRequest,
+    OrdersGroupUpdate, Platform, Session, SetAuctionsVisibilityRequest, SetGroupVisibilityRequest,
+    SignInRequest, UpdateAuctionRequest, UpdateOrderRequest,
 };
 use crate::parse;
 use crate::ratelimit::{self, RateLimiter};
@@ -250,18 +250,6 @@ impl Client {
     pub async fn set_all_orders_visibility(&self, visible: bool) -> Result<OrdersGroupUpdate> {
         let request = self.set_all_orders_visibility_request(visible)?;
         self.execute(request, parse::envelope::<OrdersGroupUpdate>)
-            .await
-    }
-
-    pub fn riven_attributes_request(&self) -> Result<Request> {
-        Ok(self
-            .request_builder(reqwest::Method::GET, ApiFamily::V2, "/riven/attributes")
-            .build()?)
-    }
-
-    pub async fn riven_attributes(&self) -> Result<Vec<RivenAttribute>> {
-        let request = self.riven_attributes_request()?;
-        self.execute(request, parse::envelope::<Vec<RivenAttribute>>)
             .await
     }
 

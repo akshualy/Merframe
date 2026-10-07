@@ -154,9 +154,8 @@ mod tests {
             .unwrap();
         assert!(first_braton.ends_with("BratonPrime"));
 
-        let attributes = attributes();
         let items = ItemTable::build(&catalog);
-        let grader = Grader::new(&catalog, &items, &attributes, Some(&table));
+        let grader = Grader::new(&catalog, &items, Some(&table));
         let owned = grader
             .in_dialog(&braton.mod_type, &roll, Some(&inventory))
             .unwrap();
