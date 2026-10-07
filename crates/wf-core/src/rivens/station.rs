@@ -3,6 +3,7 @@ use wf_inventory::{Inventory, RivenFingerprint};
 use wf_market::{RivenData as RivenTable, RivenWeapon};
 
 use super::grading::{compat_path, perfectness, polarity, riven_name};
+use super::listing::unlisted_stat;
 use super::tab::weapon_class;
 use super::{Grader, RivenRow};
 use crate::catalog::Catalog;
@@ -127,6 +128,7 @@ impl Grader<'_> {
             attributes: Vec::new(),
             good_roll: None,
             listed_in_wfm: false,
+            unlisted_stat: None,
             pending: None,
         }
     }
@@ -147,6 +149,7 @@ impl Grader<'_> {
             polarity: fingerprint.pol.as_deref().and_then(polarity),
             grade: perfectness(&graded),
             good_roll: self.good_roll(identity.weapon_path.as_deref(), &graded, riven_type),
+            unlisted_stat: unlisted_stat(&graded),
             attributes: graded,
             pending: None,
             ..identity.clone()

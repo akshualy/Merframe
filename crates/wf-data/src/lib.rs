@@ -20,8 +20,8 @@ pub use item::{
 pub use misc_item::{catch_grade, catch_size, misc_item_name};
 pub use relic::{Refinement, Relic, RelicDrop, RelicReward};
 pub use riven::{
-    COMBO_POINTS_TAG, MAX_RANK, RivenData, RivenStat, RivenType, TraitMultipliers, UpgradeEntry,
-    UpgradeValue, rank_multiplier, roll_multiplier, roll_share, trait_multipliers,
+    MAX_RANK, RivenData, RivenStat, RivenType, TraitMultipliers, UpgradeEntry, UpgradeValue,
+    rank_multiplier, roll_multiplier, roll_share, trait_multipliers,
 };
 
 #[cfg(feature = "fetch")]

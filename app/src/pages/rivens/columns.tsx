@@ -3,6 +3,7 @@ import { Tag } from "lucide-react";
 import { PolarityIcon } from "@/components/game-icon";
 import { GoodRollMarker } from "@/components/good-roll";
 import { ItemImage } from "@/components/item-image";
+import { SplicedMark } from "@/components/spliced-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
@@ -109,6 +110,7 @@ export function rivenColumns(
               <Badge variant={attribute.curse ? "warning" : "secondary"}>
                 {attributeText(attribute)}
               </Badge>
+              <SplicedMark attribute={attribute} />
               <span
                 className={cn("font-mono text-xs", gradeTone(attribute.grade))}
               >

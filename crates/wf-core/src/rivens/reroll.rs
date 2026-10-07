@@ -2,6 +2,7 @@ use wf_data::RivenType;
 use wf_inventory::RivenFingerprint;
 
 use super::grading::{compat_path, perfectness, polarity, riven_name, same_roll};
+use super::listing::unlisted_stat;
 use super::{Grader, PendingRoll, RivenRow};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,6 +55,7 @@ impl Grader<'_> {
             rerolls: shown.rerolls,
             polarity: shown.polarity,
             grade: shown.grade,
+            unlisted_stat: unlisted_stat(&shown.attributes),
             attributes: shown.attributes,
             good_roll: shown.good_roll,
             pending: Some(self.pending_from(&pending, riven_type, row.disposition)),

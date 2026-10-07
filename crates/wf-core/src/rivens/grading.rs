@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-
 use serde::Serialize;
 use wf_data::{
     MAX_RANK, RivenStat as StatDefinition, RivenType, TraitMultipliers, rank_multiplier,
     roll_multiplier, roll_share, trait_multipliers,
 };
 use wf_inventory::{RivenFingerprint, RivenStat};
-use wf_market::{Polarity, RivenAttribute};
+use wf_market::Polarity;
 
 use super::Grader;
 use crate::catalog::Catalog;
@@ -54,6 +52,7 @@ pub struct AttributeGrade {
     pub min: Option<f64>,
     pub max: Option<f64>,
     pub curse: bool,
+    pub spliced: bool,
 }
 
 pub(super) fn compat_path(compat: &str) -> &str {
@@ -71,10 +70,10 @@ impl Grader<'_> {
         disposition: Option<f64>,
     ) -> Vec<AttributeGrade> {
         let roll = Roll {
+            grader: self,
             riven_type,
             disposition,
             multipliers: trait_multipliers(fingerprint.buffs.len(), fingerprint.curses.len()),
-            by_combo: &self.by_combo,
         };
         fingerprint
             .buffs
@@ -87,23 +86,23 @@ impl Grader<'_> {
 }
 
 struct Roll<'a> {
+    grader: &'a Grader<'a>,
     riven_type: Option<&'a RivenType>,
     disposition: Option<f64>,
     multipliers: Option<TraitMultipliers>,
-    by_combo: &'a HashMap<String, &'a RivenAttribute>,
 }
 
 impl Roll<'_> {
     fn grade(&self, stat: &RivenStat, curse: bool) -> AttributeGrade {
         let Roll {
+            grader,
             riven_type,
             disposition,
             multipliers,
-            by_combo,
         } = *self;
         let modifier: Option<&StatDefinition> =
             riven_type.and_then(|found| found.stats.get(&stat.tag));
-        let attribute = modifier.and_then(|found| by_combo.get(&found.prefix_suffix()).copied());
+        let attribute = riven_type.and_then(|found| grader.attribute(found, &stat.tag));
         let multiplier = roll_multiplier(stat.value);
         let rank_scale = rank_multiplier(MAX_RANK);
         let base = match (modifier, disposition, multipliers) {
@@ -113,7 +112,7 @@ impl Roll<'_> {
                 } else {
                     multipliers.good
                 };
-                Some(modifier.base_at_rank_nine(disposition, share, curse) * rank_scale)
+                Some(modifier.base_at_rank_nine(disposition, share) * rank_scale)
             }
             _ => None,
         };
@@ -121,14 +120,12 @@ impl Roll<'_> {
         let rolled = base.map(|base| base * multiplier);
         let percentile = roll_share(multiplier, curse);
         AttributeGrade {
-            name: attribute.and_then(|attribute| {
-                attribute
-                    .i18n
-                    .get("en")
-                    .map(|localized| localized.name.clone())
-            }),
+            name: riven_type.and_then(|found| grader.stat_name(found, &stat.tag)),
             slug: attribute.map(|attribute| attribute.slug.clone()),
-            unit: attribute.and_then(|attribute| attribute.unit.clone()),
+            unit: match attribute {
+                Some(attribute) => attribute.unit.clone(),
+                None => modifier.and_then(|modifier| modifier.unit().map(str::to_owned)),
+            },
             prefix: modifier.map(|modifier| modifier.prefix.clone()),
             suffix: modifier.map(|modifier| modifier.suffix.clone()),
             localization: modifier.map(|modifier| modifier.localization.clone()),
@@ -144,6 +141,7 @@ impl Roll<'_> {
             max: base.map(|base| base * best),
             tag: stat.tag.clone(),
             curse,
+            spliced: modifier.is_some_and(|modifier| modifier.spliced),
         }
     }
 }
@@ -275,18 +273,23 @@ mod tests {
     const WORST_ROLL: i64 = 0;
 
     fn rolled_attribute(tag: &str, value: i64, curse: bool) -> AttributeGrade {
+        rolled_of_type(RIFLE_RIVEN, tag, value, curse)
+    }
+
+    fn rolled_of_type(riven_type: &str, tag: &str, value: i64, curse: bool) -> AttributeGrade {
         let fixture = fixture();
         let riven_type = fixture
             .catalog
             .data()
             .riven_data()
-            .riven_type(RIFLE_RIVEN)
+            .riven_type(riven_type)
             .expect("riven type");
+        let grader = fixture.grader();
         let roll = Roll {
+            grader: &grader,
             riven_type: Some(riven_type),
             disposition: Some(1.0),
             multipliers: trait_multipliers(2, 1),
-            by_combo: &fixture.grader().by_combo,
         };
         roll.grade(
             &RivenStat {
@@ -550,6 +553,80 @@ mod tests {
                 .iter()
                 .all(|band| *band == "S" || GRADE_BANDS.iter().any(|(_, known)| known == band))
         );
+    }
+
+    #[test]
+    fn spliced_gun_stat_without_market_attribute() {
+        let scaldra = rolled_attribute("WeaponFactionDamageScaldra", MIDDLE_ROLL, false);
+        assert!(scaldra.spliced);
+        assert_eq!(scaldra.slug, None);
+        assert_eq!(scaldra.name.as_deref(), Some("Damage to Scaldra"));
+        assert_eq!(scaldra.unit.as_deref(), Some("multiply"));
+        assert_eq!(scaldra.prefix.as_deref(), Some("exsi"));
+        assert!(scaldra.display.unwrap() > 1.0);
+        assert_eq!(scaldra.grade, "B");
+
+        let gas = rolled_attribute("WeaponGasDamageMod", BEST_ROLL, false);
+        assert_eq!(gas.name.as_deref(), Some("Gas"));
+        assert_eq!(gas.unit.as_deref(), Some("percent"));
+        assert_eq!(gas.grade, "S");
+
+        let damage = rolled_attribute(DAMAGE_TAG, MIDDLE_ROLL, false);
+        assert!(!damage.spliced);
+        assert_eq!(damage.slug.as_deref(), Some("base_damage_/_melee_damage"));
+    }
+
+    #[test]
+    fn melee_splices_share_affixes_with_combo_bonus() {
+        let parry = rolled_of_type(MELEE_RIVEN, "WeaponMeleeParryAngleMod", MIDDLE_ROLL, false);
+        assert!(parry.spliced);
+        assert_eq!(parry.slug, None);
+        assert_eq!(parry.name.as_deref(), Some("Parry Angle"));
+        assert_eq!(parry.unit, None);
+        assert_eq!(parry.prefix.as_deref(), Some("laci"));
+        assert_eq!(parry.suffix.as_deref(), Some("nus"));
+
+        let combo = rolled_of_type(
+            MELEE_RIVEN,
+            "WeaponMeleeComboBonusOnHitMod",
+            MIDDLE_ROLL,
+            false,
+        );
+        assert_eq!(
+            combo.slug.as_deref(),
+            Some("chance_to_gain_extra_combo_count")
+        );
+        assert_eq!(combo.prefix.as_deref(), Some("laci"));
+
+        let melee_damage = rolled_of_type(MELEE_RIVEN, "WeaponMeleeDamageMod", MIDDLE_ROLL, false);
+        assert_eq!(
+            melee_damage.slug.as_deref(),
+            Some("base_damage_/_melee_damage")
+        );
+        let corpus = rolled_of_type(
+            MELEE_RIVEN,
+            "WeaponMeleeFactionDamageCorpus",
+            MIDDLE_ROLL,
+            false,
+        );
+        assert_eq!(corpus.slug.as_deref(), Some("damage_vs_corpus"));
+    }
+
+    #[test]
+    fn ammo_efficiency_reads_as_buff() {
+        let efficiency = rolled_attribute("WeaponAmmoEfficiency", BEST_ROLL, false);
+        assert_eq!(efficiency.name.as_deref(), Some("Ammo Efficiency"));
+        assert_eq!(efficiency.unit.as_deref(), Some("percent"));
+        assert!(efficiency.rolled.unwrap() > 0.0);
+        assert!(efficiency.min.unwrap() < efficiency.max.unwrap());
+        assert_eq!(efficiency.grade, "S");
+
+        let cursed = rolled_attribute("WeaponAmmoEfficiency", WORST_ROLL, true);
+        assert!(cursed.rolled.unwrap() < 0.0);
+        assert_eq!(cursed.grade, "S");
+
+        let recoil = rolled_attribute("WeaponRecoilReductionMod", BEST_ROLL, false);
+        assert!(recoil.rolled.unwrap() < 0.0);
     }
 
     #[test]

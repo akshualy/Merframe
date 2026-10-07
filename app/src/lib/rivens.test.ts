@@ -27,6 +27,7 @@ const initialCombo: AttributeGrade = {
   min: 1,
   max: 3,
   curse: false,
+  spliced: false,
 };
 
 const attackSpeed: AttributeGrade = {
@@ -46,6 +47,7 @@ const attackSpeed: AttributeGrade = {
   min: 4.1,
   max: 5,
   curse: false,
+  spliced: false,
 };
 
 describe("rollQuality", () => {

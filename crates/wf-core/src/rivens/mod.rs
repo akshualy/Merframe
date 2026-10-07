@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::Serialize;
+use wf_data::RivenType;
 use wf_market::{Polarity, RivenAttribute, RivenData as RivenTable};
 
 use crate::catalog::Catalog;
@@ -23,11 +24,57 @@ pub use tab::display_name;
 
 const RIVEN_MOD_SUFFIX: &str = " Riven Mod";
 
+type AttributeIndex<'a> = HashMap<&'a str, HashMap<&'a str, &'a RivenAttribute>>;
+
 pub(crate) struct Grader<'a> {
     catalog: &'a Catalog,
     items: &'a ItemTable,
-    by_combo: HashMap<String, &'a RivenAttribute>,
+    attributes: AttributeIndex<'a>,
     table: Option<&'a RivenTable>,
+}
+
+fn attribute_index<'a>(
+    riven_data: &'a wf_data::RivenData,
+    attributes: &'a [RivenAttribute],
+) -> AttributeIndex<'a> {
+    let by_game_ref: HashMap<&str, &RivenAttribute> = attributes
+        .iter()
+        .map(|attribute| (attribute.game_ref.as_str(), attribute))
+        .collect();
+    let by_combo: HashMap<(String, String), &RivenAttribute> = attributes
+        .iter()
+        .map(|attribute| {
+            (
+                (
+                    attribute.prefix.to_lowercase(),
+                    attribute.suffix.to_lowercase(),
+                ),
+                attribute,
+            )
+        })
+        .collect();
+    riven_data
+        .types()
+        .map(|riven_type| {
+            let joined = riven_type
+                .stats
+                .values()
+                .filter_map(|stat| {
+                    let attribute = by_game_ref.get(stat.tag.as_str()).copied().or_else(|| {
+                        if stat.prefix.is_empty() {
+                            return None;
+                        }
+                        by_combo
+                            .get(&(stat.prefix.to_lowercase(), stat.suffix.to_lowercase()))
+                            .copied()
+                            .filter(|attribute| !riven_type.stats.contains_key(&attribute.game_ref))
+                    })?;
+                    Some((stat.tag.as_str(), attribute))
+                })
+                .collect();
+            (riven_type.unique_name.as_str(), joined)
+        })
+        .collect()
 }
 
 impl<'a> Grader<'a> {
@@ -37,24 +84,29 @@ impl<'a> Grader<'a> {
         attributes: &'a [RivenAttribute],
         table: Option<&'a RivenTable>,
     ) -> Self {
-        let by_combo = attributes
-            .iter()
-            .map(|attribute| {
-                (
-                    format!(
-                        "{}|{}",
-                        attribute.prefix.to_lowercase(),
-                        attribute.suffix.to_lowercase()
-                    ),
-                    attribute,
-                )
-            })
-            .collect();
         Self {
             catalog,
             items,
-            by_combo,
+            attributes: attribute_index(catalog.data().riven_data(), attributes),
             table,
+        }
+    }
+
+    fn attribute(&self, riven_type: &RivenType, tag: &str) -> Option<&'a RivenAttribute> {
+        self.attributes
+            .get(riven_type.unique_name.as_str())?
+            .get(tag)
+            .copied()
+    }
+
+    fn stat_name(&self, riven_type: &RivenType, tag: &str) -> Option<String> {
+        let modifier = riven_type.stats.get(tag)?;
+        match self.attribute(riven_type, tag) {
+            Some(attribute) => attribute
+                .i18n
+                .get("en")
+                .map(|localized| localized.name.clone()),
+            None => Some(modifier.name()),
         }
     }
 }
@@ -93,6 +145,7 @@ pub struct RivenRow {
     pub attributes: Vec<AttributeGrade>,
     pub good_roll: Option<GoodRollView>,
     pub listed_in_wfm: bool,
+    pub unlisted_stat: Option<String>,
     pub pending: Option<PendingRoll>,
 }
 
@@ -213,6 +266,9 @@ pub(crate) mod support {
     ]"#;
 
     pub(crate) const RIFLE_RIVEN: &str = "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare";
+
+    pub(crate) const MELEE_RIVEN: &str =
+        "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare";
 
     pub(crate) const MIDDLE_ROLL: i64 = 536_870_910;
 

@@ -1,5 +1,6 @@
 import { GoodRollBlock } from "@/components/good-roll";
 import { RivenListings } from "@/components/riven-listings";
+import { SplicedMark } from "@/components/spliced-mark";
 import { Hint } from "@/components/ui/hint";
 import { percent } from "@/lib/format";
 import { attributeRange, attributeValue, gradeTone } from "@/lib/rivens";
@@ -20,8 +21,9 @@ export function RivenDetails({ riven }: { riven: RivenRow }) {
                 attribute.curse && "border-warning/40",
               )}
             >
-              <span className="text-sm font-medium">
+              <span className="flex items-center gap-2 text-sm font-medium">
                 {attribute.name ?? attribute.tag}
+                <SplicedMark attribute={attribute} />
               </span>
               <Hint as="span">
                 {attributeValue(attribute) ??

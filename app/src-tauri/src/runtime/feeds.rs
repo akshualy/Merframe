@@ -15,6 +15,7 @@ use crate::state::{AppState, lock, read, write};
 
 const PRICE_RETRY: Duration = Duration::from_secs(60);
 const PRICE_INTERVAL: Duration = Duration::from_mins(15);
+const RIVEN_INTERVAL: Duration = Duration::from_hours(24);
 
 pub(super) async fn world_state_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut fetched_at: Option<Instant> = None;
@@ -59,8 +60,30 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
     let mut rivens = bulk_riven_data(state.http.clone());
     let mut checked_at: Option<Instant> = None;
     let mut rivens_checked_at: Option<Instant> = None;
+    let mut attributes_checked_at: Option<Instant> = None;
     loop {
         let mut wait = PRICE_INTERVAL;
+        if attributes_checked_at.is_none_or(|at| at.elapsed() >= RIVEN_INTERVAL) {
+            match state.market().riven_attributes().await {
+                Ok(attributes) => {
+                    attributes_checked_at = Some(Instant::now());
+                    info!(
+                        count = attributes.len(),
+                        "Riven attribute list fetched from warframe.market"
+                    );
+                    lock(&state.core).set_riven_attributes(attributes);
+                    emit(&app, AppEvent::RivenDataUpdated);
+                }
+                Err(error) => {
+                    attributes_checked_at = None;
+                    wait = PRICE_RETRY;
+                    warn!(
+                        error = %error.brief(),
+                        "Riven attribute list not fetched from warframe.market, next attempt in a minute"
+                    );
+                }
+            }
+        }
         if checked_at.is_none_or(|at| at.elapsed() >= PRICE_INTERVAL) {
             match load_price_table(&app, &state, &mut client).await {
                 Ok(_) => checked_at = Some(Instant::now()),
@@ -75,7 +98,7 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
                 }
             }
         }
-        if rivens_checked_at.is_none_or(|at| at.elapsed() >= Duration::from_hours(24)) {
+        if rivens_checked_at.is_none_or(|at| at.elapsed() >= RIVEN_INTERVAL) {
             match load_riven_data(&app, &state, &mut rivens).await {
                 Ok(()) => rivens_checked_at = Some(Instant::now()),
                 Err(error) => {

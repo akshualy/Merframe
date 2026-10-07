@@ -263,6 +263,11 @@ export function RivenListingDialog({
           {riven.polarity && (
             <PolarityIcon polarity={riven.polarity} size={20} />
           )}
+          {riven.unlisted_stat && (
+            <span className="text-warning">
+              {`warframe.market has no attribute for ${riven.unlisted_stat} yet, so it stays off the listing`}
+            </span>
+          )}
         </>
       }
       initial={{ ...EMPTY_LISTING, rank: riven.rank }}

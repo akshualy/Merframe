@@ -5,7 +5,7 @@ use wf_market::{
 };
 
 use super::RivenRow;
-use super::grading::display_value;
+use super::grading::{AttributeGrade, display_value};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -54,9 +54,19 @@ pub fn listing_update(choices: &ListingChoices) -> UpdateAuctionRequest {
     }
 }
 
+pub(super) fn unlisted_stat(attributes: &[AttributeGrade]) -> Option<String> {
+    let unknown = attributes
+        .iter()
+        .find(|attribute| attribute.slug.is_none())?;
+    Some(unknown.name.clone().unwrap_or_else(|| unknown.tag.clone()))
+}
+
 pub fn listing_payload(row: &RivenRow, choices: &ListingChoices) -> Option<CreateAuctionRequest> {
     let mut attributes = Vec::with_capacity(row.attributes.len());
     for attribute in &row.attributes {
+        let Some(url_name) = attribute.slug.clone() else {
+            continue;
+        };
         let value = display_value(
             attribute.rolled? * rank_multiplier(choices.rank),
             attribute.unit.as_deref() == Some("multiply"),
@@ -64,8 +74,11 @@ pub fn listing_payload(row: &RivenRow, choices: &ListingChoices) -> Option<Creat
         attributes.push(RivenAttributeInstance {
             value,
             positive: !attribute.curse,
-            url_name: attribute.slug.clone()?,
+            url_name,
         });
+    }
+    if attributes.is_empty() {
+        return None;
     }
     Some(CreateAuctionRequest {
         item: CreateAuctionItem {
@@ -88,8 +101,10 @@ pub fn listing_payload(row: &RivenRow, choices: &ListingChoices) -> Option<Creat
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::rivens::AttributeGrade;
     use crate::rivens::grading::round_to;
     use crate::rivens::support::*;
+    use wf_inventory::RivenFingerprint;
     use wf_market::Polarity;
 
     fn direct(price: u32) -> ListingChoices {
@@ -123,6 +138,7 @@ mod tests {
             grade: 0.0,
             attributes: Vec::new(),
             good_roll: None,
+            unlisted_stat: None,
             pending: None,
         };
         assert!(listing_payload(&bare, &direct(100)).is_none());
@@ -286,6 +302,69 @@ mod tests {
                 .zip(&asked.item.attributes)
                 .any(|(rolled, maxed)| (rolled.value - maxed.value).abs() > f64::EPSILON)
         );
+    }
+
+    #[test]
+    fn spliced_stat_stays_out_of_the_payload() {
+        let fixture = fixture();
+        let grader = fixture.grader();
+        let tab = riven_tab();
+        let cernos = by_weapon(&tab.unveiled, "Proboscis Cernos");
+        let riven_type = fixture
+            .catalog
+            .data()
+            .riven_data()
+            .riven_type(&cernos.item_type);
+        let spliced = RivenFingerprint::parse(&rolled(
+            cernos.weapon_path.as_deref().unwrap(),
+            &[
+                "WeaponCritChanceMod",
+                "WeaponFireIterationsMod",
+                "WeaponFactionDamageScaldra",
+            ],
+            Some("WeaponReloadSpeedMod"),
+        ))
+        .unwrap();
+        let attributes = grader.graded(&spliced, riven_type, cernos.disposition);
+        let row = RivenRow {
+            unlisted_stat: unlisted_stat(&attributes),
+            attributes,
+            ..cernos.clone()
+        };
+        let payload = listing_payload(&row, &direct(100)).unwrap();
+        assert_eq!(row.unlisted_stat.as_deref(), Some("Damage to Scaldra"));
+        assert_eq!(
+            payload
+                .item
+                .attributes
+                .iter()
+                .map(|attribute| attribute.url_name.as_str())
+                .collect::<Vec<&str>>(),
+            ["critical_chance", "multishot", "reload_speed"]
+        );
+        assert_eq!(
+            payload
+                .item
+                .attributes
+                .iter()
+                .filter(|attribute| !attribute.positive)
+                .count(),
+            1
+        );
+
+        let unknown = RivenRow {
+            attributes: row
+                .attributes
+                .iter()
+                .cloned()
+                .map(|attribute| AttributeGrade {
+                    slug: None,
+                    ..attribute
+                })
+                .collect(),
+            ..row.clone()
+        };
+        assert!(listing_payload(&unknown, &direct(100)).is_none());
     }
 
     #[test]
