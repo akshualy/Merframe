@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde::Serialize;
-use wf_data::RivenType;
+use wf_data::{RivenStat, RivenType};
 use wf_market::{Polarity, RivenAttribute, RivenData as RivenTable};
 
 use crate::catalog::Catalog;
@@ -33,6 +33,23 @@ pub(crate) struct Grader<'a> {
     table: Option<&'a RivenTable>,
 }
 
+fn market_attribute<'a>(
+    stat: &RivenStat,
+    riven_type: &RivenType,
+    by_game_ref: &HashMap<&str, &'a RivenAttribute>,
+    by_affixes: &HashMap<(String, String), &'a RivenAttribute>,
+) -> Option<&'a RivenAttribute> {
+    if let Some(attribute) = by_game_ref.get(stat.tag.as_str()) {
+        return Some(attribute);
+    }
+    if stat.prefix.is_empty() {
+        return None;
+    }
+    let shared = by_affixes.get(&(stat.prefix.to_lowercase(), stat.suffix.to_lowercase()))?;
+    let owned_by_another_stat = riven_type.stats.contains_key(&shared.game_ref);
+    (!owned_by_another_stat).then_some(shared)
+}
+
 fn attribute_index<'a>(
     riven_data: &'a wf_data::RivenData,
     attributes: &'a [RivenAttribute],
@@ -41,16 +58,14 @@ fn attribute_index<'a>(
         .iter()
         .map(|attribute| (attribute.game_ref.as_str(), attribute))
         .collect();
-    let by_combo: HashMap<(String, String), &RivenAttribute> = attributes
+    let by_affixes: HashMap<(String, String), &RivenAttribute> = attributes
         .iter()
         .map(|attribute| {
-            (
-                (
-                    attribute.prefix.to_lowercase(),
-                    attribute.suffix.to_lowercase(),
-                ),
-                attribute,
-            )
+            let affixes = (
+                attribute.prefix.to_lowercase(),
+                attribute.suffix.to_lowercase(),
+            );
+            (affixes, attribute)
         })
         .collect();
     riven_data
@@ -60,15 +75,7 @@ fn attribute_index<'a>(
                 .stats
                 .values()
                 .filter_map(|stat| {
-                    let attribute = by_game_ref.get(stat.tag.as_str()).copied().or_else(|| {
-                        if stat.prefix.is_empty() {
-                            return None;
-                        }
-                        by_combo
-                            .get(&(stat.prefix.to_lowercase(), stat.suffix.to_lowercase()))
-                            .copied()
-                            .filter(|attribute| !riven_type.stats.contains_key(&attribute.game_ref))
-                    })?;
+                    let attribute = market_attribute(stat, riven_type, &by_game_ref, &by_affixes)?;
                     Some((stat.tag.as_str(), attribute))
                 })
                 .collect();
