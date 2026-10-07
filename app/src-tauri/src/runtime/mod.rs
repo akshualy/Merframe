@@ -21,7 +21,7 @@ mod feeds;
 mod game;
 mod market_loop;
 
-use feeds::{price_task, riven_attributes_task, world_state_task};
+use feeds::{price_task, world_state_task};
 use game::{inventory_task, log_task, process_task, trade_task};
 use market_loop::{auto_close, market_presence_task, market_task};
 
@@ -64,7 +64,6 @@ pub fn spawn<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     tauri::async_runtime::spawn(world_state_task(app.clone(), Arc::clone(&state)));
     tauri::async_runtime::spawn(market_task(app.clone(), Arc::clone(&state)));
     tauri::async_runtime::spawn(market_presence_task(app.clone(), Arc::clone(&state)));
-    tauri::async_runtime::spawn(riven_attributes_task(app.clone(), Arc::clone(&state)));
     tauri::async_runtime::spawn(price_task(app, state));
 }
 

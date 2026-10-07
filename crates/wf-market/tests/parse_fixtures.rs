@@ -1,6 +1,6 @@
 use wf_market::{
-    Item, Order, OrderType, Polarity, RivenAttribute, User, UserPrivate, UserStatus, envelope,
-    parse_chats, parse_price_table, parse_v1_auction, parse_v1_auctions,
+    Item, Order, OrderType, Polarity, User, UserPrivate, UserStatus, envelope, parse_chats,
+    parse_price_table, parse_v1_auction, parse_v1_auctions,
 };
 
 #[allow(
@@ -149,19 +149,6 @@ fn public_user() {
     let user = envelope::<User>(&json).unwrap();
     assert_eq!(user.slug, "testtenno");
     assert_eq!(user.status, Some(UserStatus::Offline));
-}
-
-#[test]
-fn riven_attributes() {
-    let json = fixture("riven_attributes.json");
-    let attributes = envelope::<Vec<RivenAttribute>>(&json).unwrap();
-    assert_eq!(attributes.len(), 32);
-    let slash = attributes
-        .iter()
-        .find(|attribute| attribute.slug == "slash_damage")
-        .unwrap();
-    assert_eq!(slash.prefix, "Sci");
-    assert_eq!(slash.suffix, "Sus");
 }
 
 #[test]

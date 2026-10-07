@@ -448,7 +448,7 @@ mod tests {
         );
 
         let fixture = fixture();
-        let without = Grader::new(&fixture.catalog, &fixture.items, &fixture.attributes, None)
+        let without = Grader::new(&fixture.catalog, &fixture.items, None)
             .tab(&fixtures::inventory(), &MarketListings::default());
         assert!(without.attribution.is_none());
         assert!(without.unveiled.iter().all(|row| row.good_roll.is_none()));

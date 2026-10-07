@@ -169,16 +169,6 @@ fn orders_visibility_request() {
 }
 
 #[test]
-fn riven_attributes_request() {
-    let client = client();
-    let request = client.riven_attributes_request().unwrap();
-    assert_eq!(
-        request.url().as_str(),
-        "https://api.warframe.market/v2/riven/attributes"
-    );
-}
-
-#[test]
 fn login_request() {
     let client = client();
     let request = client

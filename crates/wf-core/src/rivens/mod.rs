@@ -52,8 +52,9 @@ fn market_attribute<'a>(
 
 fn attribute_index<'a>(
     riven_data: &'a wf_data::RivenData,
-    attributes: &'a [RivenAttribute],
+    table: Option<&'a RivenTable>,
 ) -> AttributeIndex<'a> {
+    let attributes = table.map_or(&[][..], |table| table.attributes.as_slice());
     let by_game_ref: HashMap<&str, &RivenAttribute> = attributes
         .iter()
         .map(|attribute| (attribute.game_ref.as_str(), attribute))
@@ -88,13 +89,12 @@ impl<'a> Grader<'a> {
     pub(crate) fn new(
         catalog: &'a Catalog,
         items: &'a ItemTable,
-        attributes: &'a [RivenAttribute],
         table: Option<&'a RivenTable>,
     ) -> Self {
         Self {
             catalog,
             items,
-            attributes: attribute_index(catalog.data().riven_data(), attributes),
+            attributes: attribute_index(catalog.data().riven_data(), table),
             table,
         }
     }
@@ -108,13 +108,10 @@ impl<'a> Grader<'a> {
 
     fn stat_name(&self, riven_type: &RivenType, tag: &str) -> Option<String> {
         let modifier = riven_type.stats.get(tag)?;
-        match self.attribute(riven_type, tag) {
-            Some(attribute) => attribute
-                .i18n
-                .get("en")
-                .map(|localized| localized.name.clone()),
-            None => Some(modifier.name()),
-        }
+        Some(match self.attribute(riven_type, tag) {
+            Some(attribute) => attribute.name.clone(),
+            None => modifier.name(),
+        })
     }
 }
 
@@ -194,10 +191,7 @@ pub(crate) mod support {
     use super::*;
     use crate::catalog::{Catalog, fixtures};
     use crate::listings::MarketListings;
-    use wf_market::{RivenAttribute, RivenData as RivenTable, RivenWeapon};
-
-    pub(crate) const ATTRIBUTES: &str =
-        include_str!("../../../wf-market/tests/fixtures/riven_attributes.json");
+    use wf_market::{RivenData as RivenTable, RivenWeapon};
 
     pub(crate) const RIVEN_DATA: &str = include_str!("../../../../fixtures/riven_data.json");
 
@@ -281,10 +275,6 @@ pub(crate) mod support {
 
     pub(crate) const BEST_ROLL: i64 = 1_073_741_820;
 
-    pub(crate) fn attributes() -> Vec<RivenAttribute> {
-        wf_market::envelope::<Vec<RivenAttribute>>(ATTRIBUTES).unwrap()
-    }
-
     pub(crate) fn riven_table() -> RivenTable {
         wf_market::parse_riven_data(RIVEN_DATA).expect("riven data")
     }
@@ -324,18 +314,12 @@ pub(crate) mod support {
     pub(crate) struct Fixture {
         pub(crate) catalog: Catalog,
         pub(crate) items: ItemTable,
-        pub(crate) attributes: Vec<RivenAttribute>,
         pub(crate) table: RivenTable,
     }
 
     impl Fixture {
         pub(crate) fn grader(&self) -> Grader<'_> {
-            Grader::new(
-                &self.catalog,
-                &self.items,
-                &self.attributes,
-                Some(&self.table),
-            )
+            Grader::new(&self.catalog, &self.items, Some(&self.table))
         }
     }
 
@@ -344,7 +328,6 @@ pub(crate) mod support {
         Fixture {
             items: ItemTable::build(&catalog),
             catalog,
-            attributes: attributes(),
             table: riven_table(),
         }
     }

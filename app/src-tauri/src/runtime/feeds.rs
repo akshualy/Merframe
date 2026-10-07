@@ -97,30 +97,6 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
     }
 }
 
-pub(super) async fn riven_attributes_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
-    loop {
-        let wait = match state.market().riven_attributes().await {
-            Ok(attributes) => {
-                info!(
-                    count = attributes.len(),
-                    "Riven attribute list fetched from warframe.market"
-                );
-                lock(&state.core).set_riven_attributes(attributes);
-                emit(&app, AppEvent::RivenDataUpdated);
-                RIVEN_INTERVAL
-            }
-            Err(error) => {
-                warn!(
-                    error = %error.brief(),
-                    "Riven attribute list not fetched from warframe.market, next attempt in a minute"
-                );
-                PRICE_RETRY
-            }
-        };
-        tokio::time::sleep(wait).await;
-    }
-}
-
 async fn load_riven_data<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
@@ -132,6 +108,7 @@ async fn load_riven_data<R: Runtime>(
     };
     info!(
         weapons = data.weapons.len(),
+        attributes = data.attributes.len(),
         good_rolls = data.good_rolls.len(),
         updated_at = data.updated_at,
         "Riven weapon and roll data downloaded"
