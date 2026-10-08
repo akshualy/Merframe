@@ -4,7 +4,7 @@ import { ItemImage } from "@/components/item-image";
 import { Progress } from "@/components/ui/progress";
 import { num } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { DucateringProgress } from "@/types";
+import type { DucateringEntry, DucateringProgress } from "@/types";
 
 const COPY: Record<
   DucateringProgress["state"]["state"],
@@ -28,6 +28,21 @@ const EMPTY_COPY = {
   title: "Ducatering",
   description: "No parts match the Ducatering filters.",
 };
+
+function Prices({ entry, size }: { entry: DucateringEntry; size: number }) {
+  return (
+    <span className="flex shrink-0 flex-col items-end text-xs tabular-nums">
+      <span className="text-primary flex items-center gap-0.5">
+        {num(entry.plat)}
+        <GameIcon name="platinum" size={size} alt="Platinum" />
+      </span>
+      <span className="text-accent flex items-center gap-0.5">
+        {num(entry.ducats)}
+        <GameIcon name="ducats" size={size} alt="Ducats" />
+      </span>
+    </span>
+  );
+}
 
 export function DucateringOverlay({
   progress,
@@ -77,6 +92,7 @@ export function DucateringOverlay({
               <GameIcon name="ducats" size={16} alt="Ducats" />
             </span>
           </span>
+          <Prices entry={current} size={14} />
         </div>
       )}
       {items.length > 0 && <Progress value={(done / items.length) * 100} />}
@@ -103,6 +119,7 @@ export function DucateringOverlay({
             <span className="text-muted-foreground text-xs tabular-nums">
               {num(entry.count)}
             </span>
+            <Prices entry={entry} size={12} />
           </li>
         ))}
       </ul>

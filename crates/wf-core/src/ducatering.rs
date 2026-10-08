@@ -22,12 +22,13 @@ pub struct DucateringFilter {
     pub hidden_set_plat: u32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct DucateringEntry {
     pub item: ItemSummary,
     pub count: u32,
     pub ducats: u32,
+    pub plat: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -61,7 +62,7 @@ pub enum DucateringState {
     Finished,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct DucateringProgress {
     pub state: DucateringState,
@@ -70,7 +71,7 @@ pub struct DucateringProgress {
     pub ducats: u32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Ducatering {
     items: Vec<DucateringEntry>,
     position: usize,
@@ -117,6 +118,7 @@ pub(crate) fn entries(view: &View, filter: &DucateringFilter) -> Vec<DucateringE
                 item: index[row.item].clone(),
                 count: u32::try_from(row.count).ok()?,
                 ducats,
+                plat: row.prices.sell,
             })
         })
         .collect();
@@ -265,6 +267,7 @@ mod tests {
                     },
                     count: *count,
                     ducats: 0,
+                    plat: None,
                 })
                 .collect(),
         )
@@ -392,6 +395,7 @@ mod tests {
         assert_eq!(cheap[0].item.name, "Braton Prime Barrel");
         assert_eq!(cheap[0].count, 3);
         assert!(cheap[0].ducats > 0);
+        assert_eq!(cheap[0].plat, Some(8.0));
 
         let all = entries(
             &fixture.view(),
