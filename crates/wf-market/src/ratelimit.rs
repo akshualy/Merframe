@@ -35,15 +35,18 @@ impl RateLimiter {
             return Err(MarketError::LimiterClosed);
         };
         let mut last = self.last_dispatch.lock().await;
+
         let resume_at = *self.resume_at.lock().await;
         if let Some(resume) = resume_at {
             tokio::time::sleep_until(resume).await;
         }
+
         if let Some(previous) = *last
             && let Some(remaining) = self.interval.checked_sub(previous.elapsed())
         {
             tokio::time::sleep(remaining).await;
         }
+
         *last = Some(Instant::now());
         Ok(permit)
     }

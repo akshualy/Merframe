@@ -72,12 +72,14 @@ impl<T> Etagged<T> {
         if let Some(etag) = &self.etag {
             request = request.header(IF_NONE_MATCH, etag);
         }
+
         let _permit = self.rate_limiter.acquire().await?;
         let response = request.send().await?;
         let status = response.status();
         if status == StatusCode::TOO_MANY_REQUESTS {
             return Err(rate_limited(&self.rate_limiter, response.headers()).await);
         }
+
         let etag = response
             .headers()
             .get(ETAG)
@@ -95,6 +97,7 @@ impl<T> Etagged<T> {
         if status == StatusCode::NOT_MODIFIED {
             return Ok(None);
         }
+
         let body = accepted(status, body)?;
         let document = (self.parse)(&body)?;
         self.etag = etag;

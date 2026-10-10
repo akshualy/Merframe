@@ -60,13 +60,13 @@ impl Client {
             ApiFamily::V1 => "https://api.warframe.market/v1",
             ApiFamily::V2 => "https://api.warframe.market/v2",
         };
-        let url = format!("{base}{path}");
         let mut builder = self
             .http
-            .request(method, url)
+            .request(method, format!("{base}{path}"))
             .timeout(REQUEST_TIMEOUT)
             .header("Platform", self.platform.as_wire_str())
             .header("Language", &self.language);
+
         if let Some(token) = &self.token {
             let prefix = match family {
                 ApiFamily::V1 => "JWT",
@@ -74,15 +74,18 @@ impl Client {
             };
             builder = builder.header("Authorization", format!("{prefix} {token}"));
         }
+
         builder
     }
 
     async fn send(&self, request: Request) -> Result<reqwest::Response> {
         let _permit = self.rate_limiter.acquire().await?;
         let response = self.http.execute(request).await?;
+
         if response.status() == StatusCode::TOO_MANY_REQUESTS {
             return Err(rate_limited(&self.rate_limiter, response.headers()).await);
         }
+
         Ok(response)
     }
 
@@ -95,6 +98,10 @@ impl Client {
         let status = response.status();
         let body = accepted(status, response.text().await?)?;
         parser(&body)
+    }
+
+    async fn execute_discarding_body(&self, request: Request) -> Result<()> {
+        self.execute(request, |_| Ok(())).await
     }
 
     pub fn items_request(&self) -> Result<Request> {
@@ -110,19 +117,68 @@ impl Client {
         self.execute(request, parse::envelope::<Vec<Item>>).await
     }
 
-    pub fn item_request(&self, slug: &str) -> Result<Request> {
+    pub fn login_request(&self, email: &str, password: &str) -> Result<Request> {
+        let body = SignInRequest::new(email.to_string(), password.to_string());
+        let mut request = self
+            .request_builder(reqwest::Method::POST, ApiFamily::V1, "/auth/signin")
+            .header("auth_type", "header")
+            .json(&body)
+            .build()?;
+        request.headers_mut().insert(
+            reqwest::header::AUTHORIZATION,
+            HeaderValue::from_static("JWT"),
+        );
+        Ok(request)
+    }
+
+    pub async fn login(&self, email: &str, password: &str) -> Result<String> {
+        let request = self.login_request(email, password)?;
+        let response = self.send(request).await?;
+        let status = response.status();
+        let authorization_header = response
+            .headers()
+            .get(reqwest::header::AUTHORIZATION)
+            .cloned();
+        accepted(status, response.text().await?)?;
+
+        authorization_header
+            .as_ref()
+            .and_then(jwt_token)
+            .ok_or(MarketError::MissingJwt)
+    }
+
+    pub fn me_request(&self) -> Result<Request> {
         Ok(self
-            .request_builder(
-                reqwest::Method::GET,
-                ApiFamily::V2,
-                &format!("/items/{}", segment(slug)),
-            )
+            .request_builder(reqwest::Method::GET, ApiFamily::V2, "/me")
             .build()?)
     }
 
-    pub async fn item(&self, slug: &str) -> Result<Item> {
-        let request = self.item_request(slug)?;
-        self.execute(request, parse::envelope::<Item>).await
+    pub async fn me(&self) -> Result<Session> {
+        let request = self.me_request()?;
+        let response = self.send(request).await?;
+        let status = response.status();
+        let rotated = response
+            .headers()
+            .get(reqwest::header::AUTHORIZATION)
+            .and_then(jwt_token)
+            .filter(|token| self.token.as_ref() != Some(token));
+        let body = accepted(status, response.text().await?)?;
+
+        Ok(Session {
+            user: parse::envelope(&body)?,
+            rotated_token: rotated,
+        })
+    }
+
+    pub fn chats_request(&self) -> Result<Request> {
+        Ok(self
+            .request_builder(reqwest::Method::GET, ApiFamily::V1, "/im/chats")
+            .build()?)
+    }
+
+    pub async fn chats(&self) -> Result<Vec<Chat>> {
+        let request = self.chats_request()?;
+        self.execute(request, parse::parse_chats).await
     }
 
     pub fn orders_for_item_request(&self, slug: &str) -> Result<Request> {
@@ -156,28 +212,6 @@ impl Client {
         self.execute(request, parse::envelope::<Vec<Order>>).await
     }
 
-    pub fn me_request(&self) -> Result<Request> {
-        Ok(self
-            .request_builder(reqwest::Method::GET, ApiFamily::V2, "/me")
-            .build()?)
-    }
-
-    pub async fn me(&self) -> Result<Session> {
-        let request = self.me_request()?;
-        let response = self.send(request).await?;
-        let status = response.status();
-        let rotated = response
-            .headers()
-            .get(reqwest::header::AUTHORIZATION)
-            .and_then(jwt_token)
-            .filter(|token| self.token.as_ref() != Some(token));
-        let body = accepted(status, response.text().await?)?;
-        Ok(Session {
-            user: parse::envelope(&body)?,
-            rotated_token: rotated,
-        })
-    }
-
     pub fn create_order_request(&self, body: &CreateOrderRequest) -> Result<Request> {
         Ok(self
             .request_builder(reqwest::Method::POST, ApiFamily::V2, "/order")
@@ -206,6 +240,22 @@ impl Client {
         self.execute(request, parse::envelope::<Order>).await
     }
 
+    pub fn close_order_request(&self, id: &str, quantity: u32) -> Result<Request> {
+        Ok(self
+            .request_builder(
+                reqwest::Method::POST,
+                ApiFamily::V2,
+                &format!("/order/{}/close", segment(id)),
+            )
+            .json(&CloseOrderRequest { quantity })
+            .build()?)
+    }
+
+    pub async fn close_order(&self, id: &str, quantity: u32) -> Result<()> {
+        let request = self.close_order_request(id, quantity)?;
+        self.execute_discarding_body(request).await
+    }
+
     pub fn delete_order_request(&self, id: &str) -> Result<Request> {
         Ok(self
             .request_builder(
@@ -221,25 +271,6 @@ impl Client {
         self.execute(request, parse::envelope::<Order>).await
     }
 
-    pub fn close_order_request(&self, id: &str, quantity: u32) -> Result<Request> {
-        Ok(self
-            .request_builder(
-                reqwest::Method::POST,
-                ApiFamily::V2,
-                &format!("/order/{}/close", segment(id)),
-            )
-            .json(&CloseOrderRequest { quantity })
-            .build()?)
-    }
-
-    pub async fn close_order(&self, id: &str, quantity: u32) -> Result<()> {
-        let request = self.close_order_request(id, quantity)?;
-        let response = self.send(request).await?;
-        let status = response.status();
-        accepted(status, response.text().await?)?;
-        Ok(())
-    }
-
     pub fn set_all_orders_visibility_request(&self, visible: bool) -> Result<Request> {
         Ok(self
             .request_builder(reqwest::Method::PATCH, ApiFamily::V2, "/orders/group/all")
@@ -251,46 +282,6 @@ impl Client {
         let request = self.set_all_orders_visibility_request(visible)?;
         self.execute(request, parse::envelope::<OrdersGroupUpdate>)
             .await
-    }
-
-    pub fn login_request(&self, email: &str, password: &str) -> Result<Request> {
-        let body = SignInRequest::new(email.to_string(), password.to_string());
-        let mut request = self
-            .request_builder(reqwest::Method::POST, ApiFamily::V1, "/auth/signin")
-            .header("auth_type", "header")
-            .json(&body)
-            .build()?;
-        request.headers_mut().insert(
-            reqwest::header::AUTHORIZATION,
-            HeaderValue::from_static("JWT"),
-        );
-        Ok(request)
-    }
-
-    pub async fn login(&self, email: &str, password: &str) -> Result<String> {
-        let request = self.login_request(email, password)?;
-        let response = self.send(request).await?;
-        let status = response.status();
-        let authorization_header = response
-            .headers()
-            .get(reqwest::header::AUTHORIZATION)
-            .cloned();
-        accepted(status, response.text().await?)?;
-        authorization_header
-            .as_ref()
-            .and_then(jwt_token)
-            .ok_or(MarketError::MissingJwt)
-    }
-
-    pub fn chats_request(&self) -> Result<Request> {
-        Ok(self
-            .request_builder(reqwest::Method::GET, ApiFamily::V1, "/im/chats")
-            .build()?)
-    }
-
-    pub async fn chats(&self) -> Result<Vec<Chat>> {
-        let request = self.chats_request()?;
-        self.execute(request, parse::parse_chats).await
     }
 
     pub fn auctions_my_request(&self, slug: &str) -> Result<Request> {
@@ -348,10 +339,7 @@ impl Client {
 
     pub async fn close_auction(&self, id: &str) -> Result<()> {
         let request = self.close_auction_request(id)?;
-        let response = self.send(request).await?;
-        let status = response.status();
-        accepted(status, response.text().await?)?;
-        Ok(())
+        self.execute_discarding_body(request).await
     }
 
     pub fn set_auctions_visibility_request(&self, visible: bool) -> Result<Request> {
@@ -369,15 +357,13 @@ impl Client {
 
     pub async fn set_auctions_visibility(&self, visible: bool) -> Result<()> {
         let request = self.set_auctions_visibility_request(visible)?;
-        let response = self.send(request).await?;
-        let status = response.status();
-        accepted(status, response.text().await?)?;
-        Ok(())
+        self.execute_discarding_body(request).await
     }
 }
 
 pub(crate) fn segment(value: &str) -> String {
     const HEX: &[u8; 16] = b"0123456789ABCDEF";
+
     let mut encoded = String::with_capacity(value.len());
     for byte in value.bytes() {
         match byte {
@@ -391,6 +377,7 @@ pub(crate) fn segment(value: &str) -> String {
             }
         }
     }
+
     encoded
 }
 
@@ -403,13 +390,14 @@ fn jwt_token(header: &HeaderValue) -> Option<String> {
 }
 
 pub(crate) async fn rate_limited(limiter: &RateLimiter, headers: &HeaderMap) -> MarketError {
-    let pause = match headers
+    let retry_after = headers
         .get(RETRY_AFTER)
-        .and_then(|value| value.to_str().ok()?.parse().ok())
-    {
+        .and_then(|value| value.to_str().ok()?.parse().ok());
+    let pause = match retry_after {
         Some(secs) => Duration::from_secs(secs).min(Duration::from_secs(300)),
         None => Duration::from_secs(30),
     };
+
     limiter.back_off(pause).await;
     MarketError::RateLimited(pause)
 }
@@ -418,6 +406,7 @@ pub(crate) fn accepted(status: StatusCode, body: String) -> Result<String> {
     if status == StatusCode::UNAUTHORIZED {
         return Err(MarketError::Unauthorized);
     }
+
     if status.is_success() {
         Ok(body)
     } else {

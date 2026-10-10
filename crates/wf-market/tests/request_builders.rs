@@ -335,10 +335,12 @@ fn encoded_path_segments() {
         order.url().as_str(),
         "https://api.warframe.market/v2/order/5f1e%2F..%2F..%2Fme"
     );
-    let item = client.item_request("braton prime#set?x=1").unwrap();
+    let orders = client
+        .orders_for_item_request("braton prime#set?x=1")
+        .unwrap();
     assert_eq!(
-        item.url().as_str(),
-        "https://api.warframe.market/v2/items/braton%20prime%23set%3Fx%3D1"
+        orders.url().as_str(),
+        "https://api.warframe.market/v2/orders/item/braton%20prime%23set%3Fx%3D1"
     );
     let auctions = client.auctions_my_request("Tenno Krys").unwrap();
     assert_eq!(

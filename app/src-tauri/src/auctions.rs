@@ -30,6 +30,7 @@ impl AuctionCache {
                 document: None,
                 checked_at: None,
             });
+
         let fresh = match cached.checked_at {
             Some(at) => at.elapsed() < Duration::from_secs(600),
             None => false,
@@ -43,6 +44,7 @@ impl AuctionCache {
             }
             cached.checked_at = Some(Instant::now());
         }
+
         Ok(cached.document.clone())
     }
 }

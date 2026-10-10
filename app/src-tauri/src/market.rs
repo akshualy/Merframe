@@ -120,12 +120,14 @@ impl MarketItems {
 pub async fn market_items(state: &Arc<AppState>) -> Option<Arc<MarketItems>> {
     let mut cache = state.market_items.lock().await;
     let cached = cache.clone();
+
     let now = Utc::now();
     if let Some(items) = &cached
         && !items.stale(now)
     {
         return cached;
     }
+
     match state.market().items().await {
         Ok(items) => {
             let indexed = lock(&state.core).index_market(&items);
@@ -221,12 +223,17 @@ pub fn order_row(
     let category = MarketCategory::of(item);
     let name = market_name(item);
     let rank = order.rank.unwrap_or(0);
+
     let counted_rank = match category {
         MarketCategory::Mods => take_rank_into_account.then_some(rank),
         MarketCategory::Arcanes => Some(rank),
         _ => None,
     };
     let owned = core.market_owned(record, name, counted_rank, order.subtype.as_deref());
+    let show_warning = order.order_type == OrderType::Sell
+        && owned < i64::from(order.quantity)
+        && !is_necramech_set(category, name);
+
     let ranked = matches!(category, MarketCategory::Mods | MarketCategory::Arcanes);
     let off_rank_zero = ranked && rank > 0;
     let at_max_rank = (off_rank_zero && item.max_rank == Some(rank))
@@ -239,9 +246,7 @@ pub fn order_row(
             .map(|plat| Lowest::RankZero { plat }),
         None => prices.plat(&item.slug).map(|plat| Lowest::AtRank { plat }),
     };
-    let show_warning = order.order_type == OrderType::Sell
-        && owned < i64::from(order.quantity)
-        && !is_necramech_set(category, name);
+
     OrderRow {
         id: order.id.clone(),
         order_type: order.order_type,
@@ -290,6 +295,7 @@ impl Listings {
         if let Some(auctions) = auctions {
             own.auctions = auctions.to_vec();
         }
+
         let listings = MarketListings::new(
             own.orders
                 .rows
@@ -298,6 +304,7 @@ impl Listings {
             &own.auctions,
         );
         drop(own);
+
         lock(core).set_market_listings(listings);
     }
 }
@@ -306,6 +313,7 @@ pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Marke
     let items = market_items(state).await?;
     let take_rank_into_account = read(&state.settings).market.take_rank_into_account;
     let core = lock(&state.core);
+
     let mut index = IndexSet::new();
     let rows = orders
         .iter()
@@ -327,6 +335,7 @@ pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Marke
             })
         })
         .collect();
+
     Some(MarketOrders {
         items: index.into_iter().collect(),
         rows,
