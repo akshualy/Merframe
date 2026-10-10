@@ -3,15 +3,16 @@ use std::time::{Duration, Instant};
 
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
-use wf_market::{MarketError, Platform, Session};
+use wf_market::MarketError;
 
 use super::{
     MARKET_SIGNED_OUT_POLL, market_refresh, market_snapshot, refresh_failed, sign_out,
     signed_in_slug,
 };
 use crate::market::MarketSnapshot;
+use crate::market_session;
 use crate::runtime::{AppEvent, emit};
-use crate::settings::{self, MarketAccount};
+use crate::settings::MarketAccount;
 use crate::state::{AppState, lock, read, write};
 
 pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
@@ -19,7 +20,7 @@ pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
     let mut verified_at: Option<Instant> = None;
     let mut emitted: Option<MarketSnapshot> = None;
     loop {
-        if !state.market().has_token() {
+        if state.market().token().is_none() {
             failures = 0;
             verified_at = None;
             tokio::time::sleep(MARKET_SIGNED_OUT_POLL).await;
@@ -105,34 +106,20 @@ async fn checked_session<R: Runtime>(
 
     if let Some(token) = &session.rotated_token {
         debug!("Warframe.market issued a new token");
-        if let Err(error) = settings::set_token(app, Some(token)) {
+        if let Err(error) = market_session::store_token(app, state, token.clone()) {
             warn!(%error, "Rotated token save failed");
         }
-        *write(&state.market) = Arc::new(
-            wf_market::Client::new(state.http.clone(), Platform::Pc).with_token(token.clone()),
-        );
     }
 
-    let account = account_of(&session);
+    let account = MarketAccount::from(&session);
     if !was_signed_in {
         info!(account = account.ingame_name, "Warframe.market signed in");
-        if let Err(error) = settings::set_account(app, Some(&account)) {
+        if let Err(error) = market_session::record_account(app, state, account.clone()) {
             warn!(%error, "Market account save failed");
         }
-        write(&state.status).market_account = Some(account.clone());
-        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
     }
 
     Some(account.slug)
-}
-
-fn account_of(session: &Session) -> MarketAccount {
-    MarketAccount {
-        ingame_name: session.user.ingame_name.clone(),
-        slug: session.user.slug.clone(),
-        tier: session.user.tier.clone(),
-        mastery_rank: session.user.mastery_rank,
-    }
 }
 
 async fn refresh_unread<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {

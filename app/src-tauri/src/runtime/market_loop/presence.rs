@@ -7,21 +7,16 @@ use wf_market::{IncomingEvent, MarketSocket, StatusSetPayload, UserStatus};
 
 use super::{MARKET_SIGNED_OUT_POLL, sign_out, signed_in_slug};
 use crate::runtime::{AppEvent, emit};
-use crate::settings;
 use crate::state::{AppState, read, write};
 
 pub(crate) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut failures: u32 = 0;
     loop {
-        let token = match settings::token(&app) {
-            Ok(Some(token)) if signed_in_slug(&state).is_some() => token,
-            Ok(_) => {
+        let token = match state.market().token() {
+            Some(token) if signed_in_slug(&state).is_some() => token.to_owned(),
+            _ => {
                 tokio::time::sleep(MARKET_SIGNED_OUT_POLL).await;
                 continue;
-            }
-            Err(error) => {
-                warn!(%error, "Stored market token unreadable, presence task stopped");
-                return;
             }
         };
 

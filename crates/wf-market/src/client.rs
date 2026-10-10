@@ -46,8 +46,8 @@ impl Client {
         self
     }
 
-    pub fn has_token(&self) -> bool {
-        self.token.is_some()
+    pub fn token(&self) -> Option<&str> {
+        self.token.as_deref()
     }
 
     fn request_builder(

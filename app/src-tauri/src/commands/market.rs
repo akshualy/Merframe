@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use std::time::Instant;
 
 use chrono::Utc;
@@ -8,7 +7,7 @@ use wf_core::{
     ListingChoices, market_icon, market_name, riven_listing_payload, riven_listing_update,
 };
 use wf_market::{
-    Auction, CreateOrderRequest, ItemListings, Order, OrderType, Platform, UpdateAuctionRequest,
+    Auction, CreateOrderRequest, ItemListings, Order, OrderType, UpdateAuctionRequest,
     UpdateOrderRequest, UserStatus, order_rejection,
 };
 
@@ -16,8 +15,9 @@ use super::{Shared, missing_inventory, ready};
 
 use crate::error::{CommandError, CommandResult};
 use crate::market::{self, MarketOrders, MarketSnapshot, Presence};
+use crate::market_session;
 use crate::runtime::{self, AppEvent};
-use crate::settings::{self, MarketAccount};
+use crate::settings::MarketAccount;
 use crate::state::{lock, read, write};
 
 pub(super) fn unlisted_items() -> CommandError {
@@ -74,47 +74,24 @@ pub async fn market_login<R: Runtime>(
     let state = ready(&state).await?;
 
     let token = state.market().login(&email, &password).await?;
-    *write(&state.market) = Arc::new(
-        wf_market::Client::new(state.http.clone(), Platform::Pc).with_token(token.clone()),
-    );
-
-    let session = state.market().me().await?;
+    let probe = state.anonymous_market().with_token(token.clone());
+    let session = probe.me().await?;
     if !session.user.verification {
-        *write(&state.market) = Arc::new(wf_market::Client::new(state.http.clone(), Platform::Pc));
         return Err(CommandError::from(
             "warframe.market has not verified this account yet, confirm the email it sent you",
         ));
     }
 
-    settings::set_token(&app, Some(&token))?;
-    let account = MarketAccount {
-        ingame_name: session.user.ingame_name,
-        slug: session.user.slug,
-        tier: session.user.tier,
-        mastery_rank: session.user.mastery_rank,
-    };
-    settings::set_account(&app, Some(&account))?;
-    write(&state.status).market_account = Some(account.clone());
-    runtime::emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+    market_session::store_token(&app, &state, token)?;
+    let account = MarketAccount::from(&session);
+    market_session::record_account(&app, &state, account.clone())?;
     Ok(account)
 }
 
 #[tauri::command]
 pub async fn market_logout<R: Runtime>(app: AppHandle<R>, state: Shared<'_>) -> CommandResult<()> {
     let state = ready(&state).await?;
-    settings::set_token(&app, None)?;
-    settings::set_account(&app, None)?;
-    *write(&state.market) = Arc::new(wf_market::Client::new(state.http.clone(), Platform::Pc));
-
-    let mut status = write(&state.status);
-    status.market_account = None;
-    status.market_unread = 0;
-    drop(status);
-
-    state
-        .listings
-        .remember(&state.core, Some(&MarketOrders::default()), Some(&[]));
-    runtime::emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+    market_session::clear(&app, &state)?;
     Ok(())
 }
 

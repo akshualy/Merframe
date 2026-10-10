@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
 use wf_core::{AlertSettings, DucateringFilter, DucateringHidden, MasteryOptions, MasteryOrdering};
-use wf_market::{OrderType, Reach, TraderStatus};
+use wf_market::{OrderType, Reach, Session, TraderStatus};
 
 pub const STORE_FILE: &str = "merframe.json";
 const TOKEN_FILE: &str = "market_token";
@@ -419,6 +419,17 @@ pub struct MarketAccount {
     pub slug: String,
     pub tier: String,
     pub mastery_rank: u32,
+}
+
+impl From<&Session> for MarketAccount {
+    fn from(session: &Session) -> Self {
+        Self {
+            ingame_name: session.user.ingame_name.clone(),
+            slug: session.user.slug.clone(),
+            tier: session.user.tier.clone(),
+            mastery_rank: session.user.mastery_rank,
+        }
+    }
 }
 
 #[derive(Deserialize)]

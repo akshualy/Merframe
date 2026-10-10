@@ -167,6 +167,10 @@ pub struct AppState {
     pub images: ImageCache,
 }
 
+fn anonymous_client(http: &reqwest::Client) -> Client {
+    Client::new(http.clone(), Platform::Pc)
+}
+
 pub fn data_dir<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<PathBuf> {
     Ok(app
         .path()
@@ -213,7 +217,7 @@ impl AppState {
         let core = Core::new(store, catalog, price_source, settings.alerts.clone())
             .context("Reading the local store")?;
 
-        let mut market = Client::new(http.clone(), Platform::Pc);
+        let mut market = anonymous_client(&http);
         if let Some(token) = settings::token(app)? {
             market = market.with_token(token);
         }
@@ -256,6 +260,10 @@ impl AppState {
 
     pub fn market(&self) -> Arc<Client> {
         Arc::clone(&read(&self.market))
+    }
+
+    pub fn anonymous_market(&self) -> Client {
+        anonymous_client(&self.http)
     }
 
     pub fn status_snapshot(&self) -> GameStatus {
