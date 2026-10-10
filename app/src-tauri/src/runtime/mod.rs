@@ -41,7 +41,7 @@ pub enum AppEvent {
     FavouriteUpdated,
     MarketUpdated(MarketSnapshot),
     MarketAutoClosed(MarketAutoClose),
-    MarketSignedOut,
+    MarketSessionRejected,
     MarketPresence(Presence),
     OverlayState(Box<OverlayState>),
 }

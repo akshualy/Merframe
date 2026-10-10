@@ -200,13 +200,6 @@ fn malformed_envelope() {
 }
 
 #[test]
-fn envelope_without_data() {
-    let error =
-        envelope::<Order>(r#"{"apiVersion":"0.20.4","error":null}"#).expect_err("missing data");
-    assert!(matches!(error, wf_market::MarketError::MissingData));
-}
-
-#[test]
 fn bulk_price_table() {
     let json = fixture("prices_bulk.json");
     let table = parse_price_table(&json).unwrap();

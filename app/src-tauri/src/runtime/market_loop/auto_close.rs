@@ -133,15 +133,13 @@ pub(crate) async fn auto_close<R: Runtime>(
     }
 }
 
-pub(crate) fn trade_side(trade: &Trade) -> Option<(OrderType, &[TradeItem], u32)> {
+pub(crate) fn trade_side(trade: &Trade) -> Option<(OrderType, &[TradeItem], i64)> {
     if trade.received.is_empty() && trade.plat > 0 {
-        let plat = u32::try_from(trade.plat).ok()?;
-        return Some((OrderType::Sell, &trade.offered, plat));
+        return Some((OrderType::Sell, &trade.offered, trade.plat));
     }
 
     if trade.offered.is_empty() && trade.plat < 0 {
-        let plat = u32::try_from(-trade.plat).ok()?;
-        return Some((OrderType::Buy, &trade.received, plat));
+        return Some((OrderType::Buy, &trade.received, -trade.plat));
     }
 
     None
@@ -209,7 +207,7 @@ fn auction_slug(auction: &Auction) -> String {
 fn matching_order<'a>(
     market_item: &Item,
     side: OrderType,
-    plat: u32,
+    plat: i64,
     item: &TradedItem,
     orders: &'a [Order],
 ) -> Option<(&'a Order, u32)> {
@@ -228,7 +226,7 @@ fn matching_order<'a>(
 
             (
                 other_refinement,
-                order.platinum.abs_diff(plat),
+                i64::from(order.platinum).abs_diff(plat),
                 rank_distance,
                 order.quantity,
             )

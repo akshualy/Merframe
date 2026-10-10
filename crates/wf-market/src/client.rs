@@ -79,7 +79,7 @@ impl Client {
     }
 
     async fn send(&self, request: Request) -> Result<reqwest::Response> {
-        let _permit = self.rate_limiter.acquire().await?;
+        let _permit = self.rate_limiter.acquire().await;
         let response = self.http.execute(request).await?;
 
         if response.status() == StatusCode::TOO_MANY_REQUESTS {
