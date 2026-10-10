@@ -100,7 +100,7 @@ impl Client {
     pub fn items_request(&self) -> Result<Request> {
         Ok(self
             .http
-            .get("https://api.yareli.net/v1/items")
+            .get("https://api.merframe.net/v1/items")
             .timeout(REQUEST_TIMEOUT)
             .build()?)
     }

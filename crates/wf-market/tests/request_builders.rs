@@ -21,7 +21,7 @@ fn items_request() {
     let client = client();
     let request = client.items_request().unwrap();
     assert_eq!(request.method(), reqwest::Method::GET);
-    assert_eq!(request.url().as_str(), "https://api.yareli.net/v1/items");
+    assert_eq!(request.url().as_str(), "https://api.merframe.net/v1/items");
     assert!(request.headers().get("Authorization").is_none());
 }
 

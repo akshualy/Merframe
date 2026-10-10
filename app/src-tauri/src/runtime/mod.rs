@@ -8,7 +8,6 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_notification::NotificationExt;
 use tracing::{debug, error, info, warn};
 use wf_core::CoreEvent;
-use wf_market::RivenData;
 
 use crate::envelope::CoreEventEnvelope;
 use crate::market::{MarketSnapshot, Presence};
@@ -77,34 +76,7 @@ async fn bootstrap<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     } else {
         info!(riven_types, "Riven stat tables loaded");
     }
-    load_cached_riven_data(&state).await;
     emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
-}
-
-async fn load_cached_riven_data(state: &Arc<AppState>) {
-    let owned = Arc::clone(state);
-    let loaded = tauri::async_runtime::spawn_blocking(move || {
-        lock(&owned.core)
-            .store()
-            .setting::<RivenData>(RIVEN_DATA_KEY)
-            .context("Reading the stored riven data")
-    })
-    .await
-    .map_err(anyhow::Error::from)
-    .flatten();
-    match loaded {
-        Ok(Some(data)) => {
-            info!(
-                weapons = data.weapons.len(),
-                good_rolls = data.good_rolls.len(),
-                updated_at = data.updated_at,
-                "Riven weapon and roll data restored from the store"
-            );
-            lock(&state.core).set_riven_data(data);
-        }
-        Ok(None) => debug!("No stored riven data yet"),
-        Err(error) => warn!(?error, "Stored riven data unreadable"),
-    }
 }
 
 async fn load_cached_inventory<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {

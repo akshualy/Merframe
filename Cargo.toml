@@ -14,7 +14,7 @@ serde_json = "1"
 thiserror = "2"
 anyhow = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "fs", "io-util"] }
-reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "gzip"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "gzip", "brotli"] }
 tracing = "0.1"
 memchr = "2"
 rusqlite = { version = "0.37", features = ["bundled"] }

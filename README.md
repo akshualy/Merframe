@@ -101,7 +101,7 @@ All third party calls are item-specific lookups and carry no information outside
 Services Merframe talks to:
 - `api.warframe.com`: the public world state, polled every 5 to 10 minutes.
 - `api.warframe.market`: orders and riven auctions. Prices work without a login, only listing items needs one.
-- `api.yareli.net`: a price cache run by me, so that Merframe does not ask warframe.market for every item separately. The app fetches this every 15 minutes by default and only downloads it when it changed. The cache itself checks Prime parts and sets every 30 minutes, other items with orders every 4 hours, the rest daily, and refreshes trade volumes and the 90-day history once a day. A price in Merframe is for Prime items at most about half an hour old, for anything else likely a couple hours.
+- `api.merframe.net`: a price cache run by me, so that Merframe does not ask warframe.market for every item separately. The app fetches this every 15 minutes by default and only downloads it when it changed. The cache itself checks Prime parts and sets every 30 minutes, other items with orders every 4 hours, the rest daily, and refreshes trade volumes and the 90-day history once a day. A price in Merframe is for Prime items at most about half an hour old, for anything else likely a couple hours.
 - `raw.githubusercontent.com`: item data from WFCD's `warframe-items`.
 - `cdn.warframestat.us`: item images, downloaded once and kept in the app data directory.
 - A Discord webhook, only if you set one up under notifications.
