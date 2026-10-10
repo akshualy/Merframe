@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use std::time::Instant;
 
 use chrono::Utc;
@@ -8,7 +7,7 @@ use wf_core::{
     ListingChoices, market_icon, market_name, riven_listing_payload, riven_listing_update,
 };
 use wf_market::{
-    Auction, CreateOrderRequest, ItemListings, Order, OrderType, Platform, UpdateAuctionRequest,
+    Auction, CreateOrderRequest, ItemListings, Order, OrderType, UpdateAuctionRequest,
     UpdateOrderRequest, UserStatus, order_rejection,
 };
 
@@ -16,8 +15,9 @@ use super::{Shared, missing_inventory, ready};
 
 use crate::error::{CommandError, CommandResult};
 use crate::market::{self, MarketOrders, MarketSnapshot, Presence};
+use crate::market_session;
 use crate::runtime::{self, AppEvent};
-use crate::settings::{self, MarketAccount};
+use crate::settings::MarketAccount;
 use crate::state::{lock, read, write};
 
 pub(super) fn unlisted_items() -> CommandError {
@@ -72,55 +72,77 @@ pub async fn market_login<R: Runtime>(
     password: String,
 ) -> CommandResult<MarketAccount> {
     let state = ready(&state).await?;
-    let token = state.market().login(&email, &password).await?;
-    *write(&state.market) = Arc::new(
-        wf_market::Client::new(state.http.clone(), Platform::Pc).with_token(token.clone()),
-    );
 
-    let session = state.market().me().await?;
+    let token = state.market().login(&email, &password).await?;
+    let probe = state.anonymous_market().with_token(token.clone());
+    let session = probe.me().await?;
     if !session.user.verification {
-        *write(&state.market) = Arc::new(wf_market::Client::new(state.http.clone(), Platform::Pc));
         return Err(CommandError::from(
             "warframe.market has not verified this account yet, confirm the email it sent you",
         ));
     }
-    settings::set_token(&app, Some(&token))?;
-    let account = MarketAccount {
-        ingame_name: session.user.ingame_name,
-        slug: session.user.slug,
-        tier: session.user.tier,
-        mastery_rank: session.user.mastery_rank,
-    };
-    settings::set_account(&app, Some(&account))?;
-    write(&state.status).market_account = Some(account.clone());
-    runtime::emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+
+    market_session::store_token(&app, &state, token)?;
+    let account = MarketAccount::from(&session);
+    market_session::record_account(&app, &state, account.clone())?;
     Ok(account)
 }
 
 #[tauri::command]
 pub async fn market_logout<R: Runtime>(app: AppHandle<R>, state: Shared<'_>) -> CommandResult<()> {
     let state = ready(&state).await?;
-    settings::set_token(&app, None)?;
-    settings::set_account(&app, None)?;
-    *write(&state.market) = Arc::new(wf_market::Client::new(state.http.clone(), Platform::Pc));
-    let mut status = write(&state.status);
-    status.market_account = None;
-    status.market_unread = 0;
-    drop(status);
-    state
-        .listings
-        .remember(&state.core, Some(&MarketOrders::default()), Some(&[]));
-    runtime::emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+    market_session::clear(&app, &state)?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn market_items(state: Shared<'_>) -> CommandResult<Vec<MarketItem>> {
+    let state = ready(&state).await?;
+
+    let listed = market::market_items(&state)
+        .await
+        .ok_or_else(unlisted_items)?;
+
+    let core = lock(&state.core);
+    let mut items: Vec<MarketItem> = listed
+        .items()
+        .iter()
+        .map(|item| MarketItem {
+            name: market_name(item).to_owned(),
+            image_name: market_icon(core.catalog(), item),
+            id: item.id.clone(),
+            slug: item.slug.clone(),
+            ducats: item.ducats,
+            tradable: item.tradable,
+            bulk_tradable: item.bulk_tradable,
+            max_rank: item.max_rank,
+            tags: item.tags.clone(),
+            subtypes: item.subtypes.clone().unwrap_or_default(),
+            max_amber_stars: item.max_amber_stars,
+            max_cyan_stars: item.max_cyan_stars,
+        })
+        .collect();
+    items.sort_unstable_by(|a, b| a.name.cmp(&b.name));
+
+    Ok(items)
+}
+
+#[tauri::command]
+pub async fn market_item_orders(state: Shared<'_>, slug: String) -> CommandResult<ItemListings> {
+    let state = ready(&state).await?;
+    let reach = read(&state.settings).trader_reach();
+    Ok(state.market().item_listings(&slug, &reach).await?)
 }
 
 #[tauri::command]
 pub async fn market_my_orders(state: Shared<'_>) -> CommandResult<MarketOrders> {
     let state = ready(&state).await?;
+
     let orders = state.market().orders_my().await?;
     let rows = market::order_rows(&state, &orders)
         .await
         .ok_or_else(unlisted_items)?;
+
     state.listings.remember(&state.core, Some(&rows), None);
     Ok(rows)
 }
@@ -132,6 +154,7 @@ pub async fn market_post_order<R: Runtime>(
     order: NewOrder,
 ) -> CommandResult<Order> {
     let state = ready(&state).await?;
+
     let body = CreateOrderRequest {
         item_id: order.item_id,
         order_type: order.order_type,
@@ -151,6 +174,7 @@ pub async fn market_post_order<R: Runtime>(
                 None => error.into(),
             }
         })?;
+
     let orders = state.market().orders_my().await?;
     let rows = market::order_rows(&state, &orders).await;
     state.listings.remember(&state.core, rows.as_ref(), None);
@@ -162,6 +186,7 @@ pub async fn market_post_order<R: Runtime>(
             at: Utc::now(),
         }),
     );
+
     Ok(posted)
 }
 
@@ -193,62 +218,15 @@ pub async fn market_delete_order(state: Shared<'_>, id: String) -> CommandResult
 }
 
 #[tauri::command]
-pub async fn market_presence(state: Shared<'_>) -> CommandResult<Presence> {
-    let state = ready(&state).await?;
-    Ok(*read(&state.market_presence))
-}
-
-#[tauri::command]
-pub async fn market_set_presence(
-    state: Shared<'_>,
-    status: Option<UserStatus>,
-    auto: bool,
-) -> CommandResult<Presence> {
-    let state = ready(&state).await?;
-    let mut presence = write(&state.market_presence);
-    presence.status = status;
-    presence.auto = auto;
-    let presence = *presence;
-    state.market_presence_wake.notify_one();
-    Ok(presence)
-}
-
-#[tauri::command]
-pub async fn market_activity(state: Shared<'_>) -> CommandResult<()> {
-    let state = ready(&state).await?;
-    *lock(&state.market_activity) = Some(Instant::now());
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn market_remove_all(state: Shared<'_>) -> CommandResult<u32> {
-    let state = ready(&state).await?;
-    let client = state.market();
-    let orders = client.orders_my().await?;
-    let mut closed = 0;
-    for order in orders {
-        match client.delete_order(&order.id).await {
-            Ok(_) => closed += 1,
-            Err(error) => {
-                tracing::warn!(
-                    order = order.id,
-                    %error,
-                    "Order delete failed",
-                );
-            }
-        }
-    }
-    Ok(closed)
-}
-
-#[tauri::command]
 pub async fn market_fix_orders(state: Shared<'_>, id: Option<String>) -> CommandResult<u32> {
     let state = ready(&state).await?;
+
     let client = state.market();
     let orders = client.orders_my().await?;
     let listed = market::order_rows(&state, &orders)
         .await
         .ok_or_else(unlisted_items)?;
+
     let wanted = listed
         .rows
         .iter()
@@ -267,6 +245,7 @@ pub async fn market_fix_orders(state: Shared<'_>, id: Option<String>) -> Command
             }
             Err(_) => continue,
         };
+
         match repaired {
             Ok(()) => fixed += 1,
             Err(error) => {
@@ -279,7 +258,32 @@ pub async fn market_fix_orders(state: Shared<'_>, id: Option<String>) -> Command
             }
         }
     }
+
     Ok(fixed)
+}
+
+#[tauri::command]
+pub async fn market_remove_all(state: Shared<'_>) -> CommandResult<u32> {
+    let state = ready(&state).await?;
+
+    let client = state.market();
+    let orders = client.orders_my().await?;
+
+    let mut closed = 0;
+    for order in orders {
+        match client.delete_order(&order.id).await {
+            Ok(_) => closed += 1,
+            Err(error) => {
+                tracing::warn!(
+                    order = order.id,
+                    %error,
+                    "Order delete failed",
+                );
+            }
+        }
+    }
+
+    Ok(closed)
 }
 
 #[tauri::command]
@@ -293,48 +297,13 @@ pub async fn market_set_visibility(state: Shared<'_>, visible: bool) -> CommandR
 }
 
 #[tauri::command]
-pub async fn market_items(state: Shared<'_>) -> CommandResult<Vec<MarketItem>> {
-    let state = ready(&state).await?;
-    let listed = market::market_items(&state)
-        .await
-        .ok_or_else(unlisted_items)?;
-    let core = lock(&state.core);
-    let mut items: Vec<MarketItem> = listed
-        .items()
-        .iter()
-        .map(|item| MarketItem {
-            name: market_name(item).to_owned(),
-            image_name: market_icon(core.catalog(), item),
-            id: item.id.clone(),
-            slug: item.slug.clone(),
-            ducats: item.ducats,
-            tradable: item.tradable,
-            bulk_tradable: item.bulk_tradable,
-            max_rank: item.max_rank,
-            tags: item.tags.clone(),
-            subtypes: item.subtypes.clone().unwrap_or_default(),
-            max_amber_stars: item.max_amber_stars,
-            max_cyan_stars: item.max_cyan_stars,
-        })
-        .collect();
-    items.sort_unstable_by(|a, b| a.name.cmp(&b.name));
-    Ok(items)
-}
-
-#[tauri::command]
-pub async fn market_item_orders(state: Shared<'_>, slug: String) -> CommandResult<ItemListings> {
-    let state = ready(&state).await?;
-    let reach = read(&state.settings).trader_reach();
-    Ok(state.market().item_listings(&slug, &reach).await?)
-}
-
-#[tauri::command]
 pub async fn market_post_riven(
     state: Shared<'_>,
     item_id: String,
     choices: ListingChoices,
 ) -> CommandResult<String> {
     let state = ready(&state).await?;
+
     let payload = {
         let core = lock(&state.core);
         let tab = core.rivens_tab().ok_or_else(missing_inventory)?;
@@ -347,18 +316,21 @@ pub async fn market_post_riven(
             CommandError::from("This riven has no warframe.market attribute mapping")
         })?
     };
+
     Ok(state.market().create_auction(&payload).await?.id)
 }
 
 #[tauri::command]
 pub async fn market_my_auctions(state: Shared<'_>) -> CommandResult<Vec<Auction>> {
     let state = ready(&state).await?;
+
     let slug = read(&state.status)
         .market_account
         .as_ref()
         .map(|account| account.slug.clone())
         .ok_or_else(|| CommandError::from("Sign in to warframe.market first"))?;
     let auctions = state.market().auctions_my(&slug).await?;
+
     state.listings.remember(&state.core, None, Some(&auctions));
     Ok(auctions)
 }
@@ -398,4 +370,35 @@ pub async fn market_close_auction(state: Shared<'_>, id: String) -> CommandResul
 pub async fn market_set_auctions_visibility(state: Shared<'_>, visible: bool) -> CommandResult<()> {
     let state = ready(&state).await?;
     Ok(state.market().set_auctions_visibility(visible).await?)
+}
+
+#[tauri::command]
+pub async fn market_presence(state: Shared<'_>) -> CommandResult<Presence> {
+    let state = ready(&state).await?;
+    Ok(*read(&state.market_presence))
+}
+
+#[tauri::command]
+pub async fn market_set_presence(
+    state: Shared<'_>,
+    status: Option<UserStatus>,
+    auto: bool,
+) -> CommandResult<Presence> {
+    let state = ready(&state).await?;
+
+    let mut guard = write(&state.market_presence);
+    guard.status = status;
+    guard.auto = auto;
+    let presence = *guard;
+    drop(guard);
+
+    state.market_presence_wake.notify_one();
+    Ok(presence)
+}
+
+#[tauri::command]
+pub async fn market_activity(state: Shared<'_>) -> CommandResult<()> {
+    let state = ready(&state).await?;
+    *lock(&state.market_activity) = Some(Instant::now());
+    Ok(())
 }

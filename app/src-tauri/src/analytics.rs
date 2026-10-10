@@ -138,7 +138,6 @@ pub fn trade_analytics(
             None if item.rank.is_some() => TradeCategory::Riven,
             None => TradeCategory::Other,
         };
-        let value = i64::from(plat);
         let total = TradedTotal {
             name: listed.map_or_else(
                 || item.name.clone(),
@@ -146,7 +145,7 @@ pub fn trade_analytics(
             ),
             image_name: listed.and_then(|listed| market_icon(catalog, listed)),
             amount: item.count,
-            value,
+            value: plat,
         };
         let statement = categories.entry(category).or_insert(CategoryStatement {
             category,
@@ -155,11 +154,11 @@ pub fn trade_analytics(
         });
         match side {
             OrderType::Sell => {
-                statement.revenue += value;
+                statement.revenue += plat;
                 add_traded(&mut analytics.sold, total);
             }
             OrderType::Buy => {
-                statement.expenses += value;
+                statement.expenses += plat;
                 add_traded(&mut analytics.bought, total);
             }
         }

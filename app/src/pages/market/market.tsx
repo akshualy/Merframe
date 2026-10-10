@@ -51,7 +51,7 @@ export function MarketPage() {
   const tab = (params.get("tab") as MarketTab | null) ?? "orders";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [signedOut, setSignedOut] = useState(false);
+  const [sessionRejected, setSessionRejected] = useState(false);
   const account = status?.market_account ?? null;
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export function MarketPage() {
     }
   }, [account, reload]);
 
-  useListen("marketSignedOut", () => setSignedOut(true));
+  useListen("marketSessionRejected", () => setSessionRejected(true));
 
   useListen("marketUpdated", () => setError(null));
 
@@ -121,7 +121,7 @@ export function MarketPage() {
   );
 
   const handleSignedIn = useCallback(async () => {
-    setSignedOut(false);
+    setSessionRejected(false);
     try {
       setStatus(await api.gameStatus());
     } catch (error) {
@@ -190,7 +190,7 @@ export function MarketPage() {
           </Button>
         }
       >
-        {signedOut && (
+        {sessionRejected && (
           <ErrorNote message="warframe.market rejected the stored session" />
         )}
         <LoginCard onDone={handleSignedIn} />

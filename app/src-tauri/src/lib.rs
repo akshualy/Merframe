@@ -6,6 +6,7 @@ pub mod error;
 mod focus;
 pub mod images;
 pub mod market;
+mod market_session;
 pub mod notice;
 pub mod overlay;
 pub mod runtime;

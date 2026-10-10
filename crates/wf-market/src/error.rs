@@ -14,8 +14,6 @@ pub enum MarketError {
     Unauthorized,
     #[error(transparent)]
     Decode(#[from] serde_json::Error),
-    #[error("Response without a data field")]
-    MissingData,
     #[cfg(feature = "fetch")]
     #[error(transparent)]
     Transport(#[from] reqwest::Error),
@@ -24,8 +22,6 @@ pub enum MarketError {
     WebSocket(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("Login response without a JWT authorization header")]
     MissingJwt,
-    #[error("Request limiter closed")]
-    LimiterClosed,
 }
 
 #[cfg(feature = "fetch")]

@@ -4,8 +4,6 @@ use std::time::Duration;
 use tokio::sync::{Mutex, OwnedSemaphorePermit, Semaphore};
 use tokio::time::Instant;
 
-use crate::error::{MarketError, Result};
-
 pub fn shared() -> RateLimiter {
     static SHARED: LazyLock<RateLimiter> =
         LazyLock::new(|| RateLimiter::new(3, Duration::from_secs(1)));
@@ -30,22 +28,25 @@ impl RateLimiter {
         }
     }
 
-    pub async fn acquire(&self) -> Result<OwnedSemaphorePermit> {
+    pub async fn acquire(&self) -> OwnedSemaphorePermit {
         let Ok(permit) = Arc::clone(&self.in_flight).acquire_owned().await else {
-            return Err(MarketError::LimiterClosed);
+            unreachable!()
         };
         let mut last = self.last_dispatch.lock().await;
+
         let resume_at = *self.resume_at.lock().await;
         if let Some(resume) = resume_at {
             tokio::time::sleep_until(resume).await;
         }
+
         if let Some(previous) = *last
             && let Some(remaining) = self.interval.checked_sub(previous.elapsed())
         {
             tokio::time::sleep(remaining).await;
         }
+
         *last = Some(Instant::now());
-        Ok(permit)
+        permit
     }
 
     pub async fn back_off(&self, after: Duration) {
@@ -63,7 +64,7 @@ mod tests {
         let limiter = RateLimiter::new(3, Duration::from_secs(1));
         let start = tokio::time::Instant::now();
         for _ in 0..4 {
-            drop(limiter.acquire().await.unwrap());
+            drop(limiter.acquire().await);
         }
         assert!(start.elapsed() >= Duration::from_millis(333));
     }
@@ -73,10 +74,10 @@ mod tests {
         let limiter = RateLimiter::new(3, Duration::from_secs(1));
         limiter.back_off(Duration::from_secs(45)).await;
         let start = tokio::time::Instant::now();
-        drop(limiter.acquire().await.unwrap());
+        drop(limiter.acquire().await);
         assert!(start.elapsed() >= Duration::from_secs(45));
         let resumed = tokio::time::Instant::now();
-        drop(limiter.acquire().await.unwrap());
+        drop(limiter.acquire().await);
         assert!(resumed.elapsed() < Duration::from_secs(1));
     }
 
@@ -84,15 +85,15 @@ mod tests {
     async fn caps_requests_in_flight() {
         let limiter = RateLimiter::new(3, Duration::from_secs(1));
         let held: Vec<_> = [
-            limiter.acquire().await.unwrap(),
-            limiter.acquire().await.unwrap(),
-            limiter.acquire().await.unwrap(),
+            limiter.acquire().await,
+            limiter.acquire().await,
+            limiter.acquire().await,
         ]
         .into();
         assert_eq!(limiter.in_flight.available_permits(), 0);
         let fourth = tokio::spawn({
             let limiter = limiter.clone();
-            async move { limiter.acquire().await.unwrap() }
+            async move { limiter.acquire().await }
         });
         tokio::time::sleep(Duration::from_secs(5)).await;
         assert!(!fourth.is_finished());

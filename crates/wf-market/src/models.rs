@@ -170,7 +170,7 @@ pub struct OrdersGroupUpdate {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ApiEnvelope<T> {
-    pub data: Option<T>,
+    pub data: T,
 }
 
 #[derive(Debug, Clone, Serialize)]

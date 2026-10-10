@@ -81,6 +81,7 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
     let mut rivens_checked_at: Option<Instant> = None;
     loop {
         let mut wait = PRICE_INTERVAL;
+
         if checked_at.is_none_or(|at| at.elapsed() >= PRICE_INTERVAL) {
             match load_price_table(&app, &state, &mut client).await {
                 Ok(_) => checked_at = Some(Instant::now()),
@@ -95,6 +96,7 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
                 }
             }
         }
+
         if rivens_checked_at.is_none_or(|at| at.elapsed() >= RIVEN_INTERVAL) {
             match load_riven_data(&app, &state, &mut rivens).await {
                 Ok(()) => rivens_checked_at = Some(Instant::now()),
@@ -109,6 +111,7 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
                 }
             }
         }
+
         tokio::select! {
             () = state.prices_wake.notified() => {}
             () = tokio::time::sleep(wait) => {}
@@ -150,6 +153,7 @@ async fn load_riven_data<R: Runtime>(
         debug!("Riven data etag matches, nothing to load");
         return Ok(());
     };
+
     info!(
         weapons = data.weapons.len(),
         attributes = data.attributes.len(),
@@ -157,6 +161,7 @@ async fn load_riven_data<R: Runtime>(
         updated_at = data.updated_at,
         "Riven weapon and roll data downloaded"
     );
+
     let stored = StoredRivenData {
         etag: client.etag().map(str::to_owned),
         data,
@@ -167,6 +172,7 @@ async fn load_riven_data<R: Runtime>(
     }
     core.set_riven_data(stored.data);
     drop(core);
+
     emit(app, AppEvent::RivenDataUpdated);
     Ok(())
 }
@@ -177,6 +183,7 @@ async fn load_price_table<R: Runtime>(
     client: &mut Etagged<PriceTable>,
 ) -> wf_market::Result<usize> {
     market::market_items(state).await;
+
     let now = Utc::now();
     let Some(table) = client.fetch().await? else {
         state.prices.checked(now);
@@ -184,6 +191,7 @@ async fn load_price_table<R: Runtime>(
         emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
         return Ok(0);
     };
+
     let loaded = state.prices.load(&table, now);
     info!(
         loaded,
@@ -191,6 +199,7 @@ async fn load_price_table<R: Runtime>(
         updated_at = table.updated_at,
         "Prices refreshed from the bulk table"
     );
+
     emit(app, AppEvent::PricesUpdated);
     emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
     Ok(loaded)

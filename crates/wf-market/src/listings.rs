@@ -60,6 +60,7 @@ pub fn item_listings(orders: Vec<Order>, reach: &Reach) -> ItemListings {
         .into_iter()
         .filter(|order| reach.covers(order))
         .partition(|order| order.order_type == OrderType::Sell);
+
     sell.sort_by(by_unit_price);
     buy.sort_by(|left, right| by_unit_price(right, left));
     ItemListings { sell, buy }

@@ -1,4 +1,4 @@
-use crate::error::{MarketError, Result};
+use crate::error::Result;
 use crate::models::{ApiEnvelope, Auction, Chat, PriceTable, RivenData, V1Payload, WeaponAuctions};
 
 pub fn envelope<T>(json: &str) -> Result<T>
@@ -6,7 +6,7 @@ where
     T: serde::de::DeserializeOwned,
 {
     let envelope: ApiEnvelope<T> = serde_json::from_str(json)?;
-    envelope.data.ok_or(MarketError::MissingData)
+    Ok(envelope.data)
 }
 
 pub fn v1_payload<T>(json: &str) -> Result<T>

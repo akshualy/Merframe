@@ -53,7 +53,7 @@ export function EventBridge() {
     };
   }, [setWorld]);
   useListen("marketUpdated", applySnapshot);
-  useListen("marketSignedOut", clearListings);
+  useListen("marketSessionRejected", clearListings);
   useListen("marketPresence", setPresence);
   useListen("marketAutoClosed", (closed) => {
     const item =
