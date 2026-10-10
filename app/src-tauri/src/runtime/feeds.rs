@@ -3,6 +3,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::Context;
 use chrono::Utc;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
 use wf_core::CoreEvent;
@@ -16,6 +17,12 @@ use crate::state::{AppState, lock, read, write};
 const PRICE_RETRY: Duration = Duration::from_secs(60);
 const PRICE_INTERVAL: Duration = Duration::from_mins(15);
 const RIVEN_INTERVAL: Duration = Duration::from_hours(24);
+
+#[derive(Serialize, Deserialize)]
+struct StoredRivenData {
+    etag: Option<String>,
+    data: RivenData,
+}
 
 pub(super) async fn world_state_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut fetched_at: Option<Instant> = None;
@@ -57,7 +64,19 @@ async fn refresh_world_state<R: Runtime>(
 
 pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut client = bulk_prices(state.http.clone());
+
     let mut rivens = bulk_riven_data(state.http.clone());
+    if let Some(stored) = stored_riven_data(&state).await {
+        info!(
+            weapons = stored.data.weapons.len(),
+            good_rolls = stored.data.good_rolls.len(),
+            updated_at = stored.data.updated_at,
+            "Riven weapon and roll data restored from the store"
+        );
+        lock(&state.core).set_riven_data(stored.data);
+        rivens = rivens.with_etag(stored.etag);
+    }
+
     let mut checked_at: Option<Instant> = None;
     let mut rivens_checked_at: Option<Instant> = None;
     loop {
@@ -97,6 +116,31 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
     }
 }
 
+async fn stored_riven_data(state: &Arc<AppState>) -> Option<StoredRivenData> {
+    let owned = Arc::clone(state);
+    let loaded = tauri::async_runtime::spawn_blocking(move || {
+        lock(&owned.core)
+            .store()
+            .setting::<StoredRivenData>(RIVEN_DATA_KEY)
+            .context("Reading the stored riven data")
+    })
+    .await
+    .map_err(anyhow::Error::from)
+    .flatten();
+    match loaded {
+        Ok(stored) => {
+            if stored.is_none() {
+                debug!("No stored riven data yet");
+            }
+            stored
+        }
+        Err(error) => {
+            warn!(?error, "Stored riven data unreadable");
+            None
+        }
+    }
+}
+
 async fn load_riven_data<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
@@ -113,11 +157,15 @@ async fn load_riven_data<R: Runtime>(
         updated_at = data.updated_at,
         "Riven weapon and roll data downloaded"
     );
+    let stored = StoredRivenData {
+        etag: client.etag().map(str::to_owned),
+        data,
+    };
     let mut core = lock(&state.core);
-    if let Err(error) = core.store().set_setting(RIVEN_DATA_KEY, &data) {
+    if let Err(error) = core.store().set_setting(RIVEN_DATA_KEY, &stored) {
         warn!(%error, "Riven data store write failed");
     }
-    core.set_riven_data(data);
+    core.set_riven_data(stored.data);
     drop(core);
     emit(app, AppEvent::RivenDataUpdated);
     Ok(())

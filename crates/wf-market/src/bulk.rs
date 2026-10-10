@@ -18,7 +18,7 @@ pub struct Etagged<T> {
 pub fn bulk_prices(http: reqwest::Client) -> Etagged<PriceTable> {
     Etagged::new(
         http,
-        "https://api.yareli.net/v1/prices".to_owned(),
+        "https://api.merframe.net/v1/prices".to_owned(),
         parse::parse_price_table,
     )
 }
@@ -26,7 +26,7 @@ pub fn bulk_prices(http: reqwest::Client) -> Etagged<PriceTable> {
 pub fn bulk_riven_data(http: reqwest::Client) -> Etagged<RivenData> {
     Etagged::new(
         http,
-        "https://api.yareli.net/v1/riven".to_owned(),
+        "https://api.merframe.net/v1/riven".to_owned(),
         parse::parse_riven_data,
     )
 }
@@ -35,7 +35,7 @@ pub fn riven_auctions(http: reqwest::Client, weapon_slug: &str) -> Etagged<Weapo
     Etagged::new(
         http,
         format!(
-            "https://api.yareli.net/v1/riven/auctions/{}",
+            "https://api.merframe.net/v1/riven/auctions/{}",
             segment(weapon_slug)
         ),
         parse::parse_riven_auctions,
@@ -53,8 +53,18 @@ impl<T> Etagged<T> {
         }
     }
 
+    #[must_use]
+    pub fn with_etag(mut self, etag: Option<String>) -> Self {
+        self.etag = etag;
+        self
+    }
+
     pub fn url(&self) -> &str {
         &self.url
+    }
+
+    pub fn etag(&self) -> Option<&str> {
+        self.etag.as_deref()
     }
 
     pub async fn fetch(&mut self) -> Result<Option<T>> {
@@ -104,15 +114,15 @@ mod tests {
     }
 
     #[test]
-    fn yareli_urls() {
-        assert_eq!(prices().url(), "https://api.yareli.net/v1/prices");
+    fn merframe_urls() {
+        assert_eq!(prices().url(), "https://api.merframe.net/v1/prices");
         assert_eq!(
             bulk_riven_data(reqwest::Client::new()).url(),
-            "https://api.yareli.net/v1/riven"
+            "https://api.merframe.net/v1/riven"
         );
         assert_eq!(
             riven_auctions(reqwest::Client::new(), "torid").url(),
-            "https://api.yareli.net/v1/riven/auctions/torid"
+            "https://api.merframe.net/v1/riven/auctions/torid"
         );
     }
 
