@@ -3,4 +3,4 @@ import type { ItemStatus } from "./ItemStatus";
 import type { Prices } from "./Prices";
 import type { SetComponent } from "./SetComponent";
 
-export type SetRow = { item: number, owned_parts: number, total_parts: number, count: number, complete: boolean, status: ItemStatus, prices: Prices, components: Array<SetComponent>, };
+export type SetRow = { item: number, owned_parts: number, total_parts: number, count: number, complete: boolean, status: ItemStatus, prices: Prices, ducats: number, components: Array<SetComponent>, };

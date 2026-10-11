@@ -128,6 +128,7 @@ pub enum ItemKind {
     },
     Part {
         set: ItemRef,
+        ducats: Option<u32>,
     },
     Relic {
         refinement: Refinement,
@@ -180,6 +181,13 @@ impl ItemRecord {
         Self {
             vault: names_a_prime(&self.name).then(|| VaultStatus::from(vaulted)),
             ..self
+        }
+    }
+
+    pub fn ducats(&self) -> Option<u32> {
+        match self.kind {
+            ItemKind::Part { ducats, .. } => ducats,
+            _ => None,
         }
     }
 
@@ -338,7 +346,10 @@ impl ItemTable {
                         &component.unique_name,
                         part_name(item, component),
                         component_image(item, component),
-                        ItemKind::Part { set },
+                        ItemKind::Part {
+                            set,
+                            ducats: component.ducats,
+                        },
                     )
                     .slugged(part_market_slug(item, component))
                     .vaulted(item.vaulted)
@@ -551,9 +562,11 @@ mod tests {
             .as_deref(),
             Some("trinity_prime_systems_blueprint")
         );
-        let ItemKind::Part { set } = barrel.kind else {
+        let ItemKind::Part { set, ducats } = barrel.kind else {
             unreachable!();
         };
+        assert_eq!(ducats, Some(15));
+        assert_eq!(barrel.ducats(), ducats);
         assert_eq!(table[set].market_slug.as_deref(), Some("braton_prime_set"));
         assert_eq!(table.variant(BRATON, Variant::Set), Some(&table[set]));
         assert_eq!(slug_of(&table, BRATON).as_deref(), Some("braton_prime"));

@@ -143,9 +143,9 @@ export function buyPlat(entry: InventoryEntry): number | null {
 export function ducats(entry: InventoryEntry): number | null {
   switch (entry.kind) {
     case "part":
-    case "set":
-      return entry.row.prices.ducats;
     case "misc":
+      return entry.item.ducats;
+    case "set":
       return entry.row.ducats;
     default:
       return null;

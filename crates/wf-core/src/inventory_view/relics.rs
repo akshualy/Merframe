@@ -83,6 +83,7 @@ pub(crate) fn relics(view: &View, index: &mut ItemIndex) -> Vec<RelicRow> {
                         .and_then(|record| record.vault)
                         .unwrap_or(VaultStatus::Unknown),
                 ),
+                ducats: None,
             };
             Some(RelicRow {
                 item: index.add_marked(summary, favourites.contains(unique_name)),

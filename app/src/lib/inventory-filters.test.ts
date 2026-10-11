@@ -42,6 +42,7 @@ function summary(name: string, extra: Partial<ItemSummary> = {}): ItemSummary {
     market_slug: name.toLowerCase().replaceAll(" ", "_"),
     prime: name.includes("Prime"),
     vault: null,
+    ducats: null,
     ...extra,
   };
 }
@@ -53,15 +54,16 @@ function part(
   const row: PartRow = {
     item: 0,
     count: 1,
-    prices: {
-      sell: extra.plat ?? null,
-      buy: null,
-      ducats: extra.ducats ?? null,
-    },
+    prices: { sell: extra.plat ?? null, buy: null },
     set: { item: 1, complete: false },
     status: { built: false, mastered: false },
   };
-  return { kind: "part", row, item: summary(name), set: summary("Set") };
+  return {
+    kind: "part",
+    row,
+    item: summary(name, { ducats: extra.ducats ?? null }),
+    set: summary("Set"),
+  };
 }
 
 function set(name: string, owned: number, total: number): InventoryEntry {
@@ -74,7 +76,8 @@ function set(name: string, owned: number, total: number): InventoryEntry {
       count: 0,
       complete: owned === total,
       status: { built: false, mastered: false },
-      prices: { sell: null, buy: null, ducats: null },
+      prices: { sell: null, buy: null },
+      ducats: 0,
       components: [],
     },
     item: summary(name),
@@ -133,7 +136,6 @@ function modRow(
 const misc: MiscRow = {
   item: 4,
   count: 1,
-  ducats: null,
   plat: 3,
   market_subtype: null,
   stars: null,
@@ -155,7 +157,7 @@ const tab: InventoryTab = {
     {
       item: 0,
       count: 2,
-      prices: { sell: 8, buy: 5, ducats: 45 },
+      prices: { sell: 8, buy: 5 },
       set: { item: 1, complete: true },
       status: { built: true, mastered: false },
     },

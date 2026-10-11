@@ -159,7 +159,6 @@ fn record_row(
             view.favourites.contains(unique_name),
         ),
         count,
-        ducats: None,
         plat: record
             .market_slug
             .as_deref()
@@ -192,9 +191,6 @@ fn counted_rows(view: &View, index: &mut ItemIndex) -> Vec<MiscRow> {
         .into_iter()
         .filter(|(_, count)| *count > 0)
         .map(|((unique_name, stars), count)| MiscRow {
-            ducats: catalog
-                .component(unique_name)
-                .and_then(|(_, component)| component.ducats),
             market_subtype: catch_size(unique_name),
             stars,
             ..record_row(

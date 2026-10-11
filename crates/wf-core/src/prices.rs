@@ -21,7 +21,6 @@ pub trait PriceSource {
 pub struct Prices {
     pub sell: Option<f64>,
     pub buy: Option<f64>,
-    pub ducats: Option<u32>,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]

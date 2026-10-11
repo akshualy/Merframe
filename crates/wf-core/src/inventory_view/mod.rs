@@ -30,6 +30,7 @@ pub struct ItemSummary {
     pub market_slug: Option<String>,
     pub prime: bool,
     pub vault: Option<VaultStatus>,
+    pub ducats: Option<u32>,
 }
 
 impl ItemSummary {
@@ -41,6 +42,7 @@ impl ItemSummary {
             market_slug: record.market_slug.clone(),
             prime: record.prime,
             vault: record.vault,
+            ducats: record.ducats(),
         }
     }
 }
@@ -174,7 +176,6 @@ pub struct SculptureStars {
 pub struct MiscRow {
     pub item: usize,
     pub count: i64,
-    pub ducats: Option<u32>,
     pub plat: Option<f64>,
     pub market_subtype: Option<String>,
     pub stars: Option<SculptureStars>,
@@ -199,6 +200,7 @@ pub struct SetRow {
     pub complete: bool,
     pub status: ItemStatus,
     pub prices: Prices,
+    pub ducats: u32,
     pub components: Vec<SetComponent>,
 }
 

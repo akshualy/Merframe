@@ -113,9 +113,10 @@ pub(crate) fn entries(view: &View, filter: &DucateringFilter) -> Vec<DucateringE
                     .is_some_and(|slug| listed.contains(slug)))
         })
         .filter_map(|row| {
-            let ducats = row.prices.ducats.filter(|ducats| *ducats > 0)?;
+            let item = &index[row.item];
+            let ducats = item.ducats.filter(|ducats| *ducats > 0)?;
             Some(DucateringEntry {
-                item: index[row.item].clone(),
+                item: item.clone(),
                 count: u32::try_from(row.count).ok()?,
                 ducats,
                 plat: row.prices.sell,
@@ -264,6 +265,7 @@ mod tests {
                         market_slug: None,
                         prime: true,
                         vault: None,
+                        ducats: None,
                     },
                     count: *count,
                     ducats: 0,
