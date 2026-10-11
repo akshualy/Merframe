@@ -10,7 +10,7 @@ mod tree;
 
 pub(crate) use stock::FoundryStock;
 pub(crate) use tab::{items, tab};
-pub(crate) use tree::{details, is_blueprint};
+pub(crate) use tree::{details, farmed_resource, is_blueprint};
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]

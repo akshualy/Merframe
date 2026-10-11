@@ -3271,5 +3271,135 @@
   ],
   "tradable": false,
   "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Weapons/Infested/Melee/Glaives/PunctureGlaive/PunctureGlaiveWeapon",
+  "name": "Cerata",
+  "category": "Melee",
+  "type": "Melee",
+  "productCategory": "Melee",
+  "tradable": false,
+  "masterable": true,
+  "imageName": "Cerata.png",
+  "masteryReq": 7,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Weapons/ClanTech/Bio/PunctureGlaiveWeaponBlueprint",
+    "itemCount": 1
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Cryotic",
+    "itemCount": 2500
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Forma",
+    "itemCount": 1
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/Research/BioComponent",
+    "itemCount": 4
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Plastids",
+    "itemCount": 1200
+   }
+  ],
+  "buildPrice": 30000,
+  "buildTime": 86400,
+  "buildQuantity": 1
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Research/BioComponent",
+  "name": "Mutagen Mass",
+  "buildPrice": 15000,
+  "buildTime": 43200,
+  "buildQuantity": 1,
+  "components": [
+   {
+    "uniqueName": "/Lotus/Types/Items/Research/BioComponentBlueprint",
+    "itemCount": 1
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/ControlModule",
+    "itemCount": 1
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/Research/BioFragment",
+    "itemCount": 10
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Plastids",
+    "itemCount": 250
+   },
+   {
+    "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+    "itemCount": 500
+   }
+  ],
+  "type": "Resource",
+  "imageName": "InfestedComponent.png",
+  "category": "Resources",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/Research/BioFragment",
+  "name": "Mutagen Sample",
+  "type": "Resource",
+  "imageName": "InfestedFragment.png",
+  "category": "Resources",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/ControlModule",
+  "name": "Control Module",
+  "buildPrice": 15000,
+  "buildTime": 3600,
+  "buildQuantity": 1,
+  "type": "Resource",
+  "imageName": "ControlModule.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Cryotic",
+  "name": "Cryotic",
+  "type": "Resource",
+  "imageName": "ComponentCryotic.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Forma",
+  "name": "Forma",
+  "buildPrice": 35000,
+  "buildTime": 82800,
+  "buildQuantity": 1,
+  "type": "Equipment Adapter",
+  "imageName": "GenericComponent.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Plastids",
+  "name": "Plastids",
+  "type": "Resource",
+  "imageName": "ComponentPlastids.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
+ },
+ {
+  "uniqueName": "/Lotus/Types/Items/MiscItems/Salvage",
+  "name": "Salvage",
+  "type": "Resource",
+  "imageName": "ComponentSalvage.png",
+  "category": "Misc",
+  "tradable": false,
+  "masterable": false
  }
 ]

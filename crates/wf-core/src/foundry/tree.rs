@@ -289,7 +289,7 @@ fn mark_covered(node: &mut CraftNode) {
     }
 }
 
-fn farmed_resource(item: &Item) -> bool {
+pub(crate) fn farmed_resource(item: &Item) -> bool {
     item.category == "Resources" || FARMED_TYPES.contains(&item.item_type.as_str())
 }
 

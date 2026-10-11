@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use wf_inventory::{ArchonCrystalSlot, Inventory};
 
 use crate::catalog::{Catalog, Stock, item_name, part_identity};
-use crate::foundry::{self, CraftNode, FoundryItem, is_blueprint};
+use crate::foundry::{self, CraftNode, FoundryItem, farmed_resource, is_blueprint};
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
@@ -108,7 +108,7 @@ pub(crate) fn tab(
         };
         let mut needed: BTreeMap<&str, (&CraftNode, i64)> = BTreeMap::new();
         for node in &details.tree {
-            gather(node, 1, &mut needed);
+            gather(view.catalog, node, 1, &mut needed);
         }
         for (node, amount) in needed.into_values() {
             let row = rows
@@ -212,18 +212,21 @@ fn shards(inventory: &Inventory, catalog: &Catalog, stock: &Stock) -> Vec<ShardR
 }
 
 fn gather<'a>(
+    catalog: &Catalog,
     node: &'a CraftNode,
     runs: i64,
     needed: &mut BTreeMap<&'a str, (&'a CraftNode, i64)>,
 ) {
-    if !node.children.is_empty() {
+    let stocked_resource =
+        node.stocked && catalog.item(&node.unique_name).is_some_and(farmed_resource);
+    if !node.children.is_empty() && !stocked_resource {
         if node.stocked {
             return;
         }
         let missing = (node.short_by + node.crafts_queued) * runs;
         let crafts = (missing + node.per_craft - 1) / node.per_craft;
         for child in &node.children {
-            gather(child, crafts, needed);
+            gather(catalog, child, crafts, needed);
         }
         return;
     }
@@ -287,6 +290,10 @@ mod tests {
     const DUAL_KAMAS: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/DualKamas";
     const EXCALIBUR: &str = "/Lotus/Powersuits/Excalibur/Excalibur";
     const OROKIN_CELL: &str = "/Lotus/Types/Items/MiscItems/OrokinCell";
+    const CERATA_BLUEPRINT: &str = "/Lotus/Weapons/ClanTech/Bio/PunctureGlaiveWeaponBlueprint";
+    const MUTAGEN_MASS: &str = "/Lotus/Types/Items/Research/BioComponent";
+    const MUTAGEN_MASS_BLUEPRINT: &str = "/Lotus/Types/Items/Research/BioComponentBlueprint";
+    const MUTAGEN_SAMPLE: &str = "/Lotus/Types/Items/Research/BioFragment";
 
     fn resources(fixture: &Fixture, source: ResourceSource, scope: ResourceScope) -> ResourcesTab {
         tab(
@@ -627,6 +634,67 @@ mod tests {
     }
 
     #[test]
+    fn a_built_part_is_not_a_resource() {
+        const SINGLE_KAMA: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama";
+        let inventory =
+            fixtures::inventory_stocked(&[("Melee", SINGLE_KAMA), ("Melee", SINGLE_KAMA)], &[]);
+        let tab = resources(
+            &Fixture::new(fixtures::foundry_catalog(), inventory),
+            ResourceSource::Craftable,
+            ResourceScope::All,
+        );
+        assert!(
+            tab.resources
+                .iter()
+                .all(|row| row.unique_name != SINGLE_KAMA)
+        );
+        assert!(!amounts(&tab, DUAL_KAMAS).contains(&("Circuits", 900)));
+    }
+
+    #[test]
+    fn a_stocked_intermediate_stays_listed() {
+        let cerata = |masses| {
+            resources(
+                &Fixture::new(
+                    fixtures::mastery_catalog(),
+                    fixtures::inventory_stocked(
+                        &[],
+                        &[
+                            ("Recipes", CERATA_BLUEPRINT, 1),
+                            ("Recipes", MUTAGEN_MASS_BLUEPRINT, 1),
+                            ("MiscItems", MUTAGEN_MASS, masses),
+                        ],
+                    ),
+                ),
+                ResourceSource::Held,
+                ResourceScope::All,
+            )
+        };
+
+        let stocked = cerata(60);
+        let mass = row(&stocked, MUTAGEN_MASS);
+        assert_eq!((mass.owned, mass.required, mass.deficit), (60, 4, 0));
+        assert_eq!(used_by(mass), [("Cerata", 4)]);
+        assert!(
+            stocked
+                .resources
+                .iter()
+                .all(|row| row.unique_name != MUTAGEN_SAMPLE)
+        );
+
+        let short = cerata(0);
+        assert!(
+            short
+                .resources
+                .iter()
+                .all(|row| row.unique_name != MUTAGEN_MASS)
+        );
+        let sample = row(&short, MUTAGEN_SAMPLE);
+        assert_eq!(sample.required, 40);
+        assert_eq!(used_by(sample), [("Cerata", 40)]);
+    }
+
+    #[test]
     fn archon_shards_by_colour() {
         const AMBER: &str = "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNira";
         const TAUFORGED_AMBER: &str = "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNiraMythic";
@@ -677,9 +745,9 @@ mod tests {
             ResourceSource::Craftable,
             ResourceScope::All,
         );
-        assert_eq!(names(&tab), ["Grimoire"]);
+        assert_eq!(names(&tab), ["Cerata", "Grimoire"]);
         assert_eq!(
-            amounts(&tab, &tab.resources[0].used_by[0].unique_name),
+            amounts(&tab, "/Lotus/Weapons/Tenno/Grimoire/TnGrimoire"),
             [
                 ("Echo Voca", 15),
                 ("Entrati Lanthorn", 10),
