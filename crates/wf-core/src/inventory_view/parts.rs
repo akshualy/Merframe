@@ -74,7 +74,7 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
             if count <= 0 {
                 return None;
             }
-            let part = items.part(item, component)?;
+            let part = items.resolve(catalog, unique_name);
             let set = items.variant(&item.unique_name, Variant::Set)?;
             let slug = part.market_slug.as_deref();
             let favourite = favourites.any([
@@ -83,14 +83,14 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
                 item.unique_name.as_str(),
             ]);
             Some(PartRow {
-                item: index.add_marked(ItemSummary::new(unique_name, part), favourite),
+                item: index.add_marked(ItemSummary::from(&*part), favourite),
                 count,
                 prices: Prices {
                     sell: slug.and_then(|slug| prices.plat(slug)),
                     buy: slug.and_then(|slug| prices.buy_plat(slug)),
                 },
                 set: SetLink {
-                    item: index.add(ItemSummary::new(&item.unique_name, set)),
+                    item: index.add(ItemSummary::from(set)),
                     complete: set_is_complete(&account.stock, item),
                 },
                 status: ItemStatus {
@@ -195,7 +195,7 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
             let slug = set.market_slug.as_deref();
             Some(SetRow {
                 item: index.add_marked(
-                    ItemSummary::new(&item.unique_name, set),
+                    ItemSummary::from(set),
                     favourites.contains(&item.unique_name),
                 ),
                 owned_parts,
@@ -214,7 +214,7 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
                 components: parts
                     .iter()
                     .map(|part| SetComponent {
-                        item: index.add(ItemSummary::new(&part.record.unique_name, part.record)),
+                        item: index.add(ItemSummary::from(part.record)),
                         owned: part.owned,
                         required: part.required,
                         enough: part.enough(),

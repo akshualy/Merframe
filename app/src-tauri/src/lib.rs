@@ -143,7 +143,6 @@ pub fn run() {
             commands::tabs::stats_tab,
             commands::tabs::toggle_favourite,
             commands::tabs::relics_for,
-            commands::tabs::recommend,
             commands::app::game_status,
             commands::app::updates_supported,
             commands::app::overlay_state,

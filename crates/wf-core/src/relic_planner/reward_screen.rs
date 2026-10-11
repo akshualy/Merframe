@@ -1,12 +1,13 @@
 use std::collections::HashSet;
 
 use serde::Serialize;
-use wf_data::{Component, Item, store_item_to_type};
+use wf_data::{Component, Item};
 
 use crate::account::Account;
 use crate::catalog::{Catalog, DUCATS_ITEM, Stock, names_a_prime, part_identity};
 use crate::favourites::Favourites;
 use crate::identity::{ItemTable, Variant};
+use crate::inventory_view::ItemSummary;
 use crate::prices::PriceSource;
 
 use super::missing_parts;
@@ -15,15 +16,10 @@ use super::rewards::{RewardOwnership, favourite_reward};
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct Ranked {
-    pub store_item: String,
-    pub unique_name: String,
-    pub name: String,
-    pub image_name: Option<String>,
+    pub item: ItemSummary,
     pub plat: Option<f64>,
-    pub ducats: Option<u32>,
     pub set_plat: Option<f64>,
     pub ownership: Option<RewardOwnership>,
-    pub vaulted: bool,
     pub favourite: bool,
     pub best: bool,
     pub components: Vec<RankedComponent>,
@@ -32,9 +28,7 @@ pub struct Ranked {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct RankedComponent {
-    pub unique_name: String,
-    pub name: String,
-    pub image_name: Option<String>,
+    pub item: ItemSummary,
     pub owned: Option<i64>,
     pub needed: u32,
     pub enough: bool,
@@ -55,7 +49,7 @@ impl RewardScreen {
         self.ranked
             .iter()
             .filter_map(|reward| {
-                let name = reward.name.trim_end_matches(" Blueprint");
+                let name = reward.item.name.trim_end_matches(" Blueprint");
                 Some(format!("[{name}] {}:platinum:", reward.plat?.round()))
             })
             .collect::<Vec<_>>()
@@ -133,48 +127,40 @@ pub(crate) fn recommend(
     items: &ItemTable,
     prices: &dyn PriceSource,
     favourites: &Favourites,
-    rewards: &[String],
+    rewards: &[ItemSummary],
 ) -> RewardScreen {
     let holdings = account.map(|account| Holdings::new(account, catalog));
     let mut ranked: Vec<Ranked> = rewards
         .iter()
-        .map(|store_item| {
-            let unique_name = store_item_to_type(store_item);
-            let parent = catalog.component_for_reward(&unique_name);
-            let identity = items.resolve(catalog, &unique_name);
-            let name = identity.name.clone();
+        .map(|reward| {
+            let unique_name = reward.unique_name.as_str();
+            let parent = catalog.component_for_reward(unique_name);
             Ranked {
-                store_item: store_item.clone(),
-                image_name: identity.image_name.clone(),
-                plat: identity
+                item: reward.clone(),
+                plat: reward
                     .market_slug
                     .as_deref()
                     .and_then(|slug| prices.plat(slug)),
-                ducats: parent.and_then(|(_, component)| component.ducats),
                 set_plat: parent
                     .and_then(|(item, _)| items.variant(&item.unique_name, Variant::Set))
                     .and_then(|set| set.market_slug.as_deref())
                     .and_then(|slug| prices.plat(slug)),
                 ownership: holdings
                     .as_ref()
-                    .map(|holdings| holdings.ownership(&unique_name, parent)),
-                vaulted: parent.is_some_and(|(item, _)| item.vaulted.unwrap_or_default())
-                    && !name.contains("Forma Blueprint"),
-                favourite: favourite_reward(catalog, favourites, &unique_name),
+                    .map(|holdings| holdings.ownership(unique_name, parent)),
+                favourite: favourite_reward(catalog, favourites, unique_name),
                 best: false,
                 components: match parent {
                     Some((item, component)) => set_components(
                         items,
                         item,
                         &component.unique_name,
-                        &name,
+                        &reward.name,
                         account.map(|account| &account.stock),
                         favourites,
                     ),
                     None => Vec::new(),
                 },
-                unique_name,
-                name,
             }
         })
         .collect();
@@ -212,9 +198,7 @@ fn set_components(
             let part = items.part(item, component)?;
             let owned = stock.map(|stock| stock.count(&component.unique_name));
             Some(RankedComponent {
-                unique_name: component.unique_name.clone(),
-                name: part.name.clone(),
-                image_name: part.image_name.clone(),
+                item: ItemSummary::from(part),
                 owned,
                 needed: component.item_count,
                 enough: owned.is_some_and(|owned| owned >= i64::from(component.item_count)),
@@ -231,27 +215,55 @@ mod tests {
     use super::super::tests::prices;
     use super::*;
     use crate::account::Account;
-    use crate::catalog::fixtures;
+    use crate::catalog::{VaultStatus, fixtures};
     use crate::prices::FixedPrices;
     use wf_inventory::Inventory;
 
-    #[test]
-    fn kavasa_prime_band() {
-        let inventory = fixtures::inventory();
-        let catalog = fixtures::with_skins(fixtures::ITEMS);
-        let rewards = vec![
-            "/Lotus/StoreItems/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent"
-                .to_owned(),
-        ];
-        let screen = recommend(
+    const TRINITY_SYSTEMS_REWARD: &str =
+        "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
+    const TRINITY_SYSTEMS: &str =
+        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent";
+    const STYANAX_REWARD: &str =
+        "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint";
+    const FORMA_REWARD: &str = "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint";
+    const BRATON_STOCK_REWARD: &str =
+        "/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
+
+    fn rank(
+        account: Option<&Account>,
+        catalog: &Catalog,
+        prices: &dyn PriceSource,
+        favourites: &Favourites,
+        rewards: &[&str],
+    ) -> RewardScreen {
+        let items = ItemTable::build(catalog);
+        let rewards: Vec<ItemSummary> = rewards
+            .iter()
+            .map(|reward| ItemSummary::from(&*items.resolve(catalog, reward)))
+            .collect();
+        recommend(account, catalog, &items, prices, favourites, &rewards)
+    }
+
+    fn screen(inventory: Inventory, rewards: &[&str]) -> RewardScreen {
+        rank(
             Some(&Account::new(inventory)),
-            &catalog,
-            &ItemTable::build(&catalog),
+            &fixtures::catalog(),
             &prices(),
             &Favourites::default(),
-            &rewards,
+            rewards,
+        )
+    }
+
+    #[test]
+    fn kavasa_prime_band() {
+        let screen = rank(
+            Some(&Account::new(fixtures::inventory())),
+            &fixtures::with_skins(fixtures::ITEMS),
+            &prices(),
+            &Favourites::default(),
+            &["/Lotus/StoreItems/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent"],
         );
-        let band = &screen.ranked[0];
+        let band = &screen.ranked[0].item;
         assert_eq!(band.name, "Kavasa Prime Band");
         assert_eq!(band.ducats, Some(45));
         assert_eq!(
@@ -262,21 +274,9 @@ mod tests {
 
     #[test]
     fn chat_line_priced_rewards() {
-        let inventory = fixtures::inventory();
-        let catalog = fixtures::catalog();
-        let rewards = vec![
-            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint"
-                .to_owned(),
-        ];
-        let screen = recommend(
-            Some(&Account::new(inventory)),
-            &catalog,
-            &ItemTable::build(&catalog),
-            &prices(),
-            &Favourites::default(),
-            &rewards,
+        let screen = screen(
+            fixtures::inventory(),
+            &[STYANAX_REWARD, FORMA_REWARD, TRINITY_SYSTEMS_REWARD],
         );
         assert_eq!(
             screen.chat_line(),
@@ -286,29 +286,21 @@ mod tests {
 
     #[test]
     fn screen_order_and_best() {
-        let inventory = fixtures::inventory();
-        let catalog = fixtures::catalog();
-        let rewards = vec![
-            "/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint"
-                .to_owned(),
-        ];
-        let ranked = recommend(
-            Some(&Account::new(inventory)),
-            &catalog,
-            &ItemTable::build(&catalog),
-            &prices(),
-            &Favourites::default(),
-            &rewards,
+        let ranked = screen(
+            fixtures::inventory(),
+            &[
+                "/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock",
+                STYANAX_REWARD,
+                FORMA_REWARD,
+                TRINITY_SYSTEMS_REWARD,
+            ],
         )
         .ranked;
         assert_eq!(ranked.len(), 4);
-        assert_eq!(ranked[0].name, "Alternox Prime Stock");
-        assert_eq!(ranked[1].name, "Styanax Prime Blueprint");
-        assert_eq!(ranked[2].name, "Forma Blueprint");
-        assert_eq!(ranked[3].name, "Trinity Prime Systems");
+        assert_eq!(ranked[0].item.name, "Alternox Prime Stock");
+        assert_eq!(ranked[1].item.name, "Styanax Prime Blueprint");
+        assert_eq!(ranked[2].item.name, "Forma Blueprint");
+        assert_eq!(ranked[3].item.name, "Trinity Prime Systems");
 
         assert!(!ranked[0].best);
         assert!(ranked[1].best);
@@ -317,7 +309,7 @@ mod tests {
 
         assert_eq!(ranked[1].plat, Some(100.0));
         assert_eq!(ranked[3].plat, Some(12.0));
-        assert_eq!(ranked[3].ducats, Some(15));
+        assert_eq!(ranked[3].item.ducats, Some(15));
         assert!(ranked[3].ownership.unwrap().needed_for_set);
         assert_eq!(ranked[3].ownership.unwrap().owned, 0);
         assert_eq!(ranked[2].plat, None);
@@ -327,27 +319,18 @@ mod tests {
 
     #[test]
     fn starred_part_or_parent() {
-        let inventory = fixtures::inventory();
-        let catalog = fixtures::catalog();
-        let rewards = vec![
-            "/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint"
-                .to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint".to_owned(),
-        ];
         let starred: Favourites = [
             "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
             "/Lotus/Powersuits/Trinity/TrinityPrime",
         ]
         .into_iter()
         .collect();
-        let ranked = recommend(
-            Some(&Account::new(inventory)),
-            &catalog,
-            &ItemTable::build(&catalog),
+        let ranked = rank(
+            Some(&Account::new(fixtures::inventory())),
+            &fixtures::catalog(),
             &prices(),
             &starred,
-            &rewards,
+            &[BRATON_STOCK_REWARD, TRINITY_SYSTEMS_REWARD, FORMA_REWARD],
         )
         .ranked;
         assert!(ranked[0].favourite, "the part itself is starred");
@@ -357,22 +340,27 @@ mod tests {
         );
         assert!(!ranked[2].favourite);
     }
-    const TRINITY_SYSTEMS_REWARD: &str =
-        "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
-    const TRINITY_SYSTEMS: &str =
-        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent";
-    const FORMA_REWARD: &str = "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint";
 
-    fn screen(inventory: Inventory, rewards: &[&str]) -> RewardScreen {
-        let rewards: Vec<String> = rewards.iter().map(|reward| (*reward).to_owned()).collect();
-        recommend(
-            Some(&Account::new(inventory)),
+    #[test]
+    fn blueprint_reward_keeps_its_own_name() {
+        const TRINITY_SYSTEMS_BLUEPRINT: &str =
+            "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
+        let starred: Favourites = [TRINITY_SYSTEMS_BLUEPRINT].into_iter().collect();
+        let ranked = rank(
+            Some(&Account::new(fixtures::inventory_owning(&[(
+                TRINITY_SYSTEMS_BLUEPRINT,
+                2,
+            )]))),
             &fixtures::catalog(),
-            &ItemTable::build(&fixtures::catalog()),
             &prices(),
-            &Favourites::default(),
-            &rewards,
+            &starred,
+            &[TRINITY_SYSTEMS_REWARD],
         )
+        .ranked;
+        assert_eq!(ranked[0].item.unique_name, TRINITY_SYSTEMS_BLUEPRINT);
+        assert_eq!(ranked[0].item.name, "Trinity Prime Systems");
+        assert!(ranked[0].favourite);
+        assert_eq!(ranked[0].ownership.unwrap().owned, 2);
     }
 
     fn inventory_without_trinity_prime(building: Option<&str>) -> Inventory {
@@ -442,19 +430,18 @@ mod tests {
     }
 
     #[test]
-    fn vaulted_flag() {
+    fn vault_status() {
         let ranked = screen(
             fixtures::inventory(),
-            &[
-                TRINITY_SYSTEMS_REWARD,
-                "/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                FORMA_REWARD,
-            ],
+            &[TRINITY_SYSTEMS_REWARD, BRATON_STOCK_REWARD, FORMA_REWARD],
         )
         .ranked;
-        assert!(ranked[0].vaulted, "Trinity Prime is vaulted");
-        assert!(!ranked[1].vaulted, "Braton Prime is not");
-        assert!(!ranked[2].vaulted, "a Forma blueprint is never vaulted");
+        assert_eq!(ranked[0].item.vault, Some(VaultStatus::Vaulted));
+        assert_eq!(ranked[1].item.vault, Some(VaultStatus::Available));
+        assert_eq!(
+            ranked[2].item.vault, None,
+            "a Forma blueprint is never vaulted"
+        );
     }
 
     #[test]
@@ -475,21 +462,21 @@ mod tests {
         assert!(
             components
                 .iter()
-                .all(|component| !component.unique_name.contains("MiscItems"))
+                .all(|component| !component.item.unique_name.contains("MiscItems"))
         );
         let systems = components
             .iter()
-            .find(|component| component.unique_name == TRINITY_SYSTEMS)
+            .find(|component| component.item.unique_name == TRINITY_SYSTEMS)
             .unwrap();
         assert!(systems.this_reward);
-        assert_eq!(systems.name, "Trinity Prime Systems");
+        assert_eq!(systems.item.name, "Trinity Prime Systems");
         assert_eq!(systems.owned, Some(1));
         assert_eq!(systems.needed, 1);
         assert!(systems.enough);
         assert!(
             components
                 .iter()
-                .filter(|component| component.unique_name != TRINITY_SYSTEMS)
+                .filter(|component| component.item.unique_name != TRINITY_SYSTEMS)
                 .all(|component| !component.this_reward && !component.enough)
         );
 
@@ -503,20 +490,19 @@ mod tests {
     #[test]
     fn starred_component() {
         let starred: Favourites = [TRINITY_SYSTEMS].into_iter().collect();
-        let ranked = recommend(
+        let ranked = rank(
             Some(&Account::new(fixtures::inventory())),
             &fixtures::catalog(),
-            &ItemTable::build(&fixtures::catalog()),
             &prices(),
             &starred,
-            &[TRINITY_SYSTEMS_REWARD.to_owned()],
+            &[TRINITY_SYSTEMS_REWARD],
         )
         .ranked;
         let stars: Vec<&str> = ranked[0]
             .components
             .iter()
             .filter(|component| component.favourite)
-            .map(|component| component.unique_name.as_str())
+            .map(|component| component.item.unique_name.as_str())
             .collect();
         assert_eq!(stars, vec![TRINITY_SYSTEMS]);
     }
@@ -546,17 +532,16 @@ mod tests {
 
     #[test]
     fn no_inventory() {
-        let screen = recommend(
+        let screen = rank(
             None,
             &fixtures::catalog(),
-            &ItemTable::build(&fixtures::catalog()),
             &prices(),
             &Favourites::default(),
-            &[TRINITY_SYSTEMS_REWARD.to_owned(), FORMA_REWARD.to_owned()],
+            &[TRINITY_SYSTEMS_REWARD, FORMA_REWARD],
         );
         assert_eq!(screen.account, None);
         let systems = &screen.ranked[0];
-        assert_eq!(systems.name, "Trinity Prime Systems");
+        assert_eq!(systems.item.name, "Trinity Prime Systems");
         assert_eq!(systems.set_plat, Some(140.0));
         assert_eq!(systems.ownership, None);
         assert!(!systems.components.is_empty());
@@ -570,20 +555,13 @@ mod tests {
 
     #[test]
     fn unpriced_rewards_all_best() {
-        let inventory = fixtures::inventory();
-        let catalog = fixtures::catalog();
         let unpriced = FixedPrices::new([("nothing_this_relic_drops", 1.0)]);
-        let rewards = vec![
-            "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint".to_owned(),
-        ];
-        let ranked = recommend(
-            Some(&Account::new(inventory)),
-            &catalog,
-            &ItemTable::build(&catalog),
+        let ranked = rank(
+            Some(&Account::new(fixtures::inventory())),
+            &fixtures::catalog(),
             &unpriced,
             &Favourites::default(),
-            &rewards,
+            &[FORMA_REWARD, STYANAX_REWARD],
         )
         .ranked;
         assert!(ranked.iter().all(|entry| entry.best));

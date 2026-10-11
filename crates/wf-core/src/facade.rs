@@ -20,7 +20,7 @@ use crate::export::{ExportBundle, export};
 use crate::favourites::Favourites;
 use crate::foundry::{self, FoundryTab};
 use crate::identity::{ItemRecord, ItemTable};
-use crate::inventory_view::{self, InventoryTab};
+use crate::inventory_view::{self, InventoryTab, ItemSummary};
 use crate::listings::MarketListings;
 use crate::mastery::{self, MasteryOptions, MasteryTab};
 use crate::prices::PriceSource;
@@ -251,13 +251,26 @@ impl Core {
         generation: u64,
         screen: ScannedRewards,
     ) -> Result<Vec<CoreEvent>> {
+        if !self
+            .engine
+            .announce_reward_screen(generation, screen.rewards.len())
+        {
+            return Ok(Vec::new());
+        }
+
         let relic = screen
             .own_relic_type
             .and_then(|relic_type| self.catalog.relic_by_unique_name(&relic_type))
             .map(|(relic, _)| relic.name.clone());
-        let events = self
-            .engine
-            .handle_reward_screen(generation, relic, screen.rewards);
+        let rewards: Vec<ItemSummary> = screen
+            .rewards
+            .iter()
+            .map(|reward| ItemSummary::from(&*self.items.resolve(&self.catalog, reward)))
+            .collect();
+        let events = vec![CoreEvent::RelicRewardScreen {
+            relic,
+            screen: self.recommend(&rewards),
+        }];
         self.record(&events, now)?;
         Ok(events)
     }
@@ -268,13 +281,13 @@ impl Core {
                 CoreEvent::TradeCompleted { at, partner, trade } => {
                     self.store.record_trade(*at, partner.as_deref(), trade)?;
                 }
-                CoreEvent::RelicRewardScreen { relic, rewards } => {
+                CoreEvent::RelicRewardScreen { relic, screen } => {
                     if let (Some(relic), Some(reward)) = (relic, &self.own_relic_reward)
                         && !relic.contains(REQUIEM_MARKER)
                         && !std::mem::replace(&mut self.reward_screen_recorded, true)
                     {
                         self.store
-                            .record_relic_opening(now, relic, reward, rewards.len())?;
+                            .record_relic_opening(now, relic, reward, screen.ranked.len())?;
                     }
                 }
                 _ => {}
@@ -379,7 +392,7 @@ impl Core {
         ))
     }
 
-    pub fn recommend(&self, rewards: &[String]) -> RewardScreen {
+    pub fn recommend(&self, rewards: &[ItemSummary]) -> RewardScreen {
         relic_planner::recommend(
             self.account.as_ref(),
             &self.catalog,
@@ -897,7 +910,13 @@ mod tests {
                 },
             )
             .unwrap();
-        assert_eq!(events.len(), 1);
+        let [CoreEvent::RelicRewardScreen { relic, screen }] = events.as_slice() else {
+            panic!("one reward screen event, got {events:?}");
+        };
+        assert_eq!(relic.as_deref(), Some("Axi A21"));
+        assert_eq!(screen.ranked[0].item.name, "Styanax Prime Blueprint");
+        assert!(screen.account.is_none());
+        assert!(screen.ranked[0].ownership.is_none());
 
         let events = core
             .handle_trade_screen(
@@ -952,12 +971,6 @@ mod tests {
             vec![1, 0, 0]
         );
         assert!(stats.summary.is_none());
-
-        let screen = core.recommend(&[
-            "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint".to_owned(),
-        ]);
-        assert!(screen.account.is_none());
-        assert!(screen.ranked[0].ownership.is_none());
     }
 
     #[test]

@@ -2,8 +2,8 @@ use chrono::Utc;
 use tauri::{AppHandle, Runtime};
 use wf_core::{
     ComparedStat, CraftDetails, FoundryTab, InventoryTab, MasteryOptions, MasteryOrdering,
-    MasteryTab, RelicPlannerTab, RelicSource, ResourceQuery, ResourcesTab, RewardScreen,
-    RivenComparables, RivensTab, StatsTab,
+    MasteryTab, RelicPlannerTab, RelicSource, ResourceQuery, ResourcesTab, RivenComparables,
+    RivensTab, StatsTab,
 };
 
 use super::{Shared, compute, ready, since};
@@ -120,16 +120,4 @@ pub async fn relics_for(
 ) -> CommandResult<Vec<RelicSource>> {
     let state = ready(&state).await?;
     compute(state, move |core| core.relics_for(&part_unique_name)).await
-}
-
-#[tauri::command]
-pub async fn recommend(state: Shared<'_>, rewards: Vec<String>) -> CommandResult<RewardScreen> {
-    let state = ready(&state).await?;
-    let balance_shown = read(&state.settings).overlays.overlay_account_balance;
-    let mut screen =
-        tauri::async_runtime::spawn_blocking(move || lock(&state.core).recommend(&rewards)).await?;
-    if !balance_shown {
-        screen.account = None;
-    }
-    Ok(screen)
 }

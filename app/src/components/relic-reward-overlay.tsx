@@ -2,7 +2,6 @@ import { Star } from "lucide-react";
 import { useEffect } from "react";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage, prefetchImages } from "@/components/item-image";
-import { EmptyNote } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { num } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
@@ -58,8 +57,8 @@ function RewardComponentTile({ component }: { component: RankedComponent }) {
     <span
       title={
         component.owned === null
-          ? component.name
-          : `${component.name}: ${num(component.owned)} of ${num(component.needed)}`
+          ? component.item.name
+          : `${component.item.name}: ${num(component.owned)} of ${num(component.needed)}`
       }
       className={cn(
         "bg-background relative flex size-9 items-center justify-center rounded-full border",
@@ -69,7 +68,7 @@ function RewardComponentTile({ component }: { component: RankedComponent }) {
       )}
     >
       <ItemImage
-        imageName={component.image_name}
+        imageName={component.item.image_name}
         size={24}
         className="bg-transparent"
       />
@@ -91,7 +90,7 @@ function RewardComponentTile({ component }: { component: RankedComponent }) {
 
 function RewardTile({ reward, compact }: { reward: Ranked; compact: boolean }) {
   const keys = occurrenceKeys(
-    reward.components.map((component) => component.unique_name),
+    reward.components.map((component) => component.item.unique_name),
   );
   return (
     <li
@@ -104,14 +103,14 @@ function RewardTile({ reward, compact }: { reward: Ranked; compact: boolean }) {
       <span className="flex items-center gap-2">
         {!compact && (
           <ItemImage
-            imageName={reward.image_name}
+            imageName={reward.item.image_name}
             size={32}
-            alt={reward.name}
+            alt={reward.item.name}
           />
         )}
         <span className="flex min-w-0 flex-1 items-start gap-1.5">
           <span className="line-clamp-2 text-sm leading-tight font-medium">
-            {reward.name}
+            {reward.item.name}
           </span>
           {reward.favourite && (
             <Star
@@ -125,8 +124,8 @@ function RewardTile({ reward, compact }: { reward: Ranked; compact: boolean }) {
 
       <span className="flex items-center gap-2">
         <Platinum amount={num(reward.plat)} className="text-sm font-bold" />
-        <Ducats amount={num(reward.ducats)} className="text-sm" />
-        {reward.vaulted && (
+        <Ducats amount={num(reward.item.ducats)} className="text-sm" />
+        {reward.item.vault === "vaulted" && (
           <Badge variant="vaulted" className="ml-auto">
             Vaulted
           </Badge>
@@ -175,18 +174,16 @@ export function RelicRewardOverlay({
 }) {
   useEffect(() => {
     prefetchImages([
-      ...screen.ranked.map((reward) => reward.image_name),
+      ...screen.ranked.map((reward) => reward.item.image_name),
       ...screen.ranked.flatMap((reward) =>
-        reward.components.map((component) => component.image_name),
+        reward.components.map((component) => component.item.image_name),
       ),
     ]);
   }, [screen]);
 
-  if (screen.ranked.length === 0) {
-    return <EmptyNote>The reward prices could not be loaded.</EmptyNote>;
-  }
-
-  const keys = occurrenceKeys(screen.ranked.map((reward) => reward.store_item));
+  const keys = occurrenceKeys(
+    screen.ranked.map((reward) => reward.item.unique_name),
+  );
   return (
     <div className="flex flex-col gap-2">
       <ul className="flex flex-wrap justify-center gap-2">

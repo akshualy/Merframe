@@ -208,7 +208,7 @@ pub fn order_summary(item: &Item, record: &ItemRecord, catalog: &Catalog) -> Ite
         name: market_name(item).to_owned(),
         image_name: market_icon(catalog, item),
         market_slug: Some(item.slug.clone()),
-        ..ItemSummary::new(&record.unique_name, record)
+        ..ItemSummary::from(record)
     }
 }
 

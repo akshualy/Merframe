@@ -9,6 +9,7 @@ pub use alerts::{
 };
 pub(crate) use engine::{Engine, inventory_events};
 
+use crate::relic_planner::RewardScreen;
 use crate::trade::Trade;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -61,13 +62,13 @@ pub struct ScannedTrade {
     pub received: Vec<ScannedTradeItem>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub enum CoreEvent {
     InventoryUpdated(InventorySummary),
     RelicRewardScreen {
         relic: Option<String>,
-        rewards: Vec<String>,
+        screen: RewardScreen,
     },
     TradeCompleted {
         at: DateTime<Utc>,

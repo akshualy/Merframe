@@ -28,7 +28,6 @@ import type {
   RelicSource,
   ResourceQuery,
   ResourcesTab,
-  RewardScreen,
   RivenComparables,
   RivensTab,
   Settings,
@@ -136,8 +135,6 @@ export const api = {
     call<boolean>("toggle_favourite", { uniqueName }),
   relicsFor: (partUniqueName: string) =>
     call<RelicSource[]>("relics_for", { partUniqueName }),
-  recommend: (rewards: string[]) =>
-    call<RewardScreen>("recommend", { rewards }),
   gameStatus: () => call<GameStatus>("game_status"),
   updatesSupported: () => call<boolean>("updates_supported"),
   overlayState: () => call<OverlayState>("overlay_state"),

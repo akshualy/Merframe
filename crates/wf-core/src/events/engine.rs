@@ -158,19 +158,12 @@ impl Engine {
         !std::mem::replace(&mut self.reward_screen.scan_started, true)
     }
 
-    pub fn handle_reward_screen(
-        &mut self,
-        generation: u64,
-        relic: Option<String>,
-        rewards: Vec<String>,
-    ) -> Vec<CoreEvent> {
-        if generation != self.reward_screen.generation
-            || rewards.len() <= self.reward_screen.announced
-        {
-            return Vec::new();
+    pub fn announce_reward_screen(&mut self, generation: u64, rewards: usize) -> bool {
+        if generation != self.reward_screen.generation || rewards <= self.reward_screen.announced {
+            return false;
         }
-        self.reward_screen.announced = rewards.len();
-        vec![CoreEvent::RelicRewardScreen { relic, rewards }]
+        self.reward_screen.announced = rewards;
+        true
     }
 
     fn new_conversation(&mut self, channel: &str, now: DateTime<Utc>) -> Vec<CoreEvent> {
@@ -267,13 +260,6 @@ mod tests {
         }));
     }
 
-    fn screen() -> Vec<String> {
-        vec![
-            "/Lotus/StoreItems/Types/Recipes/Weapons/PrimeDaikyuBlueprint".to_owned(),
-            "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint".to_owned(),
-        ]
-    }
-
     fn matching_settings() -> AlertSettings {
         AlertSettings {
             fissure_notifications_enabled: true,
@@ -299,62 +285,30 @@ mod tests {
         let generation = engine.reward_screen_generation();
         assert!(engine.start_reward_scan());
         assert!(!engine.start_reward_scan());
-        assert_eq!(
-            engine.handle_reward_screen(generation, Some("Lith K12".to_owned()), screen()),
-            vec![CoreEvent::RelicRewardScreen {
-                relic: Some("Lith K12".to_owned()),
-                rewards: screen(),
-            }]
-        );
-        assert!(
-            engine
-                .handle_reward_screen(generation, None, screen())
-                .is_empty()
-        );
+        assert!(engine.announce_reward_screen(generation, 2));
+        assert!(!engine.announce_reward_screen(generation, 2));
 
         engine.handle_log_event(&LogEvent::RelicRewardScreenOpened, now);
         assert!(engine.start_reward_scan());
-        assert!(
-            engine
-                .handle_reward_screen(generation, None, screen())
-                .is_empty()
-        );
+        assert!(!engine.announce_reward_screen(generation, 2));
         let next = engine.reward_screen_generation();
-        assert_eq!(engine.handle_reward_screen(next, None, screen()).len(), 1);
+        assert!(engine.announce_reward_screen(next, 2));
     }
 
     #[test]
     fn fuller_rescan() {
         let mut engine = Engine::new(AlertSettings::default());
         let generation = engine.reward_screen_generation();
-        let mut partial = screen();
-        partial.truncate(1);
-        assert_eq!(
-            engine.handle_reward_screen(generation, None, partial).len(),
-            1
-        );
-        assert_eq!(
-            engine
-                .handle_reward_screen(generation, None, screen())
-                .len(),
-            1
-        );
-        assert!(
-            engine
-                .handle_reward_screen(generation, None, screen())
-                .is_empty()
-        );
+        assert!(engine.announce_reward_screen(generation, 1));
+        assert!(engine.announce_reward_screen(generation, 2));
+        assert!(!engine.announce_reward_screen(generation, 2));
     }
 
     #[test]
     fn empty_reward_screen() {
         let mut engine = Engine::new(AlertSettings::default());
         let generation = engine.reward_screen_generation();
-        assert!(
-            engine
-                .handle_reward_screen(generation, None, Vec::new())
-                .is_empty()
-        );
+        assert!(!engine.announce_reward_screen(generation, 0));
     }
 
     #[test]

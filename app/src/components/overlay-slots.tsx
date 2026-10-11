@@ -13,15 +13,9 @@ import { api, logError } from "@/lib/bridge";
 import type {
   DucateringProgress,
   RecommendationTrigger,
-  RewardScreen,
   RewardTrigger,
   RivenTrigger,
 } from "@/types";
-
-const EMPTY_SCREEN: RewardScreen = {
-  ranked: [],
-  account: null,
-};
 
 export function RewardSlot({
   trigger,
@@ -30,22 +24,10 @@ export function RewardSlot({
   trigger: RewardTrigger | null;
   compact?: boolean;
 }) {
-  const screen = useLoaded(
-    trigger,
-    (open) => api.recommend(open.rewards),
-    (cause) => {
-      logError("Ranking the relic rewards", cause);
-      return EMPTY_SCREEN;
-    },
-  );
-
   if (!trigger) {
     return <EmptyNote>Open a relic to see squad rewards and prices.</EmptyNote>;
   }
-  if (screen === null) {
-    return <EmptyNote>Pricing the rewards.</EmptyNote>;
-  }
-  return <RelicRewardOverlay screen={screen} compact={compact} />;
+  return <RelicRewardOverlay screen={trigger.screen} compact={compact} />;
 }
 
 export function RecommendationSlot({

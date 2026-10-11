@@ -190,7 +190,7 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
             let slug = record.market_slug.as_deref();
             ModRow {
                 item: index.add_marked(
-                    ItemSummary::new(unique_name, &record),
+                    ItemSummary::from(&*record),
                     favourites.contains(unique_name),
                 ),
                 count,

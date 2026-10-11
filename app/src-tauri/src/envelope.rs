@@ -43,7 +43,7 @@ fn kind(event: &CoreEvent) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wf_core::{CoreEvent, InventorySummary};
+    use wf_core::{CoreEvent, InventorySummary, RewardScreen};
 
     fn summary() -> CoreEvent {
         CoreEvent::InventoryUpdated(InventorySummary {
@@ -79,7 +79,10 @@ mod tests {
         assert_eq!(
             kind(&CoreEvent::RelicRewardScreen {
                 relic: None,
-                rewards: Vec::new(),
+                screen: RewardScreen {
+                    ranked: Vec::new(),
+                    account: None,
+                },
             }),
             "relic-reward-screen"
         );

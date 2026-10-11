@@ -153,9 +153,9 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
                 post_webhook(state, settings.discord.discord_webhook.as_deref(), message).await;
             }
         }
-        CoreEvent::RelicRewardScreen { rewards, .. } => {
+        CoreEvent::RelicRewardScreen { screen, .. } => {
             if settings.copy_relic_rewards {
-                let line = lock(&state.core).recommend(rewards).chat_line();
+                let line = screen.chat_line();
                 if !line.is_empty()
                     && let Err(error) = app.clipboard().write_text(line)
                 {
