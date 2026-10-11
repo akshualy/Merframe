@@ -1,15 +1,12 @@
-use std::borrow::Cow;
 use std::collections::HashSet;
 
 use serde::Serialize;
 use wf_data::{Component, Item, store_item_to_type};
 
 use crate::account::Account;
-use crate::catalog::{
-    Catalog, DUCATS_ITEM, Stock, display_name_from_path, names_a_prime, part_identity,
-};
+use crate::catalog::{Catalog, DUCATS_ITEM, Stock, names_a_prime, part_identity};
 use crate::favourites::Favourites;
-use crate::identity::{ItemRecord, ItemTable, Variant};
+use crate::identity::{ItemTable, Variant};
 use crate::prices::PriceSource;
 
 use super::missing_parts;
@@ -116,17 +113,6 @@ impl<'a> Holdings<'a> {
     }
 }
 
-fn reward_identity<'a>(
-    items: &'a ItemTable,
-    unique_name: &str,
-    parent: Option<(&Item, &Component)>,
-) -> Cow<'a, ItemRecord> {
-    match parent.and_then(|(item, component)| items.part(item, component)) {
-        Some(part) => Cow::Borrowed(part),
-        None => items.resolve(unique_name, || display_name_from_path(unique_name)),
-    }
-}
-
 fn mark_best(ranked: &mut [Ranked]) {
     let highest = ranked
         .iter()
@@ -155,7 +141,7 @@ pub(crate) fn recommend(
         .map(|store_item| {
             let unique_name = store_item_to_type(store_item);
             let parent = catalog.component_for_reward(&unique_name);
-            let identity = reward_identity(items, &unique_name, parent);
+            let identity = items.resolve(catalog, &unique_name);
             let name = identity.name.clone();
             Ranked {
                 store_item: store_item.clone(),

@@ -3,7 +3,7 @@ use wf_data::Refinement;
 
 use crate::catalog::{Catalog, part_name, refinement_name};
 use crate::events::{ScannedTrade, ScannedTradeItem};
-use crate::inventory_view::catalogued_name;
+use crate::identity::catalogued_name;
 use crate::rivens::traded_riven_name;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

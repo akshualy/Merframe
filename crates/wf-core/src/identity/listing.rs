@@ -125,6 +125,7 @@ impl ItemTable {
                 None => self.listing_by_name.remove(&name_key(dialog)),
             };
         }
+        self.index_slugs();
         self.by_game_ref.len()
     }
 

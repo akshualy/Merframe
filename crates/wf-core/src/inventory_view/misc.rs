@@ -3,9 +3,9 @@ use std::collections::BTreeMap;
 use wf_data::{Item, catch_grade, catch_size};
 use wf_inventory::{EquipmentItem, Inventory};
 
-use super::{ItemIndex, ItemSummary, MiscRow, SculptureStars, catalogued_name, display_name};
+use super::{ItemIndex, ItemSummary, MiscRow, SculptureStars};
 use crate::catalog::{Catalog, RELIC_PREFIX, is_fish};
-use crate::identity::{ItemRecord, Variant};
+use crate::identity::{ItemRecord, Variant, catalogued_name};
 use crate::view::View;
 
 const SCULPTURE_SOCKETS: [(&str, u32, u32); 11] = [
@@ -201,9 +201,7 @@ fn counted_rows(view: &View, index: &mut ItemIndex) -> Vec<MiscRow> {
                 view,
                 index,
                 unique_name,
-                &view
-                    .items
-                    .resolve(unique_name, || display_name(catalog, unique_name)),
+                &view.items.resolve(catalog, unique_name),
                 count,
             )
         })
@@ -233,9 +231,7 @@ fn cosmetic_rows(view: &View, index: &mut ItemIndex) -> Vec<MiscRow> {
                 view,
                 index,
                 unique_name,
-                &view
-                    .items
-                    .resolve(unique_name, || display_name(catalog, unique_name)),
+                &view.items.resolve(catalog, unique_name),
                 count,
             )
         })

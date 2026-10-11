@@ -3,11 +3,11 @@ use std::ops::Index;
 
 use indexmap::{IndexMap, IndexSet};
 use serde::Serialize;
-use wf_data::{Rarity, Refinement, catch_grade, misc_item_name};
+use wf_data::{Rarity, Refinement};
 use wf_market::OrderType;
 
-use crate::catalog::{Catalog, VaultStatus, display_name_from_path, part_name, refinement_name};
-use crate::identity::{ItemRecord, unlisted_upgrade};
+use crate::catalog::VaultStatus;
+use crate::identity::ItemRecord;
 use crate::prices::Prices;
 use crate::view::View;
 
@@ -254,39 +254,6 @@ pub(crate) fn tab(view: &View) -> InventoryTab {
         misc,
         sets,
     }
-}
-
-pub(crate) fn catalogued_name(catalog: &Catalog, unique_name: &str) -> Option<String> {
-    if let Some((relic, refinement)) = catalog.relic_by_unique_name(unique_name) {
-        return Some(format!(
-            "{} Relic ({})",
-            relic.name,
-            refinement_name(refinement)
-        ));
-    }
-    if let Some((base, grade)) = catch_grade(unique_name)
-        && let Some(item) = catalog.item(&base)
-    {
-        return Some(format!("{} ({grade})", item.name));
-    }
-    if let Some(item) = catalog.item(unique_name) {
-        return Some(item.name.clone());
-    }
-    if let Some((item, component)) = catalog.component(unique_name) {
-        return Some(part_name(item, component));
-    }
-    if let Some(upgrade) = unlisted_upgrade(unique_name) {
-        return Some(upgrade.name.to_owned());
-    }
-    misc_item_name(unique_name).map(str::to_owned)
-}
-
-pub(crate) fn display_name(catalog: &Catalog, unique_name: &str) -> String {
-    let stocked = unique_name
-        .strip_prefix("/Lotus/StoreItems/")
-        .map(|tail| format!("/Lotus/{tail}"));
-    let unique_name = stocked.as_deref().unwrap_or(unique_name);
-    catalogued_name(catalog, unique_name).unwrap_or_else(|| display_name_from_path(unique_name))
 }
 
 #[cfg(test)]

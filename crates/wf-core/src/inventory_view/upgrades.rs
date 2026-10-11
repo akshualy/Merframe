@@ -4,9 +4,9 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use wf_data::Item;
 use wf_inventory::{EquipmentItem, Inventory, RivenFingerprint, UpgradeSlot};
 
-use super::{ItemIndex, ItemSummary, ModHolder, ModRow, UpgradePrices, display_name};
-use crate::catalog::{ARCANE_PREFIX, Catalog, display_name_from_path};
-use crate::identity::{ItemKind, Variant, is_riven};
+use super::{ItemIndex, ItemSummary, ModHolder, ModRow, UpgradePrices};
+use crate::catalog::{ARCANE_PREFIX, Catalog};
+use crate::identity::{ItemKind, Variant, display_name, is_riven};
 use crate::prices::PriceSource;
 use crate::view::View;
 
@@ -178,18 +178,11 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
         .into_iter()
         .filter(|(_, tally)| tally.count > 0)
         .map(|((unique_name, rank), Tally { count, references })| {
-            let riven = is_riven(unique_name);
             let record = match items.variant(unique_name, Variant::Veiled) {
                 Some(veiled) => Cow::Borrowed(veiled),
-                None => items.resolve(unique_name, || {
-                    let name = display_name_from_path(unique_name);
-                    if riven {
-                        format!("{name} (Veiled)")
-                    } else {
-                        name
-                    }
-                }),
+                None => items.resolve(catalog, unique_name),
             };
+
             let (rarity, max_rank) = match record.kind {
                 ItemKind::Upgrade { rarity, max_rank } => (rarity, max_rank),
                 _ => (None, None),

@@ -1,9 +1,8 @@
 use serde::Serialize;
 use wf_data::{Rarity, RelicReward};
 
-use crate::catalog::{Catalog, display_name_from_path};
+use crate::catalog::Catalog;
 use crate::favourites::Favourites;
-use crate::identity::market_slug;
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -39,61 +38,44 @@ pub(super) fn reward_breakdown(view: &View, reward: &RelicReward) -> RewardBreak
         favourites,
         ..
     } = *view;
-    let component = catalog
-        .component_for_reward(&reward.item_unique_name)
-        .and_then(|(item, component)| Some((item, component, items.part(item, component)?)));
-    let favourite = favourite_reward(catalog, favourites, &reward.item_unique_name);
+    let unique_name = &reward.item_unique_name;
+    let record = items.resolve(catalog, unique_name);
+    let component = catalog.component_for_reward(unique_name);
     let stock = &account.stock;
-    let owned = stock.count(&reward.item_unique_name);
-    let (name, image_name, ducats, ownership) = match component {
-        Some((item, component, part)) => (
-            part.name.clone(),
-            part.image_name.clone(),
-            component.ducats,
-            RewardOwnership {
-                owned,
-                needed: component.item_count,
-                needed_for_set: stock.count(&component.unique_name)
-                    < i64::from(component.item_count),
-                parent_owned: account.holds(item),
-            },
-        ),
-        None => match catalog.item(&reward.item_unique_name) {
-            Some(item) => (
-                item.name.clone(),
-                item.image_name.clone(),
-                None,
-                RewardOwnership {
-                    owned,
-                    needed: 1,
-                    needed_for_set: false,
-                    parent_owned: account.holds(item),
-                },
-            ),
-            None => (
-                display_name_from_path(&reward.item_unique_name),
-                None,
-                None,
-                RewardOwnership {
-                    owned,
-                    needed: 1,
-                    needed_for_set: false,
-                    parent_owned: false,
-                },
-            ),
+    let owned = stock.count(unique_name);
+
+    let ownership = match component {
+        Some((item, component)) => RewardOwnership {
+            owned,
+            needed: component.item_count,
+            needed_for_set: stock.count(&component.unique_name) < i64::from(component.item_count),
+            parent_owned: account.holds(item),
+        },
+        None => RewardOwnership {
+            owned,
+            needed: 1,
+            needed_for_set: false,
+            parent_owned: catalog
+                .item(unique_name)
+                .is_some_and(|item| account.holds(item)),
         },
     };
+
     RewardBreakdown {
-        forma: name.contains("Forma"),
-        unique_name: reward.item_unique_name.clone(),
-        component: component.map(|(_, component, _)| component.unique_name.clone()),
-        name,
-        image_name,
+        forma: record.name.contains("Forma"),
+        unique_name: unique_name.clone(),
+        component: component.map(|(_, component)| component.unique_name.clone()),
+        name: record.name.clone(),
+        image_name: record.image_name.clone(),
         rarity: rarity_name(reward.rarity),
-        plat: prices.plat(&market_slug(&reward.item_name)),
-        ducats,
+        plat: reward
+            .market_slug
+            .as_deref()
+            .or(record.market_slug.as_deref())
+            .and_then(|slug| prices.plat(slug)),
+        ducats: component.and_then(|(_, component)| component.ducats),
         ownership,
-        favourite,
+        favourite: favourite_reward(catalog, favourites, unique_name),
     }
 }
 

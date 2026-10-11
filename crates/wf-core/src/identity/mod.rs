@@ -1,10 +1,11 @@
 mod listing;
+mod naming;
 
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Index;
 
-use wf_data::{Component, Item, Rarity, Refinement, catch_grade};
+use wf_data::{Component, Item, Rarity, Refinement, catch_grade, store_item_to_type};
 use wf_inventory::RIVEN_MARKER;
 
 use crate::catalog::{
@@ -14,6 +15,7 @@ use crate::catalog::{
 
 pub use listing::market_name;
 pub(crate) use listing::traded_as;
+pub(crate) use naming::{catalogued_name, display_name, market_slug, part_market_slug};
 
 pub(crate) struct UnlistedUpgrade {
     unique_name: &'static str,
@@ -84,32 +86,6 @@ pub fn market_icon(catalog: &Catalog, item: &wf_market::Item) -> Option<String> 
     })
 }
 
-pub(crate) fn market_slug(display_name: &str) -> String {
-    let mut slug = String::with_capacity(display_name.len());
-    let mut pending_separator = false;
-    for ch in display_name.chars() {
-        if ch.is_ascii_alphanumeric() {
-            if pending_separator && !slug.is_empty() {
-                slug.push('_');
-            }
-            pending_separator = false;
-            slug.push(ch.to_ascii_lowercase());
-        } else if ch != '\'' {
-            pending_separator = true;
-        }
-    }
-    slug
-}
-
-pub(crate) fn part_market_slug(item: &Item, component: &Component) -> String {
-    let name = part_name(item, component);
-    if component.unique_name.ends_with("Component") {
-        market_slug(&format!("{name} Blueprint"))
-    } else {
-        market_slug(&name)
-    }
-}
-
 pub(crate) fn is_riven(unique_name: &str) -> bool {
     unique_name.contains(RIVEN_MARKER)
 }
@@ -173,6 +149,11 @@ pub struct ItemRecord {
 
 impl ItemRecord {
     pub(crate) fn unknown(unique_name: &str, name: String) -> Self {
+        let name = if is_riven(unique_name) {
+            format!("{name} (Veiled)")
+        } else {
+            name
+        };
         Self::new(unique_name, name, None, ItemKind::Other)
     }
 
@@ -214,6 +195,7 @@ pub struct ItemTable {
     by_unique_name: HashMap<String, ItemRef>,
     variants: HashMap<(ItemRef, Variant), ItemRef>,
     by_market_id: HashMap<String, ItemRef>,
+    by_market_slug: HashMap<String, ItemRef>,
     by_game_ref: HashMap<String, ItemRef>,
     listing_by_name: HashMap<String, String>,
     catalogued: usize,
@@ -271,7 +253,19 @@ impl ItemTable {
             }
         }
         table.catalogued = table.records.len();
+        table.index_slugs();
         table
+    }
+
+    fn index_slugs(&mut self) {
+        self.by_market_slug.clear();
+        for (position, record) in self.records.iter().enumerate() {
+            if let Some(slug) = &record.market_slug {
+                self.by_market_slug
+                    .entry(slug.clone())
+                    .or_insert(ItemRef(position));
+            }
+        }
     }
 
     fn push(&mut self, record: ItemRecord) -> ItemRef {
@@ -442,22 +436,31 @@ impl ItemTable {
             .find(|part| part.unique_name == component.unique_name)
     }
 
-    pub(crate) fn resolve(
-        &self,
-        unique_name: &str,
-        name: impl FnOnce() -> String,
-    ) -> Cow<'_, ItemRecord> {
-        match self
-            .get(unique_name)
-            .or_else(|| self.by_game_ref(unique_name))
-        {
+    pub fn resolve(&self, catalog: &Catalog, item_type: &str) -> Cow<'_, ItemRecord> {
+        let unique_name = store_item_to_type(item_type);
+        let known = self
+            .get(&unique_name)
+            .or_else(|| self.by_game_ref(&unique_name))
+            .or_else(|| {
+                let (item, component) = catalog.component_for_reward(&unique_name)?;
+                self.part(item, component)
+            });
+
+        match known {
             Some(record) => Cow::Borrowed(record),
-            None => Cow::Owned(ItemRecord::unknown(unique_name, name())),
+            None => Cow::Owned(ItemRecord::unknown(
+                &unique_name,
+                display_name(catalog, &unique_name),
+            )),
         }
     }
 
     pub fn by_market_id(&self, id: &str) -> Option<&ItemRecord> {
         self.by_market_id.get(id).map(|&item| &self[item])
+    }
+
+    pub fn by_market_slug(&self, slug: &str) -> Option<&ItemRecord> {
+        self.by_market_slug.get(slug).map(|&item| &self[item])
     }
 
     pub fn by_game_ref(&self, game_ref: &str) -> Option<&ItemRecord> {
@@ -502,14 +505,7 @@ mod tests {
     }
 
     #[test]
-    fn slug_rules() {
-        assert_eq!(market_slug("Braton Prime Barrel"), "braton_prime_barrel");
-        assert_eq!(market_slug("Axi A1 Relic"), "axi_a1_relic");
-        assert_eq!(market_slug("Gaia's Tragedy"), "gaias_tragedy");
-        assert_eq!(
-            market_slug("Zephyr Prime  Blueprint"),
-            "zephyr_prime_blueprint"
-        );
+    fn starter_originals() {
         assert_eq!(
             starter_original("/Lotus/Upgrades/Mods/Warframe/Beginner/AvatarSlideBoostModBeginner")
                 .as_deref(),
@@ -523,12 +519,30 @@ mod tests {
 
     #[test]
     fn parts_sets_and_relics() {
-        let table = ItemTable::build(&fixtures::catalog());
+        let catalog = fixtures::catalog();
+        let table = ItemTable::build(&catalog);
         let barrel = table.get(BARREL).unwrap();
         assert_eq!(barrel.name, "Braton Prime Barrel");
         assert_eq!(barrel.market_slug.as_deref(), Some("braton_prime_barrel"));
         assert!(barrel.prime);
         assert!(barrel.vault.is_some());
+        assert_eq!(
+            table
+                .resolve(&catalog, &format!("/Lotus/StoreItems{}", &BARREL[6..]))
+                .as_ref(),
+            barrel
+        );
+        assert_eq!(table.by_market_slug("braton_prime_barrel"), Some(barrel));
+        assert_eq!(
+            table
+                .resolve(
+                    &catalog,
+                    "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint"
+                )
+                .market_slug
+                .as_deref(),
+            Some("trinity_prime_systems_blueprint")
+        );
         assert_eq!(
             slug_of(
                 &table,
@@ -639,7 +653,8 @@ mod tests {
 
     #[test]
     fn market_index() {
-        let mut table = ItemTable::build(&fixtures::upgrade_catalog());
+        let catalog = fixtures::upgrade_catalog();
+        let mut table = ItemTable::build(&catalog);
         let unknown = "/Lotus/Weapons/Tenno/Melee/MeleeTrees/StaffCmbOneMeleeTree";
         let items = [
             market_item("arcane\u{2019}energize", "Arcane Energize", ENERGIZE, &[]),
@@ -655,8 +670,8 @@ mod tests {
         ];
         assert_eq!(table.index_market(&items), 4);
         let precept = table.resolve(
+            &catalog,
             "/Lotus/Types/Sentinels/SentinelPrecepts/LocateCreatures",
-            || "Locate Creatures".to_owned(),
         );
         assert_eq!(precept.name, "Scan Aquatic Lifeforms");
         assert_eq!(
@@ -678,14 +693,21 @@ mod tests {
         assert_eq!(listed.kind, ItemKind::Other);
         assert_eq!(table.by_market_id("clashing_forest"), Some(listed));
         assert!(table.get(unknown).is_none());
-        let resolved = table.resolve(unknown, || "Staff Cmb One Melee Tree".to_owned());
+        let resolved = table.resolve(&catalog, unknown);
         assert_eq!(resolved.name, "Clashing Forest");
         assert_eq!(resolved.market_slug.as_deref(), Some("clashing_forest"));
+        assert_eq!(table.resolve(&catalog, "/Lotus/Nowhere").name, "Nowhere");
         assert_eq!(
             table
-                .resolve("/Lotus/Nowhere", || "Nowhere".to_owned())
+                .resolve(&catalog, "/Lotus/Upgrades/Mods/Randomized/NowhereRandomMod")
                 .name,
-            "Nowhere"
+            "Nowhere Random Mod (Veiled)"
+        );
+        assert_eq!(
+            table
+                .by_market_slug("clashing_forest")
+                .map(|record| record.name.as_str()),
+            Some("Clashing Forest")
         );
         assert_eq!(slug_of(&table, HARAS).as_deref(), Some("zid-an-haras"));
         assert_eq!(

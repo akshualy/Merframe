@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use crate::account::Account;
 use crate::catalog::Catalog;
-use crate::inventory_view::display_name;
+use crate::identity::display_name;
 use crate::mastery::{self, MasteryOptions};
 use crate::store::{RelicOpening, StatPoint, StoredDelta, TimeRange};
 
