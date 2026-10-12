@@ -30,10 +30,14 @@ pub struct TradeScreen {
 }
 
 impl TradeScreen {
-    pub fn read<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -> Option<Self> {
+    pub fn read<R: MemoryReader + ?Sized>(
+        reader: &R,
+        state: &LuaState,
+        script: &mut Option<LuaTable>,
+    ) -> Option<Self> {
         let mut partner = None;
         let mut sides: [Option<Vec<TradeSlot>>; 2] = [None, None];
-        let script = state.script(reader, TRADE_SCRIPT)?;
+        let script = state.cached_script(reader, TRADE_SCRIPT, script)?;
         let completed = script
             .field(reader, SUCCESS_FLAG_OWNER)
             .and_then(LuaValue::function)
@@ -139,7 +143,7 @@ mod tests {
     }
 
     fn read(reader: &FakeReader) -> Option<TradeScreen> {
-        TradeScreen::read(reader, &LuaState::locate(reader).unwrap()?)
+        TradeScreen::read(reader, &LuaState::locate(reader).unwrap()?, &mut None)
     }
 
     #[test]

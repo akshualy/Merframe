@@ -1,6 +1,5 @@
 use wf_mem::MemoryReader;
 
-use crate::Result;
 use crate::lua::{LuaState, LuaTable, LuaValue};
 
 const REWARD_SCRIPT: &str = "OnVoidRewards";
@@ -35,8 +34,12 @@ fn tile<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<Rewar
     })
 }
 
-fn reward_tiles<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -> Vec<RewardTile> {
-    let Some(script) = state.script(reader, REWARD_SCRIPT) else {
+pub fn reward_screen<R: MemoryReader + ?Sized>(
+    reader: &R,
+    state: &LuaState,
+    script: &mut Option<LuaTable>,
+) -> Vec<RewardTile> {
+    let Some(script) = state.cached_script(reader, REWARD_SCRIPT, script) else {
         return Vec::new();
     };
     let mut tiles: Vec<RewardTile> = script
@@ -50,12 +53,6 @@ fn reward_tiles<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -> Vec<R
     tiles.sort_unstable();
     tiles.dedup();
     tiles
-}
-
-pub fn reward_screen<R: MemoryReader + ?Sized>(reader: &R) -> Result<Vec<RewardTile>> {
-    Ok(LuaState::locate(reader)?
-        .map(|state| reward_tiles(reader, &state))
-        .unwrap_or_default())
 }
 
 #[cfg(test)]
@@ -81,7 +78,11 @@ mod tests {
             let rewards = heap.function_field(REWARD_SCRIPT, &[grid]);
             vec![heap.table(&[rewards])]
         });
-        reward_screen(&reader).unwrap()
+        reward_screen(
+            &reader,
+            &LuaState::locate(&reader).unwrap().unwrap(),
+            &mut None,
+        )
     }
 
     fn reward(slot: u8, path: &str) -> RewardTile {

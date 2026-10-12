@@ -93,15 +93,18 @@ pub fn read_u64_le(bytes: &[u8], at: usize) -> Option<u64> {
 }
 
 #[cfg(target_os = "linux")]
-pub fn open_game() -> Result<Box<dyn MemoryReader>> {
-    let pid = find_process(GAME_PROCESS)?;
+pub fn open_pid(pid: u32) -> Result<Box<dyn MemoryReader>> {
     Ok(Box::new(LinuxProcess::open(pid)?))
 }
 
 #[cfg(windows)]
-pub fn open_game() -> Result<Box<dyn MemoryReader>> {
-    let pid = find_process(GAME_PROCESS)?;
+pub fn open_pid(pid: u32) -> Result<Box<dyn MemoryReader>> {
     Ok(Box::new(WindowsProcess::open(pid)?))
+}
+
+#[cfg(any(target_os = "linux", windows))]
+pub fn open_game() -> Result<Box<dyn MemoryReader>> {
+    open_pid(find_process(GAME_PROCESS)?)
 }
 
 #[cfg(test)]

@@ -16,6 +16,7 @@ use crate::overlay::{self, OverlayState};
 use crate::settings::Settings;
 use crate::state::{AppState, GameStatus, InventorySource, lock, read, write};
 
+mod attach;
 mod feeds;
 mod game;
 mod market_loop;
@@ -24,6 +25,7 @@ use feeds::{price_task, world_state_task};
 use game::{ducatering_task, inventory_task, kiosk_task, log_task, process_task, trade_task};
 use market_loop::{auto_close, market_presence_task, market_task};
 
+pub(crate) use attach::open_game;
 pub use game::acquire;
 pub use market_loop::MarketAutoClose;
 pub(crate) use market_loop::trade_side;

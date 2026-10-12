@@ -24,7 +24,7 @@ pub use http::HttpClients;
 pub use inventory::InventoryBuffer;
 pub use kiosk::{DucatKiosk, KioskItem};
 pub use logbuf::{LogBuffer, find_log_buffer, is_line_head, locate, read_pending};
-pub use lua::LuaState;
+pub use lua::{LuaState, LuaTable};
 pub use relic::{RelicPicker, RelicPickerNode};
 pub use station::StationRiven;
 pub use trade::{TradeScreen, TradeSlot};

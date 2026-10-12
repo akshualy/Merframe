@@ -31,9 +31,10 @@ fn clip<R: MemoryReader + ?Sized>(reader: &R, cards: &[LuaTable], name: &str) ->
 fn cards<R: MemoryReader + ?Sized>(
     reader: &R,
     state: &LuaState,
+    script: &mut Option<LuaTable>,
 ) -> Option<(String, Option<String>)> {
     state
-        .script(reader, STATION_SCRIPT)?
+        .cached_script(reader, STATION_SCRIPT, script)?
         .locals(reader)
         .into_iter()
         .find_map(|cards| {
@@ -50,8 +51,12 @@ fn cards<R: MemoryReader + ?Sized>(
 }
 
 impl StationRiven {
-    pub fn read<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -> Option<Self> {
-        let (shown, offered) = cards(reader, state)?;
+    pub fn read<R: MemoryReader + ?Sized>(
+        reader: &R,
+        state: &LuaState,
+        script: &mut Option<LuaTable>,
+    ) -> Option<Self> {
+        let (shown, offered) = cards(reader, state, script)?;
         let choice = state.shared(reader)?.field(reader, CHOICE)?.table()?;
         Some(Self {
             item_id: text(reader, choice, ITEM_ID)?,
@@ -67,34 +72,42 @@ mod tests {
     use crate::fake::FakeReader;
     use crate::lua::tests::Heap;
 
+    fn choice(heap: &mut Heap) {
+        let choice = [
+            heap.text_field(ITEM_ID, "67b8145f6fae460f420380bd"),
+            heap.text_field(FINGERPRINT, "{\"rerolls\":1}"),
+        ];
+        let choice = heap.table(&choice);
+        let choice = heap.table_field(CHOICE, choice);
+        heap.shared.push(choice);
+    }
+
+    fn station_script(heap: &mut Heap, cards: &[(&str, &str)]) -> u64 {
+        let cards: Vec<u64> = cards
+            .iter()
+            .map(|(clip, fingerprint)| {
+                let card = [
+                    heap.text_field(CLIP, clip),
+                    heap.text_field(FINGERPRINT, fingerprint),
+                ];
+                heap.table(&card)
+            })
+            .collect();
+        let cards = heap.list(&cards);
+        let other = heap.table(&[]);
+        let committed = heap.function_field(STATION_SCRIPT, &[other, cards]);
+        heap.table(&[committed])
+    }
+
     fn station(cards: &[(&str, &str)]) -> FakeReader {
         Heap::with_scripts(|heap| {
-            let choice = [
-                heap.text_field(ITEM_ID, "67b8145f6fae460f420380bd"),
-                heap.text_field(FINGERPRINT, "{\"rerolls\":1}"),
-            ];
-            let choice = heap.table(&choice);
-            let choice = heap.table_field(CHOICE, choice);
-            heap.shared.push(choice);
-            let cards: Vec<u64> = cards
-                .iter()
-                .map(|(clip, fingerprint)| {
-                    let card = [
-                        heap.text_field(CLIP, clip),
-                        heap.text_field(FINGERPRINT, fingerprint),
-                    ];
-                    heap.table(&card)
-                })
-                .collect();
-            let cards = heap.list(&cards);
-            let other = heap.table(&[]);
-            let committed = heap.function_field(STATION_SCRIPT, &[other, cards]);
-            vec![heap.table(&[committed])]
+            choice(heap);
+            vec![station_script(heap, cards)]
         })
     }
 
     fn read(reader: &FakeReader) -> Option<StationRiven> {
-        StationRiven::read(reader, &LuaState::locate(reader).unwrap()?)
+        StationRiven::read(reader, &LuaState::locate(reader).unwrap()?, &mut None)
     }
 
     #[test]
@@ -130,5 +143,33 @@ mod tests {
             vec![heap.table(&[])]
         });
         assert_eq!(read(&reader), None);
+    }
+
+    #[test]
+    fn script_kept_across_reads() {
+        let reader = station(&[("Choice1", "{\"rerolls\":2}")]);
+        let state = LuaState::locate(&reader).unwrap().unwrap();
+        let mut script = None;
+
+        let first = StationRiven::read(&reader, &state, &mut script);
+        assert!(first.is_some());
+        assert_eq!(script, state.scripts(&reader).first().copied());
+        assert_eq!(StationRiven::read(&reader, &state, &mut script), first);
+    }
+
+    #[test]
+    fn closed_station_instance_re_resolved() {
+        let mut closed = 0;
+        let reader = Heap::with_scripts(|heap| {
+            choice(heap);
+            closed = station_script(heap, &[("Choice1", "{\"rerolls\":1}")]);
+            vec![station_script(heap, &[("Choice1", "{\"rerolls\":2}")])]
+        });
+        let state = LuaState::locate(&reader).unwrap().unwrap();
+        let mut script = Some(LuaTable::at(closed));
+
+        let riven = StationRiven::read(&reader, &state, &mut script).unwrap();
+        assert_eq!(riven.shown, "{\"rerolls\":2}");
+        assert_eq!(script, state.scripts(&reader).first().copied());
     }
 }

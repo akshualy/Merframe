@@ -11,7 +11,7 @@ use wf_core::{CoreEvent, DucateringProgress, RewardScreen, RivenRow};
 use wf_log::{DialogButtons, Event as LogEvent, MonitorRect};
 use wf_worldstate::RelicTier;
 
-use crate::runtime::{AppEvent, emit};
+use crate::runtime::{self, AppEvent, emit};
 use crate::settings::{
     OVERLAY_OPACITY_DEFAULT, OverlayPlacement, RecommendationRefinement, Settings,
 };
@@ -229,6 +229,8 @@ fn since(mark: Option<f64>, at: f64) -> Option<f64> {
 pub struct Overlays {
     relic_picker: Mutex<wf_scan::RelicPicker>,
     lua: Mutex<Option<wf_scan::LuaState>>,
+    station_script: Mutex<Option<wf_scan::LuaTable>>,
+    dialog_script: Mutex<Option<wf_scan::LuaTable>>,
     state: Mutex<OverlayState>,
     recommendation_ticket: AtomicU64,
     riven_ticket: AtomicU64,
@@ -377,11 +379,11 @@ pub fn on_log_event<R: Runtime>(
     }
 }
 
-fn attached_game() -> Option<Box<dyn wf_mem::MemoryReader>> {
-    match wf_mem::open_game() {
+fn attached_game(state: &AppState) -> Option<Box<dyn wf_mem::MemoryReader>> {
+    match runtime::open_game(state) {
         Ok(reader) => Some(reader),
         Err(error) => {
-            debug!(%error, "Game process memory is not readable");
+            debug!(?error, "Game process memory is not readable");
             None
         }
     }

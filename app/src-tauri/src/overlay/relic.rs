@@ -89,7 +89,7 @@ fn recommendation_for(marks: &Marks, scanned: Option<RelicTier>) -> Recommendati
 }
 
 fn selected_fissure_tier(state: &AppState) -> Option<RelicTier> {
-    let reader = attached_game()?;
+    let reader = attached_game(state)?;
     let found = lock(&state.overlays.relic_picker).find(reader.as_ref());
     let picked = match found {
         Ok(picked) => picked?,

@@ -16,9 +16,10 @@ use wf_core::{
     ScannedTrade, ScannedTradeItem,
 };
 use wf_log::Event as LogEvent;
-use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_game};
-use wf_scan::{DucatKiosk, HttpClients, InventoryBuffer, LuaState, TradeScreen};
+use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_pid};
+use wf_scan::{DucatKiosk, HttpClients, InventoryBuffer, LuaState, LuaTable, TradeScreen};
 
+use super::attach::{Attached, attach, game_pid, read_screen};
 use super::{AppEvent, blocking, dispatch, emit, market_loop};
 use crate::overlay;
 use crate::state::{AppState, InventorySource, QueueSession, lock, read, write};
@@ -231,8 +232,16 @@ fn watch_relic_picker(state: &Arc<AppState>) {
     tauri::async_runtime::spawn(async move {
         let started = Instant::now();
         let mut closed_since = None;
+        let mut attached = None;
         while started.elapsed() < PICKER_LIFETIME {
-            match blocking("read relic picker", relic_picker).await {
+            let owned = Arc::clone(&state);
+            let cached = attached.take();
+            let (picker, kept) =
+                blocking("read relic picker", move || relic_picker(&owned, cached))
+                    .await
+                    .unzip();
+            attached = kept.flatten();
+            match picker {
                 Some(Picker::Open(pick)) => {
                     closed_since = None;
                     if let Some(pick) = pick
@@ -280,13 +289,6 @@ fn scanned_trade(screen: TradeScreen) -> ScannedTrade {
     }
 }
 
-fn attach() -> anyhow::Result<(Arc<dyn MemoryReader>, LuaState)> {
-    let reader: Arc<dyn MemoryReader> =
-        Arc::from(open_game().context("Attaching to the game process")?);
-    let lua = LuaState::locate(reader.as_ref())?.context("The game's Lua state was not found")?;
-    Ok((reader, lua))
-}
-
 fn ticks(period: Duration) -> tokio::time::Interval {
     let mut tick = tokio::time::interval(period);
     tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
@@ -315,13 +317,18 @@ async fn completed_trade(
     open: &mut watch::Receiver<bool>,
 ) -> Option<ScannedTrade> {
     let mut tick = ticks(TRADE_TICK);
+    let mut script = None;
     while still_open(open, &mut tick).await {
-        let owned = Arc::clone(reader);
-        let trade = blocking("read trade screen", move || {
-            TradeScreen::read(owned.as_ref(), &lua)
-        })
-        .await;
-        if let Some(trade) = trade.flatten().filter(|trade| trade.completed) {
+        let trade = read_screen(
+            "read trade screen",
+            reader,
+            lua,
+            &mut script,
+            TradeScreen::read,
+        )
+        .await
+        .flatten();
+        if let Some(trade) = trade.filter(|trade| trade.completed) {
             return Some(scanned_trade(trade));
         }
     }
@@ -348,17 +355,19 @@ async fn watch_trade<R: Runtime>(
     state: &Arc<AppState>,
     open: &mut watch::Receiver<bool>,
 ) {
-    let (reader, lua) = match blocking("attach to the game", attach).await {
-        Some(Ok(attached)) => attached,
-        Some(Err(error)) => {
-            warn!(
-                ?error,
-                "Trade screen not watched, the trade is not recorded"
-            );
-            return;
-        }
-        None => return,
-    };
+    let owned = Arc::clone(state);
+    let Attached { reader, lua } =
+        match blocking("attach to the game", move || attach(&owned)).await {
+            Some(Ok(attached)) => attached,
+            Some(Err(error)) => {
+                warn!(
+                    ?error,
+                    "Trade screen not watched, the trade is not recorded"
+                );
+                return;
+            }
+            None => return,
+        };
     let completed = completed_trade(&reader, lua, open);
     let screen = match tokio::time::timeout(TRADE_WATCH_LIFETIME, completed).await {
         Ok(Some(screen)) => screen,
@@ -456,17 +465,19 @@ async fn watch_kiosk<R: Runtime>(
     state: &Arc<AppState>,
     open: &mut watch::Receiver<bool>,
 ) {
-    let (reader, lua) = match blocking("attach to the game", attach).await {
-        Some(Ok(attached)) => attached,
-        Some(Err(error)) => {
-            warn!(
-                ?error,
-                "Ducat Kiosk not watched, Ducatering does not advance"
-            );
-            return;
-        }
-        None => return,
-    };
+    let owned = Arc::clone(state);
+    let Attached { reader, lua } =
+        match blocking("attach to the game", move || attach(&owned)).await {
+            Some(Ok(attached)) => attached,
+            Some(Err(error)) => {
+                warn!(
+                    ?error,
+                    "Ducat Kiosk not watched, Ducatering does not advance"
+                );
+                return;
+            }
+            None => return,
+        };
     let filter = {
         let settings = read(&state.settings);
         if !overlay::enabled(&settings, overlay::Kind::Ducatering) {
@@ -483,11 +494,15 @@ async fn watch_kiosk<R: Runtime>(
     state.ducatering.send_replace(run);
     let mut tick = ticks(KIOSK_TICK);
     let mut last = None;
+    let mut script = None;
     while still_open(open, &mut tick).await {
-        let owned = Arc::clone(&reader);
-        let kiosk = blocking("read ducat kiosk", move || {
-            DucatKiosk::read(owned.as_ref(), &lua)
-        })
+        let kiosk = read_screen(
+            "read ducat kiosk",
+            &reader,
+            lua,
+            &mut script,
+            DucatKiosk::read,
+        )
         .await
         .flatten();
         if let Some(settled) = &kiosk
@@ -508,39 +523,57 @@ pub(super) async fn ducatering_task<R: Runtime>(app: AppHandle<R>, state: Arc<Ap
     }
 }
 
-fn relic_picker() -> Picker {
-    let open = open_game().ok().and_then(|reader| {
-        let state = LuaState::locate(reader.as_ref()).ok().flatten()?;
-        wf_scan::relic_picker_open(reader.as_ref(), &state)
-            .then(|| wf_scan::relic_pick(reader.as_ref(), &state))
-    });
-    open.map_or(Picker::Closed, Picker::Open)
+fn relic_picker(state: &AppState, cached: Option<Attached>) -> (Picker, Option<Attached>) {
+    let Some(attached) = cached
+        .filter(Attached::holds)
+        .or_else(|| attach(state).ok())
+    else {
+        return (Picker::Closed, None);
+    };
+
+    let Attached { reader, lua } = &attached;
+    let open = wf_scan::relic_picker_open(reader.as_ref(), lua)
+        .then(|| wf_scan::relic_pick(reader.as_ref(), lua));
+    (open.map_or(Picker::Closed, Picker::Open), Some(attached))
 }
 
-fn reward_screen(state: &AppState) -> anyhow::Result<ScannedRewards> {
-    let reader = open_game().context("Attaching to the game process")?;
-    let tiles = wf_scan::reward_screen(reader.as_ref()).context("Reading the reward screen")?;
-    let own_relic_type = LuaState::locate(reader.as_ref())
-        .context("Locating the Lua state")?
-        .and_then(|state| wf_scan::confirmed_relic(reader.as_ref(), &state))
+fn reward_screen(
+    state: &AppState,
+    reader: &dyn MemoryReader,
+    lua: &LuaState,
+    script: &mut Option<LuaTable>,
+) -> ScannedRewards {
+    let tiles = wf_scan::reward_screen(reader, lua, script);
+    let own_relic_type = wf_scan::confirmed_relic(reader, lua)
         .and_then(|handle| lock(&state.relic_picks).get(&handle).cloned());
-    Ok(ScannedRewards {
+    ScannedRewards {
         own_relic_type,
         rewards: tiles.into_iter().map(|tile| tile.store_item).collect(),
-    })
+    }
 }
 
 async fn scan_reward_screen(state: &Arc<AppState>) -> Option<ScannedRewards> {
-    let mut seen = ScannedRewards::default();
-    for _ in 0..REWARD_TICKS {
-        let owned = Arc::clone(state);
-        let screen = match blocking("read reward screen", move || reward_screen(&owned)).await? {
-            Ok(screen) => screen,
+    let owned = Arc::clone(state);
+    let Attached { reader, lua } =
+        match blocking("attach to the game", move || attach(&owned)).await? {
+            Ok(attached) => attached,
             Err(error) => {
                 warn!(?error, "Reward screen read from game memory failed");
                 return None;
             }
         };
+    let mut seen = ScannedRewards::default();
+    let mut script = None;
+    for _ in 0..REWARD_TICKS {
+        let owned = Arc::clone(state);
+        let screen = read_screen(
+            "read reward screen",
+            &reader,
+            lua,
+            &mut script,
+            move |reader, lua, script| reward_screen(&owned, reader, lua, script),
+        )
+        .await?;
         if !screen.rewards.is_empty() && screen == seen {
             if screen.own_relic_type.is_none() {
                 debug!("Reward screen settled without a known relic for the local player");
@@ -657,8 +690,11 @@ fn needs_resolve(session: Option<&QueueSession>, pid: u32) -> bool {
     session.is_none_or(|session| session.pid != pid || session.clients.is_none())
 }
 
-fn http_clients(state: &Arc<AppState>, reader: &dyn MemoryReader) -> anyhow::Result<HttpClients> {
-    let pid = read(&state.status).pid.context("The game is not running")?;
+fn http_clients(
+    state: &Arc<AppState>,
+    pid: u32,
+    reader: &dyn MemoryReader,
+) -> anyhow::Result<HttpClients> {
     let mut session = lock(&state.http_clients);
     if needs_resolve(session.as_ref(), pid) {
         let clients = match HttpClients::locate(reader) {
@@ -677,8 +713,9 @@ fn http_clients(state: &Arc<AppState>, reader: &dyn MemoryReader) -> anyhow::Res
 }
 
 fn ingest_window(state: &Arc<AppState>, window: Duration) -> anyhow::Result<Ingested> {
-    let reader = open_game().context("Attaching to the game process")?;
-    let clients = http_clients(state, reader.as_ref())?;
+    let pid = game_pid(state)?;
+    let reader = open_pid(pid).context("Attaching to the game process")?;
+    let clients = http_clients(state, pid, reader.as_ref())?;
     let Some(buffer) = clients.await_inventory(reader.as_ref(), window) else {
         debug!(
             window_millis = window.as_millis(),

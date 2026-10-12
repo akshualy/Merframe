@@ -28,10 +28,17 @@ pub struct DucatKiosk {
 }
 
 impl DucatKiosk {
-    pub fn read<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -> Option<Self> {
+    pub fn read<R: MemoryReader + ?Sized>(
+        reader: &R,
+        state: &LuaState,
+        script: &mut Option<LuaTable>,
+    ) -> Option<Self> {
         let mut owned = None;
         let mut marked = None;
-        for local in state.script(reader, KIOSK_SCRIPT)?.locals(reader) {
+        for local in state
+            .cached_script(reader, KIOSK_SCRIPT, script)?
+            .locals(reader)
+        {
             match local
                 .field(reader, CLIP)
                 .and_then(LuaValue::text)
@@ -131,7 +138,7 @@ mod tests {
     }
 
     fn read(reader: &FakeReader) -> Option<DucatKiosk> {
-        DucatKiosk::read(reader, &LuaState::locate(reader).unwrap()?)
+        DucatKiosk::read(reader, &LuaState::locate(reader).unwrap()?, &mut None)
     }
 
     fn expected((item_type, name, count, ducats): Entry<'_>) -> KioskItem {

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use wf_mem::{GAME_PROCESS, MemoryReader, Region, read_u32_le, read_u64_le};
 
 use crate::Result;
@@ -6,6 +8,8 @@ use crate::roots::{POINTER, image_data, in_heap, words};
 
 const STRING_TAG: u8 = 6;
 const STRING_HEADER: usize = 24;
+const INLINE_TEXT: usize = 40;
+const STRING_PREFETCH: usize = STRING_HEADER + INLINE_TEXT;
 const BOOLEAN_TAG: u32 = 1;
 const NUMBER_TAG: u32 = 3;
 const TABLE_TAG: u32 = 7;
@@ -102,18 +106,39 @@ fn slot_tag(slot: &[u8]) -> Option<u32> {
     read_u32_le(slot, SLOT_TAG)
 }
 
+fn string_bytes<'a, R: MemoryReader + ?Sized>(
+    reader: &R,
+    object: u64,
+    head: &'a mut [u8; STRING_PREFETCH],
+    expected_len: Option<usize>,
+) -> Option<Cow<'a, [u8]>> {
+    let read = reader
+        .read(object, head)
+        .ok()
+        .filter(|read| *read >= STRING_HEADER)?;
+    let head = &head[..read];
+    if head[0] != STRING_TAG {
+        return None;
+    }
+
+    let len = usize::try_from(read_u32_le(head, STRING_HEADER - 4)?).ok()?;
+    if len > MAX_STRING || expected_len.is_some_and(|expected| expected != len) {
+        return None;
+    }
+
+    match head.get(STRING_HEADER..STRING_HEADER + len) {
+        Some(text) => Some(Cow::Borrowed(text)),
+        None => reader
+            .read_vec(object + STRING_HEADER as u64, len)
+            .ok()
+            .map(Cow::Owned),
+    }
+}
+
 fn read_text<R: MemoryReader + ?Sized>(reader: &R, object: u64) -> Option<String> {
-    let mut header = [0u8; STRING_HEADER];
-    reader.read_exact(object, &mut header).ok()?;
-    if header[0] != STRING_TAG {
-        return None;
-    }
-    let len = usize::try_from(read_u32_le(&header, STRING_HEADER - 4)?).ok()?;
-    if len > MAX_STRING {
-        return None;
-    }
-    let text = reader.read_vec(object + STRING_HEADER as u64, len).ok()?;
-    String::from_utf8(text).ok()
+    let mut head = [0u8; STRING_PREFETCH];
+    let text = string_bytes(reader, object, &mut head, None)?;
+    String::from_utf8(text.into_owned()).ok()
 }
 
 fn value<R: MemoryReader + ?Sized>(reader: &R, slot: &[u8]) -> Option<LuaValue> {
@@ -143,11 +168,11 @@ fn key_tag(key: &[u8]) -> Option<u32> {
 }
 
 fn key_is<R: MemoryReader + ?Sized>(reader: &R, key: &[u8], name: &str) -> bool {
+    let mut head = [0u8; STRING_PREFETCH];
     key_tag(key) == Some(u32::from(STRING_TAG))
         && read_u64_le(key, 0)
-            .and_then(|object| read_text(reader, object))
-            .as_deref()
-            == Some(name)
+            .and_then(|object| string_bytes(reader, object, &mut head, Some(name.len())))
+            .is_some_and(|text| text == name.as_bytes())
 }
 
 impl LuaTable {
@@ -193,23 +218,16 @@ impl LuaTable {
         .table()
     }
 
-    pub fn values<R: MemoryReader + ?Sized>(self, reader: &R) -> Vec<LuaValue> {
-        self.nodes(reader)
+    pub fn locals<R: MemoryReader + ?Sized>(self, reader: &R) -> Vec<LuaTable> {
+        let mut tables: Vec<LuaTable> = self
+            .nodes(reader)
             .unwrap_or_default()
             .as_chunks::<NODE>()
             .0
             .iter()
-            .filter(|node| key_tag(&node[NODE_KEY..]).is_some_and(|tag| tag != 0))
-            .filter_map(|node| value(reader, &node[..NODE_KEY]))
-            .collect()
-    }
-
-    pub fn locals<R: MemoryReader + ?Sized>(self, reader: &R) -> Vec<LuaTable> {
-        let mut tables: Vec<LuaTable> = self
-            .values(reader)
-            .into_iter()
-            .filter_map(LuaValue::function)
-            .flat_map(|function| function.upvalues(reader))
+            .filter(|node| slot_tag(&node[..NODE_KEY]) == Some(FUNCTION_TAG))
+            .filter_map(|node| read_u64_le(node, 0))
+            .flat_map(|function| LuaFunction(function).upvalues(reader))
             .filter_map(LuaValue::table)
             .collect();
         tables.sort_unstable_by_key(|table| table.0);
@@ -347,6 +365,24 @@ impl LuaState {
             .find(|script| script.field(reader, owns).is_some())
     }
 
+    pub fn cached_script<R: MemoryReader + ?Sized>(
+        &self,
+        reader: &R,
+        owns: &str,
+        cached: &mut Option<LuaTable>,
+    ) -> Option<LuaTable> {
+        let scripts = self.scripts(reader);
+        let live = cached.is_some_and(|script| {
+            scripts.contains(&script) && script.field(reader, owns).is_some()
+        });
+        if !live {
+            *cached = scripts
+                .into_iter()
+                .find(|script| script.field(reader, owns).is_some());
+        }
+        *cached
+    }
+
     pub fn scripts<R: MemoryReader + ?Sized>(&self, reader: &R) -> Vec<LuaTable> {
         self.registry
             .items(reader)
@@ -381,6 +417,12 @@ pub(crate) mod tests {
 
     fn address(offset: usize) -> u64 {
         HEAP + u64::try_from(offset).unwrap()
+    }
+
+    impl LuaTable {
+        pub(crate) fn at(address: u64) -> Self {
+            Self(address)
+        }
     }
 
     impl Heap {
@@ -558,6 +600,78 @@ pub(crate) mod tests {
             scripts[0].field(&reader, "mName").and_then(LuaValue::text),
             Some("Relay".to_owned())
         );
+    }
+
+    #[test]
+    fn cached_script_revalidated() {
+        let mut closed = 0;
+        let reader = Heap::with_scripts(|heap| {
+            let other = heap.text_field("mName", "Relay");
+            let owner = heap.text_field("OnVoidRewards", "");
+            let previous = heap.text_field("OnVoidRewards", "");
+            closed = heap.table(&[previous]);
+            vec![heap.table(&[other]), heap.table(&[owner])]
+        });
+        let state = LuaState::locate(&reader).unwrap().unwrap();
+        let scripts = state.scripts(&reader);
+        let (relay, rewards) = (scripts[0], scripts[1]);
+
+        let mut cached = None;
+        assert_eq!(
+            state.cached_script(&reader, "OnVoidRewards", &mut cached),
+            Some(rewards)
+        );
+        assert_eq!(cached, Some(rewards));
+
+        let mut cached = Some(relay);
+        assert_eq!(
+            state.cached_script(&reader, "OnVoidRewards", &mut cached),
+            Some(rewards)
+        );
+
+        let mut cached = Some(LuaTable::at(closed));
+        assert_eq!(
+            state.cached_script(&reader, "OnVoidRewards", &mut cached),
+            Some(rewards)
+        );
+        assert_eq!(
+            state.cached_script(&reader, "OnGiftRecipient", &mut cached),
+            None
+        );
+        assert_eq!(cached, None);
+    }
+
+    fn string_object(text: &str) -> Vec<u8> {
+        let mut object = vec![0u8; STRING_HEADER];
+        object[0] = STRING_TAG;
+        let len = u32::try_from(text.len()).unwrap();
+        object[STRING_HEADER - 4..].copy_from_slice(&len.to_le_bytes());
+        object.extend_from_slice(text.as_bytes());
+        object
+    }
+
+    #[test]
+    fn text_at_region_end() {
+        let reader = FakeReader::new(vec![(HEAP, string_object("Relay"))]);
+        assert_eq!(read_text(&reader, HEAP), Some("Relay".to_owned()));
+    }
+
+    #[test]
+    fn text_past_the_head() {
+        let text = "/Lotus/Types/Recipes/WarframeRecipes/VorunaPrimeHelmetBlueprint";
+        let reader = FakeReader::new(vec![(HEAP, string_object(text))]);
+        assert_eq!(read_text(&reader, HEAP), Some(text.to_owned()));
+    }
+
+    #[test]
+    fn key_compares_length_and_text() {
+        let reader = FakeReader::new(vec![(HEAP, string_object("mElements"))]);
+        let mut key = [0u8; NODE_KEY];
+        key[..8].copy_from_slice(&HEAP.to_le_bytes());
+        key[SLOT_TAG..].copy_from_slice(&u32::from(STRING_TAG).to_le_bytes());
+        assert!(key_is(&reader, &key, "mElements"));
+        assert!(!key_is(&reader, &key, "mElement"));
+        assert!(!key_is(&reader, &key, "mElementz"));
     }
 
     #[test]

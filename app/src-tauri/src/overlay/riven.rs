@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::atomic::Ordering;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use tauri::{AppHandle, Runtime};
@@ -55,9 +55,14 @@ pub(super) fn purchase_dialog_closes(marks: &mut Marks, count: u32, at: f64) -> 
 
 fn lua_read<T>(
     state: &Arc<AppState>,
-    read: impl FnOnce(&(dyn wf_mem::MemoryReader + 'static), &wf_scan::LuaState) -> Option<T>,
+    script: &Mutex<Option<wf_scan::LuaTable>>,
+    read: impl FnOnce(
+        &(dyn wf_mem::MemoryReader + 'static),
+        &wf_scan::LuaState,
+        &mut Option<wf_scan::LuaTable>,
+    ) -> Option<T>,
 ) -> Option<T> {
-    let reader = attached_game()?;
+    let reader = attached_game(state)?;
     let mut located = lock(&state.overlays.lua);
     if !located.is_some_and(|lua| lua.holds(reader.as_ref())) {
         *located = match wf_scan::LuaState::locate(reader.as_ref()) {
@@ -68,15 +73,23 @@ fn lua_read<T>(
             }
         };
     }
-    read(reader.as_ref(), located.as_ref()?)
+    read(reader.as_ref(), located.as_ref()?, &mut lock(script))
 }
 
 fn station_read(state: &Arc<AppState>) -> Option<wf_scan::StationRiven> {
-    lua_read(state, wf_scan::StationRiven::read)
+    lua_read(
+        state,
+        &state.overlays.station_script,
+        wf_scan::StationRiven::read,
+    )
 }
 
 fn dialog_read(state: &Arc<AppState>) -> Option<wf_scan::DialogRiven> {
-    lua_read(state, wf_scan::DialogRiven::read)
+    lua_read(
+        state,
+        &state.overlays.dialog_script,
+        wf_scan::DialogRiven::read,
+    )
 }
 
 fn cycled_roll(state: &Arc<AppState>, row: &RivenRow) -> Option<RivenRow> {
