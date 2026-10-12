@@ -1,5 +1,6 @@
 import { relaunch } from "@tauri-apps/plugin-process";
 import { useCallback, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +15,14 @@ import { api, reportError } from "@/lib/bridge";
 import { useAppStore } from "@/stores/app-store";
 
 export function UpdateDialog() {
-  const { update, setUpdate, settings, setSettings } = useAppStore();
+  const { update, setUpdate, settings, setSettings } = useAppStore(
+    useShallow((state) => ({
+      update: state.update,
+      setUpdate: state.setUpdate,
+      settings: state.settings,
+      setSettings: state.setSettings,
+    })),
+  );
   const [progress, setProgress] = useState<number | null>(null);
 
   const close = useCallback(() => setUpdate(null), [setUpdate]);

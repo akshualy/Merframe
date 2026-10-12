@@ -179,7 +179,11 @@ export function MarketMovers() {
     [compared],
   );
   const load = useCallback(() => api.marketMovers(range), [range]);
-  const { data, error, loading } = useAsyncData(load, ["pricesUpdated"]);
+  const { data, error, loading } = useAsyncData(
+    `market_movers:${range}`,
+    load,
+    ["pricesUpdated"],
+  );
 
   const slices = useMemo(
     () =>

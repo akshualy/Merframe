@@ -21,12 +21,11 @@ import { notify } from "@/lib/toast";
 
 export function InventoryPage() {
   const quote = usePageQuote("inventory");
-  const { data, error, loading } = useAsyncData(api.inventoryTab, [
-    "inventoryUpdated",
-    "pricesUpdated",
-    "favouriteUpdated",
-    "marketUpdated",
-  ]);
+  const { data, error, loading } = useAsyncData(
+    "inventory_tab",
+    api.inventoryTab,
+    ["inventoryUpdated", "pricesUpdated", "favouriteUpdated", "marketUpdated"],
+  );
   const [exporting, setExporting] = useState(false);
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as InventoryTabKey | null) ?? "parts";

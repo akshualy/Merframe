@@ -30,7 +30,8 @@ const CREDIT_LINKS = [
 
 export function AboutPage() {
   const quote = usePageQuote("about");
-  const { status, setUpdate } = useAppStore();
+  const status = useAppStore((state) => state.status);
+  const setUpdate = useAppStore((state) => state.setUpdate);
   const [version, setVersion] = useState("");
   const [logFile, setLogFile] = useState("");
   const [checking, setChecking] = useState(false);

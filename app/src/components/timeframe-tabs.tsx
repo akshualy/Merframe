@@ -18,7 +18,8 @@ export function sinceMs(timeframe: Timeframe): number | undefined {
 }
 
 export function TimeframeTabs() {
-  const { timeframe, setTimeframe } = usePreferencesStore();
+  const timeframe = usePreferencesStore((state) => state.timeframe);
+  const setTimeframe = usePreferencesStore((state) => state.setTimeframe);
 
   return (
     <OptionTabs

@@ -1,5 +1,5 @@
 import { check } from "@tauri-apps/plugin-updater";
-import { useCallback, useEffect, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
@@ -12,21 +12,56 @@ import { StatusBar } from "@/components/status-bar";
 import { Toaster } from "@/components/ui/sonner";
 import { UpdateDialog } from "@/components/update-dialog";
 import { api, errorMessage, logError } from "@/lib/bridge";
-import { AboutPage } from "@/pages/about";
-import { AnalyticsPage } from "@/pages/analytics/analytics";
-import { FoundryPage } from "@/pages/foundry/foundry";
-import { InventoryPage } from "@/pages/inventory";
-import { MarketPage } from "@/pages/market/market";
-import { MasteryPage } from "@/pages/mastery";
-import { OverlaysPage } from "@/pages/overlays";
-import { RelicPlannerPage } from "@/pages/relic-planner/relic-planner";
-import { ResourcesPage } from "@/pages/resources/resources";
-import { RivensPage } from "@/pages/rivens/rivens";
-import { SettingsPage } from "@/pages/settings/settings";
-import { StatsPage } from "@/pages/stats";
-import { WorldPage } from "@/pages/world/world";
 import { useAppStore } from "@/stores/app-store";
 import { useMarketItemsStore } from "@/stores/market-items-store";
+
+const AboutPage = lazy(() =>
+  import("@/pages/about").then((m) => ({ default: m.AboutPage })),
+);
+const AnalyticsPage = lazy(() =>
+  import("@/pages/analytics/analytics").then((m) => ({
+    default: m.AnalyticsPage,
+  })),
+);
+const FoundryPage = lazy(() =>
+  import("@/pages/foundry/foundry").then((m) => ({ default: m.FoundryPage })),
+);
+const InventoryPage = lazy(() =>
+  import("@/pages/inventory").then((m) => ({ default: m.InventoryPage })),
+);
+const MarketPage = lazy(() =>
+  import("@/pages/market/market").then((m) => ({ default: m.MarketPage })),
+);
+const MasteryPage = lazy(() =>
+  import("@/pages/mastery").then((m) => ({ default: m.MasteryPage })),
+);
+const OverlaysPage = lazy(() =>
+  import("@/pages/overlays").then((m) => ({ default: m.OverlaysPage })),
+);
+const RelicPlannerPage = lazy(() =>
+  import("@/pages/relic-planner/relic-planner").then((m) => ({
+    default: m.RelicPlannerPage,
+  })),
+);
+const ResourcesPage = lazy(() =>
+  import("@/pages/resources/resources").then((m) => ({
+    default: m.ResourcesPage,
+  })),
+);
+const RivensPage = lazy(() =>
+  import("@/pages/rivens/rivens").then((m) => ({ default: m.RivensPage })),
+);
+const SettingsPage = lazy(() =>
+  import("@/pages/settings/settings").then((m) => ({
+    default: m.SettingsPage,
+  })),
+);
+const StatsPage = lazy(() =>
+  import("@/pages/stats").then((m) => ({ default: m.StatsPage })),
+);
+const WorldPage = lazy(() =>
+  import("@/pages/world/world").then((m) => ({ default: m.WorldPage })),
+);
 
 function useBoot() {
   const newest = useRef(0);
@@ -128,28 +163,30 @@ function Shell({ statsTab }: { statsTab: boolean }) {
         <StatusBar />
         <main className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
           <div className="@container">
-            <Routes>
-              <Route path="/" element={<Navigate to="/world" replace />} />
-              <Route path="/world" element={<WorldPage />} />
-              <Route path="/foundry" element={<FoundryPage />} />
-              <Route path="/inventory" element={<InventoryPage />} />
-              <Route path="/relics" element={<RelicPlannerPage />} />
-              <Route path="/rivens" element={<RivensPage />} />
-              <Route path="/overlays" element={<OverlaysPage />} />
-              <Route path="/mastery" element={<MasteryPage />} />
-              <Route path="/resources" element={<ResourcesPage />} />
-              <Route path="/market" element={<MarketPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route
-                path="/stats"
-                element={
-                  statsTab ? <StatsPage /> : <Navigate to="/world" replace />
-                }
-              />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="*" element={<Navigate to="/world" replace />} />
-            </Routes>
+            <Suspense fallback={null}>
+              <Routes>
+                <Route path="/" element={<Navigate to="/world" replace />} />
+                <Route path="/world" element={<WorldPage />} />
+                <Route path="/foundry" element={<FoundryPage />} />
+                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/relics" element={<RelicPlannerPage />} />
+                <Route path="/rivens" element={<RivensPage />} />
+                <Route path="/overlays" element={<OverlaysPage />} />
+                <Route path="/mastery" element={<MasteryPage />} />
+                <Route path="/resources" element={<ResourcesPage />} />
+                <Route path="/market" element={<MarketPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route
+                  path="/stats"
+                  element={
+                    statsTab ? <StatsPage /> : <Navigate to="/world" replace />
+                  }
+                />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="*" element={<Navigate to="/world" replace />} />
+              </Routes>
+            </Suspense>
           </div>
         </main>
       </div>

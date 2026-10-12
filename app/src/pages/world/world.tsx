@@ -35,7 +35,8 @@ export function WorldPage() {
   const data = useAppStore((state) => state.world);
   const setWorld = useAppStore((state) => state.setWorld);
   const now = useNow();
-  const { fissurePath, setFissurePath } = usePreferencesStore();
+  const fissurePath = usePreferencesStore((state) => state.fissurePath);
+  const setFissurePath = usePreferencesStore((state) => state.setFissurePath);
 
   const nextCycleEnd = data?.timers.length
     ? Math.min(...data.timers.map((timer) => new Date(timer.ends).getTime()))

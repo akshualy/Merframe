@@ -40,9 +40,10 @@ export function Pagination({
   onPageSizeChange?: (pageSize: number) => void;
   onPageChange: (page: number) => void;
 }) {
-  const preferences = usePreferencesStore();
-  const pageSize = ownPageSize ?? preferences.pageSize;
-  const setPageSize = onPageSizeChange ?? preferences.setPageSize;
+  const storedPageSize = usePreferencesStore((state) => state.pageSize);
+  const setStoredPageSize = usePreferencesStore((state) => state.setPageSize);
+  const pageSize = ownPageSize ?? storedPageSize;
+  const setPageSize = onPageSizeChange ?? setStoredPageSize;
   const [typed, setTyped] = useState<string | null>(null);
 
   const commitTyped = () => {

@@ -15,7 +15,8 @@ import { CycleTimers } from "./timers";
 
 export function SettingsPage() {
   const quote = usePageQuote("settings");
-  const { settings: stored, setSettings: setStored } = useAppStore();
+  const stored = useAppStore((state) => state.settings);
+  const setStored = useAppStore((state) => state.setSettings);
   const [draft, setDraft] = useState<Settings | null>(stored);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -64,7 +64,7 @@ function Item({
 }
 
 export function AppSidebar() {
-  const { settings } = useAppStore();
+  const settings = useAppStore((state) => state.settings);
   const statsTab = settings?.stats_tab_enabled ?? true;
 
   return (

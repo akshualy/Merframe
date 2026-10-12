@@ -10,13 +10,27 @@ export interface AsyncData<T> {
   reload: () => void;
 }
 
+const CACHE_LIMIT = 16;
+const cache = new Map<string, unknown>();
+
+function remember(key: string, payload: unknown) {
+  cache.delete(key);
+  cache.set(key, payload);
+  for (const oldest of [...cache.keys()].slice(0, -CACHE_LIMIT)) {
+    cache.delete(oldest);
+  }
+}
+
 export function useAsyncData<T>(
+  key: string,
   load: (() => Promise<T>) | null,
   reloadOn: readonly EventName[] = [],
 ): AsyncData<T> {
-  const [data, setData] = useState<T | null>(null);
+  const [data, setData] = useState<T | null>(
+    () => (cache.get(key) as T | undefined) ?? null,
+  );
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cache.has(key));
   const newest = useRef(0);
 
   const reload = useCallback(async () => {
@@ -26,12 +40,17 @@ export function useAsyncData<T>(
     newest.current += 1;
     const attempt = newest.current;
     const stale = () => attempt !== newest.current;
+
+    if (cache.has(key)) {
+      setData(cache.get(key) as T);
+    }
     setLoading(true);
     try {
       const payload = await load();
       if (stale()) {
         return;
       }
+      remember(key, payload);
       setData(payload);
       setError(null);
     } catch (error) {
@@ -46,7 +65,7 @@ export function useAsyncData<T>(
         setLoading(false);
       }
     }
-  }, [load]);
+  }, [key, load]);
 
   useEffect(() => {
     reload();

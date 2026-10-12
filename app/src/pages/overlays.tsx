@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { DucateringFilters } from "@/components/ducatering-filters";
 import {
   DucateringSlot,
@@ -137,8 +138,14 @@ function CardControls({
 
 export function OverlaysPage() {
   const quote = usePageQuote("overlays");
-  const { status, settings, setSettings } = useAppStore();
-  const { overlays } = useOverlayStore();
+  const { status, settings, setSettings } = useAppStore(
+    useShallow((state) => ({
+      status: state.status,
+      settings: state.settings,
+      setSettings: state.setSettings,
+    })),
+  );
+  const overlays = useOverlayStore((state) => state.overlays);
   const [dragged, setDragged] = useState<number | null>(null);
   const [draggedCount, setDraggedCount] = useState<number | null>(null);
 

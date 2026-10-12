@@ -80,12 +80,14 @@ function Platinum({ value, tone }: { value: number; tone?: string }) {
 }
 
 export function TradeHistory() {
-  const { timeframe } = usePreferencesStore();
+  const timeframe = usePreferencesStore((state) => state.timeframe);
   const load = useCallback(
     () => api.tradeAnalytics(sinceMs(timeframe)),
     [timeframe],
   );
-  const { data, error } = useAsyncData(load, ["inventoryUpdated"]);
+  const { data, error } = useAsyncData(`trade_analytics:${timeframe}`, load, [
+    "inventoryUpdated",
+  ]);
 
   if (!data) {
     return error ? <ErrorNote message={error} /> : <TableSkeleton />;

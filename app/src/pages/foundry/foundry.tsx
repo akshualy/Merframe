@@ -35,13 +35,15 @@ import { FoundryTreeDialog } from "./tree-dialog";
 
 export function FoundryPage() {
   const quote = usePageQuote("foundry");
-  const { data, error, loading } = useAsyncData(api.foundryTab, [
+  const { data, error, loading } = useAsyncData("foundry_tab", api.foundryTab, [
     "inventoryUpdated",
     "pricesUpdated",
     "favouriteUpdated",
   ]);
-  const { foundryCategory: category, setFoundryCategory } =
-    usePreferencesStore();
+  const category = usePreferencesStore((state) => state.foundryCategory);
+  const setFoundryCategory = usePreferencesStore(
+    (state) => state.setFoundryCategory,
+  );
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>({});
   const [selectedName, setSelectedName] = useState<string | null>(null);

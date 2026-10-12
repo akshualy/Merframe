@@ -1,4 +1,5 @@
 import { Check, Globe, X } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import {
   Tooltip,
@@ -12,7 +13,13 @@ import { useAppStore } from "@/stores/app-store";
 const FISSURE_PREVIEW = 8;
 
 export function StatusBar() {
-  const { status, world, ready } = useAppStore();
+  const { status, world, ready } = useAppStore(
+    useShallow((state) => ({
+      status: state.status,
+      world: state.world,
+      ready: state.ready,
+    })),
+  );
   const now = useNow();
 
   const detected = status?.game_detected ?? false;

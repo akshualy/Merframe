@@ -52,7 +52,7 @@ export function OverlayWindow() {
     return () => document.documentElement.classList.remove(OVERLAY_CLASS);
   }, []);
 
-  const { loaded } = useOverlayStore();
+  const loaded = useOverlayStore((state) => state.loaded);
 
   useEffect(() => {
     if (!loaded) {

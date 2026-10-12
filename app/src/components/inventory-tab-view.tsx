@@ -27,7 +27,6 @@ import {
   totalPlat,
 } from "@/lib/inventory-entries";
 import {
-  compareEntries,
   descending,
   type InventoryTabKey,
   keeps,
@@ -36,6 +35,7 @@ import {
   type Ordering,
   refinementsFor,
   saveFilters,
+  sortEntries,
   type TabFilters,
   yesNoFiltersFor,
 } from "@/lib/inventory-filters";
@@ -54,21 +54,23 @@ export function InventoryTabView({
   const [filters, setFilters] = useState<TabFilters>(() => loadFilters(tab));
 
   const update = (patch: Partial<TabFilters>) => {
-    setFilters((current) => {
-      const next = { ...current, ...patch };
-      saveFilters(tab, next);
-      return next;
-    });
+    setFilters((current) => ({ ...current, ...patch }));
   };
 
-  const visible = useMemo(() => {
-    const desc = descending(filters);
-    return entries
-      .filter((entry) => keeps(entry, filters, flags))
-      .sort((left, right) =>
-        compareEntries(left, right, filters.ordering, desc, tab),
-      );
-  }, [entries, filters, flags, tab]);
+  useEffect(() => {
+    saveFilters(tab, filters);
+  }, [tab, filters]);
+
+  const desc = descending(filters);
+  const sorted = useMemo(
+    () => sortEntries(entries, filters.ordering, desc, tab),
+    [entries, filters.ordering, desc, tab],
+  );
+
+  const visible = useMemo(
+    () => sorted.filter((entry) => keeps(entry, filters, flags)),
+    [sorted, filters, flags],
+  );
 
   const { pageItems: pageEntries, pagination } = usePaged(
     visible,

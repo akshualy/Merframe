@@ -1,6 +1,7 @@
 import { Filter, X } from "lucide-react";
 import { type RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
+import { useShallow } from "zustand/react/shallow";
 import { DataTable } from "@/components/data-table";
 import { FilterField, FilterGrid } from "@/components/filter-grid";
 import { FilterSelect, FilterSingleSelect } from "@/components/filter-select";
@@ -52,7 +53,16 @@ const ALL_ERAS = "all";
 export function RelicPlannerPage() {
   const quote = usePageQuote("relicPlanner");
   const { squadSize, refinement, era, setSquadSize, setRefinement, setEra } =
-    usePreferencesStore();
+    usePreferencesStore(
+      useShallow((state) => ({
+        squadSize: state.squadSize,
+        refinement: state.refinement,
+        era: state.era,
+        setSquadSize: state.setSquadSize,
+        setRefinement: state.setRefinement,
+        setEra: state.setEra,
+      })),
+    );
   const [onlyOwned, setOnlyOwned] = useState(true);
   const [vaulted, setVaulted] = useState<YesNo | null>(null);
   const [itemsOwned, setItemsOwned] = useState<YesNo | null>(null);
@@ -72,11 +82,11 @@ export function RelicPlannerPage() {
     [squadSize, onlyOwned],
   );
 
-  const { data, error, loading } = useAsyncData(load, [
-    "inventoryUpdated",
-    "pricesUpdated",
-    "favouriteUpdated",
-  ]);
+  const { data, error, loading } = useAsyncData(
+    `relic_planner_tab:${JSON.stringify([squadSize, onlyOwned])}`,
+    load,
+    ["inventoryUpdated", "pricesUpdated", "favouriteUpdated"],
+  );
 
   const scrollToPanel = (panel: RefObject<HTMLDivElement | null>) => {
     panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });

@@ -1,5 +1,6 @@
 import { LoaderCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect, FilterSingleSelect } from "@/components/filter-select";
 import { GameIcon } from "@/components/game-icon";
@@ -70,12 +71,15 @@ const NO_DEMAND: Record<ResourceSource, Record<ResourceScope, string>> = {
 
 export function ResourcesPage() {
   const quote = usePageQuote("resources");
-  const {
-    resourceSource: source,
-    resourceScope: scope,
-    setResourceSource,
-    setResourceScope,
-  } = usePreferencesStore();
+  const { source, scope, setResourceSource, setResourceScope } =
+    usePreferencesStore(
+      useShallow((state) => ({
+        source: state.resourceSource,
+        scope: state.resourceScope,
+        setResourceSource: state.setResourceSource,
+        setResourceScope: state.setResourceScope,
+      })),
+    );
   const [kind, setKind] = useState<string | null>(null);
   const [prime, setPrime] = useState<YesNo | null>(null);
   const [owned, setOwned] = useState<YesNo | null>(null);
@@ -95,10 +99,11 @@ export function ResourcesPage() {
       }),
     [source, scope, kind, prime, owned],
   );
-  const { data, error, loading } = useAsyncData(load, [
-    "inventoryUpdated",
-    "favouriteUpdated",
-  ]);
+  const { data, error, loading } = useAsyncData(
+    `resources_tab:${JSON.stringify([source, scope, kind, prime, owned])}`,
+    load,
+    ["inventoryUpdated", "favouriteUpdated"],
+  );
 
   const resources = useMemo(
     () => visibleResources(data?.resources ?? [], show, query),

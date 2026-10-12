@@ -175,7 +175,8 @@ function RouteCard({
 
 export function MasteryPage() {
   const quote = usePageQuote("mastery");
-  const { settings, setSettings } = useAppStore();
+  const settings = useAppStore((state) => state.settings);
+  const setSettings = useAppStore((state) => state.setSettings);
   const [ordering, setOrdering] = useState<MasteryOrdering>("closest");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [openRoute, setOpenRoute] = useState<string | null>(null);
@@ -192,11 +193,11 @@ export function MasteryPage() {
     [settingsRead, ordering, founders, includeForma],
   );
 
-  const { data, error, loading } = useAsyncData(load, [
-    "inventoryUpdated",
-    "pricesUpdated",
-    "favouriteUpdated",
-  ]);
+  const { data, error, loading } = useAsyncData(
+    `mastery_tab:${JSON.stringify([ordering, founders, includeForma])}`,
+    load,
+    ["inventoryUpdated", "pricesUpdated", "favouriteUpdated"],
+  );
 
   const { pageItems: topItems, pagination } = usePaged(
     data?.recommended ?? [],

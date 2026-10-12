@@ -26,7 +26,7 @@ import { VeiledChallenge } from "./veiled";
 
 export function RivensPage() {
   const quote = usePageQuote("rivens");
-  const { data, error, loading } = useAsyncData(api.rivensTab, [
+  const { data, error, loading } = useAsyncData("rivens_tab", api.rivensTab, [
     "inventoryUpdated",
     "pricesUpdated",
     "rivenDataUpdated",

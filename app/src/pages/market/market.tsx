@@ -31,6 +31,8 @@ import { PresenceControl } from "./presence";
 
 type MarketTab = "orders" | "auctions";
 
+const ACTIVE_POLL_MS = 60_000;
+
 export function MarketPage() {
   const quote = usePageQuote("market");
   const status = useAppStore((state) => state.status);
@@ -95,7 +97,9 @@ export function MarketPage() {
   }, [setListings]);
 
   useEffect(() => {
-    if (account) {
+    const { at } = useMarketListingsStore.getState();
+    const fresh = at !== null && Date.now() - Date.parse(at) < ACTIVE_POLL_MS;
+    if (account && !fresh) {
       reload();
     } else {
       setLoading(false);

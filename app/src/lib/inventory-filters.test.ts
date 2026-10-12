@@ -12,6 +12,7 @@ import {
   descending,
   keeps,
   refinementsFor,
+  sortEntries,
   type TabFilters,
   yesNoFiltersFor,
 } from "@/lib/inventory-filters";
@@ -294,6 +295,27 @@ describe("vault", () => {
     }
     expect(vault(kavasa)).toBeNull();
     expect(vault(barrel)).toBe("available");
+  });
+});
+
+describe("sortEntries", () => {
+  it("orders names like localeCompare", () => {
+    const names = [
+      "zeta",
+      "\u00c1mbar",
+      "alpha",
+      "Alpha",
+      "beta",
+      "\u00c9clair",
+      "Beta",
+    ];
+    const sorted = sortEntries(
+      names.map((name) => part(name, { plat: 1, ducats: 1 })),
+      "name",
+      false,
+      "parts",
+    ).map((entry) => entry.item.name);
+    expect(sorted).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
 });
 

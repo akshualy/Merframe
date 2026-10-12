@@ -53,7 +53,7 @@ export function PricesAndData({
   draft: Settings;
   patch: Patch;
 }) {
-  const { status } = useAppStore();
+  const status = useAppStore((state) => state.status);
 
   const handlePickLogFile = useCallback(async () => {
     try {

@@ -97,10 +97,13 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [globalFilter, setGlobalFilter] = useState(initialSearch);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const preferences = usePreferencesStore();
-  const { hiddenColumns, setHiddenColumns } = preferences;
+  const storedPageSize = usePreferencesStore((state) => state.pageSize);
+  const hiddenColumns = usePreferencesStore((state) => state.hiddenColumns);
+  const setHiddenColumns = usePreferencesStore(
+    (state) => state.setHiddenColumns,
+  );
   const [ownPageSize, setOwnPageSize] = useState(initialPageSize);
-  const pageSize = fixedPageSize ?? ownPageSize ?? preferences.pageSize;
+  const pageSize = fixedPageSize ?? ownPageSize ?? storedPageSize;
   const hidden = hiddenColumns[tableId];
   const columnVisibility = useMemo<VisibilityState>(
     () => Object.fromEntries((hidden ?? []).map((id) => [id, false])),

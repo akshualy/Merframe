@@ -1,11 +1,18 @@
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useListen } from "@/hooks/use-listen";
 import { api, logError } from "@/lib/bridge";
 import { useOverlayStore } from "@/stores/overlay-store";
 import type { OverlayState } from "@/types";
 
 export function useOverlayFeed(): OverlayState {
-  const { overlays, setOverlays, setLoaded } = useOverlayStore();
+  const { overlays, setOverlays, setLoaded } = useOverlayStore(
+    useShallow((state) => ({
+      overlays: state.overlays,
+      setOverlays: state.setOverlays,
+      setLoaded: state.setLoaded,
+    })),
+  );
   useListen("overlayState", setOverlays);
 
   useEffect(() => {

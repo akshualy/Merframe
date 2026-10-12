@@ -154,6 +154,8 @@ const DEFAULT_FILTERS: TabFilters = {
 
 const UNPRICED_PLAT = 0.0001;
 
+const collator = new Intl.Collator();
+
 export function descending(filters: TabFilters): boolean {
   return filters.ordering === "name"
     ? !filters.preferHighest
@@ -286,7 +288,7 @@ export function compareEntries(
   const b = orderValue(right, ordering, tab);
   let primary = 0;
   if (typeof a === "string" || typeof b === "string") {
-    primary = String(a).localeCompare(String(b));
+    primary = collator.compare(String(a), String(b));
   } else if (Number.isFinite(a - b)) {
     primary = a - b;
   } else {
@@ -298,5 +300,16 @@ export function compareEntries(
   if (primary !== 0) {
     return primary;
   }
-  return left.item.name.localeCompare(right.item.name);
+  return collator.compare(left.item.name, right.item.name);
+}
+
+export function sortEntries(
+  entries: InventoryEntry[],
+  ordering: Ordering,
+  desc: boolean,
+  tab: InventoryTabKey,
+): InventoryEntry[] {
+  return [...entries].sort((left, right) =>
+    compareEntries(left, right, ordering, desc, tab),
+  );
 }

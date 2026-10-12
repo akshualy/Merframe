@@ -65,9 +65,13 @@ const DELTA_COLUMNS: ColumnDef<DeltaRow>[] = [
 
 export function StatsPage() {
   const quote = usePageQuote("stats");
-  const { timeframe } = usePreferencesStore();
+  const timeframe = usePreferencesStore((state) => state.timeframe);
   const load = useCallback(() => api.statsTab(sinceMs(timeframe)), [timeframe]);
-  const { data, error, loading } = useAsyncData(load, ["inventoryUpdated"]);
+  const { data, error, loading } = useAsyncData(
+    `stats_tab:${timeframe}`,
+    load,
+    ["inventoryUpdated"],
+  );
 
   const points = data?.series ?? [];
   const summary = data?.summary ?? null;
