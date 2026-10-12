@@ -8,7 +8,8 @@ rust-version.workspace = true
 [dependencies]
 wf-mem.workspace = true
 memchr.workspace = true
-serde_json.workspace = true
+serde.workspace = true
+serde_json = { workspace = true, features = ["raw_value"] }
 thiserror.workspace = true
 tracing.workspace = true
 

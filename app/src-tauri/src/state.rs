@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::time::{Duration, Instant};
@@ -9,6 +9,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::{Mutex as AsyncMutex, Notify, SetOnce, watch};
+use tracing::info;
 use wf_core::{
     Catalog, Core, Ducatering, MarketWindow, PriceCache, PriceSource, Snapshot, Store, Turnover,
 };
@@ -179,6 +180,21 @@ pub fn data_dir<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<PathBuf> {
         .join(DATA_DIR))
 }
 
+async fn load_catalog(dir: &Path, http: &reqwest::Client) -> anyhow::Result<Catalog> {
+    let started = Instant::now();
+    let game_data = load_or_fetch(dir, http)
+        .await
+        .context("Loading the WFCD game data")?;
+    let catalog = Catalog::new(game_data);
+    info!(
+        items = catalog.data().items().len(),
+        relics = catalog.data().relics().len(),
+        millis = started.elapsed().as_millis(),
+        "Game data loaded"
+    );
+    Ok(catalog)
+}
+
 impl AppState {
     pub async fn build<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Self> {
         let data_dir = data_dir(app)?;
@@ -203,10 +219,7 @@ impl AppState {
             .await
             .with_context(|| format!("Creating {}", images.dir().display()))?;
 
-        let game_data = load_or_fetch(&data_dir.join("gamedata"), &http)
-            .await
-            .context("Loading the WFCD game data")?;
-        let catalog = Catalog::new(game_data);
+        let catalog = load_catalog(&data_dir.join("gamedata"), &http).await?;
         let store =
             Store::open(&data_dir.join("merframe.sqlite")).context("Opening the local store")?;
 

@@ -5774,6 +5774,7 @@ dependencies = [
 name = "wf-data"
 version = "0.5.3"
 dependencies = [
+ "futures-util",
  "reqwest",
  "serde",
  "serde_json",
@@ -5841,6 +5842,7 @@ name = "wf-scan"
 version = "0.5.3"
 dependencies = [
  "memchr",
+ "serde",
  "serde_json",
  "thiserror 2.0.21",
  "tracing",

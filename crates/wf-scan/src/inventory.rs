@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+
 use memchr::memmem;
+use serde::Deserialize;
+use serde_json::value::RawValue;
 
 pub const MAX_INVENTORY_BODY: usize = 64 << 20;
 pub const REQUIRED_KEYS: [&str; 16] = [
@@ -28,40 +32,42 @@ pub struct InventoryBuffer {
     pub json: String,
 }
 
-fn inventory_sync(value: &serde_json::Value) -> Option<String> {
-    let object = value.as_object()?;
-    if !REQUIRED_KEYS.iter().all(|key| object.contains_key(*key)) {
-        return None;
-    }
-    object
-        .get("LastInventorySync")?
-        .get("$oid")?
-        .as_str()
-        .map(str::to_owned)
+#[derive(Deserialize)]
+struct MissionEnd {
+    #[serde(rename = "InventoryJson")]
+    inventory_json: String,
 }
 
-fn unwrap_mission_end(value: &serde_json::Value) -> Option<(serde_json::Value, String)> {
-    let text = value.as_object()?.get("InventoryJson")?.as_str()?;
-    let inner = serde_json::from_str::<serde_json::Value>(text).ok()?;
-    Some((inner, text.to_owned()))
+#[derive(Deserialize)]
+struct Oid {
+    #[serde(rename = "$oid")]
+    oid: String,
 }
 
 pub(crate) fn accept(addr: u64, body: &[u8]) -> Option<InventoryBuffer> {
     if body.trim_ascii_end().last() != Some(&b'}') {
         return None;
     }
+
     let text = str::from_utf8(body).ok()?;
-    let value = serde_json::from_str::<serde_json::Value>(text).ok()?;
-    let (value, json) = if memmem::find(body, b"\"LastInventorySync\":{\"$oid\":\"").is_some() {
-        (value, text.to_owned())
+    let json = if memmem::find(body, b"\"LastInventorySync\":{\"$oid\":\"").is_some() {
+        text.to_owned()
     } else {
-        unwrap_mission_end(&value)?
+        serde_json::from_str::<MissionEnd>(text)
+            .ok()?
+            .inventory_json
     };
-    let last_sync = inventory_sync(&value)?;
+
+    let fields: HashMap<&str, &RawValue> = serde_json::from_str(&json).ok()?;
+    if !REQUIRED_KEYS.iter().all(|key| fields.contains_key(key)) {
+        return None;
+    }
+    let last_sync = serde_json::from_str::<Oid>(fields.get("LastInventorySync")?.get()).ok()?;
+
     Some(InventoryBuffer {
         addr,
         len: body.len(),
-        last_sync,
+        last_sync: last_sync.oid,
         json,
     })
 }

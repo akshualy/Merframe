@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use futures_util::future::{try_join_all, try_join3};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
@@ -29,6 +30,9 @@ const ITEM_CATEGORIES: &[&str] = &[
     "Glyphs",
 ];
 
+const RELICS_FILE: &str = "Relics.json";
+const COMPONENTS_FILE: &str = "Components.json";
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct CacheMeta {
     entries: HashMap<String, CacheEntry>,
@@ -50,14 +54,34 @@ pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameD
     let meta_path = dir.join("etag.json");
     let mut meta = read_meta(&meta_path).await;
 
-    let mut item_bodies = Vec::with_capacity(ITEM_CATEGORIES.len());
-    for category in ITEM_CATEGORIES {
-        let file_name = format!("{category}.json");
-        item_bodies.push(fetch_or_use_cache(dir, &file_name, client, &mut meta).await?);
-    }
-    let relics_body = fetch_or_use_cache(dir, "Relics.json", client, &mut meta).await?;
-    let components_body = fetch_or_use_cache(dir, "Components.json", client, &mut meta).await?;
+    let item_files: Vec<String> = ITEM_CATEGORIES
+        .iter()
+        .map(|category| format!("{category}.json"))
+        .collect();
+    let (items, (relics_body, relics_entry), (components_body, components_entry)) = try_join3(
+        try_join_all(
+            item_files
+                .iter()
+                .map(|file_name| fetch_or_use_cache(dir, file_name, client, &meta)),
+        ),
+        fetch_or_use_cache(dir, RELICS_FILE, client, &meta),
+        fetch_or_use_cache(dir, COMPONENTS_FILE, client, &meta),
+    )
+    .await?;
 
+    let mut item_bodies = Vec::with_capacity(items.len());
+    for (file_name, (body, entry)) in item_files.into_iter().zip(items) {
+        item_bodies.push(body);
+        if let Some(entry) = entry {
+            meta.entries.insert(file_name, entry);
+        }
+    }
+    if let Some(entry) = relics_entry {
+        meta.entries.insert(RELICS_FILE.to_owned(), entry);
+    }
+    if let Some(entry) = components_entry {
+        meta.entries.insert(COMPONENTS_FILE.to_owned(), entry);
+    }
     write_meta(&meta_path, &meta).await?;
 
     GameData::from_json_parts(&item_bodies, &relics_body, &components_body)
@@ -94,12 +118,12 @@ async fn fetch_or_use_cache(
     dir: &Path,
     file_name: &str,
     client: &reqwest::Client,
-    meta: &mut CacheMeta,
-) -> Result<String> {
+    meta: &CacheMeta,
+) -> Result<(String, Option<CacheEntry>)> {
     let file_path: PathBuf = dir.join(file_name);
     match download_fresh(&file_path, file_name, client, meta).await {
-        Ok(Some(body)) => Ok(body),
-        Ok(None) => read_cached_file(&file_path).await,
+        Ok(Some((body, entry))) => Ok((body, Some(entry))),
+        Ok(None) => Ok((read_cached_file(&file_path).await?, None)),
         Err(error) => {
             warn!(
                 file = file_name,
@@ -108,6 +132,7 @@ async fn fetch_or_use_cache(
             );
             read_cached_file(&file_path)
                 .await
+                .map(|body| (body, None))
                 .map_err(|_| DataError::NoCacheAvailable(file_name.to_owned()))
         }
     }
@@ -117,8 +142,8 @@ async fn download_fresh(
     file_path: &Path,
     file_name: &str,
     client: &reqwest::Client,
-    meta: &mut CacheMeta,
-) -> Result<Option<String>> {
+    meta: &CacheMeta,
+) -> Result<Option<(String, CacheEntry)>> {
     let url = format!(
         "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/{file_name}"
     );
@@ -149,14 +174,13 @@ async fn download_fresh(
             path: file_path.to_path_buf(),
             source,
         })?;
-    meta.entries.insert(
-        file_name.to_owned(),
+    Ok(Some((
+        body,
         CacheEntry {
             etag,
             last_modified,
         },
-    );
-    Ok(Some(body))
+    )))
 }
 
 fn header(response: &reqwest::Response, name: reqwest::header::HeaderName) -> Option<String> {
