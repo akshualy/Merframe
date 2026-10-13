@@ -25,7 +25,7 @@ pub async fn record_trade<R: Runtime>(
     let id = lock(&state.core)
         .store()
         .record_trade(at, partner.as_deref(), &trade)?;
-    runtime::emit(&app, AppEvent::InventoryUpdated(state.status_snapshot()));
+    runtime::emit(&app, AppEvent::TradesUpdated);
     Ok(id)
 }
 
@@ -43,7 +43,7 @@ pub async fn update_trade<R: Runtime>(
     lock(&state.core)
         .store()
         .update_trade(id, at, partner.as_deref(), &trade)?;
-    runtime::emit(&app, AppEvent::InventoryUpdated(state.status_snapshot()));
+    runtime::emit(&app, AppEvent::TradesUpdated);
     Ok(())
 }
 
@@ -55,6 +55,6 @@ pub async fn delete_trade<R: Runtime>(
 ) -> CommandResult<()> {
     let state = ready(&state).await?;
     lock(&state.core).store().delete_trade(id)?;
-    runtime::emit(&app, AppEvent::InventoryUpdated(state.status_snapshot()));
+    runtime::emit(&app, AppEvent::TradesUpdated);
     Ok(())
 }

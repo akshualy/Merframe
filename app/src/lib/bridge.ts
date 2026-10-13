@@ -9,6 +9,7 @@ import type {
   CraftDetails,
   FoundryTab,
   GameStatus,
+  ImagePath,
   InventoryTab,
   ItemListings,
   ListingChoices,
@@ -24,6 +25,7 @@ import type {
   OrderPatch,
   OverlayState,
   Presence,
+  RelicPlan,
   RelicPlannerTab,
   RelicSource,
   ResourceQuery,
@@ -113,6 +115,8 @@ export const api = {
       squadSize: squadSize ?? null,
       onlyOwned: onlyOwned ?? null,
     }),
+  relicPlans: (tier: string | null, squadSize: number) =>
+    call<RelicPlan[]>("relic_plans", { tier, squadSize }),
   rivensTab: () => call<RivensTab>("rivens_tab"),
   rivenComparables: (weaponSlug: string, shown: ComparedStat[]) =>
     call<RivenComparables | null>("riven_comparables", { weaponSlug, shown }),
@@ -190,5 +194,5 @@ export const api = {
   openGameLogFolder: () => call<void>("open_game_log_folder"),
   itemImage: (imageName: string) => call<string>("item_image", { imageName }),
   prefetchImages: (names: string[]) =>
-    call<number>("prefetch_images", { names }),
+    call<ImagePath[]>("prefetch_images", { names }),
 };

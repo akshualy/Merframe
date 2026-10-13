@@ -14,10 +14,14 @@ type Resolved = { src: string } | { failed: true };
 const resolved = new Map<string, Resolved>();
 const pending = new Map<string, Promise<Resolved>>();
 
+function isGameImage(name: string) {
+  return name.startsWith("game/");
+}
+
 async function resolve(imageName: string): Promise<Resolved> {
   let state: Resolved;
   try {
-    state = imageName.startsWith("game/")
+    state = isGameImage(imageName)
       ? { src: `/${imageName}` }
       : { src: convertFileSrc(await api.itemImage(imageName)) };
   } catch (error) {
@@ -48,15 +52,22 @@ export async function prefetchImages(names: (string | null | undefined)[]) {
     ...new Set(
       names.filter(
         (name): name is string =>
-          typeof name === "string" && name.length > 0 && !resolved.has(name),
+          typeof name === "string" &&
+          name.length > 0 &&
+          !isGameImage(name) &&
+          !resolved.has(name),
       ),
     ),
   ];
   if (wanted.length === 0) {
     return;
   }
+
   try {
-    await api.prefetchImages(wanted);
+    const held = await api.prefetchImages(wanted);
+    for (const { name, path } of held) {
+      resolved.set(name, { src: convertFileSrc(path) });
+    }
   } catch (error) {
     logError("Prefetching images", error);
   }

@@ -1,6 +1,6 @@
 import type { YesNo } from "@/lib/filters";
 import { REFINEMENTS } from "@/lib/relics";
-import { readStoredJson, writeStoredJson } from "@/lib/storage";
+import { readStored, writeStoredJson } from "@/lib/storage";
 import type { RefinementValue, RelicPlan, RewardBreakdown } from "@/types";
 
 const OVERLAY_FILTERS_KEY = "merframe.relicPlanner.overlayFilters";
@@ -29,12 +29,22 @@ export function isWanted(
   return reward.component !== null && wanted.has(reward.component);
 }
 
-export function readOverlayFilters(): RelicFilters | null {
-  return readStoredJson<RelicFilters>(OVERLAY_FILTERS_KEY);
+export function storedOverlayFilters(): string | null {
+  return readStored(OVERLAY_FILTERS_KEY);
 }
 
 export function writeOverlayFilters(filters: RelicFilters) {
   writeStoredJson(OVERLAY_FILTERS_KEY, filters);
+}
+
+export function subscribeOverlayFilters(onChange: () => void) {
+  const listener = (event: StorageEvent) => {
+    if (event.key === OVERLAY_FILTERS_KEY) {
+      onChange();
+    }
+  };
+  window.addEventListener("storage", listener);
+  return () => window.removeEventListener("storage", listener);
 }
 
 export function refinementValue(

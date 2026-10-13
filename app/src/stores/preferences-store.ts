@@ -51,12 +51,14 @@ function legacyHiddenColumns(): Record<string, string[]> {
   return hiddenColumns;
 }
 
+export const DEFAULT_SQUAD_SIZE = 4;
+
 const legacySquadSize = localStorage.getItem("merframe.relicPlanner.squadSize");
 
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
-      squadSize: legacySquadSize ? Number(legacySquadSize) : 4,
+      squadSize: legacySquadSize ? Number(legacySquadSize) : DEFAULT_SQUAD_SIZE,
       refinement: legacy("merframe.relicPlanner.refinement", ANY_REFINEMENT),
       era: legacy("merframe.relicPlanner.era", "all"),
       fissurePath: legacy<FissurePath>("merframe.world.fissurePath", "normal"),

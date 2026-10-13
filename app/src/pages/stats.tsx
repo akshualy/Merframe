@@ -70,7 +70,7 @@ export function StatsPage() {
   const { data, error, loading } = useAsyncData(
     `stats_tab:${timeframe}`,
     load,
-    ["inventoryUpdated"],
+    ["inventoryUpdated", "tradesUpdated"],
   );
 
   const points = data?.series ?? [];

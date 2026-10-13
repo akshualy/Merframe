@@ -302,10 +302,9 @@ impl WorldStateView {
 pub async fn worldstate(state: Shared<'_>) -> CommandResult<WorldStateView> {
     let state = ready(&state).await?;
     let fetched_at = read(&state.status).world_state_at;
-    let world = read(&state.world);
     let core = lock(&state.core);
     Ok(WorldStateView::build(
-        world.as_ref(),
+        core.world(),
         core.catalog(),
         core.inventory(),
         Utc::now(),

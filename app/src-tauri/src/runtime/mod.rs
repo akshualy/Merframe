@@ -37,6 +37,7 @@ pub enum AppEvent {
     CoreEvent(CoreEventEnvelope),
     StatusUpdated(GameStatus),
     InventoryUpdated(GameStatus),
+    TradesUpdated,
     WorldStateUpdated,
     RivenDataUpdated,
     PricesUpdated,
@@ -166,6 +167,7 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             }
         }
         CoreEvent::TradeCompleted { trade, .. } => {
+            emit(app, AppEvent::TradesUpdated);
             if settings.market.market_auto_close {
                 auto_close(app, state, trade).await;
             }

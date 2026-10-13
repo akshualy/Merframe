@@ -2,8 +2,8 @@ use chrono::Utc;
 use tauri::{AppHandle, Runtime};
 use wf_core::{
     ComparedStat, CraftDetails, FoundryTab, InventoryTab, MasteryOptions, MasteryOrdering,
-    MasteryTab, RelicPlannerTab, RelicSource, ResourceQuery, ResourcesTab, RivenComparables,
-    RivensTab, StatsTab,
+    MasteryTab, RelicPlan, RelicPlannerTab, RelicSource, ResourceQuery, ResourcesTab,
+    RivenComparables, RivensTab, StatsTab,
 };
 
 use super::{Shared, compute, ready, since};
@@ -74,6 +74,19 @@ pub async fn relic_planner_tab(
     let squad = squad_size.unwrap_or(wf_core::DEFAULT_SQUAD_SIZE);
     let owned = only_owned.unwrap_or(true);
     compute(state, move |core| core.relic_planner_tab(squad, owned)).await
+}
+
+#[tauri::command]
+pub async fn relic_plans(
+    state: Shared<'_>,
+    tier: Option<String>,
+    squad_size: u32,
+) -> CommandResult<Vec<RelicPlan>> {
+    let state = ready(&state).await?;
+    compute(state, move |core| {
+        core.relic_plans(tier.as_deref(), squad_size)
+    })
+    .await
 }
 
 #[tauri::command]

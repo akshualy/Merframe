@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { useMemo, useSyncExternalStore } from "react";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { EmptyNote } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -9,11 +10,14 @@ import {
   isFavourite,
   matchesRelicFilters,
   RADIANT,
-  readOverlayFilters,
+  type RelicFilters,
   refinementValue,
+  storedOverlayFilters,
+  subscribeOverlayFilters,
   wantedChance,
 } from "@/lib/relic-filters";
 import { refinementTone } from "@/lib/relics";
+import { parseStoredJson } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import type { RecommendationRefinement, RelicPlan } from "@/types";
 
@@ -32,24 +36,27 @@ function valuedAt(plan: RelicPlan, refinement: RecommendationRefinement) {
   return owned ? refinementValue(plan, owned) : undefined;
 }
 
-export function overlaySquadSize(): number {
-  return readOverlayFilters()?.squadSize ?? 4;
+export function useOverlayFilters(): RelicFilters | null {
+  const raw = useSyncExternalStore(
+    subscribeOverlayFilters,
+    storedOverlayFilters,
+  );
+  return useMemo(
+    () => (raw === null ? null : parseStoredJson<RelicFilters>(raw)),
+    [raw],
+  );
 }
 
 function recommended(
-  tier: string | null,
   plans: RelicPlan[],
   refinement: RecommendationRefinement,
   limit: number,
+  filters: RelicFilters | null,
+  squadSize: number,
 ) {
-  const filters = readOverlayFilters();
   const wantedKeys = new Set(filters?.wanted ?? []);
-  const squadSize = overlaySquadSize();
   const rows: RecommendedRelic[] = [];
   for (const plan of plans) {
-    if (tier && plan.tier !== tier) {
-      continue;
-    }
     if (filters && !matchesRelicFilters(plan, filters, wantedKeys)) {
       continue;
     }
@@ -85,16 +92,25 @@ export function RelicRecommendationOverlay({
   plans,
   refinement,
   limit,
+  filters,
+  squadSize,
   compact = false,
 }: {
   tier: string | null;
   plans: RelicPlan[];
   refinement: RecommendationRefinement;
   limit: number;
+  filters: RelicFilters | null;
+  squadSize: number;
   compact?: boolean;
 }) {
-  const recommendedRows = recommended(tier, plans, refinement, limit);
-  const squadSize = overlaySquadSize();
+  const recommendedRows = recommended(
+    plans,
+    refinement,
+    limit,
+    filters,
+    squadSize,
+  );
   const valuedWord = refinement === "owned" ? "Owned refinement" : RADIANT;
 
   if (recommendedRows.length === 0) {

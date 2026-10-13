@@ -12,8 +12,6 @@ pub enum CoreError {
     Inventory(#[from] wf_inventory::InventoryError),
     #[error(transparent)]
     GameData(#[from] wf_data::DataError),
-    #[error(transparent)]
-    WorldState(#[from] wf_worldstate::WorldStateError),
     #[error("Compressing the inventory failed: {0}")]
     Compress(#[source] std::io::Error),
     #[error("Decompressing {path} failed: {source}")]

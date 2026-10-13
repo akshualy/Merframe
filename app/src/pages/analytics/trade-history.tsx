@@ -86,7 +86,7 @@ export function TradeHistory() {
     [timeframe],
   );
   const { data, error } = useAsyncData(`trade_analytics:${timeframe}`, load, [
-    "inventoryUpdated",
+    "tradesUpdated",
   ]);
 
   if (!data) {

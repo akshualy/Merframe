@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use chrono::Utc;
+use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_dialog::{DialogExt, FilePath};
 use tauri_plugin_opener::OpenerExt;
@@ -78,26 +79,27 @@ pub async fn export<R: Runtime>(
     state: Shared<'_>,
 ) -> CommandResult<Option<String>> {
     let state = ready(&state).await?;
-    let picked = app
-        .dialog()
-        .file()
-        .set_title("Export inventory JSON")
-        .blocking_pick_folder();
+    let dialog = app.dialog().file().set_title("Export inventory JSON");
+    let picked =
+        tauri::async_runtime::spawn_blocking(move || dialog.blocking_pick_folder()).await?;
     let Some(dir) = picked.as_ref().and_then(FilePath::as_path) else {
         return Ok(None);
     };
-    lock(&state.core).export(dir, Utc::now())?;
+
+    let target = dir.to_path_buf();
+    tauri::async_runtime::spawn_blocking(move || lock(&state.core).export(&target, Utc::now()))
+        .await??;
     Ok(Some(dir.display().to_string()))
 }
 
 #[tauri::command]
 pub async fn pick_log_file<R: Runtime>(app: AppHandle<R>) -> CommandResult<Option<String>> {
-    let picked = app
+    let dialog = app
         .dialog()
         .file()
         .set_title("Choose EE.log")
-        .add_filter("Warframe log", &["log"])
-        .blocking_pick_file();
+        .add_filter("Warframe log", &["log"]);
+    let picked = tauri::async_runtime::spawn_blocking(move || dialog.blocking_pick_file()).await?;
     Ok(picked
         .as_ref()
         .and_then(FilePath::as_path)
@@ -182,8 +184,18 @@ pub async fn item_image(state: Shared<'_>, image_name: String) -> CommandResult<
     state.images.get(&image_name).await
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct ImagePath {
+    pub name: String,
+    pub path: String,
+}
+
 #[tauri::command]
-pub async fn prefetch_images(state: Shared<'_>, names: Vec<String>) -> CommandResult<usize> {
+pub async fn prefetch_images(
+    state: Shared<'_>,
+    names: Vec<String>,
+) -> CommandResult<Vec<ImagePath>> {
     let state = ready(&state).await?;
     let mut wanted = names;
     wanted.sort_unstable();
@@ -192,13 +204,16 @@ pub async fn prefetch_images(state: Shared<'_>, names: Vec<String>) -> CommandRe
         .into_iter()
         .map(|name| {
             let shared = Arc::clone(&state);
-            async move { shared.images.get(&name).await.is_ok() }
+            async move {
+                let path = shared.images.get(&name).await.ok()?;
+                Some(ImagePath { name, path })
+            }
         })
         .collect::<Vec<_>>();
-    let cached = futures_util::future::join_all(requests)
+    let held = futures_util::future::join_all(requests)
         .await
         .into_iter()
-        .filter(|outcome| *outcome)
-        .count();
-    Ok(cached)
+        .flatten()
+        .collect();
+    Ok(held)
 }

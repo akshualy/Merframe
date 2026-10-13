@@ -98,8 +98,12 @@ impl Grader<'_> {
         RivensTab {
             veiled: veiled(inventory, self.items),
             unveiled: self.rows(inventory, listings),
-            attribution: self.table.map(|table| table.attribution.clone()),
+            attribution: self.attribution(),
         }
+    }
+
+    pub(crate) fn attribution(&self) -> Option<String> {
+        self.table.map(|table| table.attribution.clone())
     }
 
     pub(super) fn rows(&self, inventory: &Inventory, listings: &MarketListings) -> Vec<RivenRow> {
@@ -115,6 +119,19 @@ impl Grader<'_> {
                 .then_with(|| left.item_id.cmp(&right.item_id))
         });
         rows
+    }
+
+    pub(crate) fn unveiled_row(
+        &self,
+        item_id: &str,
+        inventory: &Inventory,
+        listings: &MarketListings,
+    ) -> Option<RivenRow> {
+        let upgrade = inventory
+            .rivens()
+            .find(|upgrade| upgrade.item_id.as_str() == item_id)?;
+        self.row(upgrade, inventory, listings)
+            .filter(|row| row.unveiled)
     }
 
     fn row(

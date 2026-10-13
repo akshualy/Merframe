@@ -255,7 +255,13 @@ pub(super) fn show_linked_riven<R: Runtime>(
             debug!(item_type, "Riven dialog holds no roll");
             return;
         };
-        let linked = lock(&owned.core).riven_in_dialog(&dialog.mod_type, &dialog.fingerprint);
+        let (linked, attribution) = {
+            let core = lock(&owned.core);
+            (
+                core.riven_in_dialog(&dialog.mod_type, &dialog.fingerprint),
+                core.riven_attribution(),
+            )
+        };
         if let Some(row) = &linked {
             debug!(
                 riven = riven_display_name(row),
@@ -273,6 +279,7 @@ pub(super) fn show_linked_riven<R: Runtime>(
             item_type,
             before: None,
             linked,
+            attribution,
         };
         show(&app, &owned, Kind::Riven, |slots| {
             slots.riven = Some(trigger);
@@ -375,6 +382,7 @@ fn show_riven<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: RivenR
         item_type: row.item_type.clone(),
         before: Some(row),
         linked: None,
+        attribution: lock(&state.core).riven_attribution(),
     };
     show(app, state, Kind::Riven, |slots| {
         slots.riven = Some(trigger);

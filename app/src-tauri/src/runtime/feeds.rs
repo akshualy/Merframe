@@ -50,14 +50,9 @@ async fn refresh_world_state<R: Runtime>(
         .await
         .context("Requesting the world state")?;
     let now = Utc::now();
-    let parsed = WorldState::parse(&body).context("Parsing the world state")?;
-    *write(&state.world) = Some(parsed);
+    let world = WorldState::parse(&body).context("Parsing the world state")?;
     write(&state.status).world_state_at = Some(now);
-    let events = {
-        let mut core = lock(&state.core);
-        core.ingest_world_state(&body, now)
-            .context("Ingesting the world state")?
-    };
+    let events = lock(&state.core).ingest_world_state(world, now);
     emit(app, AppEvent::WorldStateUpdated);
     Ok(events)
 }

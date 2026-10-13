@@ -189,11 +189,14 @@ impl Core {
         Ok(events)
     }
 
-    pub fn ingest_world_state(&mut self, json: &str, now: DateTime<Utc>) -> Result<Vec<CoreEvent>> {
-        let world = WorldState::parse(json)?;
+    pub fn ingest_world_state(&mut self, world: WorldState, now: DateTime<Utc>) -> Vec<CoreEvent> {
         let events = self.engine.handle_world_state(&world, now);
         self.world = Some(world);
-        Ok(events)
+        events
+    }
+
+    pub fn world(&self) -> Option<&WorldState> {
+        self.world.as_ref()
     }
 
     pub fn evaluate_world_state(&mut self, now: DateTime<Utc>) -> Vec<CoreEvent> {
@@ -356,17 +359,21 @@ impl Core {
     pub fn relic_planner_tab(&self, squad_size: u32, only_owned: bool) -> Option<RelicPlannerTab> {
         let view = self.view()?;
         let missing_parts = relic_planner::missing_parts(view.account, view.catalog);
-        let wanted: Vec<String> = missing_parts
-            .iter()
-            .map(|part| part.unique_name.clone())
-            .collect();
+        let wanted = relic_planner::wanted_names(&missing_parts);
         Some(RelicPlannerTab {
             squad_size,
             only_owned,
             void_traces: relic_planner::void_traces(&view.account.inventory),
-            plans: relic_planner::plan(&view, &wanted, squad_size, only_owned),
+            plans: relic_planner::plan(&view, &wanted, squad_size, only_owned, None),
             missing_parts,
         })
+    }
+
+    pub fn relic_plans(&self, tier: Option<&str>, squad_size: u32) -> Option<Vec<RelicPlan>> {
+        let view = self.view()?;
+        let wanted =
+            relic_planner::wanted_names(&relic_planner::missing_parts(view.account, view.catalog));
+        Some(relic_planner::plan(&view, &wanted, squad_size, true, tier))
     }
 
     pub fn owned_relic_slugs(&self) -> Option<Vec<String>> {
@@ -410,6 +417,16 @@ impl Core {
     pub fn rivens_tab(&self) -> Option<RivensTab> {
         let inventory = self.inventory()?;
         Some(self.grader().tab(inventory, &self.listings))
+    }
+
+    pub fn riven_row(&self, item_id: &str) -> Option<RivenRow> {
+        let inventory = self.inventory()?;
+        self.grader()
+            .unveiled_row(item_id, inventory, &self.listings)
+    }
+
+    pub fn riven_attribution(&self) -> Option<String> {
+        self.grader().attribution()
     }
 
     pub fn riven_cycled(&self, row: &RivenRow, current: &str, pending: &str) -> Option<RivenRow> {
@@ -564,6 +581,25 @@ mod tests {
     const REROLLED_ITEM: &str = "f29623082864e554d187a3f7";
     const ROLL_75: &str = r#"{"compat":"/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep","lim":294146365,"lvlReq":11,"lvl":8,"rerolls":75,"pol":"AP_DEFENSE","buffs":[{"Tag":"WeaponFreezeDamageMod","Value":708669601},{"Tag":"WeaponToxinDamageMod","Value":526133492},{"Tag":"WeaponFireRateMod","Value":397284473}],"curses":[]}"#;
     const OFFERED_75: &str = r#"{"compat":"/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep","lim":294146365,"lvlReq":11,"lvl":8,"rerolls":75,"pol":"AP_DEFENSE","buffs":[{"Tag":"WeaponFreezeDamageMod","Value":741320000},{"Tag":"WeaponCritDamageMod","Value":903450000},{"Tag":"WeaponFireDamageMod","Value":512780000}],"curses":[{"Tag":"SlideAttackCritChanceMod","Value":268940000}]}"#;
+
+    #[test]
+    fn riven_row_matches_tab() {
+        let mut core = core();
+        core.ingest_inventory(fixtures::INVENTORY, Utc::now())
+            .unwrap();
+        let tab = core.rivens_tab().unwrap();
+        let veiled = tab
+            .veiled
+            .iter()
+            .flat_map(|group| &group.rivens)
+            .find(|riven| !riven.pre_veiled)
+            .unwrap();
+
+        assert_eq!(core.riven_row(&veiled.riven_id), None);
+        for row in tab.unveiled {
+            assert_eq!(core.riven_row(&row.item_id), Some(row));
+        }
+    }
 
     fn rerolled_row(core: &Core) -> RivenRow {
         core.rivens_tab()
@@ -783,6 +819,39 @@ mod tests {
     }
 
     #[test]
+    fn relic_plans_of_one_tier() {
+        let mut core = core();
+        core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
+            .unwrap();
+        let squad = relic_planner::DEFAULT_SQUAD_SIZE;
+        let tab = core.relic_planner_tab(squad, true).unwrap();
+        assert!(!tab.plans.is_empty());
+        assert_eq!(core.relic_plans(None, squad).unwrap(), tab.plans);
+
+        for tier in ["Lith", "Meso", "Neo", "Axi"] {
+            let of_tier: Vec<RelicPlan> = tab
+                .plans
+                .iter()
+                .filter(|plan| plan.tier == tier)
+                .cloned()
+                .collect();
+            assert_eq!(core.relic_plans(Some(tier), squad).unwrap(), of_tier);
+        }
+    }
+
+    #[test]
+    fn riven_attribution_follows_riven_data() {
+        let mut core = core();
+        assert!(core.riven_attribution().is_none());
+
+        core.set_riven_data(crate::rivens::support::riven_table());
+        assert!(
+            core.riven_attribution()
+                .is_some_and(|attribution| attribution.contains("44bananas"))
+        );
+    }
+
+    #[test]
     fn favourite_toggle_across_tabs() {
         let mut core = core();
         core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
@@ -985,20 +1054,17 @@ mod tests {
             timers: TimerAlerts::from_iter([CyclePhase::EarthDay, CyclePhase::EarthNight]),
             timer_lead_secs: 86_400,
         });
-        let world_state = include_str!("../../../fixtures/worldState.json");
+        let world_state = WorldState::parse(include_str!("../../../fixtures/worldState.json"))
+            .expect("world state");
         let early = at(1_788_801_669_000);
         let now = at(1_788_807_069_000);
-        let first = core
-            .ingest_world_state(world_state, early)
-            .expect("world state");
+        let first = core.ingest_world_state(world_state.clone(), early);
         assert!(
             first
                 .iter()
                 .all(|event| matches!(event, CoreEvent::TimerAlert { .. }))
         );
-        let events = core
-            .ingest_world_state(world_state, now)
-            .expect("world state");
+        let events = core.ingest_world_state(world_state, now);
         assert!(events.iter().any(|event| match event {
             CoreEvent::FissureAlert { fissure } => fissure.tier == "Lith",
             _ => false,

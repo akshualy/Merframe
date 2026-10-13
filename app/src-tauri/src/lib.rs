@@ -138,6 +138,7 @@ pub fn run() {
             commands::tabs::mastery_tab,
             commands::tabs::resources_tab,
             commands::tabs::relic_planner_tab,
+            commands::tabs::relic_plans,
             commands::tabs::rivens_tab,
             commands::tabs::riven_comparables,
             commands::tabs::stats_tab,

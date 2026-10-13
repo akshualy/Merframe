@@ -139,6 +139,7 @@ pub struct RivenTrigger {
     pub item_type: String,
     pub before: Option<RivenRow>,
     pub linked: Option<RivenRow>,
+    pub attribution: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

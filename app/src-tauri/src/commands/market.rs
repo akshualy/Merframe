@@ -11,7 +11,7 @@ use wf_market::{
     UpdateOrderRequest, UserStatus, order_rejection,
 };
 
-use super::{Shared, missing_inventory, ready};
+use super::{Shared, ready};
 
 use crate::error::{CommandError, CommandResult};
 use crate::market::{self, MarketOrders, MarketSnapshot, Presence};
@@ -306,11 +306,8 @@ pub async fn market_post_riven(
 
     let payload = {
         let core = lock(&state.core);
-        let tab = core.rivens_tab().ok_or_else(missing_inventory)?;
-        let row = tab
-            .unveiled
-            .into_iter()
-            .find(|row| row.item_id == item_id)
+        let row = core
+            .riven_row(&item_id)
             .ok_or_else(|| CommandError::from("This riven is not in the current inventory"))?;
         riven_listing_payload(&row, &choices).ok_or_else(|| {
             CommandError::from("This riven has no warframe.market attribute mapping")

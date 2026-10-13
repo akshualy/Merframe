@@ -50,8 +50,8 @@ pub(super) fn suggest_mission(state: &AppState, node: &str) {
     if lock(&state.overlays.marks).mission_node.as_deref() == Some(node) {
         return;
     }
-    let tier = read(&state.world)
-        .as_ref()
+    let tier = lock(&state.core)
+        .world()
         .and_then(|world| fissure_tier_at(world, node, Utc::now()));
     debug!(node, ?tier, "Squad mission suggested");
     set_mission(&mut lock(&state.overlays.marks), Some(node), tier);

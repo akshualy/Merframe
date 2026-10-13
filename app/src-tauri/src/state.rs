@@ -15,7 +15,6 @@ use wf_core::{
 };
 use wf_data::load_or_fetch;
 use wf_market::{Client, Platform, PriceTable};
-use wf_worldstate::WorldState;
 
 use crate::auctions::AuctionCache;
 use crate::focus::GameFocus;
@@ -147,7 +146,6 @@ pub struct AppState {
     pub market_presence: RwLock<Presence>,
     pub market_presence_wake: Notify,
     pub listings: Listings,
-    pub world: RwLock<Option<WorldState>>,
     pub prices: Arc<SharedPrices>,
     pub status: RwLock<GameStatus>,
     pub focus: GameFocus,
@@ -249,7 +247,6 @@ impl AppState {
             market_presence: RwLock::new(Presence::default()),
             market_presence_wake: Notify::new(),
             listings: Listings::default(),
-            world: RwLock::new(None),
             prices,
             status: RwLock::new(status),
             focus: GameFocus::default(),

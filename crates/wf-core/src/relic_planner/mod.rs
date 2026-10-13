@@ -51,6 +51,10 @@ pub(crate) fn missing_parts(account: &Account, catalog: &Catalog) -> Vec<Missing
         .collect()
 }
 
+pub(crate) fn wanted_names(parts: &[MissingPart]) -> Vec<String> {
+    parts.iter().map(|part| part.unique_name.clone()).collect()
+}
+
 fn owned_refinements(stock: &Stock, relic: &Relic) -> Vec<OwnedRefinement> {
     REFINEMENTS
         .into_iter()

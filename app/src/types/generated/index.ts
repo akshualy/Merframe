@@ -48,6 +48,7 @@ export type * from "./FoundryTab";
 export type * from "./GameStatus";
 export type * from "./GoodRollView";
 export type * from "./Helminth";
+export type * from "./ImagePath";
 export type * from "./InGameToast";
 export type * from "./IntactToRadiant";
 export type * from "./InventorySettings";
