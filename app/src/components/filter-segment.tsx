@@ -41,8 +41,8 @@ export function FilterSegment({
 }) {
   const reason =
     value === null
-      ? `Nothing in this view answers ${label}`
-      : `${label} is ${value === "yes" ? yes : no} for everything in this view`;
+      ? `Nothing here is ${label}`
+      : `${label} is ${value === "yes" ? yes : no} for everything visible`;
   return (
     <FilterField label={label} note={fixed && <LockNote reason={reason} />}>
       <ToggleGroup
