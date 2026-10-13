@@ -17,18 +17,21 @@ export function FilterSelect({
   options,
   onChange,
   anyLabel = "Any",
+  disabled,
 }: {
   label: string;
   value: string | null;
   options: readonly FilterOption[];
   onChange: (value: string | null) => void;
   anyLabel?: string;
+  disabled?: boolean;
 }) {
   return (
     <FilterField label={label}>
       <Select
         value={value ?? ANY_VALUE}
         onValueChange={(next) => onChange(next === ANY_VALUE ? null : next)}
+        disabled={disabled}
       >
         <SelectTrigger
           size="sm"

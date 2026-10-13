@@ -144,10 +144,7 @@ pub(crate) fn items(
                         met: inventory.player_level >= item.mastery_req.unwrap_or_default(),
                     },
                     incarnon: adapted.contains(item.unique_name.as_str()),
-                    helminth: helminth_ability(item).map(|ability| Helminth {
-                        ability: ability.to_owned(),
-                        subsumed: subsumed.contains(base_warframe_name(&item.name)),
-                    }),
+                    helminth: helminth(item, &subsumed),
                     archon_shards: shards
                         .get(item.unique_name.as_str())
                         .copied()
@@ -179,6 +176,17 @@ fn subsumed_warframes<'a>(inventory: &Inventory, catalog: &'a Catalog) -> HashSe
         .filter_map(|item_type| catalog.item(item_type))
         .map(|item| base_warframe_name(&item.name))
         .collect()
+}
+
+fn helminth(item: &Item, subsumed: &HashSet<&str>) -> Option<Helminth> {
+    if is_prime(item) {
+        return None;
+    }
+
+    helminth_ability(item).map(|ability| Helminth {
+        ability: ability.to_owned(),
+        subsumed: subsumed.contains(base_warframe_name(&item.name)),
+    })
 }
 
 fn vault_status(item: &Item) -> VaultStatus {
@@ -456,14 +464,7 @@ mod tests {
             })
         );
 
-        let styanax = row("Styanax Prime");
-        assert_eq!(
-            styanax.helminth,
-            Some(Helminth {
-                ability: "Tharros Strike".to_owned(),
-                subsumed: false,
-            })
-        );
+        assert_eq!(row("Styanax Prime").helminth, None);
 
         assert_eq!(row("Equinox Prime").archon_shards, 5);
         assert_eq!(row("Gara Prime").archon_shards, 2);

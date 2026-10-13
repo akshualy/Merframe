@@ -114,6 +114,29 @@ export function filtersFor(category: Category): FilterGroup[] {
 export type FilterKey = FilterGroup["key"];
 export type Filters = Partial<Record<FilterKey, YesNo>>;
 
+export function primeLocked(filters: Filters): boolean {
+  return filters.subsumed !== undefined;
+}
+
+export function withFilter(
+  filters: Filters,
+  key: FilterKey,
+  mode: YesNo | null,
+): Filters {
+  const next = { ...filters };
+  if (mode === null) {
+    delete next[key];
+  } else {
+    next[key] = mode;
+  }
+
+  if (primeLocked(next)) {
+    next.prime = "no";
+  }
+
+  return next;
+}
+
 function flag(item: FoundryItem, key: FilterKey): boolean {
   switch (key) {
     case "prime":

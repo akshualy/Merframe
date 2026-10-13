@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { filtersFor, foundryMatches, scoped } from "@/lib/foundry-filters";
+import {
+  filtersFor,
+  foundryMatches,
+  primeLocked,
+  scoped,
+  withFilter,
+} from "@/lib/foundry-filters";
 import type { FoundryItem } from "@/types";
 import foundry from "./foundry-filters.test-data.json";
 
@@ -73,5 +79,29 @@ describe("scoped", () => {
 
   it("keeps warframe filters for warframes", () => {
     expect(scoped({ subsumed: "no" }, "warframe")).toEqual({ subsumed: "no" });
+  });
+});
+
+describe("withFilter", () => {
+  it("sets and clears a filter", () => {
+    expect(withFilter({}, "owned", "yes")).toEqual({ owned: "yes" });
+    expect(withFilter({ owned: "yes" }, "owned", null)).toEqual({});
+  });
+
+  it("forces the type to normal while a helminth filter is set", () => {
+    expect(withFilter({ prime: "yes" }, "subsumed", "no")).toEqual({
+      prime: "no",
+      subsumed: "no",
+    });
+    expect(
+      withFilter({ prime: "no", subsumed: "no" }, "subsumed", null),
+    ).toEqual({ prime: "no" });
+  });
+});
+
+describe("primeLocked", () => {
+  it("locks the type while a helminth filter is set", () => {
+    expect(primeLocked({ subsumed: "no" })).toBe(true);
+    expect(primeLocked({ prime: "yes" })).toBe(false);
   });
 });

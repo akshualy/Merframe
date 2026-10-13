@@ -25,7 +25,9 @@ import {
   type Filters,
   filtersFor,
   foundryMatches,
+  primeLocked,
   scoped,
+  withFilter,
 } from "@/lib/foundry-filters";
 import { usePageQuote } from "@/lib/quotes";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -137,15 +139,12 @@ export function FoundryPage() {
                 label={group.label}
                 value={filters[group.key] ?? null}
                 options={yesNoOptions(group.yes, group.no)}
-                onChange={(mode) => {
-                  const next = { ...filters };
-                  if (mode === null) {
-                    delete next[group.key];
-                  } else {
-                    next[group.key] = mode as YesNo;
-                  }
-                  setFilters(next);
-                }}
+                disabled={group.key === "prime" && primeLocked(filters)}
+                onChange={(mode) =>
+                  setFilters(
+                    withFilter(filters, group.key, mode as YesNo | null),
+                  )
+                }
               />
             ))}
           </FilterGrid>
