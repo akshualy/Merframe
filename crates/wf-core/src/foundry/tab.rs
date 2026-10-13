@@ -5,7 +5,9 @@ use wf_data::{Component, Item, base_warframe_name, helminth_ability, store_item_
 use wf_inventory::Inventory;
 use wf_worldstate::WorldState;
 
-use crate::catalog::{Catalog, VaultStatus, component_image, is_prime, item_name, part_name};
+use crate::catalog::{
+    Catalog, VaultStatus, component_image, is_prime, is_umbra, item_name, part_name,
+};
 use crate::mastery::{includes_founders, kind_of, masterable};
 use crate::view::View;
 
@@ -16,6 +18,7 @@ use super::{
 };
 
 const CRAFTABLE_INTO_KINDS: [&str; 4] = ["primary", "secondary", "melee", "arch"];
+const INCARNON_KINDS: [&str; 3] = ["primary", "secondary", "melee"];
 
 pub(crate) fn tab(
     view: &View,
@@ -131,24 +134,26 @@ pub(crate) fn items(
                         ready_to_build: !components.is_empty()
                             && components.iter().all(|component| component.enough),
                     },
-                    crafts_into: if CRAFTABLE_INTO_KINDS.contains(&kind) {
+                    crafts_into: CRAFTABLE_INTO_KINDS.contains(&kind).then(|| {
                         crafts_into
                             .get(item.unique_name.as_str())
                             .cloned()
                             .unwrap_or_default()
-                    } else {
-                        Vec::new()
-                    },
+                    }),
                     mastery: MasteryGate {
                         required: item.mastery_req,
                         met: inventory.player_level >= item.mastery_req.unwrap_or_default(),
                     },
-                    incarnon: adapted.contains(item.unique_name.as_str()),
+                    incarnon: INCARNON_KINDS
+                        .contains(&kind)
+                        .then(|| adapted.contains(item.unique_name.as_str())),
                     helminth: helminth(item, &subsumed),
-                    archon_shards: shards
-                        .get(item.unique_name.as_str())
-                        .copied()
-                        .unwrap_or_default(),
+                    archon_shards: (kind == "warframe").then(|| {
+                        shards
+                            .get(item.unique_name.as_str())
+                            .copied()
+                            .unwrap_or_default()
+                    }),
                     favourite: favourites.contains(&item.unique_name),
                     components,
                 }
@@ -179,7 +184,7 @@ fn subsumed_warframes<'a>(inventory: &Inventory, catalog: &'a Catalog) -> HashSe
 }
 
 fn helminth(item: &Item, subsumed: &HashSet<&str>) -> Option<Helminth> {
-    if is_prime(item) {
+    if is_prime(item) || is_umbra(item) {
         return None;
     }
 
@@ -455,24 +460,17 @@ mod tests {
                 subsumed: true,
             })
         );
-        let umbra = row("Excalibur Umbra");
-        assert_eq!(
-            umbra.helminth,
-            Some(Helminth {
-                ability: "Radial Blind".to_owned(),
-                subsumed: true,
-            })
-        );
+        assert_eq!(row("Excalibur Umbra").helminth, None);
 
         assert_eq!(row("Styanax Prime").helminth, None);
 
-        assert_eq!(row("Equinox Prime").archon_shards, 5);
-        assert_eq!(row("Gara Prime").archon_shards, 2);
-        assert_eq!(row("Equinox").archon_shards, 0);
+        assert_eq!(row("Equinox Prime").archon_shards, Some(5));
+        assert_eq!(row("Gara Prime").archon_shards, Some(2));
+        assert_eq!(row("Equinox").archon_shards, Some(0));
 
         let braton = row("Braton Prime");
         assert_eq!(braton.helminth, None);
-        assert_eq!(braton.archon_shards, 0);
+        assert_eq!(braton.archon_shards, None);
     }
 
     #[test]
@@ -489,7 +487,7 @@ mod tests {
             let mech = row(name);
             assert_eq!(mech.kind, "necramech");
             assert_eq!(mech.helminth, None);
-            assert_eq!(mech.archon_shards, 0);
+            assert_eq!(mech.archon_shards, None);
         }
 
         assert_eq!(row("Excalibur").kind, "warframe");
@@ -623,11 +621,8 @@ mod tests {
             None,
             at(VARZIA_TRADING_MS),
         );
-        assert!(
-            !row(&untouched, SKANA).incarnon,
-            "the account owns no adapted Skana"
-        );
-        assert!(!row(&untouched, BOAR).incarnon);
+        assert_eq!(row(&untouched, SKANA).incarnon, Some(false));
+        assert_eq!(row(&untouched, BOAR).incarnon, Some(false));
 
         let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
         value
@@ -647,10 +642,10 @@ mod tests {
             None,
             at(VARZIA_TRADING_MS),
         );
-        assert!(row(&rows, SKANA).incarnon);
-        assert!(!row(&rows, BOAR).incarnon);
-        assert!(!row(&rows, DUAL_KAMAS).incarnon);
-        assert!(!row(&rows, BANSHEE_PRIME).incarnon);
+        assert_eq!(row(&rows, SKANA).incarnon, Some(true));
+        assert_eq!(row(&rows, BOAR).incarnon, Some(false));
+        assert_eq!(row(&rows, DUAL_KAMAS).incarnon, Some(false));
+        assert_eq!(row(&rows, BANSHEE_PRIME).incarnon, None);
     }
 
     #[test]
@@ -697,9 +692,9 @@ mod tests {
             at(VARZIA_TRADING_MS),
         );
         let kama = row(&rows, SINGLE_KAMA);
-        assert_eq!(kama.crafts_into, ["Dual Kamas"]);
-        assert!(row(&rows, DUAL_KAMAS).crafts_into.is_empty());
-        assert!(row(&rows, BANSHEE_PRIME).crafts_into.is_empty());
+        assert_eq!(kama.crafts_into, Some(vec!["Dual Kamas".to_owned()]));
+        assert_eq!(row(&rows, DUAL_KAMAS).crafts_into, Some(vec![]));
+        assert_eq!(row(&rows, BANSHEE_PRIME).crafts_into, None);
     }
 
     #[test]

@@ -1,4 +1,4 @@
-import { passesYesNo, type YesNo } from "@/lib/filters";
+import { failsYesNo, passesYesNo, type YesNo } from "@/lib/filters";
 import type { FoundryItem } from "@/types";
 
 export const CATEGORIES = [
@@ -15,110 +15,171 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number][0];
 
-const EVERY_CATEGORY: readonly Category[] = CATEGORIES.map(([key]) => key);
-const WARFRAMES_ONLY: readonly Category[] = ["warframe"];
-
 export const FILTERS = [
-  {
-    key: "prime",
-    label: "Type",
-    yes: "Prime",
-    no: "Normal",
-    categories: EVERY_CATEGORY,
-  },
-  {
-    key: "mastered",
-    label: "Mastery",
-    yes: "Mastered",
-    no: "Unmastered",
-    categories: EVERY_CATEGORY,
-  },
-  {
-    key: "owned",
-    label: "Owned",
-    yes: "Yes",
-    no: "No",
-    categories: EVERY_CATEGORY,
-  },
-  {
-    key: "vaulted",
-    label: "Vaulted",
-    yes: "Yes",
-    no: "No",
-    categories: EVERY_CATEGORY,
-  },
-  {
-    key: "ready",
-    label: "Ready to build",
-    yes: "Yes",
-    no: "No",
-    categories: EVERY_CATEGORY,
-  },
+  { key: "prime", label: "Type", yes: "Prime", no: "Normal" },
+  { key: "vaulted", label: "Vaulted", yes: "Yes", no: "No" },
+  { key: "primeResurgence", label: "Prime Resurgence", yes: "Yes", no: "No" },
+  { key: "owned", label: "Owned", yes: "Yes", no: "No" },
+  { key: "mastered", label: "Mastered", yes: "Yes", no: "No" },
+  { key: "ready", label: "Ready to build", yes: "Yes", no: "No" },
   {
     key: "enoughMastery",
-    label: "Mastery rank",
-    yes: "Enough",
+    label: "Mastery rank requirement",
+    yes: "Met",
     no: "Too low",
-    categories: EVERY_CATEGORY,
   },
-  {
-    key: "primeResurgence",
-    label: "Prime Resurgence",
-    yes: "Yes",
-    no: "No",
-    categories: EVERY_CATEGORY,
-  },
-  {
-    key: "incarnon",
-    label: "Incarnon",
-    yes: "Yes",
-    no: "No",
-    categories: EVERY_CATEGORY,
-  },
+  { key: "favourite", label: "Favourite", yes: "Yes", no: "No" },
+  { key: "subsumed", label: "Subsumed", yes: "Yes", no: "No" },
+  { key: "archonShards", label: "Archon Shards", yes: "Installed", no: "None" },
+  { key: "incarnon", label: "Incarnon", yes: "Yes", no: "No" },
   {
     key: "usedCrafting",
-    label: "Crafting stock",
-    yes: "Another recipe needs it",
-    no: "Nothing needs it",
-    categories: EVERY_CATEGORY,
-  },
-  {
-    key: "subsumed",
-    label: "Helminth",
-    yes: "Subsumed",
-    no: "Not subsumed",
-    categories: WARFRAMES_ONLY,
-  },
-  {
-    key: "archonShards",
-    label: "Archon shards",
-    yes: "Installed",
-    no: "None",
-    categories: WARFRAMES_ONLY,
-  },
-  {
-    key: "favourite",
-    label: "Favourite",
-    yes: "Favourites",
-    no: "Not favourites",
-    categories: EVERY_CATEGORY,
+    label: "Needed in other recipes",
+    yes: "Yes",
+    no: "No",
   },
 ] as const;
 
-export type FilterGroup = (typeof FILTERS)[number];
-
-export function filtersFor(category: Category): FilterGroup[] {
-  return FILTERS.filter((group) => group.categories.includes(category));
-}
-
-export type FilterKey = FilterGroup["key"];
+export type FilterKey = (typeof FILTERS)[number]["key"];
 export type Filters = Partial<Record<FilterKey, YesNo>>;
 
-export function primeLocked(filters: Filters): boolean {
-  return filters.subsumed !== undefined;
+type Flag = boolean | null;
+
+const FLAGS: Record<FilterKey, (item: FoundryItem) => Flag> = {
+  prime: (item) => item.prime !== null,
+  vaulted: (item) =>
+    item.prime === null ? null : item.prime.vault === "vaulted",
+  primeResurgence: (item) =>
+    item.prime === null ? null : item.prime.resurgence,
+  owned: (item) => item.progress.owned,
+  mastered: (item) => item.mastered,
+  ready: (item) =>
+    item.components.length > 0 ? item.progress.ready_to_build : null,
+  enoughMastery: (item) =>
+    item.mastery.required === null ? null : item.mastery.met,
+  favourite: (item) =>
+    item.favourite || item.components.some((component) => component.favourite),
+  subsumed: (item) => (item.helminth === null ? null : item.helminth.subsumed),
+  archonShards: (item) =>
+    item.archon_shards === null ? null : item.archon_shards > 0,
+  incarnon: (item) => item.incarnon,
+  usedCrafting: (item) =>
+    item.crafts_into === null ? null : item.crafts_into.length > 0,
+};
+
+const FILTER_KEYS = FILTERS.map((filter) => filter.key);
+
+function byKey<T>(make: (key: FilterKey) => T): Record<FilterKey, T> {
+  return Object.fromEntries(
+    FILTER_KEYS.map((key) => [key, make(key)]),
+  ) as Record<FilterKey, T>;
+}
+
+export interface Facet {
+  yes: number;
+  no: number;
+  na: number;
+}
+
+function count(facet: Facet, value: Flag) {
+  if (value === null) {
+    facet.na += 1;
+  } else if (value) {
+    facet.yes += 1;
+  } else {
+    facet.no += 1;
+  }
+}
+
+export function facets(
+  items: FoundryItem[],
+  filters: Filters,
+): Record<FilterKey, Facet> {
+  const result = byKey(() => ({ yes: 0, no: 0, na: 0 }));
+  for (const item of items) {
+    const flags = byKey((key) => FLAGS[key](item));
+    const failing = FILTER_KEYS.filter((key) => {
+      const mode = filters[key];
+      return mode !== undefined && failsYesNo(mode, flags[key]);
+    });
+    if (failing.length > 1) {
+      continue;
+    }
+
+    const counted = failing.length === 1 ? failing : FILTER_KEYS;
+    for (const key of counted) {
+      count(result[key], flags[key]);
+    }
+  }
+
+  return result;
+}
+
+export function offered(facet: Facet): boolean {
+  return facet.yes + facet.no > 0;
+}
+
+export function choice(
+  facet: Facet,
+  stored: YesNo | undefined,
+): { value: YesNo | null; fixed: boolean } {
+  if (!offered(facet)) {
+    return { value: null, fixed: true };
+  }
+
+  if (facet.na === 0 && facet.no === 0) {
+    return { value: "yes", fixed: true };
+  }
+
+  if (facet.na === 0 && facet.yes === 0) {
+    return { value: "no", fixed: true };
+  }
+
+  return { value: stored ?? null, fixed: false };
+}
+
+function empty(facet: Facet, mode: YesNo): boolean {
+  return mode === "yes" ? facet.yes === 0 : facet.no === 0;
+}
+
+export function prune(
+  items: FoundryItem[],
+  filters: Filters,
+  keep?: FilterKey,
+): Filters {
+  const next = { ...filters };
+  const base = facets(items, {});
+  for (const key of FILTER_KEYS) {
+    const mode = next[key];
+    if (mode !== undefined && (!offered(base[key]) || empty(base[key], mode))) {
+      delete next[key];
+    }
+  }
+
+  const stale = (key: FilterKey) => {
+    const mode = next[key];
+    return mode !== undefined && key !== keep && empty(live[key], mode);
+  };
+  let live = facets(items, next);
+  for (let key = FILTER_KEYS.find(stale); key; key = FILTER_KEYS.find(stale)) {
+    delete next[key];
+    live = facets(items, next);
+  }
+
+  for (const key of FILTER_KEYS) {
+    const mode = next[key];
+    if (mode !== undefined && key !== keep && choice(live[key], mode).fixed) {
+      delete next[key];
+    }
+  }
+
+  return Object.keys(next).length === Object.keys(filters).length
+    ? filters
+    : next;
 }
 
 export function withFilter(
+  items: FoundryItem[],
   filters: Filters,
   key: FilterKey,
   mode: YesNo | null,
@@ -130,43 +191,7 @@ export function withFilter(
     next[key] = mode;
   }
 
-  if (primeLocked(next)) {
-    next.prime = "no";
-  }
-
-  return next;
-}
-
-function flag(item: FoundryItem, key: FilterKey): boolean {
-  switch (key) {
-    case "prime":
-      return item.prime !== null;
-    case "mastered":
-      return item.mastered;
-    case "owned":
-      return item.progress.owned;
-    case "vaulted":
-      return item.prime?.vault === "vaulted";
-    case "enoughMastery":
-      return item.mastery.met;
-    case "primeResurgence":
-      return item.prime?.resurgence ?? false;
-    case "incarnon":
-      return item.incarnon;
-    case "subsumed":
-      return item.helminth?.subsumed ?? false;
-    case "archonShards":
-      return item.archon_shards > 0;
-    case "usedCrafting":
-      return item.crafts_into.length > 0;
-    case "favourite":
-      return (
-        item.favourite ||
-        item.components.some((component) => component.favourite)
-      );
-    default:
-      return item.progress.ready_to_build;
-  }
+  return prune(items, next, key);
 }
 
 function searchFoundry(item: FoundryItem, search: string): boolean {
@@ -174,12 +199,15 @@ function searchFoundry(item: FoundryItem, search: string): boolean {
   if (!normalizedSearch) {
     return true;
   }
+
   if (item.type_name.toLowerCase() === normalizedSearch) {
     return true;
   }
+
   if (item.name.toLowerCase().includes(normalizedSearch)) {
     return true;
   }
+
   return item.components.some((component) =>
     component.name.toLowerCase().includes(normalizedSearch),
   );
@@ -192,17 +220,12 @@ export function foundryMatches(
 ): boolean {
   return (
     searchFoundry(item, search) &&
-    passesYesNo(filters, (key) => flag(item, key))
+    passesYesNo(filters, (key) => FLAGS[key](item))
   );
 }
 
-export function scoped(filters: Filters, category: Category): Filters {
-  const kept: Filters = {};
-  for (const group of filtersFor(category)) {
-    const mode = filters[group.key];
-    if (mode) {
-      kept[group.key] = mode;
-    }
-  }
-  return kept;
+export function inCategory(items: FoundryItem[], category: Category) {
+  return category === "all"
+    ? items
+    : items.filter((item) => item.kind === category);
 }

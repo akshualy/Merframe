@@ -161,7 +161,7 @@ function Shell({ statsTab }: { statsTab: boolean }) {
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <StatusBar />
-        <main className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+        <main className="min-h-0 flex-1 overflow-y-scroll">
           <div className="@container">
             <Suspense fallback={null}>
               <Routes>

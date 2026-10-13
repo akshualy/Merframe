@@ -105,7 +105,7 @@ function FoundryCardInner({
           {item.mastered && (
             <GameIcon name="mastered" size={16} alt="Mastered" />
           )}
-          {item.archon_shards > 0 && (
+          {item.archon_shards !== null && item.archon_shards > 0 && (
             <span
               title={`${num(item.archon_shards)} Archon Shards installed`}
               className="text-muted-foreground flex items-center gap-1 text-xs tabular-nums"
@@ -164,7 +164,7 @@ function FoundryCardInner({
               {item.helminth.ability} subsumed
             </span>
           )}
-          {item.crafts_into.length > 0 && (
+          {item.crafts_into !== null && item.crafts_into.length > 0 && (
             <span title={`Used to craft ${item.crafts_into.join(", ")}`}>
               Crafting stock
             </span>

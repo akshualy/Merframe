@@ -179,6 +179,10 @@ pub(crate) fn is_prime(item: &Item) -> bool {
     item.name.contains("Prime")
 }
 
+pub(crate) fn is_umbra(item: &Item) -> bool {
+    item.name.ends_with(" Umbra")
+}
+
 pub(crate) fn names_a_prime(name: &str) -> bool {
     name.to_lowercase().contains("prime")
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FilterGrid } from "@/components/filter-grid";
-import { FilterSelect } from "@/components/filter-select";
+import { ClearFilters, FilterGrid } from "@/components/filter-grid";
+import { FilterSegment } from "@/components/filter-segment";
 import { prefetchImages } from "@/components/item-image";
 import {
   CardGrid,
@@ -17,16 +17,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { usePaged } from "@/hooks/use-paged";
 import { api } from "@/lib/bridge";
-import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
   CATEGORIES,
   type Category,
+  choice,
+  FILTERS,
   type Filters,
-  filtersFor,
+  facets,
   foundryMatches,
-  primeLocked,
-  scoped,
+  inCategory,
+  offered,
+  prune,
   withFilter,
 } from "@/lib/foundry-filters";
 import { usePageQuote } from "@/lib/quotes";
@@ -43,29 +45,26 @@ export function FoundryPage() {
     "favouriteUpdated",
   ]);
   const category = usePreferencesStore((state) => state.foundryCategory);
-  const setFoundryCategory = usePreferencesStore(
-    (state) => state.setFoundryCategory,
-  );
+  const setCategory = usePreferencesStore((state) => state.setFoundryCategory);
   const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>({});
+  const [stored, setFilters] = useState<Filters>({});
   const [selectedName, setSelectedName] = useState<string | null>(null);
 
-  const handleCategoryChange = (next: Category) => {
-    setFoundryCategory(next);
-    setFilters((current) => scoped(current, next));
-  };
-
+  const items = useMemo(
+    () => inCategory(data?.items ?? [], category),
+    [data?.items, category],
+  );
+  const filters = useMemo(() => prune(items, stored), [items, stored]);
+  const base = useMemo(() => facets(items, {}), [items]);
+  const live = useMemo(() => facets(items, filters), [items, filters]);
   const visible = useMemo(
-    () =>
-      (data?.items ?? [])
-        .filter((item) => category === "all" || item.kind === category)
-        .filter((item) => foundryMatches(item, query, filters)),
-    [data?.items, category, query, filters],
+    () => items.filter((item) => foundryMatches(item, query, filters)),
+    [items, query, filters],
   );
 
   const { pageItems, pagination } = usePaged(
     visible,
-    JSON.stringify([category, query, filters]),
+    JSON.stringify([category, query]),
   );
 
   const handleCloseTree = useCallback(() => setSelectedName(null), []);
@@ -92,6 +91,7 @@ export function FoundryPage() {
   }
 
   const activeFilters = Object.keys(filters).length;
+  const groups = FILTERS.filter((group) => offered(base[group.key]));
 
   return (
     <Page title="Foundry" description={<Quoted quote={quote} />}>
@@ -104,6 +104,12 @@ export function FoundryPage() {
       <Section
         action={
           <div className="flex items-center gap-3">
+            {activeFilters > 0 && (
+              <ClearFilters
+                count={activeFilters}
+                onClear={() => setFilters({})}
+              />
+            )}
             <span className="text-muted-foreground text-sm">
               {num(visible.length)} of {num(data?.items.length)} items
             </span>
@@ -118,7 +124,7 @@ export function FoundryPage() {
         <div className="flex flex-col gap-3">
           <Tabs
             value={category}
-            onValueChange={(value) => handleCategoryChange(value as Category)}
+            onValueChange={(value) => setCategory(value as Category)}
           >
             <TabsList>
               {CATEGORIES.map(([key, label]) => (
@@ -129,28 +135,31 @@ export function FoundryPage() {
             </TabsList>
           </Tabs>
 
-          <FilterGrid
-            activeFilters={activeFilters}
-            onClear={() => setFilters({})}
-          >
-            {filtersFor(category).map((group) => (
-              <FilterSelect
-                key={group.key}
-                label={group.label}
-                value={filters[group.key] ?? null}
-                options={yesNoOptions(group.yes, group.no)}
-                disabled={group.key === "prime" && primeLocked(filters)}
-                onChange={(mode) =>
-                  setFilters(
-                    withFilter(filters, group.key, mode as YesNo | null),
-                  )
-                }
-              />
-            ))}
+          <FilterGrid>
+            {groups.map((group) => {
+              const { value, fixed } = choice(
+                live[group.key],
+                filters[group.key],
+              );
+              return (
+                <FilterSegment
+                  key={group.key}
+                  label={group.label}
+                  yes={group.yes}
+                  no={group.no}
+                  facet={live[group.key]}
+                  value={value}
+                  fixed={fixed}
+                  onChange={(mode) =>
+                    setFilters(withFilter(items, filters, group.key, mode))
+                  }
+                />
+              );
+            })}
           </FilterGrid>
 
           {pageItems.length === 0 ? (
-            <EmptyPanel>Nothing matches these filters.</EmptyPanel>
+            <EmptyPanel>Nothing matches.</EmptyPanel>
           ) : (
             <CardGrid>
               {pageItems.map((item) => (

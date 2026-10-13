@@ -24,31 +24,49 @@ export function FilterGrid({
       {children}
       {onClear && activeFilters > 0 && (
         <div className="flex items-end">
-          <Button
-            variant="outline"
-            size="sm"
+          <ClearFilters
+            count={activeFilters}
+            onClear={onClear}
             className="w-full"
-            onClick={onClear}
-          >
-            <FilterX className="size-4" />
-            Clear {activeFilters}
-          </Button>
+          />
         </div>
       )}
     </div>
   );
 }
 
+export function ClearFilters({
+  count,
+  onClear,
+  className,
+}: {
+  count: number;
+  onClear: () => void;
+  className?: string;
+}) {
+  return (
+    <Button variant="outline" size="sm" className={className} onClick={onClear}>
+      <FilterX className="size-4" />
+      Clear {count}
+    </Button>
+  );
+}
+
 export function FilterField({
   label,
+  note,
   children,
 }: {
   label: string;
+  note?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <span className="text-muted-foreground truncate text-xs">{label}</span>
+      <span className="text-muted-foreground flex items-center gap-1 text-xs">
+        <span className="truncate">{label}</span>
+        {note}
+      </span>
       {children}
     </div>
   );

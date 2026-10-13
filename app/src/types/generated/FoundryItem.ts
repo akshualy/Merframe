@@ -5,4 +5,4 @@ import type { MasteryGate } from "./MasteryGate";
 import type { Prime } from "./Prime";
 import type { Progress } from "./Progress";
 
-export type FoundryItem = { unique_name: string, name: string, kind: string, type_name: string, image_name: string | null, wiki_url: string | null, prime: Prime | null, mastered: boolean, progress: Progress, crafts_into: Array<string>, mastery: MasteryGate, incarnon: boolean, helminth: Helminth | null, archon_shards: number, favourite: boolean, components: Array<FoundryComponent>, };
+export type FoundryItem = { unique_name: string, name: string, kind: string, type_name: string, image_name: string | null, wiki_url: string | null, prime: Prime | null, mastered: boolean, progress: Progress, crafts_into: Array<string> | null, mastery: MasteryGate, incarnon: boolean | null, helminth: Helminth | null, archon_shards: number | null, favourite: boolean, components: Array<FoundryComponent>, };

@@ -1,28 +1,38 @@
 {
   "items": [
     {
-      "unique_name": "/Lotus/Weapons/Corpus/LongGuns/AcceltraTestFixture",
-      "name": "Acceltra",
-      "kind": "weapon",
-      "type_name": "Rifle",
-      "image_name": "Acceltra.png",
+      "unique_name": "/Lotus/Test/Excalibur",
+      "name": "Excalibur",
+      "kind": "warframe",
+      "type_name": "Warframe",
+      "image_name": null,
+      "wiki_url": null,
       "prime": null,
       "mastered": true,
-      "progress": { "owned": false, "pending": false, "ready_to_build": true },
-      "crafts_into": [],
-      "mastery": { "required": 8, "met": true },
-      "incarnon": false,
-      "helminth": null,
-      "archon_shards": 0,
+      "progress": {
+        "owned": true,
+        "pending": false,
+        "ready_to_build": true
+      },
+      "crafts_into": null,
+      "mastery": {
+        "required": 0,
+        "met": true
+      },
+      "incarnon": null,
+      "helminth": {
+        "ability": "Radial Blind",
+        "subsumed": true
+      },
+      "archon_shards": 2,
       "favourite": false,
-      "wiki_url": "https://wiki.warframe.com/w/Acceltra",
       "components": [
         {
-          "unique_name": "/Lotus/Types/Items/MiscItems/HexenonTestFixture",
-          "name": "Hexenon",
-          "image_name": "Hexenon.png",
-          "owned": 10,
-          "required": 5,
+          "unique_name": "/Lotus/Test/ExcaliburChassis",
+          "name": "Excalibur Chassis",
+          "image_name": null,
+          "owned": 1,
+          "required": 1,
           "enough": true,
           "favourite": false,
           "owned_relics": []
@@ -30,22 +40,304 @@
       ]
     },
     {
-      "unique_name": "/Lotus/Powersuits/NovaPrimeTestFixture",
+      "unique_name": "/Lotus/Test/Nova",
+      "name": "Nova",
+      "kind": "warframe",
+      "type_name": "Warframe",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": null,
+      "mastered": false,
+      "progress": {
+        "owned": true,
+        "pending": false,
+        "ready_to_build": false
+      },
+      "crafts_into": null,
+      "mastery": {
+        "required": 0,
+        "met": true
+      },
+      "incarnon": null,
+      "helminth": {
+        "ability": "Null Star",
+        "subsumed": false
+      },
+      "archon_shards": 0,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/NovaChassis",
+          "name": "Nova Chassis",
+          "image_name": null,
+          "owned": 0,
+          "required": 1,
+          "enough": false,
+          "favourite": false,
+          "owned_relics": []
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Test/NovaPrime",
       "name": "Nova Prime",
       "kind": "warframe",
       "type_name": "Warframe",
-      "image_name": "NovaPrime.png",
-      "prime": { "vault": "vaulted", "resurgence": false },
-      "mastered": true,
-      "progress": { "owned": true, "pending": false, "ready_to_build": false },
-      "crafts_into": [],
-      "mastery": { "required": 0, "met": true },
-      "incarnon": false,
+      "image_name": null,
+      "wiki_url": null,
+      "prime": {
+        "vault": "vaulted",
+        "resurgence": true
+      },
+      "mastered": false,
+      "progress": {
+        "owned": false,
+        "pending": false,
+        "ready_to_build": false
+      },
+      "crafts_into": null,
+      "mastery": {
+        "required": 0,
+        "met": true
+      },
+      "incarnon": null,
       "helminth": null,
       "archon_shards": 0,
       "favourite": false,
-      "wiki_url": "https://wiki.warframe.com/w/Nova/Prime",
-      "components": []
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/NovaPrimeChassis",
+          "name": "Nova Prime Chassis",
+          "image_name": null,
+          "owned": 0,
+          "required": 1,
+          "enough": false,
+          "favourite": false,
+          "owned_relics": []
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Test/MesaPrime",
+      "name": "Mesa Prime",
+      "kind": "warframe",
+      "type_name": "Warframe",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": {
+        "vault": "available",
+        "resurgence": false
+      },
+      "mastered": true,
+      "progress": {
+        "owned": true,
+        "pending": false,
+        "ready_to_build": false
+      },
+      "crafts_into": null,
+      "mastery": {
+        "required": 0,
+        "met": true
+      },
+      "incarnon": null,
+      "helminth": null,
+      "archon_shards": 0,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/MesaPrimeChassis",
+          "name": "Mesa Prime Chassis",
+          "image_name": null,
+          "owned": 1,
+          "required": 1,
+          "enough": true,
+          "favourite": false,
+          "owned_relics": []
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Test/Voidrig",
+      "name": "Voidrig",
+      "kind": "necramech",
+      "type_name": "Necramech",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": null,
+      "mastered": false,
+      "progress": {
+        "owned": true,
+        "pending": false,
+        "ready_to_build": false
+      },
+      "crafts_into": null,
+      "mastery": {
+        "required": 0,
+        "met": true
+      },
+      "incarnon": null,
+      "helminth": null,
+      "archon_shards": null,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/VoidrigCasing",
+          "name": "Voidrig Casing",
+          "image_name": null,
+          "owned": 1,
+          "required": 1,
+          "enough": true,
+          "favourite": false,
+          "owned_relics": []
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Test/Acceltra",
+      "name": "Acceltra",
+      "kind": "primary",
+      "type_name": "Rifle",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": null,
+      "mastered": true,
+      "progress": {
+        "owned": false,
+        "pending": false,
+        "ready_to_build": true
+      },
+      "crafts_into": [],
+      "mastery": {
+        "required": 8,
+        "met": true
+      },
+      "incarnon": false,
+      "helminth": null,
+      "archon_shards": null,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/Hexenon",
+          "name": "Hexenon",
+          "image_name": null,
+          "owned": 100,
+          "required": 100,
+          "enough": true,
+          "favourite": false,
+          "owned_relics": []
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Test/BratonPrime",
+      "name": "Braton Prime",
+      "kind": "primary",
+      "type_name": "Rifle",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": {
+        "vault": "available",
+        "resurgence": false
+      },
+      "mastered": false,
+      "progress": {
+        "owned": true,
+        "pending": false,
+        "ready_to_build": false
+      },
+      "crafts_into": [],
+      "mastery": {
+        "required": 8,
+        "met": true
+      },
+      "incarnon": true,
+      "helminth": null,
+      "archon_shards": null,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/BratonPrimeBarrel",
+          "name": "Braton Prime Barrel",
+          "image_name": null,
+          "owned": 1,
+          "required": 1,
+          "enough": true,
+          "favourite": true,
+          "owned_relics": []
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Test/Kama",
+      "name": "Kama",
+      "kind": "melee",
+      "type_name": "Dual Swords",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": null,
+      "mastered": false,
+      "progress": {
+        "owned": true,
+        "pending": false,
+        "ready_to_build": false
+      },
+      "crafts_into": ["Dual Kamas"],
+      "mastery": {
+        "required": 1,
+        "met": true
+      },
+      "incarnon": false,
+      "helminth": null,
+      "archon_shards": null,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/KamaBlueprint",
+          "name": "Kama Blueprint",
+          "image_name": null,
+          "owned": 0,
+          "required": 1,
+          "enough": false,
+          "favourite": false,
+          "owned_relics": []
+        }
+      ]
+    },
+    {
+      "unique_name": "/Lotus/Test/Sibear",
+      "name": "Sibear",
+      "kind": "melee",
+      "type_name": "Dual Swords",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": null,
+      "mastered": false,
+      "progress": {
+        "owned": false,
+        "pending": false,
+        "ready_to_build": false
+      },
+      "crafts_into": [],
+      "mastery": {
+        "required": 10,
+        "met": false
+      },
+      "incarnon": false,
+      "helminth": null,
+      "archon_shards": null,
+      "favourite": false,
+      "components": [
+        {
+          "unique_name": "/Lotus/Test/Cryotic",
+          "name": "Cryotic",
+          "image_name": null,
+          "owned": 0,
+          "required": 30000,
+          "enough": false,
+          "favourite": false,
+          "owned_relics": []
+        }
+      ]
     }
   ]
 }

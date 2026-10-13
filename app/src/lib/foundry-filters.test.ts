@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  filtersFor,
+  choice,
+  facets,
   foundryMatches,
-  primeLocked,
-  scoped,
+  inCategory,
+  offered,
+  prune,
   withFilter,
 } from "@/lib/foundry-filters";
 import type { FoundryItem } from "@/types";
@@ -15,18 +17,12 @@ const byName = (name: string) => {
   if (!item) {
     throw new Error(`${name} missing from the test data`);
   }
+
   return item;
 };
 
-describe("filtersFor", () => {
-  it("helminth filters only for warframes", () => {
-    const keys = (category: "warframe" | "primary") =>
-      filtersFor(category).map((group) => group.key);
-    expect(keys("warframe")).toContain("subsumed");
-    expect(keys("primary")).not.toContain("subsumed");
-    expect(keys("primary")).toContain("prime");
-  });
-});
+const warframes = inCategory(items, "warframe");
+const primaries = inCategory(items, "primary");
 
 describe("foundryMatches", () => {
   const acceltra = byName("Acceltra");
@@ -61,47 +57,144 @@ describe("foundryMatches", () => {
     expect(foundryMatches(acceltra, "", { owned: "yes" })).toBe(false);
   });
 
-  it("vaulted follows the prime vault state", () => {
-    const vaulted = items.find((item) => item.prime?.vault === "vaulted");
-    expect(vaulted).toBeDefined();
-    if (vaulted) {
-      expect(foundryMatches(vaulted, "", { vaulted: "yes" })).toBe(true);
-    }
+  it("prime flags under both values", () => {
+    const nova = byName("Nova");
+    expect(foundryMatches(nova, "", { vaulted: "yes" })).toBe(false);
+    expect(foundryMatches(nova, "", { vaulted: "no" })).toBe(false);
+    expect(foundryMatches(byName("Mesa Prime"), "", { vaulted: "no" })).toBe(
+      true,
+    );
+  });
+
+  it("helminth flags under both values", () => {
+    const nova = byName("Nova Prime");
+    expect(foundryMatches(nova, "", { subsumed: "yes" })).toBe(false);
+    expect(foundryMatches(nova, "", { subsumed: "no" })).toBe(false);
+  });
+
+  it("favourite from components", () => {
+    expect(
+      foundryMatches(byName("Braton Prime"), "", { favourite: "yes" }),
+    ).toBe(true);
   });
 });
 
-describe("scoped", () => {
-  it("drops filters the category does not show", () => {
-    expect(scoped({ prime: "yes", subsumed: "no" }, "primary")).toEqual({
-      prime: "yes",
+describe("facets", () => {
+  it("counts per filter", () => {
+    const counts = facets(warframes, {});
+    expect(counts.prime).toEqual({ yes: 2, no: 2, na: 0 });
+    expect(counts.vaulted).toEqual({ yes: 1, no: 1, na: 2 });
+    expect(counts.subsumed).toEqual({ yes: 1, no: 1, na: 2 });
+    expect(counts.incarnon).toEqual({ yes: 0, no: 0, na: 4 });
+    expect(counts.enoughMastery).toEqual({ yes: 4, no: 0, na: 0 });
+  });
+
+  it("own selection left out", () => {
+    const counts = facets(warframes, { prime: "yes" });
+    expect(counts.prime).toEqual({ yes: 2, no: 2, na: 0 });
+    expect(counts.subsumed).toEqual({ yes: 0, no: 0, na: 2 });
+    expect(counts.vaulted).toEqual({ yes: 1, no: 1, na: 0 });
+  });
+
+  it("other selections applied", () => {
+    const counts = facets(warframes, { prime: "no", owned: "yes" });
+    expect(counts.subsumed).toEqual({ yes: 1, no: 1, na: 0 });
+    expect(counts.mastered).toEqual({ yes: 1, no: 1, na: 0 });
+  });
+});
+
+describe("choice", () => {
+  it("free with both values", () => {
+    expect(choice({ yes: 2, no: 3, na: 0 }, "no")).toEqual({
+      value: "no",
+      fixed: false,
+    });
+    expect(choice({ yes: 2, no: 3, na: 0 }, undefined)).toEqual({
+      value: null,
+      fixed: false,
     });
   });
 
-  it("keeps warframe filters for warframes", () => {
-    expect(scoped({ subsumed: "no" }, "warframe")).toEqual({ subsumed: "no" });
+  it("fixed on one value", () => {
+    expect(choice({ yes: 0, no: 3, na: 0 }, "yes")).toEqual({
+      value: "no",
+      fixed: true,
+    });
+    expect(choice({ yes: 2, no: 0, na: 0 }, undefined)).toEqual({
+      value: "yes",
+      fixed: true,
+    });
+  });
+
+  it("free with not applicable rows", () => {
+    expect(choice({ yes: 2, no: 0, na: 5 }, undefined)).toEqual({
+      value: null,
+      fixed: false,
+    });
+  });
+
+  it("fixed without rows", () => {
+    expect(choice({ yes: 0, no: 0, na: 4 }, "yes")).toEqual({
+      value: null,
+      fixed: true,
+    });
+  });
+});
+
+describe("offered", () => {
+  it("needs an answerable row", () => {
+    expect(offered({ yes: 0, no: 0, na: 4 })).toBe(false);
+    expect(offered({ yes: 0, no: 1, na: 0 })).toBe(true);
   });
 });
 
 describe("withFilter", () => {
-  it("sets and clears a filter", () => {
-    expect(withFilter({}, "owned", "yes")).toEqual({ owned: "yes" });
-    expect(withFilter({ owned: "yes" }, "owned", null)).toEqual({});
+  it("set and clear", () => {
+    expect(withFilter(warframes, {}, "owned", "yes")).toEqual({ owned: "yes" });
+    expect(withFilter(warframes, { owned: "yes" }, "owned", null)).toEqual({});
   });
 
-  it("forces the type to normal while a helminth filter is set", () => {
-    expect(withFilter({ prime: "yes" }, "subsumed", "no")).toEqual({
-      prime: "no",
+  it("drops a conflicting selection", () => {
+    expect(withFilter(warframes, { prime: "yes" }, "subsumed", "no")).toEqual({
       subsumed: "no",
     });
-    expect(
-      withFilter({ prime: "no", subsumed: "no" }, "subsumed", null),
-    ).toEqual({ prime: "no" });
+    expect(withFilter(warframes, { vaulted: "yes" }, "prime", "no")).toEqual({
+      prime: "no",
+    });
+  });
+
+  it("keeps a compatible selection", () => {
+    expect(withFilter(warframes, { prime: "no" }, "owned", "yes")).toEqual({
+      prime: "no",
+      owned: "yes",
+    });
   });
 });
 
-describe("primeLocked", () => {
-  it("locks the type while a helminth filter is set", () => {
-    expect(primeLocked({ subsumed: "no" })).toBe(true);
-    expect(primeLocked({ prime: "yes" })).toBe(false);
+describe("prune", () => {
+  it("drops a selection no row answers", () => {
+    const mastered = [byName("Excalibur"), byName("Mesa Prime")];
+    expect(prune(mastered, { mastered: "no" })).toEqual({});
+    expect(prune(mastered, { mastered: "yes" })).toEqual({});
+  });
+
+  it("drops filters outside the category", () => {
+    expect(prune(primaries, { subsumed: "no", prime: "yes" })).toEqual({
+      prime: "yes",
+    });
+    expect(prune(warframes, { incarnon: "yes", owned: "yes" })).toEqual({
+      owned: "yes",
+    });
+  });
+
+  it("keeps a sibling of an empty selection", () => {
+    expect(prune(primaries, { primeResurgence: "yes", owned: "no" })).toEqual({
+      owned: "no",
+    });
+  });
+
+  it("returns the same object when nothing changes", () => {
+    const filters = { owned: "no" } as const;
+    expect(prune(warframes, filters)).toBe(filters);
   });
 });
