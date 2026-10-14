@@ -5,9 +5,9 @@ use std::time::{Duration, Instant};
 use wf_mem::{GAME_PROCESS, MemoryReader, Region, read_u32_le, read_u64_le};
 
 use crate::Result;
-use crate::chunks::to_usize;
+use crate::chunks::{read_region, to_usize};
 use crate::inventory::{InventoryBuffer, MAX_INVENTORY_BODY, accept};
-use crate::roots::{POINTER, image_data, in_heap, words};
+use crate::roots::{POINTER, heap_regions, image_data, in_heap, words};
 
 const CLIENT_FIELDS: usize = 0xc0;
 const REQUESTS: usize = 0x18;
@@ -127,13 +127,10 @@ impl HttpClients {
     pub fn locate<R: MemoryReader + ?Sized>(reader: &R) -> Result<Option<Self>> {
         let regions = reader.regions()?;
         let image = reader.module(GAME_PROCESS)?;
-        let heap: Vec<&Region> = regions
-            .iter()
-            .filter(|region| region.is_anonymous_heap())
-            .collect();
+        let heap = heap_regions(&regions);
         let mut clients = Vec::new();
         for region in image_data(&regions, &image) {
-            let data = reader.read_vec(region.range.start, to_usize(region.size())?)?;
+            let data = read_region(reader, region)?;
             for (at, object) in words(&data) {
                 if !in_heap(&heap, object) {
                     continue;

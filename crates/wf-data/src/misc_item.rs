@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn embedded_tables_sorted() {
-        assert!(MISC_ITEM_NAMES.windows(2).all(|pair| pair[0].0 < pair[1].0));
+        assert!(MISC_ITEM_NAMES.is_sorted_by_key(|(key, _)| *key));
         assert!(!CATCH_GRADES.is_empty());
     }
 

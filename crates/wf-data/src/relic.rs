@@ -14,24 +14,51 @@ pub enum Refinement {
     Radiant,
 }
 
-const REFINEMENT_SUFFIXES: [(&str, Refinement); 4] = [
-    (" Intact", Refinement::Intact),
-    (" Exceptional", Refinement::Exceptional),
-    (" Flawless", Refinement::Flawless),
-    (" Radiant", Refinement::Radiant),
-];
+impl Refinement {
+    pub const ALL: [Self; 4] = [
+        Self::Intact,
+        Self::Exceptional,
+        Self::Flawless,
+        Self::Radiant,
+    ];
 
-const PROJECTION_SUFFIXES: [(&str, Refinement); 4] = [
-    ("Bronze", Refinement::Intact),
-    ("Silver", Refinement::Exceptional),
-    ("Gold", Refinement::Flawless),
-    ("Platinum", Refinement::Radiant),
-];
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Intact => "Intact",
+            Self::Exceptional => "Exceptional",
+            Self::Flawless => "Flawless",
+            Self::Radiant => "Radiant",
+        }
+    }
+
+    pub fn projection_suffix(self) -> &'static str {
+        match self {
+            Self::Intact => "Bronze",
+            Self::Exceptional => "Silver",
+            Self::Flawless => "Gold",
+            Self::Radiant => "Platinum",
+        }
+    }
+
+    pub fn of_projection(unique_name: &str) -> Option<Self> {
+        Self::ALL
+            .into_iter()
+            .find(|refinement| unique_name.ends_with(refinement.projection_suffix()))
+    }
+}
+
+pub fn projection_family(unique_name: &str) -> &str {
+    Refinement::ALL
+        .into_iter()
+        .find_map(|refinement| unique_name.strip_suffix(refinement.projection_suffix()))
+        .unwrap_or(unique_name)
+}
 
 fn split_refinement(name: &str) -> Option<(&str, Refinement)> {
-    REFINEMENT_SUFFIXES
-        .iter()
-        .find_map(|(suffix, refinement)| name.strip_suffix(suffix).map(|base| (base, *refinement)))
+    Refinement::ALL.into_iter().find_map(|refinement| {
+        let base = name.strip_suffix(refinement.name())?.strip_suffix(' ')?;
+        Some((base, refinement))
+    })
 }
 
 fn relic_name(name: &str) -> Option<&str> {
@@ -42,18 +69,8 @@ fn relic_name(name: &str) -> Option<&str> {
     base.contains(' ').then_some(base)
 }
 
-fn projection_family(unique_name: &str) -> &str {
-    PROJECTION_SUFFIXES
-        .iter()
-        .find_map(|(suffix, _)| unique_name.strip_suffix(suffix))
-        .unwrap_or(unique_name)
-}
-
 fn projection_refinement(unique_name: &str) -> Refinement {
-    PROJECTION_SUFFIXES
-        .iter()
-        .find(|(suffix, _)| unique_name.ends_with(suffix))
-        .map_or(Refinement::Intact, |(_, refinement)| *refinement)
+    Refinement::of_projection(unique_name).unwrap_or(Refinement::Intact)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -305,6 +322,27 @@ mod tests {
             projection_family("T1VoidProjectionWispPrimeAGold"),
             "T1VoidProjectionWispPrimeA"
         );
+    }
+
+    #[test]
+    fn refinement_suffixes() {
+        assert_eq!(
+            Refinement::of_projection("T1VoidProjectionWispPrimeABronze"),
+            Some(Refinement::Intact)
+        );
+        assert_eq!(
+            Refinement::of_projection("T1VoidProjectionWispPrimeASilver"),
+            Some(Refinement::Exceptional)
+        );
+        assert_eq!(
+            Refinement::of_projection("T1VoidProjectionWispPrimeAGold"),
+            Some(Refinement::Flawless)
+        );
+        assert_eq!(
+            Refinement::of_projection("T1VoidProjectionWispPrimeAPlatinum"),
+            Some(Refinement::Radiant)
+        );
+        assert_eq!(Refinement::of_projection("SomethingElse"), None);
     }
 
     #[test]

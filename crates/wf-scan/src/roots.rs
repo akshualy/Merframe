@@ -9,6 +9,13 @@ pub fn image_data<'a>(regions: &'a [Region], image: &Module) -> impl Iterator<It
     })
 }
 
+pub fn heap_regions(regions: &[Region]) -> Vec<&Region> {
+    regions
+        .iter()
+        .filter(|region| region.is_anonymous_heap())
+        .collect()
+}
+
 pub fn in_heap(heap: &[&Region], address: u64) -> bool {
     address.is_multiple_of(8) && heap.iter().any(|region| region.range.contains(&address))
 }

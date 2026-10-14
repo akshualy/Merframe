@@ -25,11 +25,19 @@ pub use dbgwin::DbgWinListener;
 mod ee_log_fixture_tests {
     use crate::{DialogButtons, Event, MonitorRect, classify, parse_line, read_all};
 
-    fn fixture_path() -> std::path::PathBuf {
+    pub(crate) fn fixture_path() -> std::path::PathBuf {
         std::path::PathBuf::from(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../fixtures/EE.log"
         ))
+    }
+
+    fn fixture_events() -> Vec<Event> {
+        read_all(&fixture_path())
+            .unwrap()
+            .iter()
+            .filter_map(classify)
+            .collect()
     }
 
     #[test]
@@ -75,8 +83,7 @@ mod ee_log_fixture_tests {
 
     #[test]
     fn fixture_dialogs() {
-        let lines = read_all(&fixture_path()).unwrap();
-        let events: Vec<Event> = lines.iter().filter_map(classify).collect();
+        let events = fixture_events();
         let count = |wanted: &Event| events.iter().filter(|event| *event == wanted).count();
         assert_eq!(
             count(&Event::ConfirmDialog {
@@ -89,8 +96,7 @@ mod ee_log_fixture_tests {
 
     #[test]
     fn fixture_relic_missions() {
-        let lines = read_all(&fixture_path()).unwrap();
-        let events: Vec<Event> = lines.iter().filter_map(classify).collect();
+        let events = fixture_events();
 
         let count = |predicate: &dyn Fn(&Event) -> bool| {
             events.iter().filter(|event| predicate(event)).count()
@@ -132,8 +138,7 @@ mod ee_log_fixture_tests {
 
     #[test]
     fn fixture_overlay_hide_triggers() {
-        let lines = read_all(&fixture_path()).unwrap();
-        let events: Vec<Event> = lines.iter().filter_map(classify).collect();
+        let events = fixture_events();
 
         let resets = events
             .iter()
@@ -159,8 +164,7 @@ mod ee_log_fixture_tests {
 
     #[test]
     fn fixture_star_chart_marks() {
-        let lines = read_all(&fixture_path()).unwrap();
-        let events: Vec<Event> = lines.iter().filter_map(classify).collect();
+        let events = fixture_events();
 
         let star_chart = events
             .iter()

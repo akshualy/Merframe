@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::mongo_date::MongoDate;
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -15,8 +15,8 @@ pub struct CategoryChoices {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct EndlessXpWeek {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     #[serde(default)]
     pub category_choices: Vec<CategoryChoices>,
 }
@@ -38,11 +38,9 @@ fn choices(week: &EndlessXpWeek, category: &str) -> Vec<String> {
 }
 
 pub fn current_circuit(schedule: &[EndlessXpWeek], now: DateTime<Utc>) -> Option<Circuit> {
-    let week = schedule
-        .iter()
-        .find(|week| now >= week.activation.utc() && now < week.expiry.utc())?;
+    let week = schedule.iter().find(|week| week.window.contains(now))?;
     Some(Circuit {
-        rotates: week.expiry.utc(),
+        rotates: week.window.expiry.datetime(),
         normal: choices(week, "EXC_NORMAL"),
         hard: choices(week, "EXC_HARD"),
     })
@@ -50,18 +48,12 @@ pub fn current_circuit(schedule: &[EndlessXpWeek], now: DateTime<Utc>) -> Option
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
+    use crate::window::fixtures::{at, window};
 
     fn week(activation_ms: i64, expiry_ms: i64) -> EndlessXpWeek {
         EndlessXpWeek {
-            activation: DateTime::<Utc>::from_timestamp_millis(activation_ms)
-                .unwrap()
-                .into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(expiry_ms)
-                .unwrap()
-                .into(),
+            window: window(activation_ms, expiry_ms),
             category_choices: vec![
                 CategoryChoices {
                     category: "EXC_NORMAL".to_owned(),
@@ -77,7 +69,7 @@ mod tests {
 
     #[test]
     fn active_week_categories() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1500).unwrap();
+        let now = at(1500);
         let circuit = current_circuit(&[week(1000, 2000)], now).unwrap();
         assert_eq!(circuit.rotates.timestamp_millis(), 2000);
         assert_eq!(circuit.normal, vec!["Garuda".to_owned()]);
@@ -86,7 +78,7 @@ mod tests {
 
     #[test]
     fn no_running_week() {
-        let now = DateTime::<Utc>::from_timestamp_millis(2500).unwrap();
+        let now = at(2500);
         assert!(current_circuit(&[week(1000, 2000), week(3000, 4000)], now).is_none());
     }
 }

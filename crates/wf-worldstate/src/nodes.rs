@@ -13,6 +13,11 @@ pub fn node_name(node_id: &str) -> Option<&'static str> {
     node_info(node_id).map(|node| node.value)
 }
 
+pub fn node_and_planet(node_name: &str) -> Option<(&str, &str)> {
+    let (node, planet) = node_name.trim().strip_suffix(')')?.rsplit_once('(')?;
+    Some((node.trim(), planet.trim()))
+}
+
 pub fn node_mastery_xp(node_id: &str) -> u32 {
     lookup(NODE_MASTERY, node_id).copied().unwrap_or_default()
 }
@@ -62,8 +67,8 @@ mod tests {
 
     #[test]
     fn embedded_tables_sorted() {
-        assert!(SOL_NODES.windows(2).all(|pair| pair[0].0 < pair[1].0));
-        assert!(NODE_MASTERY.windows(2).all(|pair| pair[0].0 < pair[1].0));
+        assert!(SOL_NODES.is_sorted_by(|a, b| a.0 < b.0));
+        assert!(NODE_MASTERY.is_sorted_by(|a, b| a.0 < b.0));
     }
 
     #[test]
@@ -86,6 +91,19 @@ mod tests {
         assert!(junction_nodes().all(|node_id| node_name(node_id).is_some()));
         assert!(junction_nodes().all(|node_id| node_mastery_xp(node_id) == 1000));
         assert_eq!(node_mastery_xp("EarthToVenusJunction"), 1000);
+    }
+
+    #[test]
+    fn node_and_planet_split() {
+        assert_eq!(
+            node_name("SolNode27").and_then(node_and_planet),
+            Some(("E Prime", "Earth"))
+        );
+        assert_eq!(
+            node_and_planet(" Galatea (Neptune) "),
+            Some(("Galatea", "Neptune"))
+        );
+        assert_eq!(node_and_planet("Galatea"), None);
     }
 
     #[test]

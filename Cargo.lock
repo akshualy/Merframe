@@ -5793,6 +5793,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.21",
  "tracing",
+ "wf-mongo",
 ]
 
 [[package]]
@@ -5838,6 +5839,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "wf-mongo"
+version = "0.5.3"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "wf-scan"
 version = "0.5.3"
 dependencies = [
@@ -5860,6 +5871,7 @@ dependencies = [
  "thiserror 2.0.21",
  "tracing",
  "ts-rs",
+ "wf-mongo",
 ]
 
 [[package]]

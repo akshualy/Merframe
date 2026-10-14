@@ -1,6 +1,6 @@
 use wf_mem::MemoryReader;
 
-use crate::lua::{LuaState, LuaTable, LuaValue};
+use crate::lua::{LuaState, LuaTable};
 
 const CHOICE: &str = "OmegaRerollChoice";
 const ITEM_ID: &str = "Id";
@@ -17,15 +17,11 @@ pub struct StationRiven {
     pub offered: Option<String>,
 }
 
-fn text<R: MemoryReader + ?Sized>(reader: &R, table: LuaTable, name: &str) -> Option<String> {
-    table.field(reader, name)?.text()
-}
-
 fn clip<R: MemoryReader + ?Sized>(reader: &R, cards: &[LuaTable], name: &str) -> Option<String> {
     let card = cards
         .iter()
-        .find(|card| text(reader, **card, CLIP).as_deref() == Some(name))?;
-    text(reader, *card, FINGERPRINT)
+        .find(|card| card.text(reader, CLIP).as_deref() == Some(name))?;
+    card.text(reader, FINGERPRINT)
 }
 
 fn cards<R: MemoryReader + ?Sized>(
@@ -38,11 +34,7 @@ fn cards<R: MemoryReader + ?Sized>(
         .locals(reader)
         .into_iter()
         .find_map(|cards| {
-            let cards: Vec<LuaTable> = cards
-                .items(reader)
-                .into_iter()
-                .filter_map(LuaValue::table)
-                .collect();
+            let cards = cards.tables(reader);
             Some((
                 clip(reader, &cards, SHOWN_CLIP)?,
                 clip(reader, &cards, OFFERED_CLIP),
@@ -59,7 +51,7 @@ impl StationRiven {
         let (shown, offered) = cards(reader, state, script)?;
         let choice = state.shared(reader)?.field(reader, CHOICE)?.table()?;
         Some(Self {
-            item_id: text(reader, choice, ITEM_ID)?,
+            item_id: choice.text(reader, ITEM_ID)?,
             shown,
             offered,
         })
@@ -70,7 +62,7 @@ impl StationRiven {
 mod tests {
     use super::*;
     use crate::fake::FakeReader;
-    use crate::lua::tests::Heap;
+    use crate::lua::tests::{Heap, read_with};
 
     fn choice(heap: &mut Heap) {
         let choice = [
@@ -106,10 +98,6 @@ mod tests {
         })
     }
 
-    fn read(reader: &FakeReader) -> Option<StationRiven> {
-        StationRiven::read(reader, &LuaState::locate(reader).unwrap()?, &mut None)
-    }
-
     #[test]
     fn cycled_riven_with_both_rolls() {
         let reader = station(&[
@@ -117,7 +105,7 @@ mod tests {
             ("Choice2", "{\"rerolls\":3,\"buffs\":[]}"),
         ]);
         assert_eq!(
-            read(&reader),
+            read_with(&reader, StationRiven::read),
             Some(StationRiven {
                 item_id: "67b8145f6fae460f420380bd".to_owned(),
                 shown: "{\"rerolls\":3}".to_owned(),
@@ -128,7 +116,8 @@ mod tests {
 
     #[test]
     fn selected_riven_uncycled() {
-        let riven = read(&station(&[("Choice1", "{\"rerolls\":2}")])).unwrap();
+        let reader = station(&[("Choice1", "{\"rerolls\":2}")]);
+        let riven = read_with(&reader, StationRiven::read).unwrap();
         assert_eq!(riven.shown, "{\"rerolls\":2}");
         assert_eq!(riven.offered, None);
     }
@@ -142,34 +131,6 @@ mod tests {
             heap.shared.push(choice);
             vec![heap.table(&[])]
         });
-        assert_eq!(read(&reader), None);
-    }
-
-    #[test]
-    fn script_kept_across_reads() {
-        let reader = station(&[("Choice1", "{\"rerolls\":2}")]);
-        let state = LuaState::locate(&reader).unwrap().unwrap();
-        let mut script = None;
-
-        let first = StationRiven::read(&reader, &state, &mut script);
-        assert!(first.is_some());
-        assert_eq!(script, state.scripts(&reader).first().copied());
-        assert_eq!(StationRiven::read(&reader, &state, &mut script), first);
-    }
-
-    #[test]
-    fn closed_station_instance_re_resolved() {
-        let mut closed = 0;
-        let reader = Heap::with_scripts(|heap| {
-            choice(heap);
-            closed = station_script(heap, &[("Choice1", "{\"rerolls\":1}")]);
-            vec![station_script(heap, &[("Choice1", "{\"rerolls\":2}")])]
-        });
-        let state = LuaState::locate(&reader).unwrap().unwrap();
-        let mut script = Some(LuaTable::at(closed));
-
-        let riven = StationRiven::read(&reader, &state, &mut script).unwrap();
-        assert_eq!(riven.shown, "{\"rerolls\":2}");
-        assert_eq!(script, state.scripts(&reader).first().copied());
+        assert_eq!(read_with(&reader, StationRiven::read), None);
     }
 }

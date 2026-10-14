@@ -238,7 +238,7 @@ fn warframe_like(item: &Item) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
 
     fn item(category: &str, product_category: &str) -> Item {
@@ -272,9 +272,9 @@ mod tests {
         }
     }
 
-    const MASTERY_ITEMS: &str = include_str!("../../../fixtures/mastery_items.json");
+    pub(crate) const MASTERY_ITEMS: &str = include_str!("../../../fixtures/mastery_items.json");
 
-    fn fixture_items() -> Vec<Item> {
+    pub(crate) fn fixture_items() -> Vec<Item> {
         serde_json::from_str(MASTERY_ITEMS).unwrap()
     }
 

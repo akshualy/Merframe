@@ -2,14 +2,14 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::mongo_date::MongoDate;
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RawDailyDeal {
     pub store_item: String,
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub discount: u32,
     pub original_price: u32,
     pub sale_price: u32,
@@ -33,8 +33,8 @@ impl From<&RawDailyDeal> for DailyDeal {
     fn from(raw: &RawDailyDeal) -> Self {
         Self {
             store_item: raw.store_item.clone(),
-            activation: raw.activation.utc(),
-            expiry: raw.expiry.utc(),
+            activation: raw.window.activation.datetime(),
+            expiry: raw.window.expiry.datetime(),
             discount_percent: raw.discount,
             original_price: raw.original_price,
             sale_price: raw.sale_price,
@@ -46,36 +46,26 @@ impl From<&RawDailyDeal> for DailyDeal {
 
 pub fn daily_deals(raw: &[RawDailyDeal], now: DateTime<Utc>) -> Vec<DailyDeal> {
     raw.iter()
-        .filter(|deal| now >= deal.activation.utc() && now < deal.expiry.utc())
+        .filter(|deal| deal.window.contains(now))
         .map(DailyDeal::from)
         .collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
+    use crate::window::fixtures::{at, window};
 
     fn deal(activation_ms: i64, expiry_ms: i64) -> RawDailyDeal {
         RawDailyDeal {
             store_item: "/Lotus/StoreItems/Types/Items/Research/BioComponent".to_owned(),
-            activation: DateTime::<Utc>::from_timestamp_millis(activation_ms)
-                .unwrap()
-                .into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(expiry_ms)
-                .unwrap()
-                .into(),
+            window: window(activation_ms, expiry_ms),
             discount: 20,
             original_price: 10,
             sale_price: 8,
             amount_total: 165,
             amount_sold: 165,
         }
-    }
-
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::<Utc>::from_timestamp_millis(millis).unwrap()
     }
 
     #[test]

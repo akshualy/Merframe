@@ -229,12 +229,12 @@ fn resolve_components(records: Vec<ItemRecord>, components: Vec<Component>) -> R
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::item::tests::MASTERY_ITEMS;
     use crate::relic::Refinement;
 
     const ITEMS: &str = include_str!("../tests/fixtures/items.json");
     const SKINS: &str = include_str!("../tests/fixtures/skins.json");
     const RELICS: &str = include_str!("../tests/fixtures/relics.json");
-    const MASTERY_ITEMS: &str = include_str!("../../../fixtures/mastery_items.json");
     const MISC_ITEMS: &str = include_str!("../../../fixtures/misc_items.json");
     const COMPONENTS: &str = include_str!("../tests/fixtures/components.json");
 

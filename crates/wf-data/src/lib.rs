@@ -18,7 +18,7 @@ pub use item::{
     mastery_level_from_affinity, store_item_to_type,
 };
 pub use misc_item::{catch_grade, catch_size, misc_item_name};
-pub use relic::{Refinement, Relic, RelicDrop, RelicReward};
+pub use relic::{Refinement, Relic, RelicDrop, RelicReward, projection_family};
 pub use riven::{
     MAX_RANK, RivenData, RivenStat, RivenType, TraitMultipliers, UpgradeEntry, UpgradeValue,
     rank_multiplier, roll_multiplier, roll_share, trait_multipliers,

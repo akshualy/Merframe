@@ -378,20 +378,15 @@ pub fn classify(line: &LogLine) -> Option<Event> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::line::{Channel, Level};
+    use crate::line::sys_line;
 
-    fn log_line(message: &str) -> LogLine {
-        LogLine {
-            time: 0.0,
-            channel: Channel::Sys,
-            level: Level::Info,
-            message: message.to_owned(),
-        }
+    fn line(message: &str) -> LogLine {
+        sys_line(0.0, message)
     }
 
     #[test]
     fn logged_in() {
-        let event = classify(&log_line("Logged in TestTenno"));
+        let event = classify(&line("Logged in TestTenno"));
         assert_eq!(
             event,
             Some(Event::LoggedIn {
@@ -402,13 +397,13 @@ mod tests {
 
     #[test]
     fn logging_in() {
-        let event = classify(&log_line("Logging in as "));
+        let event = classify(&line("Logging in as "));
         assert_eq!(event, Some(Event::LoggingIn));
     }
 
     #[test]
     fn mission_set_with_void_tier() {
-        let event = classify(&log_line(
+        let event = classify(&line(
             r#"Set squad mission: {"difficulty":"","voidTier":"VoidT1","quest":"","name":"SolNode14_ActiveMission"}"#,
         ));
         assert_eq!(
@@ -422,7 +417,7 @@ mod tests {
 
     #[test]
     fn squad_mission_pending() {
-        let event = classify(&log_line(
+        let event = classify(&line(
             "ThemedSquadOverlay.lua: Pending mission: SolNode232_ActiveMission",
         ));
         assert_eq!(
@@ -435,7 +430,7 @@ mod tests {
 
     #[test]
     fn host_start_match() {
-        let event = classify(&log_line(
+        let event = classify(&line(
             "ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for EventNode25_Event (/Lotus/Levels/GrineerBeach/GrineerBeachEvent.level)",
         ));
         assert_eq!(
@@ -449,7 +444,7 @@ mod tests {
     #[test]
     fn open_level_player_ship() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "FrameworkCmd::OpenLevel - /Lotus/Levels/Proc/PlayerShip"
             )),
             None
@@ -458,7 +453,7 @@ mod tests {
 
     #[test]
     fn open_level_mission() {
-        let event = classify(&log_line(
+        let event = classify(&line(
             "FrameworkCmd::OpenLevel - /Lotus/Levels/Proc/Corpus/CorpusIcePlanetExterminateCaves",
         ));
         assert_eq!(
@@ -470,7 +465,7 @@ mod tests {
     }
 
     fn dialog_line(description: &str, buttons: &str) -> LogLine {
-        log_line(&format!(
+        line(&format!(
             "Dialog.lua: Dialog::CreateOkCancel(description={description}, title= {buttons})"
         ))
     }
@@ -516,7 +511,7 @@ mod tests {
             None
         );
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "Dialog.lua: Dialog::CreateOkCancel(description=Bist du sicher, dass du diesen Handel annehmen willst? Du bietest:"
             )),
             None
@@ -526,7 +521,7 @@ mod tests {
     #[test]
     fn notice_dialogs_are_not_events() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "Dialog.lua: Dialog::CreateOk(description=Der Handel war erfolgreich!, title= leftItem=/Menu/Confirm_Item_Ok)"
             )),
             None
@@ -536,19 +531,16 @@ mod tests {
     #[test]
     fn dialog_answers() {
         assert_eq!(
-            classify(&log_line("Dialog.lua: Dialog::SendResult(4)")),
+            classify(&line("Dialog.lua: Dialog::SendResult(4)")),
             Some(Event::DialogAnswered { accepted: true })
         );
         assert_eq!(
-            classify(&log_line("Dialog.lua: Dialog::SendResult(5)")),
+            classify(&line("Dialog.lua: Dialog::SendResult(5)")),
             Some(Event::DialogAnswered { accepted: false })
         );
+        assert_eq!(classify(&line("Dialog.lua: Dialog::SendResult(3)")), None);
         assert_eq!(
-            classify(&log_line("Dialog.lua: Dialog::SendResult(3)")),
-            None
-        );
-        assert_eq!(
-            classify(&log_line("Dialog.lua: SendResult_MENU_SELECT()")),
+            classify(&line("Dialog.lua: SendResult_MENU_SELECT()")),
             None
         );
     }
@@ -556,11 +548,11 @@ mod tests {
     #[test]
     fn trade_screen_visibility() {
         assert_eq!(
-            classify(&log_line("Trade.lua: DBG: HudVis 1")),
+            classify(&line("Trade.lua: DBG: HudVis 1")),
             Some(Event::TradeScreen { visible: true })
         );
         assert_eq!(
-            classify(&log_line("Trade.lua: DBG: HudVis 0")),
+            classify(&line("Trade.lua: DBG: HudVis 0")),
             Some(Event::TradeScreen { visible: false })
         );
     }
@@ -568,13 +560,13 @@ mod tests {
     #[test]
     fn ducat_sale() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "InventoryTest.lua: OnSellCompleted(result=true, body={})"
             )),
             Some(Event::DucatSale)
         );
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "InventoryTest.lua: OnSellCompleted(result=false, body={})"
             )),
             None
@@ -584,31 +576,28 @@ mod tests {
     #[test]
     fn ducat_kiosk_visibility() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "InventoryTest.lua: InventoryTest - CurrMode: Selling Prime Parts"
             )),
             Some(Event::DucatKiosk { visible: true })
         );
         assert_eq!(
-            classify(&log_line("InventoryTest.lua: DBG: HudVis 0")),
+            classify(&line("InventoryTest.lua: DBG: HudVis 0")),
             Some(Event::DucatKiosk { visible: false })
         );
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "InventoryTest.lua: InventoryTest - CurrMode: Inventory"
             )),
             None
         );
-        assert_eq!(
-            classify(&log_line("InventoryTest.lua: DBG: HudVis 1")),
-            None
-        );
+        assert_eq!(classify(&line("InventoryTest.lua: DBG: HudVis 1")), None);
     }
 
     #[test]
     fn mission_succeeded() {
         assert_eq!(
-            classify(&log_line("EndOfMatch.lua: Mission Succeeded")),
+            classify(&line("EndOfMatch.lua: Mission Succeeded")),
             Some(Event::MissionSucceeded)
         );
     }
@@ -616,7 +605,7 @@ mod tests {
     #[test]
     fn mission_rewards_given() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true"
             )),
             Some(Event::MissionRewardsGiven)
@@ -626,7 +615,7 @@ mod tests {
     #[test]
     fn returned_to_ship() {
         assert_eq!(
-            classify(&log_line("EndOfMatch.lua: ReturnedToShip")),
+            classify(&line("EndOfMatch.lua: ReturnedToShip")),
             Some(Event::ReturnedToShip)
         );
     }
@@ -634,7 +623,7 @@ mod tests {
     #[test]
     fn reward_screen_opened() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "VoidProjections: OpenVoidProjectionRewardScreen - PostMigration: 0"
             )),
             Some(Event::RelicRewardScreenOpened)
@@ -644,16 +633,14 @@ mod tests {
     #[test]
     fn reward_screen_opened_rmi() {
         assert_eq!(
-            classify(&log_line(
-                "VoidProjections: OpenVoidProjectionRewardScreenRMI"
-            )),
+            classify(&line("VoidProjections: OpenVoidProjectionRewardScreenRMI")),
             Some(Event::RelicRewardScreenOpened)
         );
     }
 
     #[test]
     fn own_relic_reward() {
-        let event = classify(&log_line(
+        let event = classify(&line(
             "VoidProjections: 5f0a1b2c3d4e5f6a7b8c9d0e gets reward /Lotus/StoreItems/Types/Recipes/Weapons/PrimeDaikyuBlueprint",
         ));
         assert_eq!(
@@ -669,7 +656,7 @@ mod tests {
     #[test]
     fn squad_reward_info_received() {
         for role in ["Client", "Host"] {
-            let event = classify(&log_line(&format!(
+            let event = classify(&line(&format!(
                 "VoidProjections: {role} got reward info from 5f0a1b2c3d4e5f6a7b8c9d0e"
             )));
             assert_eq!(
@@ -685,7 +672,7 @@ mod tests {
     fn squad_reward_info_complete() {
         for role in ["Client", "Host"] {
             assert_eq!(
-                classify(&log_line(&format!(
+                classify(&line(&format!(
                     "VoidProjections: {role} has reward info for all players now"
                 ))),
                 Some(Event::SquadRewardInfoComplete)
@@ -696,7 +683,7 @@ mod tests {
     #[test]
     fn relic_rewards_shown() {
         assert_eq!(
-            classify(&log_line("ProjectionRewardChoice.lua: Got rewards")),
+            classify(&line("ProjectionRewardChoice.lua: Got rewards")),
             Some(Event::RelicRewardsShown)
         );
     }
@@ -704,7 +691,7 @@ mod tests {
     #[test]
     fn relic_select_screen_loaded() {
         assert_eq!(
-            classify(&log_line("ThemedProjectionManager.lua: LoadingCompleteEnd")),
+            classify(&line("ThemedProjectionManager.lua: LoadingCompleteEnd")),
             Some(Event::RelicSelectScreenLoaded)
         );
     }
@@ -712,18 +699,18 @@ mod tests {
     #[test]
     fn star_chart_shown_and_hidden() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "Subscribing for /Lotus/Interface/MapRedux.swf with input filter /EE/Types/Input/MapReduxInputFilter"
             )),
             Some(Event::StarChartOpened)
         );
         assert_eq!(
-            classify(&log_line("MapRedux.lua: DBG: HudVis 0")),
+            classify(&line("MapRedux.lua: DBG: HudVis 0")),
             Some(Event::StarChartHidden)
         );
-        assert_eq!(classify(&log_line("MapRedux.lua: DBG: HudVis 1")), None);
+        assert_eq!(classify(&line("MapRedux.lua: DBG: HudVis 1")), None);
         assert_eq!(
-            classify(&log_line("Created /Lotus/Interface/RadialSolarMapLite.swf")),
+            classify(&line("Created /Lotus/Interface/RadialSolarMapLite.swf")),
             None
         );
     }
@@ -731,14 +718,14 @@ mod tests {
     #[test]
     fn empty_squad_mission() {
         assert_eq!(
-            classify(&log_line("Set squad mission: ")),
+            classify(&line("Set squad mission: ")),
             Some(Event::MissionCleared)
         );
     }
 
     #[test]
     fn chat_tab_added() {
-        let event = classify(&log_line(
+        let event = classify(&line(
             "ChatRedux.lua: ChatRedux::AddTab: Adding tab with channel name: Q_EN_EU to index 1",
         ));
         assert_eq!(
@@ -751,7 +738,7 @@ mod tests {
 
     #[test]
     fn riven_dialog() {
-        let event = classify(&log_line(
+        let event = classify(&line(
             "ThemedDetailedPurchaseDialog.lua: PopulateInfo->/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/FuraxWraithRightGauntlet",
         ));
         assert_eq!(
@@ -767,7 +754,7 @@ mod tests {
     #[test]
     fn reroll_station_loaded() {
         assert_eq!(
-            classify(&log_line("OmegaRerollSelection.lua: Diorama setup")),
+            classify(&line("OmegaRerollSelection.lua: Diorama setup")),
             Some(Event::RivenRerollScreenLoaded)
         );
     }
@@ -780,13 +767,13 @@ mod tests {
             "NpcManager::ClearAgents() ReadyToCreateAgents = false",
         ] {
             assert_eq!(
-                classify(&log_line(message)),
+                classify(&line(message)),
                 Some(Event::SceneTornDown),
                 "{message}"
             );
         }
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "NpcManager::ClearAgents() ReadyToCreateAgents = true"
             )),
             None
@@ -801,7 +788,7 @@ mod tests {
             "InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/ProgressInputFilter",
         ] {
             assert_eq!(
-                classify(&log_line(message)),
+                classify(&line(message)),
                 Some(Event::InputMappingReset),
                 "{message}"
             );
@@ -811,13 +798,13 @@ mod tests {
     #[test]
     fn console_opened() {
         assert_eq!(
-            classify(&log_line(
+            classify(&line(
                 "UIConsoleTrigger::Open() /Layer1/Layer2/UIConsoleTrigger4"
             )),
             Some(Event::ConsoleOpened)
         );
         assert_eq!(
-            classify(&log_line("      20 /Lotus/Types/Game/UIConsoleTrigger")),
+            classify(&line("      20 /Lotus/Types/Game/UIConsoleTrigger")),
             None
         );
     }
@@ -825,16 +812,16 @@ mod tests {
     #[test]
     fn purchase_dialog_hud_vis() {
         assert_eq!(
-            classify(&log_line("ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2")),
+            classify(&line("ThemedDetailedPurchaseDialog.lua: DBG: HudVis 2")),
             Some(Event::PurchaseDialogHudVisibility { count: 2 })
         );
         assert_eq!(
-            classify(&log_line("ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1")),
+            classify(&line("ThemedDetailedPurchaseDialog.lua: DBG: HudVis 1")),
             Some(Event::PurchaseDialogHudVisibility { count: 1 })
         );
-        assert_eq!(classify(&log_line("HudRedux.lua: DBG: HudVis 1")), None);
+        assert_eq!(classify(&line("HudRedux.lua: DBG: HudVis 1")), None);
         assert_eq!(
-            classify(&log_line("MapRedux.lua: DBG: HudVis 0")),
+            classify(&line("MapRedux.lua: DBG: HudVis 0")),
             Some(Event::StarChartHidden)
         );
     }
@@ -842,7 +829,7 @@ mod tests {
     #[test]
     fn inventory_committed() {
         assert_eq!(
-            classify(&log_line("CommitInventoryChangesToDB")),
+            classify(&line("CommitInventoryChangesToDB")),
             Some(Event::InventoryCommitted)
         );
     }
@@ -855,13 +842,13 @@ mod tests {
             "Hub.lua: Inventory sync done",
         ] {
             assert_eq!(
-                classify(&log_line(message)),
+                classify(&line(message)),
                 Some(Event::InventorySynced),
                 "{message}"
             );
         }
         assert_eq!(
-            classify(&log_line("OnInventoryResults, body size=2059896")),
+            classify(&line("OnInventoryResults, body size=2059896")),
             None
         );
     }
@@ -869,21 +856,21 @@ mod tests {
     #[test]
     fn window_focus() {
         assert_eq!(
-            classify(&log_line("WM_ACTIVATEAPP 1")),
+            classify(&line("WM_ACTIVATEAPP 1")),
             Some(Event::WindowFocus { focused: true })
         );
         assert_eq!(
-            classify(&log_line("WM_ACTIVATEAPP 0")),
+            classify(&line("WM_ACTIVATEAPP 0")),
             Some(Event::WindowFocus { focused: false })
         );
-        assert_eq!(classify(&log_line("WM_ACTIVATEAPP")), None);
-        assert_eq!(classify(&log_line("WM_ACTIVATEAPP 2")), None);
+        assert_eq!(classify(&line("WM_ACTIVATEAPP")), None);
+        assert_eq!(classify(&line("WM_ACTIVATEAPP 2")), None);
     }
 
     #[test]
     fn game_monitor_rectangle() {
         assert_eq!(
-            classify(&log_line("Monitor Info (0, 1920, 0, 1080).")),
+            classify(&line("Monitor Info (0, 1920, 0, 1080).")),
             Some(Event::GameMonitor(MonitorRect {
                 left: 0,
                 top: 0,
@@ -892,7 +879,7 @@ mod tests {
             }))
         );
         assert_eq!(
-            classify(&log_line("Monitor Info (1920, 4480, -360, 1080).")),
+            classify(&line("Monitor Info (1920, 4480, -360, 1080).")),
             Some(Event::GameMonitor(MonitorRect {
                 left: 1920,
                 top: -360,
@@ -900,16 +887,16 @@ mod tests {
                 height: 1440,
             }))
         );
-        assert_eq!(classify(&log_line("Monitor Info (0, 0, 0, 1080).")), None);
+        assert_eq!(classify(&line("Monitor Info (0, 0, 0, 1080).")), None);
         assert_eq!(
-            classify(&log_line("Monitor Work Area (0, 1920, 32, 1080).")),
+            classify(&line("Monitor Work Area (0, 1920, 32, 1080).")),
             None
         );
     }
 
     #[test]
     fn unrelated_line() {
-        assert_eq!(classify(&log_line("System Up-Time: 6d 13h 54m 20s")), None);
+        assert_eq!(classify(&line("System Up-Time: 6d 13h 54m 20s")), None);
     }
 
     #[test]

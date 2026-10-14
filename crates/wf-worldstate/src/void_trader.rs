@@ -4,14 +4,14 @@ use serde::Serialize;
 
 use crate::manifest::ManifestItem;
 use crate::manifest::RawManifestItem;
-use crate::mongo_date::MongoDate;
 use crate::nodes::node_name;
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct VoidTrader {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub character: String,
     pub node: String,
     #[serde(default)]
@@ -42,12 +42,10 @@ fn character_name(shipped: &str) -> String {
 }
 
 pub fn baro_status(traders: &[VoidTrader], now: DateTime<Utc>) -> Option<BaroStatus> {
-    let present = traders
-        .iter()
-        .find(|trader| now >= trader.activation.utc() && now < trader.expiry.utc());
+    let present = traders.iter().find(|trader| trader.window.contains(now));
     if let Some(trader) = present {
         return Some(BaroStatus::Present {
-            leaves: trader.expiry.utc(),
+            leaves: trader.window.expiry.datetime(),
             character: character_name(&trader.character),
             node_id: trader.node.clone(),
             node_name: node_name(&trader.node),
@@ -56,27 +54,21 @@ pub fn baro_status(traders: &[VoidTrader], now: DateTime<Utc>) -> Option<BaroSta
     }
     traders
         .iter()
-        .filter(|trader| trader.activation.utc() > now)
-        .min_by_key(|trader| trader.activation.utc())
+        .filter(|trader| trader.window.activation.datetime() > now)
+        .min_by_key(|trader| trader.window.activation.datetime())
         .map(|trader| BaroStatus::Away {
-            arrives: trader.activation.utc(),
+            arrives: trader.window.activation.datetime(),
         })
 }
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
+    use crate::window::fixtures::{at, window};
 
     fn trader(activation_ms: i64, expiry_ms: i64) -> VoidTrader {
         VoidTrader {
-            activation: DateTime::<Utc>::from_timestamp_millis(activation_ms)
-                .unwrap()
-                .into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(expiry_ms)
-                .unwrap()
-                .into(),
+            window: window(activation_ms, expiry_ms),
             character: "Baro'Ki Teel".to_owned(),
             node: "SolNode1".to_owned(),
             manifest: vec![],
@@ -85,7 +77,7 @@ mod tests {
 
     #[test]
     fn away_before_activation() {
-        let now = DateTime::<Utc>::from_timestamp_millis(0).unwrap();
+        let now = at(0);
         let traders = vec![trader(1000, 2000)];
         match baro_status(&traders, now) {
             Some(BaroStatus::Away { arrives }) => {
@@ -103,7 +95,7 @@ mod tests {
 
     #[test]
     fn present_within_window() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1500).unwrap();
+        let now = at(1500);
         let traders = vec![trader(1000, 2000)];
         match baro_status(&traders, now) {
             Some(BaroStatus::Present {

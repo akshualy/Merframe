@@ -22,6 +22,21 @@ struct CycleWindow {
 }
 
 impl CycleWindow {
+    fn alternating(phases: [(&'static str, i64); 2], in_first: bool, expiry_ms: i64) -> Self {
+        let [(state, length_ms), (next_state, _)] = if in_first {
+            phases
+        } else {
+            [phases[1], phases[0]]
+        };
+
+        Self {
+            state,
+            next_state,
+            length_ms,
+            expiry_ms,
+        }
+    }
+
     fn timer(&self, name: &'static str) -> Option<Timer> {
         let ends = DateTime::from_timestamp_millis(self.expiry_ms)?;
         Some(Timer {
@@ -73,12 +88,11 @@ fn earth_window(now_ms: i64) -> CycleWindow {
     } else {
         EARTH_CYCLE_MS - cycle_ms
     };
-    CycleWindow {
-        state: if is_day { "day" } else { "night" },
-        next_state: if is_day { "night" } else { "day" },
-        length_ms: if is_day { EARTH_DAY_MS } else { EARTH_NIGHT_MS },
-        expiry_ms: now_ms + remaining_ms,
-    }
+    CycleWindow::alternating(
+        [("day", EARTH_DAY_MS), ("night", EARTH_NIGHT_MS)],
+        is_day,
+        now_ms + remaining_ms,
+    )
 }
 
 fn cetus_window(bounty_expiry_ms: i64, now_ms: i64) -> CycleWindow {
@@ -95,22 +109,19 @@ fn cetus_window(bounty_expiry_ms: i64, now_ms: i64) -> CycleWindow {
         seconds_to_night_end
     };
     let expiry_ms = round_minutes_ms(now_ms + seconds_remaining * 1000);
-    CycleWindow {
-        state: if is_day { "day" } else { "night" },
-        next_state: if is_day { "night" } else { "day" },
-        length_ms: if is_day { CETUS_DAY_MS } else { CETUS_NIGHT_MS },
+    CycleWindow::alternating(
+        [("day", CETUS_DAY_MS), ("night", CETUS_NIGHT_MS)],
+        is_day,
         expiry_ms,
-    }
+    )
 }
 
 fn cambion_window(cetus: &CycleWindow) -> CycleWindow {
-    let is_fass = cetus.state == "day";
-    CycleWindow {
-        state: if is_fass { "fass" } else { "vome" },
-        next_state: if is_fass { "vome" } else { "fass" },
-        length_ms: cetus.length_ms,
-        expiry_ms: cetus.expiry_ms,
-    }
+    CycleWindow::alternating(
+        [("fass", cetus.length_ms), ("vome", cetus.length_ms)],
+        cetus.state == "day",
+        cetus.expiry_ms,
+    )
 }
 
 fn vallis_window(now_ms: i64) -> CycleWindow {
@@ -126,16 +137,11 @@ fn vallis_window(now_ms: i64) -> CycleWindow {
     } else {
         to_next_full - VALLIS_COLD_MS
     };
-    CycleWindow {
-        state: if is_warm { "warm" } else { "cold" },
-        next_state: if is_warm { "cold" } else { "warm" },
-        length_ms: if is_warm {
-            VALLIS_WARM_MS
-        } else {
-            VALLIS_COLD_MS
-        },
-        expiry_ms: now_ms + to_next_minor,
-    }
+    CycleWindow::alternating(
+        [("warm", VALLIS_WARM_MS), ("cold", VALLIS_COLD_MS)],
+        is_warm,
+        now_ms + to_next_minor,
+    )
 }
 
 fn duviri_window(now_ms: i64) -> CycleWindow {
@@ -169,12 +175,11 @@ fn zariman_window(bounty_expiry_ms: i64, now_ms: i64) -> CycleWindow {
         (bounty_expiry_skewed - ZARIMAN_CORPUS_EPOCH_MS).rem_euclid(ZARIMAN_FULL_CYCLE_MS);
     let cycle_time_left = ZARIMAN_FULL_CYCLE_MS - cycle_time_elapsed;
     let is_corpus = cycle_time_left > ZARIMAN_STATE_MS;
-    CycleWindow {
-        state: if is_corpus { "corpus" } else { "grineer" },
-        next_state: if is_corpus { "grineer" } else { "corpus" },
-        length_ms: ZARIMAN_STATE_MS,
-        expiry_ms: round_minutes_ms(now_ms + millis_left),
-    }
+    CycleWindow::alternating(
+        [("corpus", ZARIMAN_STATE_MS), ("grineer", ZARIMAN_STATE_MS)],
+        is_corpus,
+        round_minutes_ms(now_ms + millis_left),
+    )
 }
 
 pub fn timers(syndicate_missions: &[SyndicateMission], now: DateTime<Utc>) -> Vec<Timer> {
@@ -203,19 +208,25 @@ mod tests {
     use chrono::{DateTime, Utc};
 
     use super::*;
+    use crate::window::fixtures::at;
 
     fn syndicate(tag: &str, expiry_ms: i64) -> SyndicateMission {
         SyndicateMission {
-            expiry: DateTime::<Utc>::from_timestamp_millis(expiry_ms)
-                .unwrap()
-                .into(),
+            expiry: at(expiry_ms).into(),
             tag: tag.to_owned(),
         }
     }
 
+    fn timer(missions: &[SyndicateMission], now: DateTime<Utc>, name: &str) -> Timer {
+        timers(missions, now)
+            .into_iter()
+            .find(|timer| timer.name == name)
+            .unwrap()
+    }
+
     #[test]
     fn cetus_from_bounty_expiry() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1_788_807_069_000).unwrap();
+        let now = at(1_788_807_069_000);
         let missions = vec![syndicate("CetusSyndicate", 1_788_816_031_915)];
         let all = timers(&missions, now);
         let cetus = all.iter().find(|timer| timer.name == "Cetus").unwrap();
@@ -228,13 +239,7 @@ mod tests {
     fn cetus_past_bounty_expiry() {
         let night_end_ms = 1_788_816_000_000;
         let missions = vec![syndicate("CetusSyndicate", night_end_ms)];
-        let find = |now_ms: i64, name: &str| {
-            let now = DateTime::<Utc>::from_timestamp_millis(now_ms).unwrap();
-            timers(&missions, now)
-                .into_iter()
-                .find(|timer| timer.name == name)
-                .unwrap()
-        };
+        let find = |now_ms: i64, name: &str| timer(&missions, at(now_ms), name);
 
         let night = find(night_end_ms - 60_000, "Cetus");
         assert_eq!(night.state, "night");
@@ -260,13 +265,7 @@ mod tests {
     fn zariman_past_bounty_expiry() {
         let expiry_ms = 1_788_816_005_000;
         let missions = vec![syndicate("ZarimanSyndicate", expiry_ms)];
-        let find = |now_ms: i64| {
-            let now = DateTime::<Utc>::from_timestamp_millis(now_ms).unwrap();
-            timers(&missions, now)
-                .into_iter()
-                .find(|timer| timer.name == "Zariman")
-                .unwrap()
-        };
+        let find = |now_ms: i64| timer(&missions, at(now_ms), "Zariman");
 
         let before = find(expiry_ms - 65_000);
         let after = find(expiry_ms + 55_000);
@@ -280,7 +279,7 @@ mod tests {
 
     #[test]
     fn vallis_and_duviri_without_data() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1_788_807_069_000).unwrap();
+        let now = at(1_788_807_069_000);
         let all = timers(&[], now);
         assert!(all.iter().any(|timer| timer.name == "Orb Vallis"));
         assert!(all.iter().any(|timer| timer.name == "Duviri"));
@@ -297,9 +296,8 @@ mod tests {
             1_788_825_599_999,
             0,
         ] {
-            let now = DateTime::<Utc>::from_timestamp_millis(now_ms).unwrap();
-            let all = timers(&[], now);
-            let earth = all.iter().find(|timer| timer.name == "Earth").unwrap();
+            let now = at(now_ms);
+            let earth = timer(&[], now, "Earth");
             assert!(earth.state == "day" || earth.state == "night");
             assert!(earth.ends > now);
             assert!(earth.ends.timestamp_millis() - now_ms <= 14_400_000);
@@ -308,26 +306,18 @@ mod tests {
 
     #[test]
     fn earth_epoch_formula() {
-        let day_now = DateTime::<Utc>::from_timestamp_millis(1_788_807_069_000).unwrap();
-        let day = timers(&[], day_now)
-            .into_iter()
-            .find(|timer| timer.name == "Earth")
-            .unwrap();
+        let day = timer(&[], at(1_788_807_069_000), "Earth");
         assert_eq!(day.state, "day");
         assert_eq!(day.ends.timestamp_millis(), 1_788_811_200_000);
 
-        let night_now = DateTime::<Utc>::from_timestamp_millis(1_788_818_000_000).unwrap();
-        let night = timers(&[], night_now)
-            .into_iter()
-            .find(|timer| timer.name == "Earth")
-            .unwrap();
+        let night = timer(&[], at(1_788_818_000_000), "Earth");
         assert_eq!(night.state, "night");
         assert_eq!(night.ends.timestamp_millis(), 1_788_825_600_000);
     }
 
     #[test]
     fn timer_spans_now() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1_788_807_069_000).unwrap();
+        let now = at(1_788_807_069_000);
         let missions = vec![
             syndicate("CetusSyndicate", 1_788_816_031_915),
             syndicate("ZarimanSyndicate", 1_788_816_031_915),
@@ -354,7 +344,7 @@ mod tests {
 
     #[test]
     fn earth_first() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1_788_807_069_000).unwrap();
+        let now = at(1_788_807_069_000);
         let missions = vec![syndicate("CetusSyndicate", 1_788_816_031_915)];
         assert_eq!(timers(&missions, now).first().unwrap().name, "Earth");
     }
@@ -362,12 +352,7 @@ mod tests {
     #[test]
     fn vallis_cold_after_400_seconds() {
         let anchor_ms = 1_770_234_408_000;
-        let vallis = |now_ms: i64| {
-            timers(&[], DateTime::<Utc>::from_timestamp_millis(now_ms).unwrap())
-                .into_iter()
-                .find(|timer| timer.name == "Orb Vallis")
-                .unwrap()
-        };
+        let vallis = |now_ms: i64| timer(&[], at(now_ms), "Orb Vallis");
         assert_eq!(vallis(anchor_ms).state, "warm");
         assert_eq!(vallis(anchor_ms + 399_999).state, "warm");
         assert_eq!(vallis(anchor_ms + 400_000).state, "cold");
@@ -381,12 +366,7 @@ mod tests {
 
     #[test]
     fn duviri_sorrow_offset() {
-        let duviri = |now_secs: i64| {
-            timers(&[], DateTime::<Utc>::from_timestamp(now_secs, 0).unwrap())
-                .into_iter()
-                .find(|timer| timer.name == "Duviri")
-                .unwrap()
-        };
+        let duviri = |now_secs: i64| timer(&[], at(now_secs * 1000), "Duviri");
         let cycle_start = 1_788_804_000 + 52;
         assert_eq!(duviri(cycle_start - 1).state, "envy");
         assert_eq!(duviri(cycle_start).state, "sorrow");
@@ -399,11 +379,8 @@ mod tests {
     fn zariman_corpus_at_epoch() {
         let epoch_ms = 1_655_182_800_000;
         let zariman = |bounty_expiry_ms: i64| {
-            let now = DateTime::<Utc>::from_timestamp_millis(bounty_expiry_ms - 60_000).unwrap();
-            timers(&[syndicate("ZarimanSyndicate", bounty_expiry_ms)], now)
-                .into_iter()
-                .find(|timer| timer.name == "Zariman")
-                .unwrap()
+            let missions = [syndicate("ZarimanSyndicate", bounty_expiry_ms)];
+            timer(&missions, at(bounty_expiry_ms - 60_000), "Zariman")
         };
         assert_eq!(zariman(epoch_ms + 5_000).state, "corpus");
         assert_eq!(zariman(epoch_ms + 4_999).state, "grineer");
@@ -414,10 +391,9 @@ mod tests {
 
     #[test]
     fn zariman_from_bounty_expiry() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1_788_807_069_000).unwrap();
+        let now = at(1_788_807_069_000);
         let missions = vec![syndicate("ZarimanSyndicate", 1_788_816_031_915)];
-        let all = timers(&missions, now);
-        let zariman = all.iter().find(|timer| timer.name == "Zariman").unwrap();
+        let zariman = timer(&missions, now, "Zariman");
         assert!(zariman.state == "corpus" || zariman.state == "grineer");
     }
 }

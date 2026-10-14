@@ -9,8 +9,11 @@ rust-version.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-chrono.workspace = true
 tracing.workspace = true
+wf-mongo.workspace = true
+
+[dev-dependencies]
+chrono.workspace = true
 
 [lints]
 workspace = true

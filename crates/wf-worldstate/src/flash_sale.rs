@@ -1,10 +1,11 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde::Serialize;
+use wf_mongo::MongoDate;
 
 use crate::embedded::{STORE_PACKAGES, lookup};
-use crate::mongo_date::MongoDate;
 use crate::season::split_words;
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -33,6 +34,13 @@ pub struct MarketSale {
 }
 
 impl RawFlashSale {
+    fn window(&self) -> Window {
+        Window {
+            activation: self.start_date,
+            expiry: self.end_date,
+        }
+    }
+
     fn is_offer(&self) -> bool {
         (self.discount > 0 || self.product_expiry_override.is_some())
             && (self.premium_override > 0 || self.regular_override > 0)
@@ -50,28 +58,22 @@ fn package_name(type_name: &str) -> Option<String> {
 
 pub fn market_sales(raw: &[RawFlashSale], now: DateTime<Utc>) -> Vec<MarketSale> {
     raw.iter()
-        .filter(|sale| now >= sale.start_date.utc() && now < sale.end_date.utc())
-        .filter(|sale| sale.is_offer())
+        .filter(|sale| sale.window().contains(now) && sale.is_offer())
         .map(|sale| MarketSale {
             type_name: sale.type_name.clone(),
             package_name: package_name(&sale.type_name),
             discount_percent: sale.discount,
             platinum: sale.premium_override,
             credits: sale.regular_override,
-            ends: sale.end_date.utc(),
+            ends: sale.end_date.datetime(),
         })
         .collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
-
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::<Utc>::from_timestamp_millis(millis).unwrap()
-    }
+    use crate::window::fixtures::at;
 
     fn sale(type_name: &str, discount: u32, platinum: u32, limited: bool) -> RawFlashSale {
         RawFlashSale {
@@ -154,6 +156,6 @@ mod tests {
 
     #[test]
     fn embedded_table_sorted() {
-        assert!(STORE_PACKAGES.windows(2).all(|pair| pair[0].0 < pair[1].0));
+        assert!(STORE_PACKAGES.is_sorted_by(|a, b| a.0 < b.0));
     }
 }

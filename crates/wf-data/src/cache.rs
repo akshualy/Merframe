@@ -47,10 +47,7 @@ struct CacheEntry {
 pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameData> {
     tokio::fs::create_dir_all(dir)
         .await
-        .map_err(|source| DataError::CacheIo {
-            path: dir.to_path_buf(),
-            source,
-        })?;
+        .map_err(cache_io(dir))?;
     let meta_path = dir.join("etag.json");
     let mut meta = read_meta(&meta_path).await;
 
@@ -106,12 +103,7 @@ async fn read_meta(path: &Path) -> CacheMeta {
 
 async fn write_meta(path: &Path, meta: &CacheMeta) -> Result<()> {
     let bytes = serde_json::to_vec_pretty(meta).map_err(DataError::ParseCacheMeta)?;
-    tokio::fs::write(path, bytes)
-        .await
-        .map_err(|source| DataError::CacheIo {
-            path: path.to_path_buf(),
-            source,
-        })
+    tokio::fs::write(path, bytes).await.map_err(cache_io(path))
 }
 
 async fn fetch_or_use_cache(
@@ -170,10 +162,7 @@ async fn download_fresh(
     let body = response.text().await.map_err(DataError::Network)?;
     tokio::fs::write(file_path, &body)
         .await
-        .map_err(|source| DataError::CacheIo {
-            path: file_path.to_path_buf(),
-            source,
-        })?;
+        .map_err(cache_io(file_path))?;
     Ok(Some((
         body,
         CacheEntry {
@@ -194,10 +183,14 @@ fn header(response: &reqwest::Response, name: reqwest::header::HeaderName) -> Op
 async fn read_cached_file(path: &Path) -> Result<String> {
     tokio::fs::read_to_string(path)
         .await
-        .map_err(|source| DataError::CacheIo {
-            path: path.to_path_buf(),
-            source,
-        })
+        .map_err(cache_io(path))
+}
+
+fn cache_io(path: &Path) -> impl FnOnce(std::io::Error) -> DataError + '_ {
+    |source| DataError::CacheIo {
+        path: path.to_path_buf(),
+        source,
+    }
 }
 
 #[cfg(test)]

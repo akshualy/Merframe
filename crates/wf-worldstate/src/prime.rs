@@ -3,14 +3,14 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::manifest::RawManifestItem;
-use crate::mongo_date::MongoDate;
 use crate::nodes::node_name;
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct PrimeVaultTrader {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub node: String,
     #[serde(default)]
     pub manifest: Vec<RawManifestItem>,
@@ -42,13 +42,11 @@ pub struct PrimeAccessAvailability {
 }
 
 pub fn current_varzia(traders: &[PrimeVaultTrader], now: DateTime<Utc>) -> Option<Varzia> {
-    let trader = traders
-        .iter()
-        .find(|trader| now >= trader.activation.utc() && now < trader.expiry.utc())?;
+    let trader = traders.iter().find(|trader| trader.window.contains(now))?;
     Some(Varzia {
         node_id: trader.node.clone(),
         node_name: node_name(&trader.node),
-        expiry: trader.expiry.utc(),
+        expiry: trader.window.expiry.datetime(),
         items: trader
             .manifest
             .iter()
@@ -64,14 +62,12 @@ pub fn current_varzia(traders: &[PrimeVaultTrader], now: DateTime<Utc>) -> Optio
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
+    use crate::window::fixtures::{at, window};
 
     fn trader() -> PrimeVaultTrader {
         PrimeVaultTrader {
-            activation: DateTime::<Utc>::from_timestamp_millis(1000).unwrap().into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(2000).unwrap().into(),
+            window: window(1000, 2000),
             node: "TradeHUB1".to_owned(),
             manifest: vec![
                 RawManifestItem {
@@ -91,7 +87,7 @@ mod tests {
 
     #[test]
     fn regal_aya_stock() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1500).unwrap();
+        let now = at(1500);
         let varzia = current_varzia(&[trader()], now).unwrap();
         assert_eq!(varzia.node_name, Some("Maroo's Bazaar (Mars)"));
         assert_eq!(varzia.items.len(), 1);
@@ -100,7 +96,7 @@ mod tests {
 
     #[test]
     fn outside_window() {
-        let now = DateTime::<Utc>::from_timestamp_millis(2500).unwrap();
+        let now = at(2500);
         assert!(current_varzia(&[trader()], now).is_none());
     }
 }

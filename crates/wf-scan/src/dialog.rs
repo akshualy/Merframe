@@ -1,6 +1,6 @@
 use wf_mem::MemoryReader;
 
-use crate::lua::{LuaState, LuaTable, LuaValue};
+use crate::lua::{LuaState, LuaTable};
 
 const DIALOG_SCRIPT: &str = "OnGiftRecipient";
 const ITEM: &str = "ITEM";
@@ -27,15 +27,11 @@ impl DialogRiven {
             .find_map(|local| {
                 let item = local.field(reader, ITEM)?.table()?;
                 Some(Self {
-                    fingerprint: item
-                        .field(reader, FINGERPRINT)
-                        .and_then(LuaValue::text)
-                        .filter(|fingerprint| !fingerprint.is_empty())?,
+                    fingerprint: item.filled_text(reader, FINGERPRINT)?,
                     mod_type: item
                         .field(reader, STORE_ITEM)?
                         .table()?
-                        .field(reader, FULL_NAME)?
-                        .text()?,
+                        .text(reader, FULL_NAME)?,
                 })
             })
     }
@@ -45,7 +41,7 @@ impl DialogRiven {
 mod tests {
     use super::*;
     use crate::fake::FakeReader;
-    use crate::lua::tests::Heap;
+    use crate::lua::tests::{Heap, read_with};
 
     const MOD_TYPE: &str = "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare";
     const ROLL: &str =
@@ -69,14 +65,10 @@ mod tests {
         Heap::with_scripts(|heap| vec![dialog_script(heap, fingerprint)])
     }
 
-    fn read(reader: &FakeReader) -> Option<DialogRiven> {
-        DialogRiven::read(reader, &LuaState::locate(reader).unwrap()?, &mut None)
-    }
-
     #[test]
     fn linked_riven() {
         assert_eq!(
-            read(&dialog(ROLL)),
+            read_with(&dialog(ROLL), DialogRiven::read),
             Some(DialogRiven {
                 mod_type: MOD_TYPE.to_owned(),
                 fingerprint: ROLL.to_owned(),
@@ -86,41 +78,12 @@ mod tests {
 
     #[test]
     fn missing_fingerprint() {
-        assert_eq!(read(&dialog("")), None);
+        assert_eq!(read_with(&dialog(""), DialogRiven::read), None);
     }
 
     #[test]
     fn dialog_closed() {
-        assert_eq!(
-            read(&Heap::with_scripts(|heap| vec![heap.table(&[])])),
-            None
-        );
-    }
-
-    #[test]
-    fn script_kept_across_reads() {
-        let reader = dialog(ROLL);
-        let state = LuaState::locate(&reader).unwrap().unwrap();
-        let mut script = None;
-
-        let first = DialogRiven::read(&reader, &state, &mut script);
-        assert!(first.is_some());
-        assert_eq!(script, state.scripts(&reader).first().copied());
-        assert_eq!(DialogRiven::read(&reader, &state, &mut script), first);
-    }
-
-    #[test]
-    fn closed_dialog_instance_re_resolved() {
-        let mut closed = 0;
-        let reader = Heap::with_scripts(|heap| {
-            closed = dialog_script(heap, "{\"rerolls\":1}");
-            vec![dialog_script(heap, ROLL)]
-        });
-        let state = LuaState::locate(&reader).unwrap().unwrap();
-        let mut script = Some(LuaTable::at(closed));
-
-        let riven = DialogRiven::read(&reader, &state, &mut script).unwrap();
-        assert_eq!(riven.fingerprint, ROLL);
-        assert_eq!(script, state.scripts(&reader).first().copied());
+        let reader = Heap::with_scripts(|heap| vec![heap.table(&[])]);
+        assert_eq!(read_with(&reader, DialogRiven::read), None);
     }
 }

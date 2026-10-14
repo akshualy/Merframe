@@ -43,21 +43,17 @@ impl TradeScreen {
             .and_then(LuaValue::function)
             .is_some_and(|function| function.upvalues(reader).contains(&LuaValue::Boolean(true)));
         for local in script.locals(reader) {
-            if let Some(name) = local.field(reader, PARTNER).and_then(LuaValue::text) {
+            if let Some(name) = local.text(reader, PARTNER) {
                 partner = Some(name);
                 continue;
             }
             let Some(elements) = local.field(reader, ELEMENTS).and_then(LuaValue::table) else {
                 continue;
             };
-            let elements: Vec<LuaTable> = elements
-                .items(reader)
-                .into_iter()
-                .filter_map(LuaValue::table)
-                .collect();
+            let elements = elements.tables(reader);
             let Some(clip) = elements
                 .first()
-                .and_then(|element| element.field(reader, CLIP)?.text())
+                .and_then(|element| element.text(reader, CLIP))
             else {
                 continue;
             };
@@ -86,13 +82,10 @@ impl TradeScreen {
 
 fn slot<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<TradeSlot> {
     Some(TradeSlot {
-        name: element.field(reader, NAME)?.text()?,
-        item_type: element.field(reader, FULL_NAME).and_then(LuaValue::text),
+        name: element.text(reader, NAME)?,
+        item_type: element.text(reader, FULL_NAME),
         count: element.field(reader, COUNT)?.whole()?,
-        fingerprint: element
-            .field(reader, FINGERPRINT)
-            .and_then(LuaValue::text)
-            .filter(|fingerprint| !fingerprint.is_empty()),
+        fingerprint: element.filled_text(reader, FINGERPRINT),
     })
 }
 
@@ -100,7 +93,7 @@ fn slot<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<Trade
 mod tests {
     use super::*;
     use crate::fake::FakeReader;
-    use crate::lua::tests::Heap;
+    use crate::lua::tests::{Heap, read_with};
 
     const ARCANE: &str = "/Lotus/Upgrades/CosmeticEnhancers/Offensive/OrbsOnResidualContact";
 
@@ -130,9 +123,7 @@ mod tests {
                     }
                     elements.push(heap.table(&fields));
                 }
-                let elements = heap.list(&elements);
-                let grid = [heap.table_field(ELEMENTS, elements)];
-                grids.push(heap.table(&grid));
+                grids.push(heap.grid(ELEMENTS, &elements));
             }
             let args = [heap.text_field(PARTNER, "TestSquadA\u{e000}")];
             grids.push(heap.table(&args));
@@ -140,10 +131,6 @@ mod tests {
             let flag = heap.flag_function_field(SUCCESS_FLAG_OWNER, completed);
             vec![heap.table(&[accept, flag])]
         })
-    }
-
-    fn read(reader: &FakeReader) -> Option<TradeScreen> {
-        TradeScreen::read(reader, &LuaState::locate(reader).unwrap()?, &mut None)
     }
 
     #[test]
@@ -166,7 +153,7 @@ mod tests {
             true,
         );
         assert_eq!(
-            read(&reader),
+            read_with(&reader, TradeScreen::read),
             Some(TradeScreen {
                 partner: Some(String::from("TestSquadA\u{e000}")),
                 offered: vec![TradeSlot {
@@ -197,7 +184,10 @@ mod tests {
     #[test]
     fn open_trade_is_not_completed() {
         let reader = screen(&[("Platinum", &[], 84.0)], &[("", &[], 0.0)], false);
-        assert_eq!(read(&reader).map(|screen| screen.completed), Some(false));
+        assert_eq!(
+            read_with(&reader, TradeScreen::read).map(|screen| screen.completed),
+            Some(false)
+        );
     }
 
     #[test]
@@ -213,20 +203,16 @@ mod tests {
         let reader = Heap::with_scripts(|heap| {
             let element = [heap.text_field(CLIP, "PlayerTradeMenu.MenuEntry")];
             let element = heap.table(&element);
-            let elements = heap.list(&[element]);
-            let grid = [heap.table_field(ELEMENTS, elements)];
-            let grid = heap.table(&grid);
+            let grid = heap.grid(ELEMENTS, &[element]);
             let accept = heap.function_field(TRADE_SCRIPT, &[grid]);
             vec![heap.table(&[accept])]
         });
-        assert_eq!(read(&reader), None);
+        assert_eq!(read_with(&reader, TradeScreen::read), None);
     }
 
     #[test]
     fn screen_closed() {
-        assert_eq!(
-            read(&Heap::with_scripts(|heap| vec![heap.table(&[])])),
-            None
-        );
+        let reader = Heap::with_scripts(|heap| vec![heap.table(&[])]);
+        assert_eq!(read_with(&reader, TradeScreen::read), None);
     }
 }

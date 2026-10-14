@@ -125,8 +125,7 @@ fn spawn_memory_tap(
 }
 
 enum Received {
-    Tap(Option<Result<LogLine>>),
-    File(Option<Result<LogLine>>),
+    Line(Origin, Option<Result<LogLine>>),
     RetryTap,
 }
 
@@ -150,33 +149,28 @@ pub fn lines(
         loop {
             let received = match tap.as_mut() {
                 Some(receiver) => tokio::select! {
-                    line = receiver.recv() => Received::Tap(line),
-                    line = file.next() => Received::File(line),
+                    line = receiver.recv() => Received::Line(Origin::Tap, line),
+                    line = file.next() => Received::Line(Origin::File, line),
                 },
                 None if selection == Selection::Auto => tokio::select! {
-                    line = file.next() => Received::File(line),
+                    line = file.next() => Received::Line(Origin::File, line),
                     () = tokio::time::sleep_until(retry_at) => Received::RetryTap,
                 },
-                None => Received::File(file.next().await),
+                None => Received::Line(Origin::File, file.next().await),
             };
             match received {
-                Received::Tap(None) => tap = None,
+                Received::Line(Origin::Tap, None) => tap = None,
                 Received::RetryTap => {
                     retry_at = tokio::time::Instant::now() + TAP_RETRY;
                     tap = spawn_tap(&log_file, TAP_INTERVAL).ok();
                 }
-                Received::File(None) => return,
-                Received::Tap(Some(Ok(line))) => {
+                Received::Line(Origin::File, None) => return,
+                Received::Line(origin, Some(Ok(line))) => {
                     if dedup.accept(&line) {
-                        yield Ok(SourceLine { origin: Origin::Tap, line });
+                        yield Ok(SourceLine { origin, line });
                     }
                 }
-                Received::File(Some(Ok(line))) => {
-                    if dedup.accept(&line) {
-                        yield Ok(SourceLine { origin: Origin::File, line });
-                    }
-                }
-                Received::Tap(Some(Err(error))) | Received::File(Some(Err(error))) => {
+                Received::Line(_, Some(Err(error))) => {
                     yield Err(error);
                 }
             }
@@ -187,48 +181,39 @@ pub fn lines(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::line::{Channel, Level, LogLine};
-
-    fn line(time: f64, message: &str) -> LogLine {
-        LogLine {
-            time,
-            channel: Channel::Sys,
-            level: Level::Info,
-            message: message.to_owned(),
-        }
-    }
+    use crate::line::sys_line;
 
     #[test]
     fn duplicate_line() {
         let mut dedup = Dedup::default();
-        assert!(dedup.accept(&line(1.0, "Logged in TestTenno")));
-        assert!(!dedup.accept(&line(1.0, "Logged in TestTenno")));
+        assert!(dedup.accept(&sys_line(1.0, "Logged in TestTenno")));
+        assert!(!dedup.accept(&sys_line(1.0, "Logged in TestTenno")));
     }
 
     #[test]
     fn timestamp_is_part_of_key() {
         let mut dedup = Dedup::default();
-        assert!(dedup.accept(&line(1.0, "NAT bound for client")));
-        assert!(dedup.accept(&line(2.0, "NAT bound for client")));
-        assert!(!dedup.accept(&line(2.0, "NAT bound for client")));
+        assert!(dedup.accept(&sys_line(1.0, "NAT bound for client")));
+        assert!(dedup.accept(&sys_line(2.0, "NAT bound for client")));
+        assert!(!dedup.accept(&sys_line(2.0, "NAT bound for client")));
     }
 
     #[test]
     fn repeated_message_new_time() {
         let mut dedup = Dedup::default();
         for step in 0..8 {
-            assert!(dedup.accept(&line(f64::from(step) * 0.25, "OnAgentCreated")));
+            assert!(dedup.accept(&sys_line(f64::from(step) * 0.25, "OnAgentCreated")));
         }
     }
 
     #[test]
     fn window_forgets_oldest_lines() {
         let mut dedup = Dedup::default();
-        let first = line(0.0, "first");
+        let first = sys_line(0.0, "first");
         assert!(dedup.accept(&first));
         for step in 1..=DEDUP_WINDOW {
             let time = f64::from(u32::try_from(step).unwrap());
-            assert!(dedup.accept(&line(time, "filler")));
+            assert!(dedup.accept(&sys_line(time, "filler")));
         }
         assert!(dedup.accept(&first));
     }

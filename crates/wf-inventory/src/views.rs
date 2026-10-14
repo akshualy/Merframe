@@ -42,6 +42,12 @@ impl Inventory {
         ]
     }
 
+    pub fn counted_items(&self) -> impl Iterator<Item = &CountedItem> {
+        self.counted_categories()
+            .into_iter()
+            .flat_map(<[CountedItem]>::iter)
+    }
+
     pub fn equipment(&self) -> impl Iterator<Item = &EquipmentItem> {
         self.equipment_categories()
             .into_iter()
@@ -72,25 +78,20 @@ impl Inventory {
 
     pub fn counted_index(&self) -> HashMap<&str, i64> {
         let mut index = HashMap::new();
-        for item in self
-            .counted_categories()
-            .into_iter()
-            .flat_map(<[CountedItem]>::iter)
-        {
+        for item in self.counted_items() {
             *index.entry(item.item_type.as_str()).or_insert(0) += item.item_count;
         }
+
         index
     }
 
     pub fn affinity_index(&self) -> HashMap<&str, u64> {
-        let mut index: HashMap<&str, u64> = HashMap::new();
-        for pet in self.moa_pets.iter().chain(&self.kubrow_pets) {
-            let entry = index.entry(pet.item_type.as_str()).or_insert(0);
-            *entry = (*entry).max(pet.xp);
-        }
+        let pets = self.moa_pets.iter().chain(&self.kubrow_pets);
+        let mut index = max_per_key(pets.map(|pet| (pet.item_type.as_str(), pet.xp)));
         for entry in &self.xp_info {
             index.insert(entry.item_type.as_str(), entry.xp);
         }
+
         index
     }
 
@@ -103,18 +104,15 @@ impl Inventory {
     }
 
     pub fn archon_shard_index(&self) -> HashMap<&str, u32> {
-        let mut index: HashMap<&str, u32> = HashMap::new();
-        for suit in &self.suits {
-            let entry = index.entry(suit.item_type.as_str()).or_insert(0);
-            *entry = (*entry).max(suit.archon_shards());
-        }
-        index
+        max_per_key(
+            self.suits
+                .iter()
+                .map(|suit| (suit.item_type.as_str(), suit.archon_shards())),
+        )
     }
 
     pub fn counted(&self, item_type: &str) -> i64 {
-        self.counted_categories()
-            .into_iter()
-            .flat_map(<[CountedItem]>::iter)
+        self.counted_items()
             .filter(|item| item.item_type == item_type)
             .map(|item| item.item_count)
             .sum()
@@ -175,8 +173,20 @@ impl Inventory {
     }
 }
 
+fn max_per_key<'a, T: Ord + Default + Copy>(
+    entries: impl Iterator<Item = (&'a str, T)>,
+) -> HashMap<&'a str, T> {
+    let mut index: HashMap<&str, T> = HashMap::new();
+    for (key, value) in entries {
+        let entry = index.entry(key).or_default();
+        *entry = (*entry).max(value);
+    }
+
+    index
+}
+
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use crate::model::Inventory;
     use chrono::Datelike;
 
@@ -184,6 +194,10 @@ mod tests {
 
     fn fixture() -> Inventory {
         Inventory::parse(FIXTURE).unwrap()
+    }
+
+    pub(crate) fn patched(field: &str) -> Inventory {
+        Inventory::parse(&FIXTURE.replacen('{', &format!("{{{field},"), 1)).unwrap()
     }
 
     #[test]
@@ -309,12 +323,10 @@ mod tests {
     #[test]
     fn owns_ship_decorations() {
         const BOBBLE_HEAD: &str = "/Lotus/Types/Items/ShipDecos/TeshinBobbleHead";
-        let decorated = FIXTURE.replacen(
-            '{',
-            &format!(r#"{{"ShipDecorations":[{{"ItemType":"{BOBBLE_HEAD}","ItemCount":1}}],"#),
-            1,
-        );
-        assert!(Inventory::parse(&decorated).unwrap().owns(BOBBLE_HEAD));
+        let decorated = patched(&format!(
+            r#""ShipDecorations":[{{"ItemType":"{BOBBLE_HEAD}","ItemCount":1}}]"#
+        ));
+        assert!(decorated.owns(BOBBLE_HEAD));
         assert!(!fixture().owns(BOBBLE_HEAD));
     }
 
@@ -413,12 +425,8 @@ mod tests {
     #[test]
     fn founder_accolade() {
         assert!(!fixture().is_founder());
-        let founder =
-            Inventory::parse(&FIXTURE.replacen('{', r#"{"Accolades":{"Founder":4},"#, 1)).unwrap();
-        assert!(founder.is_founder());
-        let guide =
-            Inventory::parse(&FIXTURE.replacen('{', r#"{"Accolades":{"Guide":true},"#, 1)).unwrap();
-        assert!(!guide.is_founder());
+        assert!(patched(r#""Accolades":{"Founder":4}"#).is_founder());
+        assert!(!patched(r#""Accolades":{"Guide":true}"#).is_founder());
     }
 
     #[test]
@@ -505,9 +513,9 @@ mod tests {
 
     #[test]
     fn unknown_top_level_keys() {
-        let inv =
-            Inventory::parse(&FIXTURE.replacen('{', r#"{"CompletelyNewKey":{"a":[1,2]},"#, 1))
-                .unwrap();
-        assert_eq!(inv.player_level, 14);
+        assert_eq!(
+            patched(r#""CompletelyNewKey":{"a":[1,2]}"#).player_level,
+            14
+        );
     }
 }

@@ -1,6 +1,6 @@
 use wf_mem::MemoryReader;
 
-use crate::lua::{LuaState, LuaTable, LuaValue};
+use crate::lua::{LuaState, LuaTable};
 
 const REWARD_SCRIPT: &str = "OnVoidRewards";
 const ELEMENTS: &str = "mElements";
@@ -24,8 +24,8 @@ fn clip_slot(clip: &str) -> Option<u8> {
 }
 
 fn tile<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<RewardTile> {
-    let slot = clip_slot(&element.field(reader, CLIP)?.text()?)?;
-    let item_type = element.field(reader, FULL_NAME)?.text()?;
+    let slot = clip_slot(&element.text(reader, CLIP)?)?;
+    let item_type = element.text(reader, FULL_NAME)?;
     let store_item = format!("/Lotus/StoreItems/{}", item_type.strip_prefix("/Lotus/")?);
     Some(RewardTile {
         slot,
@@ -46,8 +46,7 @@ pub fn reward_screen<R: MemoryReader + ?Sized>(
         .locals(reader)
         .into_iter()
         .filter_map(|local| local.field(reader, ELEMENTS)?.table())
-        .flat_map(|elements| elements.items(reader))
-        .filter_map(LuaValue::table)
+        .flat_map(|elements| elements.tables(reader))
         .filter_map(|element| tile(reader, element))
         .collect();
     tiles.sort_unstable();
@@ -58,7 +57,7 @@ pub fn reward_screen<R: MemoryReader + ?Sized>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lua::tests::Heap;
+    use crate::lua::tests::{Heap, read_with};
 
     fn scan(tiles: &[(&str, &str)]) -> Vec<RewardTile> {
         let reader = Heap::with_scripts(|heap| {
@@ -72,17 +71,11 @@ mod tests {
                     heap.table(&element)
                 })
                 .collect();
-            let elements = heap.list(&elements);
-            let grid = [heap.table_field(ELEMENTS, elements)];
-            let grid = heap.table(&grid);
+            let grid = heap.grid(ELEMENTS, &elements);
             let rewards = heap.function_field(REWARD_SCRIPT, &[grid]);
             vec![heap.table(&[rewards])]
         });
-        reward_screen(
-            &reader,
-            &LuaState::locate(&reader).unwrap().unwrap(),
-            &mut None,
-        )
+        read_with(&reader, reward_screen)
     }
 
     fn reward(slot: u8, path: &str) -> RewardTile {

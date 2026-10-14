@@ -59,6 +59,7 @@ wf-data = { path = "crates/wf-data" }
 wf-market = { path = "crates/wf-market" }
 wf-worldstate = { path = "crates/wf-worldstate" }
 wf-core = { path = "crates/wf-core" }
+wf-mongo = { path = "crates/wf-mongo" }
 
 [workspace.lints.clippy]
 all = { level = "deny", priority = -1 }

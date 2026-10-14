@@ -3,9 +3,9 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::embedded::{SORTIE_BOSSES, SORTIE_MODIFIERS, SortieBoss, lookup};
-use crate::mission_types::{mission_type_name, title_case_key};
-use crate::mongo_date::MongoDate;
+use crate::mission_types::{known_or_title_case, mission_type_name};
 use crate::nodes::node_name;
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,8 +18,8 @@ pub struct RawSortieVariant {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RawSortie {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub boss: String,
     pub variants: Vec<RawSortieVariant>,
 }
@@ -51,29 +51,25 @@ pub fn boss(id: &str) -> Option<&'static SortieBoss> {
 }
 
 pub fn boss_name(id: &str) -> String {
-    match boss(id) {
-        Some(boss) => boss.name.to_owned(),
-        None => title_case_key(id.strip_prefix("SORTIE_BOSS_").unwrap_or(id)),
-    }
+    known_or_title_case(SORTIE_BOSSES, id, "SORTIE_BOSS_", |boss| boss.name)
 }
 
 fn modifier_name(id: &str) -> String {
-    match lookup(SORTIE_MODIFIERS, id) {
-        Some(modifier) => modifier.name.to_owned(),
-        None => title_case_key(id.strip_prefix("SORTIE_MODIFIER_").unwrap_or(id)),
-    }
+    known_or_title_case(SORTIE_MODIFIERS, id, "SORTIE_MODIFIER_", |modifier| {
+        modifier.name
+    })
 }
 
 pub fn current_sortie(sorties: &[RawSortie], now: DateTime<Utc>) -> Option<Sortie> {
     sorties
         .iter()
-        .find(|sortie| now >= sortie.activation.utc() && now < sortie.expiry.utc())
+        .find(|sortie| sortie.window.contains(now))
         .map(|sortie| Sortie {
             boss: sortie.boss.clone(),
             boss_name: boss_name(&sortie.boss),
             faction: boss(&sortie.boss).map(|boss| boss.faction),
-            activation: sortie.activation.utc(),
-            expiry: sortie.expiry.utc(),
+            activation: sortie.window.activation.datetime(),
+            expiry: sortie.window.expiry.datetime(),
             missions: sortie
                 .variants
                 .iter()
@@ -91,16 +87,14 @@ pub fn current_sortie(sorties: &[RawSortie], now: DateTime<Utc>) -> Option<Sorti
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
+    use crate::window::fixtures::{at, window};
 
     #[test]
     fn active_sortie() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1500).unwrap();
+        let now = at(1500);
         let sorties = vec![RawSortie {
-            activation: DateTime::<Utc>::from_timestamp_millis(1000).unwrap().into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(2000).unwrap().into(),
+            window: window(1000, 2000),
             boss: "SORTIE_BOSS_KELA".to_owned(),
             variants: vec![
                 RawSortieVariant {
@@ -145,12 +139,8 @@ mod tests {
 
     #[test]
     fn embedded_tables_sorted() {
-        assert!(SORTIE_BOSSES.windows(2).all(|pair| pair[0].0 < pair[1].0));
-        assert!(
-            SORTIE_MODIFIERS
-                .windows(2)
-                .all(|pair| pair[0].0 < pair[1].0)
-        );
+        assert!(SORTIE_BOSSES.is_sorted_by(|a, b| a.0 < b.0));
+        assert!(SORTIE_MODIFIERS.is_sorted_by(|a, b| a.0 < b.0));
         assert!(
             SORTIE_BOSSES
                 .iter()
@@ -165,10 +155,9 @@ mod tests {
 
     #[test]
     fn no_active_sortie() {
-        let now = DateTime::<Utc>::from_timestamp_millis(0).unwrap();
+        let now = at(0);
         let sorties = vec![RawSortie {
-            activation: DateTime::<Utc>::from_timestamp_millis(1000).unwrap().into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(2000).unwrap().into(),
+            window: window(1000, 2000),
             boss: "SORTIE_BOSS_KELA".to_owned(),
             variants: vec![],
         }];

@@ -7,14 +7,14 @@ use serde::Serialize;
 use tracing::warn;
 
 use crate::mission_types::mission_type_name;
-use crate::mongo_date::MongoDate;
 use crate::nodes::{node_info, node_name};
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ActiveMission {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub node: String,
     pub mission_type: String,
     pub modifier: String,
@@ -25,8 +25,8 @@ pub struct ActiveMission {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct VoidStorm {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub node: String,
     pub active_mission_tier: String,
 }
@@ -118,11 +118,9 @@ pub fn active_fissures(
     storms: &[VoidStorm],
     now: DateTime<Utc>,
 ) -> Vec<Fissure> {
-    let running =
-        |activation: &MongoDate, expiry: &MongoDate| now >= activation.utc() && now < expiry.utc();
     let mut fissures: Vec<Fissure> = missions
         .iter()
-        .filter(|mission| running(&mission.activation, &mission.expiry))
+        .filter(|mission| mission.window.contains(now))
         .map(|mission| Fissure {
             node_id: mission.node.clone(),
             node_name: node_name(&mission.node),
@@ -131,14 +129,14 @@ pub fn active_fissures(
             tier: FissureTier::from_modifier(&mission.modifier),
             steel_path: mission.hard,
             is_storm: false,
-            activation: mission.activation.utc(),
-            expiry: mission.expiry.utc(),
+            activation: mission.window.activation.datetime(),
+            expiry: mission.window.expiry.datetime(),
         })
         .collect();
     fissures.extend(
         storms
             .iter()
-            .filter(|storm| running(&storm.activation, &storm.expiry))
+            .filter(|storm| storm.window.contains(now))
             .map(|storm| {
                 let mission = node_info(&storm.node).map_or("Void Storm", |node| node.kind);
                 Fissure {
@@ -149,8 +147,8 @@ pub fn active_fissures(
                     tier: FissureTier::from_modifier(&storm.active_mission_tier),
                     steel_path: false,
                     is_storm: true,
-                    activation: storm.activation.utc(),
-                    expiry: storm.expiry.utc(),
+                    activation: storm.window.activation.datetime(),
+                    expiry: storm.window.expiry.datetime(),
                 }
             }),
     );
@@ -160,18 +158,12 @@ pub fn active_fissures(
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
+    use crate::window::fixtures::{at, window};
 
     fn mission(modifier: &str, hard: bool, activation_ms: i64, expiry_ms: i64) -> ActiveMission {
         ActiveMission {
-            activation: DateTime::<Utc>::from_timestamp_millis(activation_ms)
-                .unwrap()
-                .into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(expiry_ms)
-                .unwrap()
-                .into(),
+            window: window(activation_ms, expiry_ms),
             node: "SolNode1".to_owned(),
             mission_type: "MT_ARTIFACT".to_owned(),
             modifier: modifier.to_owned(),
@@ -181,7 +173,7 @@ mod tests {
 
     #[test]
     fn active_fissures_by_tier() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1000).unwrap();
+        let now = at(1000);
         let missions = vec![
             mission("VoidT4", false, 0, 2000),
             mission("VoidT1", true, 0, 2000),
@@ -200,14 +192,9 @@ mod tests {
 
     #[test]
     fn void_storm_railjack_fissures() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1000).unwrap();
+        let now = at(1000);
         let storm = |node: &str, tier: &str, activation_ms: i64, expiry_ms: i64| VoidStorm {
-            activation: DateTime::<Utc>::from_timestamp_millis(activation_ms)
-                .unwrap()
-                .into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(expiry_ms)
-                .unwrap()
-                .into(),
+            window: window(activation_ms, expiry_ms),
             node: node.to_owned(),
             active_mission_tier: tier.to_owned(),
         };
@@ -230,7 +217,7 @@ mod tests {
 
     #[test]
     fn unknown_modifier_fissure() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1000).unwrap();
+        let now = at(1000);
         let missions = vec![
             mission("VoidT7", false, 0, 2000),
             mission("VoidT1", false, 0, 2000),

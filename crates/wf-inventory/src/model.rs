@@ -1,8 +1,8 @@
 use serde::de::{DeserializeOwned, Error as _};
 use serde::{Deserialize, Deserializer};
 use serde_json::{Map, Value};
+use wf_mongo::{MongoDate, ObjectId};
 
-use crate::mongo::{MongoDate, ObjectId};
 use crate::riven::RivenFingerprint;
 use crate::{InventoryError, Result};
 
@@ -374,17 +374,14 @@ impl Inventory {
 
 #[cfg(test)]
 mod tests {
-    use super::{EquipmentItem, Inventory};
+    use super::EquipmentItem;
+    use crate::views::tests::patched;
 
     #[test]
     fn entries_without_an_item_type_are_skipped() {
-        let fixture = include_str!("../../../fixtures/inventory.json");
-        let patched = fixture.replacen(
-            '{',
-            r#"{"ShipDecorations":[{"ItemCount":2},{"ItemType":"/Lotus/Types/Items/ShipDecos/TeshinBobbleHead","ItemCount":3}],"#,
-            1,
+        let inventory = patched(
+            r#""ShipDecorations":[{"ItemCount":2},{"ItemType":"/Lotus/Types/Items/ShipDecos/TeshinBobbleHead","ItemCount":3}]"#,
         );
-        let inventory = Inventory::parse(&patched).unwrap();
         assert_eq!(inventory.ship_decorations.len(), 1);
         assert_eq!(inventory.ship_decorations[0].item_count, 3);
     }

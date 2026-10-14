@@ -3,9 +3,9 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::mission_types::mission_type_name;
-use crate::mongo_date::MongoDate;
 use crate::nodes::node_name;
 use crate::sortie::{boss, boss_name};
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -17,8 +17,8 @@ pub struct LiteSortieMission {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct LiteSortie {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub boss: String,
     pub missions: Vec<LiteSortieMission>,
 }
@@ -46,13 +46,13 @@ pub struct ArchonHunt {
 pub fn current_archon_hunt(sorties: &[LiteSortie], now: DateTime<Utc>) -> Option<ArchonHunt> {
     sorties
         .iter()
-        .find(|sortie| now >= sortie.activation.utc() && now < sortie.expiry.utc())
+        .find(|sortie| sortie.window.contains(now))
         .map(|sortie| ArchonHunt {
             boss: sortie.boss.clone(),
             boss_name: boss_name(&sortie.boss),
             faction: boss(&sortie.boss).map(|boss| boss.faction),
-            activation: sortie.activation.utc(),
-            expiry: sortie.expiry.utc(),
+            activation: sortie.window.activation.datetime(),
+            expiry: sortie.window.expiry.datetime(),
             missions: sortie
                 .missions
                 .iter()
@@ -68,16 +68,14 @@ pub fn current_archon_hunt(sorties: &[LiteSortie], now: DateTime<Utc>) -> Option
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
+    use crate::window::fixtures::{at, window};
 
     #[test]
     fn active_hunt() {
-        let now = DateTime::<Utc>::from_timestamp_millis(1500).unwrap();
+        let now = at(1500);
         let sorties = vec![LiteSortie {
-            activation: DateTime::<Utc>::from_timestamp_millis(1000).unwrap().into(),
-            expiry: DateTime::<Utc>::from_timestamp_millis(2000).unwrap().into(),
+            window: window(1000, 2000),
             boss: "SORTIE_BOSS_AMAR".to_owned(),
             missions: vec![
                 LiteSortieMission {

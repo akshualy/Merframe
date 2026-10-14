@@ -1,6 +1,6 @@
 use wf_mem::MemoryReader;
 
-use crate::lua::{LuaState, LuaTable, LuaValue};
+use crate::lua::{LuaState, LuaTable};
 
 const KIOSK_SCRIPT: &str = "SetOnMarkedToSellFunction";
 const CLIP: &str = "mClipName";
@@ -39,11 +39,7 @@ impl DucatKiosk {
             .cached_script(reader, KIOSK_SCRIPT, script)?
             .locals(reader)
         {
-            match local
-                .field(reader, CLIP)
-                .and_then(LuaValue::text)
-                .as_deref()
-            {
+            match local.text(reader, CLIP).as_deref() {
                 Some(GRID_CLIP) if owned.is_none() => {
                     owned = items(reader, local, GRID_ELEMENTS);
                 }
@@ -68,9 +64,8 @@ fn items<R: MemoryReader + ?Sized>(
     let elements = list.field(reader, elements)?.table()?;
     Some(
         elements
-            .items(reader)
+            .tables(reader)
             .into_iter()
-            .filter_map(LuaValue::table)
             .filter_map(|element| item(reader, element))
             .collect(),
     )
@@ -78,8 +73,8 @@ fn items<R: MemoryReader + ?Sized>(
 
 fn item<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<KioskItem> {
     Some(KioskItem {
-        item_type: element.field(reader, FULL_NAME)?.text()?,
-        name: element.field(reader, NAME)?.text()?,
+        item_type: element.text(reader, FULL_NAME)?,
+        name: element.text(reader, NAME)?,
         count: element.field(reader, COUNT)?.whole()?,
         ducats: element.field(reader, PRICE)?.whole()?,
     })
@@ -89,7 +84,7 @@ fn item<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<Kiosk
 mod tests {
     use super::*;
     use crate::fake::FakeReader;
-    use crate::lua::tests::Heap;
+    use crate::lua::tests::{Heap, read_with};
 
     const STOCK: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
     const LINK: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/AkboltoPrimeLink";
@@ -137,10 +132,6 @@ mod tests {
         kiosk_with(owned, marked, false)
     }
 
-    fn read(reader: &FakeReader) -> Option<DucatKiosk> {
-        DucatKiosk::read(reader, &LuaState::locate(reader).unwrap()?, &mut None)
-    }
-
     fn expected((item_type, name, count, ducats): Entry<'_>) -> KioskItem {
         KioskItem {
             item_type: item_type.to_owned(),
@@ -156,7 +147,7 @@ mod tests {
         let link = (LINK, "Akbolto Prime Link", 2, 45);
         let marked = (STOCK, "Braton Prime Stock", 3, 15);
         assert_eq!(
-            read(&kiosk(&[stock, link], &[marked])),
+            read_with(&kiosk(&[stock, link], &[marked]), DucatKiosk::read),
             Some(DucatKiosk {
                 owned: vec![expected(stock), expected(link)],
                 marked: vec![expected(marked)],
@@ -169,7 +160,8 @@ mod tests {
         let stock = (STOCK, "Braton Prime Stock", 7, 15);
         let marked = (STOCK, "Braton Prime Stock", 3, 15);
         assert_eq!(
-            read(&kiosk_with(&[stock], &[marked], true)).map(|kiosk| kiosk.marked),
+            read_with(&kiosk_with(&[stock], &[marked], true), DucatKiosk::read)
+                .map(|kiosk| kiosk.marked),
             Some(vec![expected(marked)])
         );
     }
@@ -178,21 +170,19 @@ mod tests {
     fn nothing_marked() {
         let link = (LINK, "Akbolto Prime Link", 2, 45);
         assert_eq!(
-            read(&kiosk(&[link], &[])).map(|kiosk| kiosk.marked),
+            read_with(&kiosk(&[link], &[]), DucatKiosk::read).map(|kiosk| kiosk.marked),
             Some(Vec::new())
         );
     }
 
     #[test]
     fn empty_grid_is_not_read() {
-        assert_eq!(read(&kiosk(&[], &[])), None);
+        assert_eq!(read_with(&kiosk(&[], &[]), DucatKiosk::read), None);
     }
 
     #[test]
     fn kiosk_closed() {
-        assert_eq!(
-            read(&Heap::with_scripts(|heap| vec![heap.table(&[])])),
-            None
-        );
+        let reader = Heap::with_scripts(|heap| vec![heap.table(&[])]);
+        assert_eq!(read_with(&reader, DucatKiosk::read), None);
     }
 }

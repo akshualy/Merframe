@@ -10,13 +10,13 @@ mod fissure;
 mod flash_sale;
 mod manifest;
 mod mission_types;
-mod mongo_date;
 mod nodes;
 mod prime;
 mod season;
 mod sortie;
 mod syndicate;
 mod void_trader;
+mod window;
 
 pub use archon::{ArchonHunt, ArchonMission};
 pub use circuit::Circuit;
@@ -33,8 +33,8 @@ pub use manifest::ManifestItem;
 pub use mission_types::mission_type_name;
 pub use nodes::{
     SolNode, is_masterable_node, junction_count, junction_mastery_xp, junction_nodes,
-    masterable_node_count, masterable_node_xp_total, masterable_nodes, node_info, node_mastery_xp,
-    node_name,
+    masterable_node_count, masterable_node_xp_total, masterable_nodes, node_and_planet, node_info,
+    node_mastery_xp, node_name,
 };
 pub use prime::{PrimeAccessAvailability, Varzia, VarziaItem};
 pub use season::{ChallengeKind, NightwaveChallenge, NightwaveSeason};
@@ -153,12 +153,13 @@ mod tests {
     use chrono::{DateTime, Utc};
 
     use super::*;
+    use crate::window::fixtures::at;
 
     const FIXTURE: &str = include_str!("../../../fixtures/worldState.json");
     const FIXTURE_NOW_MS: i64 = 1_788_807_069_000;
 
     fn now() -> DateTime<Utc> {
-        DateTime::<Utc>::from_timestamp_millis(FIXTURE_NOW_MS).unwrap()
+        at(FIXTURE_NOW_MS)
     }
 
     #[test]
@@ -208,10 +209,7 @@ mod tests {
     fn fissures_sorted_by_tier() {
         let state = WorldState::parse(FIXTURE).unwrap();
         let fissures = state.fissures(now());
-        let tiers: Vec<_> = fissures.iter().map(|fissure| &fissure.tier).collect();
-        let mut sorted = tiers.clone();
-        sorted.sort();
-        assert_eq!(tiers, sorted);
+        assert!(fissures.is_sorted_by_key(|fissure| &fissure.tier));
     }
 
     #[test]
@@ -271,7 +269,7 @@ mod tests {
     #[test]
     fn expired_daily_deal() {
         let state = WorldState::parse(FIXTURE).unwrap();
-        let long_after = DateTime::<Utc>::from_timestamp_millis(1_800_000_000_000).unwrap();
+        let long_after = at(1_800_000_000_000);
         assert!(state.daily_deals(long_after).is_empty());
     }
 

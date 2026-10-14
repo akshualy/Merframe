@@ -92,6 +92,16 @@ pub fn parse_line(line: &str) -> Option<LogLine> {
 }
 
 #[cfg(test)]
+pub(crate) fn sys_line(time: f64, message: &str) -> LogLine {
+    LogLine {
+        time,
+        channel: Channel::Sys,
+        level: Level::Info,
+        message: message.to_owned(),
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 

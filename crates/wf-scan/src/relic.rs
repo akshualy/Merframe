@@ -1,7 +1,7 @@
 use wf_mem::MemoryReader;
 
 use crate::Result;
-use crate::lua::{LuaState, LuaTable, LuaValue};
+use crate::lua::{LuaState, LuaTable};
 
 const VOID_TEAR: &str = "mVoidTear";
 const MISSION_TIER: &str = "MissionTier";
@@ -16,12 +16,9 @@ pub struct RelicPickerNode {
 
 fn void_tear<R: MemoryReader + ?Sized>(reader: &R, script: LuaTable) -> Option<RelicPickerNode> {
     let tear = script.field(reader, VOID_TEAR)?.table()?;
-    let tier = tear.field(reader, MISSION_TIER)?.text()?;
+    let tier = tear.text(reader, MISSION_TIER)?;
     let void_tier = TIERS.into_iter().find(|t| *t == tier)?;
-    let node = tear
-        .field(reader, SECTOR_NAME)
-        .and_then(LuaValue::text)
-        .filter(|node| !node.is_empty())?;
+    let node = tear.filled_text(reader, SECTOR_NAME)?;
     Some(RelicPickerNode { node, void_tier })
 }
 

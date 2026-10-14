@@ -3,13 +3,13 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::embedded::{ChallengeText, NIGHTWAVE_CHALLENGES, lookup};
-use crate::mongo_date::MongoDate;
+use crate::window::Window;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SeasonChallenge {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub challenge: String,
     #[serde(default)]
     pub daily: bool,
@@ -18,8 +18,8 @@ pub struct SeasonChallenge {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SeasonInfo {
-    pub activation: MongoDate,
-    pub expiry: MongoDate,
+    #[serde(flatten)]
+    pub window: Window,
     pub affiliation_tag: String,
     pub season: u32,
     pub phase: u32,
@@ -128,7 +128,7 @@ pub fn current_season(raw: &SeasonInfo, now: DateTime<Utc>) -> NightwaveSeason {
     let mut challenges: Vec<NightwaveChallenge> = raw
         .active_challenges
         .iter()
-        .filter(|challenge| now >= challenge.activation.utc() && now < challenge.expiry.utc())
+        .filter(|challenge| challenge.window.contains(now))
         .map(|challenge| NightwaveChallenge {
             tag: challenge.challenge.clone(),
             name: challenge_text(&challenge.challenge).map_or_else(
@@ -137,8 +137,8 @@ pub fn current_season(raw: &SeasonInfo, now: DateTime<Utc>) -> NightwaveSeason {
             ),
             description: challenge_text(&challenge.challenge).map(|text| text.description),
             kind: challenge_kind(challenge),
-            activation: challenge.activation.utc(),
-            expiry: challenge.expiry.utc(),
+            activation: challenge.window.activation.datetime(),
+            expiry: challenge.window.expiry.datetime(),
         })
         .collect();
     challenges.sort_by(|left, right| {
@@ -152,26 +152,20 @@ pub fn current_season(raw: &SeasonInfo, now: DateTime<Utc>) -> NightwaveSeason {
         phase: raw.phase,
         affiliation_tag: raw.affiliation_tag.clone(),
         name: season_name(&raw.affiliation_tag, raw.season),
-        activation: raw.activation.utc(),
-        expiry: raw.expiry.utc(),
+        activation: raw.window.activation.datetime(),
+        expiry: raw.window.expiry.datetime(),
         challenges,
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-
     use super::*;
-
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::<Utc>::from_timestamp_millis(millis).unwrap()
-    }
+    use crate::window::fixtures::{at, window};
 
     fn challenge(tag: &str, daily: bool, activation_ms: i64, expiry_ms: i64) -> SeasonChallenge {
         SeasonChallenge {
-            activation: at(activation_ms).into(),
-            expiry: at(expiry_ms).into(),
+            window: window(activation_ms, expiry_ms),
             challenge: tag.to_owned(),
             daily,
         }
@@ -179,8 +173,7 @@ mod tests {
 
     fn season(challenges: Vec<SeasonChallenge>) -> SeasonInfo {
         SeasonInfo {
-            activation: at(0).into(),
-            expiry: at(10_000).into(),
+            window: window(0, 10_000),
             affiliation_tag: "RadioLegionIntermission16Syndicate".to_owned(),
             season: 18,
             phase: 0,
@@ -279,11 +272,7 @@ mod tests {
 
     #[test]
     fn embedded_table_sorted() {
-        assert!(
-            NIGHTWAVE_CHALLENGES
-                .windows(2)
-                .all(|pair| pair[0].0 < pair[1].0)
-        );
+        assert!(NIGHTWAVE_CHALLENGES.is_sorted_by(|a, b| a.0 < b.0));
         assert!(NIGHTWAVE_CHALLENGES.len() > 200);
     }
 

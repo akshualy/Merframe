@@ -3,8 +3,8 @@ use std::borrow::Cow;
 use wf_mem::{GAME_PROCESS, MemoryReader, Region, read_u32_le, read_u64_le};
 
 use crate::Result;
-use crate::chunks::to_usize;
-use crate::roots::{POINTER, image_data, in_heap, words};
+use crate::chunks::read_region;
+use crate::roots::{POINTER, heap_regions, image_data, in_heap, words};
 
 const STRING_TAG: u8 = 6;
 const STRING_HEADER: usize = 24;
@@ -163,6 +163,15 @@ fn value<R: MemoryReader + ?Sized>(reader: &R, slot: &[u8]) -> Option<LuaValue> 
     })
 }
 
+fn values<R: MemoryReader + ?Sized>(reader: &R, slots: &[u8]) -> Vec<LuaValue> {
+    slots
+        .as_chunks::<NODE_KEY>()
+        .0
+        .iter()
+        .filter_map(|slot| value(reader, slot))
+        .collect()
+}
+
 fn key_tag(key: &[u8]) -> Option<u32> {
     slot_tag(key).map(|tag| tag & KEY_TAG_MASK)
 }
@@ -211,6 +220,14 @@ impl LuaTable {
         self.find(reader, |key| key_is(reader, key, name))
     }
 
+    pub fn text<R: MemoryReader + ?Sized>(self, reader: &R, name: &str) -> Option<String> {
+        self.field(reader, name)?.text()
+    }
+
+    pub fn filled_text<R: MemoryReader + ?Sized>(self, reader: &R, name: &str) -> Option<String> {
+        self.text(reader, name).filter(|text| !text.is_empty())
+    }
+
     fn shared<R: MemoryReader + ?Sized>(self, reader: &R) -> Option<LuaTable> {
         self.find(reader, |key| {
             key_tag(key) == Some(SHARED_KEY_TAG) && read_u32_le(key, 0) == Some(SHARED_KEY)
@@ -245,11 +262,13 @@ impl LuaTable {
             .zip(read_u64_le(&header, TABLE_ARRAY))
             .and_then(|(size, array)| reader.read_vec(array, size * NODE_KEY).ok())
             .unwrap_or_default();
-        slots
-            .as_chunks::<NODE_KEY>()
-            .0
-            .iter()
-            .filter_map(|slot| value(reader, slot))
+        values(reader, &slots)
+    }
+
+    pub fn tables<R: MemoryReader + ?Sized>(self, reader: &R) -> Vec<LuaTable> {
+        self.items(reader)
+            .into_iter()
+            .filter_map(LuaValue::table)
             .collect()
     }
 }
@@ -263,17 +282,13 @@ impl LuaFunction {
         {
             return Vec::new();
         }
-        reader
+        let slots = reader
             .read_vec(
                 self.0 + CLOSURE_SLOTS,
                 usize::from(header[CLOSURE_UPVALUES]) * NODE_KEY,
             )
-            .unwrap_or_default()
-            .as_chunks::<NODE_KEY>()
-            .0
-            .iter()
-            .filter_map(|slot| value(reader, slot))
-            .collect()
+            .unwrap_or_default();
+        values(reader, &slots)
     }
 }
 
@@ -289,12 +304,9 @@ impl LuaState {
     pub fn locate<R: MemoryReader + ?Sized>(reader: &R) -> Result<Option<Self>> {
         let regions = reader.regions()?;
         let image = reader.module(GAME_PROCESS)?;
-        let heap: Vec<&Region> = regions
-            .iter()
-            .filter(|region| region.is_anonymous_heap())
-            .collect();
+        let heap = heap_regions(&regions);
         for region in image_data(&regions, &image) {
-            let data = reader.read_vec(region.range.start, to_usize(region.size())?)?;
+            let data = read_region(reader, region)?;
             let found = words(&data)
                 .filter(|(_, thread)| in_heap(&heap, *thread))
                 .find_map(|(_, thread)| Self::at(reader, &heap, thread));
@@ -384,11 +396,7 @@ impl LuaState {
     }
 
     pub fn scripts<R: MemoryReader + ?Sized>(&self, reader: &R) -> Vec<LuaTable> {
-        self.registry
-            .items(reader)
-            .into_iter()
-            .filter_map(LuaValue::table)
-            .collect()
+        self.registry.tables(reader)
     }
 }
 
@@ -486,6 +494,12 @@ pub(crate) mod tests {
             address(at)
         }
 
+        pub(crate) fn grid(&mut self, elements_key: &str, elements: &[u64]) -> u64 {
+            let elements = self.list(elements);
+            let grid = [self.table_field(elements_key, elements)];
+            self.table(&grid)
+        }
+
         pub(crate) fn function_field(&mut self, name: &str, upvalues: &[u64]) -> Field {
             let upvalues: Vec<(u64, u32)> =
                 upvalues.iter().map(|table| (*table, TABLE_TAG)).collect();
@@ -574,10 +588,20 @@ pub(crate) mod tests {
         }
     }
 
+    pub(crate) fn located(reader: &FakeReader) -> LuaState {
+        LuaState::locate(reader).unwrap().unwrap()
+    }
+
+    pub(crate) type Read<T> = fn(&FakeReader, &LuaState, &mut Option<LuaTable>) -> T;
+
+    pub(crate) fn read_with<T>(reader: &FakeReader, read: Read<T>) -> T {
+        read(reader, &located(reader), &mut None)
+    }
+
     #[test]
     fn state_through_image_pointer() {
         let reader = Heap::with_scripts(|heap| vec![heap.table(&[])]);
-        let state = LuaState::locate(&reader).unwrap().unwrap();
+        let state = located(&reader);
         assert!(state.holds(&reader));
         let shared = state.shared(&reader).unwrap();
         assert_eq!(
@@ -593,7 +617,7 @@ pub(crate) mod tests {
             let field = heap.text_field("mName", "Relay");
             vec![heap.table(&[field])]
         });
-        let state = LuaState::locate(&reader).unwrap().unwrap();
+        let state = located(&reader);
         let scripts = state.scripts(&reader);
         assert_eq!(scripts.len(), 1);
         assert_eq!(
@@ -612,7 +636,7 @@ pub(crate) mod tests {
             closed = heap.table(&[previous]);
             vec![heap.table(&[other]), heap.table(&[owner])]
         });
-        let state = LuaState::locate(&reader).unwrap().unwrap();
+        let state = located(&reader);
         let scripts = state.scripts(&reader);
         let (relay, rewards) = (scripts[0], scripts[1]);
 

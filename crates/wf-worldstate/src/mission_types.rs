@@ -1,10 +1,19 @@
 use crate::embedded::{MISSION_TYPES, lookup};
 
 pub fn mission_type_name(id: &str) -> String {
-    match lookup(MISSION_TYPES, id) {
-        Some(name) => (*name).to_owned(),
-        None => title_case_key(id.strip_prefix("MT_").unwrap_or(id)),
-    }
+    known_or_title_case(MISSION_TYPES, id, "MT_", |name| name)
+}
+
+pub fn known_or_title_case<T>(
+    table: &[(&str, T)],
+    id: &str,
+    prefix: &str,
+    name: impl FnOnce(&T) -> &str,
+) -> String {
+    lookup(table, id).map_or_else(
+        || title_case_key(id.strip_prefix(prefix).unwrap_or(id)),
+        |entry| name(entry).to_owned(),
+    )
 }
 
 pub fn title_case_key(key: &str) -> String {
@@ -26,7 +35,7 @@ mod tests {
 
     #[test]
     fn embedded_table_sorted() {
-        assert!(MISSION_TYPES.windows(2).all(|pair| pair[0].0 < pair[1].0));
+        assert!(MISSION_TYPES.is_sorted_by(|a, b| a.0 < b.0));
     }
 
     #[test]

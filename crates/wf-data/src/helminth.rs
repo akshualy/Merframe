@@ -19,12 +19,10 @@ mod tests {
     use std::collections::HashSet;
 
     use super::*;
-
-    const MASTERY_ITEMS: &str = include_str!("../../../fixtures/mastery_items.json");
+    use crate::item::tests::fixture_items;
 
     fn fixture_warframes() -> Vec<Item> {
-        serde_json::from_str::<Vec<Item>>(MASTERY_ITEMS)
-            .unwrap()
+        fixture_items()
             .into_iter()
             .filter(Item::is_warframe)
             .collect()
@@ -70,7 +68,7 @@ mod tests {
 
     #[test]
     fn weapon_has_no_ability() {
-        let items: Vec<Item> = serde_json::from_str(MASTERY_ITEMS).unwrap();
+        let items = fixture_items();
         let braton = items.iter().find(|item| item.name == "Braton").unwrap();
         assert_eq!(helminth_ability(braton), None);
     }

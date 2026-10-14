@@ -1,8 +1,8 @@
 use memchr::memmem;
-use wf_mem::{MemoryReader, Region};
+use wf_mem::{MemoryReader, Region, read_u64_le};
 
 use crate::Result;
-use crate::chunks::{Step, scan_regions, to_usize};
+use crate::chunks::{Step, read_region, scan_regions};
 
 pub const PATH_ANCHOR: &[u8] = b"\\EE.log\0";
 pub const CURSOR_FIELD: usize = 8;
@@ -62,8 +62,7 @@ fn line_heads(pending: &[u8]) -> usize {
 }
 
 fn cursor_at(data: &[u8], field: usize) -> Option<usize> {
-    let bytes = data.get(field..)?.first_chunk::<CURSOR_FIELD>()?;
-    usize::try_from(u64::from_le_bytes(*bytes)).ok()
+    usize::try_from(read_u64_le(data, field)?).ok()
 }
 
 fn text_runs(data: &[u8]) -> impl Iterator<Item = (usize, usize)> {
@@ -125,7 +124,7 @@ pub fn find_log_buffer<R: MemoryReader + ?Sized>(reader: &R) -> Result<Option<Lo
     let Some(region) = anchor_region(reader)? else {
         return Ok(None);
     };
-    let data = reader.read_vec(region.range.start, to_usize(region.size())?)?;
+    let data = read_region(reader, &region)?;
     Ok(locate(&data).map(|found| LogBuffer {
         base: region.range.start + found.base,
         size: found.size,

@@ -76,6 +76,10 @@ pub fn to_usize(value: u64) -> Result<usize> {
     usize::try_from(value).map_err(|_| ScanError::Length(value))
 }
 
+pub fn read_region<R: MemoryReader + ?Sized>(reader: &R, region: &Region) -> Result<Vec<u8>> {
+    Ok(reader.read_vec(region.range.start, to_usize(region.size())?)?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

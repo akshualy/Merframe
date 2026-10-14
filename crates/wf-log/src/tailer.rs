@@ -105,9 +105,18 @@ pub fn read_all(path: &Path) -> Result<Vec<LogLine>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ee_log_fixture_tests::fixture_path;
     use std::io::Write;
     use std::time::Duration;
     use tokio_stream::StreamExt;
+
+    async fn next_line(stream: &mut (impl Stream<Item = Result<LogLine>> + Unpin)) -> LogLine {
+        tokio::time::timeout(Duration::from_secs(5), stream.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap()
+    }
 
     #[tokio::test]
     async fn append_and_truncate() {
@@ -126,12 +135,7 @@ mod tests {
         file.write_all(b"1.0 Sys [Info]: first\n").unwrap();
         file.flush().unwrap();
 
-        let first = tokio::time::timeout(Duration::from_secs(5), stream.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
-        assert_eq!(first.message, "first");
+        assert_eq!(next_line(&mut stream).await.message, "first");
 
         file.write_all(b"2.0 Sys [Info]: sec").unwrap();
         file.flush().unwrap();
@@ -139,12 +143,7 @@ mod tests {
         file.write_all(b"ond\n").unwrap();
         file.flush().unwrap();
 
-        let second = tokio::time::timeout(Duration::from_secs(5), stream.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
-        assert_eq!(second.message, "second");
+        assert_eq!(next_line(&mut stream).await.message, "second");
         drop(file);
 
         std::fs::write(&path, b"").unwrap();
@@ -155,12 +154,7 @@ mod tests {
         file.write_all(b"3.0 Sys [Info]: third\n").unwrap();
         file.flush().unwrap();
 
-        let third = tokio::time::timeout(Duration::from_secs(5), stream.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
-        assert_eq!(third.message, "third");
+        assert_eq!(next_line(&mut stream).await.message, "third");
 
         std::fs::remove_dir_all(&dir).ok();
     }
@@ -188,12 +182,7 @@ mod tests {
         file.write_all(b"\n").unwrap();
         file.flush().unwrap();
 
-        let line = tokio::time::timeout(Duration::from_secs(5), stream.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
-        assert_eq!(line.message, "Köbinn West");
+        assert_eq!(next_line(&mut stream).await.message, "Köbinn West");
 
         std::fs::remove_dir_all(&dir).ok();
     }
@@ -226,12 +215,7 @@ mod tests {
         file.flush().unwrap();
         drop(file);
 
-        let appended = tokio::time::timeout(Duration::from_secs(5), stream.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
-        assert_eq!(appended.message, "appended");
+        assert_eq!(next_line(&mut stream).await.message, "appended");
 
         assert!(
             tokio::time::timeout(Duration::from_millis(500), stream.next())
@@ -261,12 +245,10 @@ mod tests {
             .unwrap();
         file.flush().unwrap();
 
-        let appended = tokio::time::timeout(Duration::from_secs(5), stream.next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
-        assert_eq!(appended.message, "while the game holds the file");
+        assert_eq!(
+            next_line(&mut stream).await.message,
+            "while the game holds the file"
+        );
         drop(file);
 
         std::fs::remove_dir_all(&dir).ok();
@@ -274,11 +256,7 @@ mod tests {
 
     #[test]
     fn read_all_fixture() {
-        let path = std::path::Path::new(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../../fixtures/EE.log"
-        ));
-        let lines = read_all(path).unwrap();
+        let lines = read_all(&fixture_path()).unwrap();
         assert!(!lines.is_empty());
     }
 }

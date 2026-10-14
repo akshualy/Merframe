@@ -15,7 +15,7 @@ pub struct RelicPick {
 
 fn pick<R: MemoryReader + ?Sized>(reader: &R, local: LuaTable) -> Option<RelicPick> {
     let handle = local.field(reader, TYPE)?.userdata()?;
-    let relic_type = local.field(reader, FULL_NAME)?.text()?;
+    let relic_type = local.text(reader, FULL_NAME)?;
     Some(RelicPick { handle, relic_type })
 }
 
@@ -41,7 +41,7 @@ pub fn confirmed_relic<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -
 mod tests {
     use super::*;
     use crate::fake::FakeReader;
-    use crate::lua::tests::Heap;
+    use crate::lua::tests::{Heap, located};
 
     const RELIC: &str = "/Lotus/Types/Game/Projections/T1VoidProjectionCalibanPrimeFBronze";
     const HANDLE: u64 = 0xc784_1df0;
@@ -69,14 +69,10 @@ mod tests {
         })
     }
 
-    fn state(reader: &FakeReader) -> LuaState {
-        LuaState::locate(reader).unwrap().unwrap()
-    }
-
     #[test]
     fn selected_relic_in_open_picker() {
         let reader = game(true, true, None);
-        let lua = state(&reader);
+        let lua = located(&reader);
         assert!(relic_picker_open(&reader, &lua));
         assert_eq!(
             relic_pick(&reader, &lua),
@@ -91,7 +87,7 @@ mod tests {
     #[test]
     fn nothing_selected_yet() {
         let reader = game(true, false, None);
-        let lua = state(&reader);
+        let lua = located(&reader);
         assert!(relic_picker_open(&reader, &lua));
         assert_eq!(relic_pick(&reader, &lua), None);
     }
@@ -99,7 +95,7 @@ mod tests {
     #[test]
     fn confirmed_handle_outlives_picker() {
         let reader = game(false, false, Some(HANDLE));
-        let lua = state(&reader);
+        let lua = located(&reader);
         assert!(!relic_picker_open(&reader, &lua));
         assert_eq!(relic_pick(&reader, &lua), None);
         assert_eq!(confirmed_relic(&reader, &lua), Some(HANDLE));
