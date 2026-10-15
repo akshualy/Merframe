@@ -49,12 +49,20 @@ pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>
             continue;
         };
         write(&state.status).log_file = Some(path.display().to_string());
-        emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+        emit(
+            &app,
+            AppEvent::StatusUpdated(state.status_snapshot()),
+            &state,
+        );
         match wf_log::lines(&path, selection) {
             Ok(stream) => {
                 replay_game_monitor(&app, &state, &path);
                 write(&state.status).log_attached = true;
-                emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+                emit(
+                    &app,
+                    AppEvent::StatusUpdated(state.status_snapshot()),
+                    &state,
+                );
                 pin_mut!(stream);
                 while let Some(line) = stream.next().await {
                     match line {
@@ -82,7 +90,11 @@ pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>
                     }
                 }
                 write(&state.status).log_attached = false;
-                emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+                emit(
+                    &app,
+                    AppEvent::StatusUpdated(state.status_snapshot()),
+                    &state,
+                );
                 warn!("Log stream ended, reattaching in 10 s");
             }
             Err(error) => warn!(%error, "Opening EE.log failed, next attempt in 10 s"),
@@ -118,7 +130,11 @@ pub(super) async fn process_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSt
                 detected = found.is_some(),
                 "Game process changed"
             );
-            emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+            emit(
+                &app,
+                AppEvent::StatusUpdated(state.status_snapshot()),
+                &state,
+            );
             if found.is_some() {
                 state.rescan.notify_one();
             } else {
@@ -344,7 +360,7 @@ fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
         status.trades_remaining = Some(left - 1);
         left - 1
     };
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
     if remaining == 0 {
         market_loop::last_trade_done(app, state);
     }
@@ -621,7 +637,7 @@ where
     F: FnOnce(&Arc<AppState>) -> anyhow::Result<Ingested> + Send + 'static,
 {
     write(&state.status).scanning = true;
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
 
     let owned = Arc::clone(state);
     let outcome = tauri::async_runtime::spawn_blocking(move || ingest(&owned))
@@ -638,7 +654,7 @@ where
             status.scanning = false;
             status.last_scan_error = Some(cause);
             drop(status);
-            emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+            emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
             return false;
         }
     };
@@ -668,10 +684,14 @@ where
         market_loop::last_trade_done(app, state);
     }
 
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
     match ingested {
         Ingested::Newer { events } => {
-            emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
+            emit(
+                app,
+                AppEvent::InventoryUpdated(state.status_snapshot()),
+                state,
+            );
             overlay::on_inventory_updated(app, state);
             state.prices_wake.notify_one();
             dispatch(app, state, events).await;

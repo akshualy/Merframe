@@ -183,6 +183,7 @@ pub async fn market_post_order<R: Runtime>(
             auctions: None,
             at: Utc::now(),
         }),
+        &state,
     );
 
     Ok(posted)

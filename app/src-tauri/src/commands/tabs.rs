@@ -122,7 +122,7 @@ pub async fn toggle_favourite<R: Runtime>(
 ) -> CommandResult<bool> {
     let state = ready(&state).await?;
     let favourite = lock(&state.core).toggle_favourite(&unique_name)?;
-    runtime::emit(&app, AppEvent::FavouriteUpdated);
+    runtime::emit(&app, AppEvent::FavouriteUpdated, &state);
     Ok(favourite)
 }
 

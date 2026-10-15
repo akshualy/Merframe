@@ -341,8 +341,8 @@ mod tests {
     #[test]
     fn fixture_view_panels() {
         let view = view();
-        assert!(!view.fissures.is_empty());
-        assert!(!view.timers.is_empty());
+        assert_ne!(view.fissures, [] as [wf_worldstate::Fissure; 0]);
+        assert_ne!(view.timers, [] as [wf_worldstate::Timer; 0]);
         assert!(view.baro.is_some());
         assert!(view.sortie.is_some());
         assert!(view.archon_hunt.is_some());
@@ -560,8 +560,8 @@ mod tests {
         let catalog = Catalog::from_json(ITEMS, "[]", "[]").unwrap();
         let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
         let view = WorldStateView::build(None, &catalog, None, now, None);
-        assert!(view.fissures.is_empty());
-        assert!(view.timers.is_empty());
+        assert_eq!(view.fissures, [] as [wf_worldstate::Fissure; 0]);
+        assert_eq!(view.timers, [] as [wf_worldstate::Timer; 0]);
         assert!(view.daily_deals.is_empty());
         assert!(view.market_sales.is_empty());
         assert!(view.nightwave.is_none());

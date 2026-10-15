@@ -123,6 +123,10 @@ pub async fn settings_set<R: Runtime>(
     lock(&state.core).set_alert_settings(settings.alerts.clone());
     *write(&state.settings) = settings.clone();
     overlay::apply_from(&app, &state);
+    state
+        .http_server
+        .should_run
+        .send_replace(!settings.enable_http_server);
     Ok(settings)
 }
 

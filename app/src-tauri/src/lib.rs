@@ -4,6 +4,7 @@ pub mod commands;
 pub mod envelope;
 pub mod error;
 mod focus;
+pub mod http_sse;
 pub mod images;
 pub mod market;
 mod market_session;
@@ -21,6 +22,7 @@ use tauri::{Manager, Runtime, Url};
 use tracing::{error, warn};
 use tracing_subscriber::fmt::writer::MakeWriterExt;
 
+use crate::http_sse::spawn_axum_app;
 use crate::state::{AppState, AppStateCell};
 
 pub fn closes_app(label: &str) -> bool {
@@ -95,6 +97,11 @@ async fn publish_state(handle: tauri::AppHandle) {
             if cell.set(Ok(Arc::clone(&state))).is_err() {
                 error!("App state built a second time");
             }
+            spawn_axum_app(
+                state.http_server.app_event.clone(),
+                state.http_server.status.clone(),
+                state.http_server.should_run.subscribe(),
+            );
             overlay::apply_from(&handle, &state);
             runtime::spawn(handle.clone(), state);
         }

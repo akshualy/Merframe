@@ -65,7 +65,7 @@ pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
                 .as_ref()
                 .is_none_or(|last| !last.same_listings(&snapshot))
             {
-                emit(&app, AppEvent::MarketUpdated(snapshot.clone()));
+                emit(&app, AppEvent::MarketUpdated(snapshot.clone()), &state);
                 emitted = Some(snapshot);
             }
         }
@@ -134,7 +134,7 @@ async fn refresh_unread<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let unread = chats.iter().map(|chat| chat.unread_count).sum();
     if read(&state.status).market_unread != unread {
         write(&state.status).market_unread = unread;
-        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+        emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
     }
 }
 

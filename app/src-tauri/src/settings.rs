@@ -78,6 +78,7 @@ pub enum RecommendationRefinement {
     Owned,
 }
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[serde(default)]
@@ -100,6 +101,7 @@ pub struct Settings {
     pub check_for_updates: bool,
     pub force_log_file: bool,
     pub log_file_path: Option<PathBuf>,
+    pub enable_http_server: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -242,6 +244,7 @@ impl Default for Settings {
             check_for_updates: true,
             force_log_file: false,
             log_file_path: None,
+            enable_http_server: false,
         }
     }
 }
@@ -548,6 +551,8 @@ mod tests {
     use std::time::Duration;
     use wf_core::TimerAlerts;
 
+    use crate::settings;
+
     use super::*;
 
     #[test]
@@ -573,7 +578,10 @@ mod tests {
             settings.toasts.toasts_in_game_position,
             ToastPosition::BottomRight
         );
-        assert!(settings.toasts.toasts_in_game_muted.is_empty());
+        assert_eq!(
+            settings.toasts.toasts_in_game_muted,
+            [] as [settings::InGameToast; 0]
+        );
         assert!(settings.overlays.overlays_enabled);
         assert!(settings.overlays.shown.overlay_relic_reward);
         assert!(settings.overlays.shown.overlay_relic_recommendation);
@@ -585,7 +593,10 @@ mod tests {
         );
         assert!(settings.overlays.ducatering.ducatering_most_ducats_first);
         assert_eq!(settings.overlays.ducatering.ducatering_max_plat, 10);
-        assert!(settings.overlays.ducatering.ducatering_hidden.is_empty());
+        assert_eq!(
+            settings.overlays.ducatering.ducatering_hidden,
+            [] as [wf_core::DucateringHidden; 0]
+        );
         assert_eq!(settings.overlays.ducatering.ducatering_hidden_set_plat, 0);
         assert_eq!(
             settings.overlays.placements.overlay_relic_reward_placement,
@@ -626,7 +637,10 @@ mod tests {
             }
         );
         assert!(!settings.alerts.fissure_notifications_enabled);
-        assert!(settings.alerts.fissure_filters.is_empty());
+        assert_eq!(
+            settings.alerts.fissure_filters,
+            [] as [wf_core::FissureFilter; 0]
+        );
         assert_eq!(settings.alerts.timers, TimerAlerts::default());
         assert_eq!(settings.alerts.timer_lead_secs, 180);
     }

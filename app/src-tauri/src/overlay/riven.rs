@@ -117,15 +117,15 @@ fn awaits_cycled_roll(state: &Arc<AppState>, row: &RivenRow) -> bool {
 
 fn hold_cycled_roll<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: &RivenRow) {
     let app = app.clone();
-    let owned = Arc::clone(state);
+    let owned_state = Arc::clone(state);
     let row = row.clone();
     tauri::async_runtime::spawn(async move {
         for tick in 1..=PENDING_TICKS {
             tokio::time::sleep(PENDING_TICK).await;
-            if !awaits_cycled_roll(&owned, &row) {
+            if !awaits_cycled_roll(&owned_state, &row) {
                 return;
             }
-            let scanning = Arc::clone(&owned);
+            let scanning = Arc::clone(&owned_state);
             let wanted = row.clone();
             let found = blocking("read the cycled roll", move || {
                 cycled_roll(&scanning, &wanted)
@@ -143,7 +143,7 @@ fn hold_cycled_roll<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: 
                 tick,
                 "Reroll station shows a new roll"
             );
-            let mut slots = lock(&owned.overlays.state);
+            let mut slots = lock(&owned_state.overlays.state);
             let shown = slots
                 .riven
                 .as_mut()
@@ -160,8 +160,12 @@ fn hold_cycled_roll<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: 
             }
             drop(slots);
             if held {
-                broadcast(&app, &owned);
-                emit(&app, AppEvent::InventoryUpdated(owned.status_snapshot()));
+                broadcast(&app, &owned_state);
+                emit(
+                    &app,
+                    AppEvent::InventoryUpdated(owned_state.status_snapshot()),
+                    &owned_state,
+                );
             }
             return;
         }
@@ -192,7 +196,11 @@ fn settle_choice<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kept: &s
         }
     };
     if applied {
-        emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
+        emit(
+            app,
+            AppEvent::InventoryUpdated(state.status_snapshot()),
+            state,
+        );
     }
 }
 

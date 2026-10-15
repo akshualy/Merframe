@@ -53,7 +53,7 @@ async fn refresh_world_state<R: Runtime>(
     let world = WorldState::parse(&body).context("Parsing the world state")?;
     write(&state.status).world_state_at = Some(now);
     let events = lock(&state.core).ingest_world_state(world, now);
-    emit(app, AppEvent::WorldStateUpdated);
+    emit(app, AppEvent::WorldStateUpdated, state);
     Ok(events)
 }
 
@@ -168,7 +168,7 @@ async fn load_riven_data<R: Runtime>(
     core.set_riven_data(stored.data);
     drop(core);
 
-    emit(app, AppEvent::RivenDataUpdated);
+    emit(app, AppEvent::RivenDataUpdated, state);
     Ok(())
 }
 
@@ -183,7 +183,7 @@ async fn load_price_table<R: Runtime>(
     let Some(table) = client.fetch().await? else {
         state.prices.checked(now);
         debug!("Bulk price table not modified since the last fetch");
-        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+        emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
         return Ok(0);
     };
 
@@ -195,7 +195,7 @@ async fn load_price_table<R: Runtime>(
         "Prices refreshed from the bulk table"
     );
 
-    emit(app, AppEvent::PricesUpdated);
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(app, AppEvent::PricesUpdated, state);
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
     Ok(loaded)
 }

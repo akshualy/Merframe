@@ -117,7 +117,7 @@ async fn presence_session<R: Runtime>(
                         reported = Some(payload.status);
                         let mut presence = write(&state.market_presence);
                         presence.live = reported;
-                        emit(app, AppEvent::MarketPresence(*presence));
+                        emit(app, AppEvent::MarketPresence(*presence), state);
                     }
                     Some(_) => {}
                     None => return Ok(()),

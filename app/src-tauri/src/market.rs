@@ -873,8 +873,8 @@ mod tests {
             include_str!("../../../crates/wf-market/tests/fixtures/auctions_my.json");
         let auctions = wf_market::parse_v1_auctions(AUCTIONS).unwrap();
         let listings = Listings::default();
-        assert!(listings.current().orders.rows.is_empty());
-        assert!(listings.current().auctions.is_empty());
+        assert_eq!(listings.current().orders.rows, []);
+        assert_eq!(listings.current().auctions, []);
 
         let market = Market::new();
         let orders = MarketOrders {
@@ -896,7 +896,7 @@ mod tests {
 
         listings.remember(&core, Some(&MarketOrders::default()), None);
         let own = listings.current();
-        assert!(own.orders.rows.is_empty());
+        assert_eq!(own.orders.rows, []);
         assert_eq!(
             own.auctions.len(),
             2,

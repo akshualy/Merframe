@@ -74,6 +74,7 @@ pub(crate) async fn auto_close<R: Runtime>(
                             quantity: 1,
                             kind: AutoCloseKind::Auction,
                         }),
+                        state,
                     );
                 }
                 Err(error) => warn!(
@@ -121,6 +122,7 @@ pub(crate) async fn auto_close<R: Runtime>(
                         quantity,
                         kind,
                     }),
+                    state,
                 );
             }
             Err(error) => warn!(

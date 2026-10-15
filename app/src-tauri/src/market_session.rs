@@ -19,16 +19,16 @@ pub fn store_token<R: Runtime>(
 
 pub fn record_account<R: Runtime>(
     app: &AppHandle<R>,
-    state: &AppState,
+    state: &Arc<AppState>,
     account: MarketAccount,
 ) -> anyhow::Result<()> {
     let stored = settings::set_account(app, Some(&account));
     write(&state.status).market_account = Some(account);
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
     stored
 }
 
-pub fn clear<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> anyhow::Result<()> {
+pub fn clear<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) -> anyhow::Result<()> {
     let cleared = settings::set_token(app, None).and(settings::set_account(app, None));
     *write(&state.market) = Arc::new(state.anonymous_market());
 
@@ -40,6 +40,6 @@ pub fn clear<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> anyhow::Result
     state
         .listings
         .remember(&state.core, Some(&MarketOrders::default()), Some(&[]));
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
     cleared
 }

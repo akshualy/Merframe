@@ -47,7 +47,7 @@ async fn hide_listings<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, au
     let refresh = market_refresh(state, &slug).await;
     if !refresh.is_empty() {
         let snapshot = market_snapshot(state, refresh).await;
-        emit(app, AppEvent::MarketUpdated(snapshot));
+        emit(app, AppEvent::MarketUpdated(snapshot), state);
     }
 }
 
@@ -63,5 +63,5 @@ fn offline_after_last_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState
     state.market_presence_wake.notify_one();
 
     info!("Last trade of the day completed, warframe.market status set to offline");
-    emit(app, AppEvent::MarketPresence(presence));
+    emit(app, AppEvent::MarketPresence(presence), state);
 }

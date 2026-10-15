@@ -41,6 +41,8 @@ wf-market = { workspace = true, features = ["fetch"] }
 wf-mem = { workspace = true }
 wf-scan = { workspace = true }
 wf-worldstate = { workspace = true, features = ["fetch"] }
+axum.workspace = true
+tokio-stream = { workspace = true, features = ["sync"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 gdk = { workspace = true }
@@ -51,7 +53,13 @@ notify-rust = { workspace = true }
 windows-sys = { workspace = true }
 
 [features]
-bindings = ["dep:ts-rs", "wf-core/bindings", "wf-data/bindings", "wf-market/bindings", "wf-worldstate/bindings"]
+bindings = [
+    "dep:ts-rs",
+    "wf-core/bindings",
+    "wf-data/bindings",
+    "wf-market/bindings",
+    "wf-worldstate/bindings",
+]
 
 [lints]
 workspace = true

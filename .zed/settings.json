@@ -1,19 +1,38 @@
 {
-    "languages": {
-        "JavaScript": {
-            "tab_size": 2,
+    "lsp": {
+        "biome": {
+            "settings": {
+                "config_path": "app/biome.json",
+                "require_config_file": true,
+            },
         },
-        "TypeScript": {
-            "tab_size": 2,
-        },
-        "TSX": {
-            "tab_size": 2,
-        },
-        "JSON": {
-            "tab_size": 2,
-        },
-        "CSS": {
-            "tab_size": 2,
+        "rust-analyzer": {
+            "initialization_options": {
+                "rustfmt": {
+                    "extraArgs": ["+nightly"],
+                },
+            },
         },
     },
+    "languages": {
+        "JavaScript": {
+            "formatter": { "language_server": { "name": "biome" } },
+        },
+        "TypeScript": {
+            "formatter": { "language_server": { "name": "biome" } },
+        },
+        "TSX": {
+            "formatter": { "language_server": { "name": "biome" } },
+        },
+        "JSON": {
+            "formatter": { "language_server": { "name": "biome" } },
+        },
+        "CSS": {
+            "formatter": { "language_server": { "name": "biome" } },
+        },
+        "TOML": {
+            "formatter": "none",
+        },
+    },
+    "tab_size": 4,
 }

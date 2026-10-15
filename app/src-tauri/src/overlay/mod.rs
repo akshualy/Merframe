@@ -731,6 +731,7 @@ fn broadcast<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     emit(
         app,
         AppEvent::OverlayState(Box::new(state.overlays.snapshot())),
+        state,
     );
 }
 

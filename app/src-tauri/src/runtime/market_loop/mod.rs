@@ -36,7 +36,7 @@ fn sign_out<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     if let Err(error) = market_session::clear(app, state) {
         warn!(%error, "Clearing the stored market session failed");
     }
-    emit(app, AppEvent::MarketSessionRejected);
+    emit(app, AppEvent::MarketSessionRejected, state);
 }
 
 struct MarketRefresh {

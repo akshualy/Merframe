@@ -8,7 +8,7 @@ use anyhow::Context;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
-use tokio::sync::{Mutex as AsyncMutex, Notify, SetOnce, watch};
+use tokio::sync::{Mutex as AsyncMutex, Notify, SetOnce, broadcast, watch};
 use tracing::info;
 use wf_core::{
     Catalog, Core, Ducatering, MarketWindow, PriceCache, PriceSource, Snapshot, Store, Turnover,
@@ -18,9 +18,11 @@ use wf_market::{Client, Platform, PriceTable};
 
 use crate::auctions::AuctionCache;
 use crate::focus::GameFocus;
+use crate::http_sse::HttpServerStatus;
 use crate::images::ImageCache;
 use crate::market::{Listings, MarketItems, Presence};
 use crate::overlay::{OverlaySupport, Overlays};
+use crate::runtime::AppEvent;
 use crate::settings::{self, MarketAccount, Settings};
 
 pub const DATA_DIR: &str = "Merframe";
@@ -134,6 +136,32 @@ pub struct QueueSession {
     pub clients: Option<wf_scan::HttpClients>,
 }
 
+#[derive(Debug, Clone)]
+pub struct HttpServer {
+    pub app_event: broadcast::Sender<AppEvent>,
+    pub status: watch::Sender<HttpServerStatus>,
+    pub should_run: watch::Sender<bool>,
+}
+
+impl HttpServer {
+    pub fn with_initial_run_state(initial: bool) -> Self {
+        Self {
+            should_run: watch::Sender::new(initial),
+            ..Default::default()
+        }
+    }
+}
+
+impl Default for HttpServer {
+    fn default() -> Self {
+        Self {
+            app_event: broadcast::channel(256).0,
+            status: watch::Sender::default(),
+            should_run: watch::Sender::default(),
+        }
+    }
+}
+
 pub type Startup = std::result::Result<Arc<AppState>, String>;
 
 pub type AppStateCell = SetOnce<Startup>;
@@ -164,6 +192,7 @@ pub struct AppState {
     pub http: reqwest::Client,
     pub data_dir: PathBuf,
     pub images: ImageCache,
+    pub http_server: HttpServer,
 }
 
 fn anonymous_client(http: &reqwest::Client) -> Client {
@@ -239,6 +268,8 @@ impl AppState {
             ..GameStatus::default()
         };
 
+        let http_server = HttpServer::with_initial_run_state(settings.enable_http_server);
+
         Ok(Self {
             core: Mutex::new(core),
             market: RwLock::new(Arc::new(market)),
@@ -262,6 +293,7 @@ impl AppState {
             prices_wake: Notify::new(),
             overlays: Overlays::default(),
             auctions: AuctionCache::default(),
+            http_server,
             http,
             data_dir,
             images,

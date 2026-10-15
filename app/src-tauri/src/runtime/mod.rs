@@ -79,7 +79,11 @@ async fn bootstrap<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     } else {
         info!(riven_types, "Riven stat tables loaded");
     }
-    emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit(
+        &app,
+        AppEvent::StatusUpdated(state.status_snapshot()),
+        &state,
+    );
 }
 
 async fn load_cached_inventory<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
@@ -107,8 +111,12 @@ async fn load_cached_inventory<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSt
                 taken_at = snapshot.taken_at.to_rfc3339(),
                 "Last inventory snapshot restored from the store"
             );
-            emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
-            emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
+            emit(app, AppEvent::StatusUpdated(state.status_snapshot()), state);
+            emit(
+                app,
+                AppEvent::InventoryUpdated(state.status_snapshot()),
+                state,
+            );
             state.prices_wake.notify_one();
         }
         Ok(None) => debug!("No stored inventory snapshot yet"),
@@ -126,6 +134,7 @@ pub async fn dispatch<R: Runtime>(
         emit(
             app,
             AppEvent::CoreEvent(CoreEventEnvelope::wrap(event.clone())),
+            state,
         );
         overlay::on_core_event(app, state, &event);
         deliver(app, state, &event).await;
@@ -167,7 +176,7 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             }
         }
         CoreEvent::TradeCompleted { trade, .. } => {
-            emit(app, AppEvent::TradesUpdated);
+            emit(app, AppEvent::TradesUpdated, state);
             if settings.market.market_auto_close {
                 auto_close(app, state, trade).await;
             }
@@ -303,10 +312,11 @@ async fn send_webhook(state: &Arc<AppState>, url: &str, message: &str) -> anyhow
     Ok(())
 }
 
-pub fn emit<R: Runtime>(app: &AppHandle<R>, event: AppEvent) {
-    if let Err(error) = app.emit("app-event", event) {
+pub fn emit<R: Runtime>(app: &AppHandle<R>, event: AppEvent, state: &Arc<AppState>) {
+    if let Err(error) = app.emit("app-event", &event) {
         warn!(%error, "Webview emit failed");
     }
+    let _ = state.http_server.app_event.send(event);
 }
 
 pub(crate) async fn blocking<T, F>(task: &'static str, job: F) -> Option<T>
