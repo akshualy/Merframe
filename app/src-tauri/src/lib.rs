@@ -12,6 +12,8 @@ pub mod overlay;
 pub mod runtime;
 pub mod settings;
 pub mod state;
+#[cfg(test)]
+pub(crate) mod test_support;
 
 use std::path::Path;
 use std::sync::Arc;

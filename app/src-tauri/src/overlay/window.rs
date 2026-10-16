@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use tauri::{AppHandle, Manager, Runtime, WebviewUrl, WebviewWindowBuilder};
+use tauri::{
+    AppHandle, LogicalPosition, LogicalSize, Manager, Runtime, WebviewUrl, WebviewWindow,
+    WebviewWindowBuilder,
+};
 use tracing::{debug, warn};
 use wf_log::MonitorRect;
 
@@ -106,6 +109,16 @@ pub(super) fn bounds_for(
         height,
         x: x + screen.x,
         y: y + screen.y,
+    }
+}
+
+pub(super) fn place<R: Runtime>(window: &WebviewWindow<R>, bounds: Bounds, scale: f64) {
+    let placed = window
+        .set_size(LogicalSize::new(bounds.width, bounds.height))
+        .and_then(|()| window.set_position(LogicalPosition::new(bounds.x, bounds.y)))
+        .and_then(|()| window.set_zoom(1.0 / scale));
+    if let Err(error) = placed {
+        warn!(label = window.label(), %error, "Overlay window resize failed");
     }
 }
 

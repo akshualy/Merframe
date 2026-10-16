@@ -3,6 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Context;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
@@ -449,20 +450,50 @@ fn store<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Arc<Store<R>>> {
         .context("Opening the settings store")
 }
 
-pub fn load<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Settings> {
-    match store(app)?.get(SETTINGS_KEY) {
-        Some(value) => serde_json::from_value(value).context("Stored settings are not readable"),
-        None => Ok(Settings::default()),
+fn stored<R: Runtime, T: DeserializeOwned>(
+    app: &AppHandle<R>,
+    key: &str,
+    unreadable: &'static str,
+) -> anyhow::Result<Option<T>> {
+    store(app)?
+        .get(key)
+        .map(serde_json::from_value)
+        .transpose()
+        .context(unreadable)
+}
+
+fn put<R: Runtime>(
+    app: &AppHandle<R>,
+    key: &str,
+    value: Option<serde_json::Value>,
+) -> anyhow::Result<()> {
+    let store = store(app)?;
+    match value {
+        Some(value) => store.set(key, value),
+        None => {
+            store.delete(key);
+        }
+    }
+
+    store.save().context("Writing the settings store")
+}
+
+fn unless_missing<T>(result: std::io::Result<T>) -> std::io::Result<Option<T>> {
+    match result {
+        Ok(value) => Ok(Some(value)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error),
     }
 }
 
+pub fn load<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Settings> {
+    let settings = stored(app, SETTINGS_KEY, "Stored settings are not readable")?;
+    Ok(settings.unwrap_or_default())
+}
+
 pub fn save<R: Runtime>(app: &AppHandle<R>, settings: &Settings) -> anyhow::Result<()> {
-    let store = store(app)?;
-    store.set(
-        SETTINGS_KEY,
-        serde_json::to_value(settings).context("Serializing the settings")?,
-    );
-    store.save().context("Writing the settings store")
+    let value = serde_json::to_value(settings).context("Serializing the settings")?;
+    put(app, SETTINGS_KEY, Some(value))
 }
 
 fn token_path<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<PathBuf> {
@@ -471,24 +502,24 @@ fn token_path<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<PathBuf> {
 
 pub fn token<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<String>> {
     let path = token_path(app)?;
-    match std::fs::read_to_string(&path) {
-        Ok(token) => Ok(Some(token)),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => moved_token(app, &path),
-        Err(error) => Err(error).with_context(|| format!("Reading {}", path.display())),
+    let token = unless_missing(std::fs::read_to_string(&path))
+        .with_context(|| format!("Reading {}", path.display()))?;
+    match token {
+        Some(token) => Ok(Some(token)),
+        None => moved_token(app, &path),
     }
 }
 
 fn moved_token<R: Runtime>(app: &AppHandle<R>, path: &Path) -> anyhow::Result<Option<String>> {
-    let store = store(app)?;
-    let Some(token) = store
+    let Some(token) = store(app)?
         .get(LEGACY_TOKEN_KEY)
         .and_then(|value| value.as_str().map(str::to_owned))
     else {
         return Ok(None);
     };
+
     write_token(path, &token)?;
-    store.delete(LEGACY_TOKEN_KEY);
-    store.save().context("Writing the settings store")?;
+    put(app, LEGACY_TOKEN_KEY, None)?;
     tracing::info!("Session token moved to its own file");
     Ok(Some(token))
 }
@@ -497,11 +528,9 @@ pub fn set_token<R: Runtime>(app: &AppHandle<R>, token: Option<&str>) -> anyhow:
     let path = token_path(app)?;
     match token {
         Some(token) => write_token(&path, token),
-        None => match std::fs::remove_file(&path) {
-            Ok(()) => Ok(()),
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(error) => Err(error).with_context(|| format!("Removing {}", path.display())),
-        },
+        None => unless_missing(std::fs::remove_file(&path))
+            .map(|_| ())
+            .with_context(|| format!("Removing {}", path.display())),
     }
 }
 
@@ -518,29 +547,18 @@ fn write_token(path: &Path, token: &str) -> anyhow::Result<()> {
 }
 
 pub fn account<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<MarketAccount>> {
-    match store(app)?.get(ACCOUNT_KEY) {
-        Some(value) => serde_json::from_value(value)
-            .map(Some)
-            .context("Stored market account is not readable"),
-        None => Ok(None),
-    }
+    stored(app, ACCOUNT_KEY, "Stored market account is not readable")
 }
 
 pub fn set_account<R: Runtime>(
     app: &AppHandle<R>,
     account: Option<&MarketAccount>,
 ) -> anyhow::Result<()> {
-    let store = store(app)?;
-    match account {
-        Some(account) => store.set(
-            ACCOUNT_KEY,
-            serde_json::to_value(account).context("Serializing the market account")?,
-        ),
-        None => {
-            store.delete(ACCOUNT_KEY);
-        }
-    }
-    store.save().context("Writing the settings store")
+    let value = account
+        .map(serde_json::to_value)
+        .transpose()
+        .context("Serializing the market account")?;
+    put(app, ACCOUNT_KEY, value)
 }
 
 #[cfg(test)]

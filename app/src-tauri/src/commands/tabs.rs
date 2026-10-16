@@ -20,9 +20,7 @@ pub async fn inventory_tab(state: Shared<'_>) -> CommandResult<InventoryTab> {
 #[tauri::command]
 pub async fn foundry_tab(state: Shared<'_>) -> CommandResult<FoundryTab> {
     let state = ready(&state).await?;
-    let include_founders = read(&state.settings)
-        .mastery_options(MasteryOrdering::default())
-        .include_founders_items;
+    let include_founders = read(&state.settings).inventory.founders_choice();
     compute(state, move |core| {
         core.foundry_tab(include_founders, Utc::now())
     })
@@ -55,9 +53,7 @@ pub async fn mastery_tab(
 #[tauri::command]
 pub async fn resources_tab(state: Shared<'_>, query: ResourceQuery) -> CommandResult<ResourcesTab> {
     let state = ready(&state).await?;
-    let include_founders = read(&state.settings)
-        .mastery_options(MasteryOrdering::default())
-        .include_founders_items;
+    let include_founders = read(&state.settings).inventory.founders_choice();
     compute(state, move |core| {
         core.resources_tab(&query, include_founders, Utc::now())
     })

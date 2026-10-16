@@ -1,35 +1,56 @@
 use std::sync::Arc;
 
 use anyhow::Context;
+use tracing::warn;
 use wf_mem::{MemoryReader, open_pid};
 use wf_scan::{LuaState, LuaTable};
 
 use super::blocking;
 use crate::state::{AppState, read};
 
-pub(super) struct Attached {
-    pub(super) reader: Arc<dyn MemoryReader>,
-    pub(super) lua: LuaState,
+pub(crate) struct Attached {
+    pub(crate) reader: Arc<dyn MemoryReader>,
+    pub(crate) lua: LuaState,
 }
 
 impl Attached {
-    pub(super) fn holds(&self) -> bool {
+    fn holds(&self) -> bool {
         self.lua.holds(self.reader.as_ref())
     }
 }
 
-pub(super) fn game_pid(state: &AppState) -> anyhow::Result<u32> {
-    read(&state.status).pid.context("The game is not running")
-}
-
-pub(crate) fn open_game(state: &AppState) -> anyhow::Result<Box<dyn MemoryReader>> {
-    open_pid(game_pid(state)?).context("Attaching to the game process")
+pub(crate) fn open_game(state: &AppState) -> anyhow::Result<(u32, Box<dyn MemoryReader>)> {
+    let pid = read(&state.status).pid.context("The game is not running")?;
+    let reader = open_pid(pid).context("Attaching to the game process")?;
+    Ok((pid, reader))
 }
 
 pub(super) fn attach(state: &AppState) -> anyhow::Result<Attached> {
-    let reader: Arc<dyn MemoryReader> = Arc::from(open_game(state)?);
+    let (_, reader) = open_game(state)?;
+    let reader: Arc<dyn MemoryReader> = Arc::from(reader);
     let lua = LuaState::locate(reader.as_ref())?.context("The game's Lua state was not found")?;
     Ok(Attached { reader, lua })
+}
+
+pub(crate) fn reattach(state: &AppState, cached: Option<Attached>) -> anyhow::Result<Attached> {
+    match cached.filter(Attached::holds) {
+        Some(attached) => Ok(attached),
+        None => attach(state),
+    }
+}
+
+pub(super) async fn attach_or_warn(
+    state: &Arc<AppState>,
+    consequence: &'static str,
+) -> Option<Attached> {
+    let owned = Arc::clone(state);
+    match blocking("attach to the game", move || attach(&owned)).await? {
+        Ok(attached) => Some(attached),
+        Err(error) => {
+            warn!(?error, "{consequence}");
+            None
+        }
+    }
 }
 
 pub(super) async fn read_screen<T, F>(

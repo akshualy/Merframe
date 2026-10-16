@@ -10,17 +10,19 @@ use futures_util::pin_mut;
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tokio::sync::watch;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 use wf_core::{
-    CoreEvent, Ducatering, DucateringStep, ScannedKiosk, ScannedKioskItem, ScannedRewards,
+    Core, CoreEvent, Ducatering, DucateringStep, ScannedKiosk, ScannedKioskItem, ScannedRewards,
     ScannedTrade, ScannedTradeItem,
 };
 use wf_log::Event as LogEvent;
-use wf_mem::{GAME_PROCESS, MemError, MemoryReader, open_pid};
+use wf_mem::{GAME_PROCESS, MemError, MemoryReader};
 use wf_scan::{DucatKiosk, HttpClients, InventoryBuffer, LuaState, LuaTable, TradeScreen};
 
-use super::attach::{Attached, attach, game_pid, read_screen};
-use super::{AppEvent, blocking, dispatch, emit, market_loop};
+use super::attach::{Attached, attach_or_warn, open_game, read_screen, reattach};
+use super::{
+    AppEvent, blocking, dispatch, emit, emit_status, market_loop, try_blocking, update_status,
+};
 use crate::overlay;
 use crate::state::{AppState, InventorySource, QueueSession, lock, read, write};
 
@@ -48,13 +50,13 @@ pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>
             tokio::time::sleep(Duration::from_secs(10)).await;
             continue;
         };
-        write(&state.status).log_file = Some(path.display().to_string());
-        emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+        update_status(&app, &state, |status| {
+            status.log_file = Some(path.display().to_string());
+        });
         match wf_log::lines(&path, selection) {
             Ok(stream) => {
                 replay_game_monitor(&app, &state, &path);
-                write(&state.status).log_attached = true;
-                emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+                update_status(&app, &state, |status| status.log_attached = true);
                 pin_mut!(stream);
                 while let Some(line) = stream.next().await {
                     match line {
@@ -81,8 +83,7 @@ pub(super) async fn log_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>
                         Err(error) => warn!(%error, "EE.log line was unreadable, skipped"),
                     }
                 }
-                write(&state.status).log_attached = false;
-                emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+                update_status(&app, &state, |status| status.log_attached = false);
                 warn!("Log stream ended, reattaching in 10 s");
             }
             Err(error) => warn!(%error, "Opening EE.log failed, next attempt in 10 s"),
@@ -118,7 +119,7 @@ pub(super) async fn process_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSt
                 detected = found.is_some(),
                 "Game process changed"
             );
-            emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+            emit_status(&app, &state);
             if found.is_some() {
                 state.rescan.notify_one();
             } else {
@@ -186,17 +187,14 @@ async fn handle_log_event<R: Runtime>(
         event,
         LogEvent::SquadRewardInfoComplete | LogEvent::RelicRewardsShown
     );
-    let owned = Arc::clone(state);
-    let handled = blocking("handle log event", move || {
-        let mut core = lock(&owned.core);
+    let handled = core_events(app, state, "log event", move |core| {
         core.handle_log_event(&event, Utc::now())
     })
     .await;
-    match handled {
-        Some(Ok(events)) => dispatch(app, state, events).await,
-        Some(Err(error)) => warn!(%error, "Core rejected log event"),
-        None => {}
+    if let Err(error) = handled {
+        warn!(%error, "Core rejected the log event");
     }
+
     let started = scan_rewards && lock(&state.core).start_reward_scan();
     if started {
         let app = app.clone();
@@ -210,18 +208,32 @@ async fn handle_reward_screen<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSta
     let Some(screen) = scan_reward_screen(state).await else {
         return;
     };
-    let owned = Arc::clone(state);
-    let handled = blocking("handle reward screen", move || {
-        lock(&owned.core).handle_reward_screen(Utc::now(), generation, screen)
+
+    let handled = core_events(app, state, "scanned rewards", move |core| {
+        core.handle_reward_screen(Utc::now(), generation, screen)
     })
     .await;
-    match handled {
-        Some(Ok(events)) => dispatch(app, state, events).await,
-        Some(Err(error)) => {
-            warn!(%error, generation, "Core rejected the scanned rewards");
-        }
-        None => {}
+    if let Err(error) = handled {
+        warn!(%error, generation, "Core rejected the scanned rewards");
     }
+}
+
+async fn core_events<R, F>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    input: &'static str,
+    call: F,
+) -> wf_core::Result<()>
+where
+    R: Runtime,
+    F: FnOnce(&mut Core) -> wf_core::Result<Vec<CoreEvent>> + Send + 'static,
+{
+    let owned = Arc::clone(state);
+    if let Some(events) = blocking(input, move || call(&mut lock(&owned.core))).await {
+        dispatch(app, state, events?).await;
+    }
+
+    Ok(())
 }
 
 fn watch_relic_picker(state: &Arc<AppState>) {
@@ -336,39 +348,17 @@ async fn completed_trade(
     None
 }
 
-fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    let remaining = {
-        let mut status = write(&state.status);
-        let Some(left) = status.trades_remaining.filter(|left| *left > 0) else {
-            return;
-        };
-        status.trades_remaining = Some(left - 1);
-        left - 1
-    };
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
-    if remaining == 0 {
-        market_loop::last_trade_done(app, state);
-    }
-}
-
 async fn watch_trade<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
     open: &mut watch::Receiver<bool>,
 ) {
-    let owned = Arc::clone(state);
-    let Attached { reader, lua } =
-        match blocking("attach to the game", move || attach(&owned)).await {
-            Some(Ok(attached)) => attached,
-            Some(Err(error)) => {
-                warn!(
-                    ?error,
-                    "Trade screen not watched, the trade is not recorded"
-                );
-                return;
-            }
-            None => return,
-        };
+    let Some(Attached { reader, lua }) =
+        attach_or_warn(state, "Trade screen not watched, the trade is not recorded").await
+    else {
+        return;
+    };
+
     let completed = completed_trade(&reader, lua, open);
     let screen = match tokio::time::timeout(TRADE_WATCH_LIFETIME, completed).await {
         Ok(Some(screen)) => screen,
@@ -384,33 +374,13 @@ async fn watch_trade<R: Runtime>(
             return;
         }
     };
-    let owned = Arc::clone(state);
-    let handled = blocking("record trade", move || {
-        lock(&owned.core).handle_trade_screen(&screen, Utc::now())
+
+    let handled = core_events(app, state, "completed trade", move |core| {
+        core.handle_trade_screen(&screen, Utc::now())
     })
     .await;
-    match handled {
-        Some(Ok(events)) => {
-            for event in &events {
-                if let CoreEvent::TradeCompleted { trade, .. } = event {
-                    info!(
-                        offered = trade.offered.len(),
-                        received = trade.received.len(),
-                        plat = trade.plat,
-                        "Trade completed"
-                    );
-                    debug!(
-                        offered = ?trade.offered,
-                        received = ?trade.received,
-                        "Trade items"
-                    );
-                    count_trade(app, state);
-                }
-            }
-            dispatch(app, state, events).await;
-        }
-        Some(Err(error)) => warn!(%error, "Core rejected the completed trade"),
-        None => {}
+    if let Err(error) = handled {
+        warn!(%error, "Core rejected the completed trade");
     }
 }
 
@@ -471,19 +441,15 @@ async fn watch_kiosk<R: Runtime>(
     state: &Arc<AppState>,
     open: &mut watch::Receiver<bool>,
 ) {
-    let owned = Arc::clone(state);
-    let Attached { reader, lua } =
-        match blocking("attach to the game", move || attach(&owned)).await {
-            Some(Ok(attached)) => attached,
-            Some(Err(error)) => {
-                warn!(
-                    ?error,
-                    "Ducat Kiosk not watched, Ducatering does not advance"
-                );
-                return;
-            }
-            None => return,
-        };
+    let Some(Attached { reader, lua }) = attach_or_warn(
+        state,
+        "Ducat Kiosk not watched, Ducatering does not advance",
+    )
+    .await
+    else {
+        return;
+    };
+
     let filter = {
         let settings = read(&state.settings);
         if !overlay::enabled(&settings, overlay::Kind::Ducatering) {
@@ -530,10 +496,7 @@ pub(super) async fn ducatering_task<R: Runtime>(app: AppHandle<R>, state: Arc<Ap
 }
 
 fn relic_picker(state: &AppState, cached: Option<Attached>) -> (Picker, Option<Attached>) {
-    let Some(attached) = cached
-        .filter(Attached::holds)
-        .or_else(|| attach(state).ok())
-    else {
+    let Ok(attached) = reattach(state, cached) else {
         return (Picker::Closed, None);
     };
 
@@ -559,15 +522,8 @@ fn reward_screen(
 }
 
 async fn scan_reward_screen(state: &Arc<AppState>) -> Option<ScannedRewards> {
-    let owned = Arc::clone(state);
     let Attached { reader, lua } =
-        match blocking("attach to the game", move || attach(&owned)).await? {
-            Ok(attached) => attached,
-            Err(error) => {
-                warn!(?error, "Reward screen read from game memory failed");
-                return None;
-            }
-        };
+        attach_or_warn(state, "Reward screen read from game memory failed").await?;
     let mut seen = ScannedRewards::default();
     let mut script = None;
     for _ in 0..REWARD_TICKS {
@@ -626,25 +582,18 @@ where
     R: Runtime,
     F: FnOnce(&Arc<AppState>) -> anyhow::Result<Ingested> + Send + 'static,
 {
-    write(&state.status).scanning = true;
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    update_status(app, state, |status| status.scanning = true);
 
     let owned = Arc::clone(state);
-    let outcome = tauri::async_runtime::spawn_blocking(move || ingest(&owned))
-        .await
-        .map_err(anyhow::Error::from)
-        .flatten();
-
-    let ingested = match outcome {
+    let ingested = match try_blocking(move || ingest(&owned)).await {
         Ok(ingested) => ingested,
         Err(error) => {
             let cause = format!("{error:#}");
             warn!(cause, "Inventory not ingested");
-            let mut status = write(&state.status);
-            status.scanning = false;
-            status.last_scan_error = Some(cause);
-            drop(status);
-            emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+            update_status(app, state, |status| {
+                status.scanning = false;
+                status.last_scan_error = Some(cause);
+            });
             return false;
         }
     };
@@ -656,8 +605,7 @@ where
             core.latest_snapshot().cloned(),
         )
     };
-    let last_trade_done = {
-        let mut status = write(&state.status);
+    let last_trade_done = update_status(app, state, |status| {
         status.scanning = false;
         status.last_scan_at = Some(Utc::now());
         status.last_scan_error = None;
@@ -669,12 +617,11 @@ where
             status.trades_remaining.is_some_and(|left| left > 0) && trades_remaining == Some(0);
         status.trades_remaining = trades_remaining;
         done
-    };
+    });
     if last_trade_done {
         market_loop::last_trade_done(app, state);
     }
 
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
     match ingested {
         Ingested::Newer { events } => {
             emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
@@ -719,8 +666,7 @@ fn http_clients(
 }
 
 fn ingest_window(state: &Arc<AppState>, window: Duration) -> anyhow::Result<Ingested> {
-    let pid = game_pid(state)?;
-    let reader = open_pid(pid).context("Attaching to the game process")?;
+    let (pid, reader) = open_game(state)?;
     let clients = http_clients(state, pid, reader.as_ref())?;
     let Some(buffer) = clients.await_inventory(reader.as_ref(), window) else {
         debug!(

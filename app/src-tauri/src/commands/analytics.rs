@@ -1,10 +1,9 @@
 use wf_core::MarketWindow;
 
-use super::market::unlisted_items;
+use super::market::listed_items;
 use super::{Shared, ready, since};
 use crate::analytics::{self, MarketMover, TradeAnalytics};
 use crate::error::CommandResult;
-use crate::market;
 use crate::state::lock;
 
 #[tauri::command]
@@ -13,9 +12,7 @@ pub async fn market_movers(
     window: MarketWindow,
 ) -> CommandResult<Vec<MarketMover>> {
     let state = ready(&state).await?;
-    let items = market::market_items(&state)
-        .await
-        .ok_or_else(unlisted_items)?;
+    let items = listed_items(&state).await?;
     let turnover = state.prices.turnover(window);
     let core = lock(&state.core);
     Ok(analytics::market_movers(&items, core.items(), &turnover))
@@ -27,9 +24,7 @@ pub async fn trade_analytics(
     since_ms: Option<i64>,
 ) -> CommandResult<TradeAnalytics> {
     let state = ready(&state).await?;
-    let items = market::market_items(&state)
-        .await
-        .ok_or_else(unlisted_items)?;
+    let items = listed_items(&state).await?;
     let core = lock(&state.core);
     let trades = core.store().trades(since(since_ms))?;
     Ok(analytics::trade_analytics(

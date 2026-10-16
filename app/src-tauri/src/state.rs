@@ -276,6 +276,13 @@ impl AppState {
         anonymous_client(&self.http)
     }
 
+    pub fn market_slug(&self) -> Option<String> {
+        read(&self.status)
+            .market_account
+            .as_ref()
+            .map(|account| account.slug.clone())
+    }
+
     pub fn status_snapshot(&self) -> GameStatus {
         let mut status = read(&self.status).clone();
         status.price_table_at = self.prices.checked_at();

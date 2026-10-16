@@ -6,10 +6,8 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
 use wf_core::{KeptRoll, RivenRow, riven_display_name, riven_kept_roll};
 
-use super::{
-    Kind, Marks, PendingAnswer, RivenTrigger, attached_game, broadcast, enabled, show, since,
-};
-use crate::runtime::{AppEvent, blocking, emit};
+use super::{Kind, Marks, PendingAnswer, RivenTrigger, enabled, show, since, update_slots};
+use crate::runtime::{self, AppEvent, blocking, emit};
 use crate::state::{AppState, lock, read};
 
 const PURCHASE_DIALOG_WINDOW: f64 = 2.0;
@@ -62,18 +60,20 @@ fn lua_read<T>(
         &mut Option<wf_scan::LuaTable>,
     ) -> Option<T>,
 ) -> Option<T> {
-    let reader = attached_game(state)?;
-    let mut located = lock(&state.overlays.lua);
-    if !located.is_some_and(|lua| lua.holds(reader.as_ref())) {
-        *located = match wf_scan::LuaState::locate(reader.as_ref()) {
-            Ok(found) => found,
-            Err(error) => {
-                warn!(%error, "Lua state read from game memory failed");
-                None
-            }
-        };
-    }
-    read(reader.as_ref(), located.as_ref()?, &mut lock(script))
+    let mut game = lock(&state.overlays.game);
+    let attached = match runtime::reattach(state, game.take()) {
+        Ok(attached) => game.insert(attached),
+        Err(_) if crate::state::read(&state.status).pid.is_none() => {
+            debug!("Riven screen not read, the game is not running");
+            return None;
+        }
+        Err(error) => {
+            warn!(?error, "Riven screen not read from game memory");
+            return None;
+        }
+    };
+
+    read(attached.reader.as_ref(), &attached.lua, &mut lock(script))
 }
 
 fn station_read(state: &Arc<AppState>) -> Option<wf_scan::StationRiven> {
@@ -107,12 +107,19 @@ fn cycled_roll(state: &Arc<AppState>, row: &RivenRow) -> Option<RivenRow> {
     Some(cycled)
 }
 
-fn awaits_cycled_roll(state: &Arc<AppState>, row: &RivenRow) -> bool {
+fn shown_roll<T>(state: &AppState, inspect: impl FnOnce(&RivenRow) -> T) -> Option<T> {
     lock(&state.overlays.state)
         .riven
         .as_ref()
         .and_then(|trigger| trigger.before.as_ref())
-        .is_some_and(|before| before.weapon_path == row.weapon_path && before.pending.is_none())
+        .map(inspect)
+}
+
+fn awaits_cycled_roll(state: &Arc<AppState>, row: &RivenRow) -> bool {
+    shown_roll(state, |before| {
+        before.weapon_path == row.weapon_path && before.pending.is_none()
+    })
+    .unwrap_or(false)
 }
 
 fn hold_cycled_roll<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: &RivenRow) {
@@ -143,39 +150,33 @@ fn hold_cycled_roll<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: 
                 tick,
                 "Reroll station shows a new roll"
             );
-            let mut slots = lock(&owned.overlays.state);
-            let shown = slots
-                .riven
-                .as_mut()
-                .and_then(|trigger| trigger.before.as_mut());
-            let held = match shown {
-                Some(shown) if shown.weapon_path == cycled.weapon_path => {
-                    *shown = cycled;
-                    true
+            let held = update_slots(&app, &owned, |slots| {
+                let shown = slots
+                    .riven
+                    .as_mut()
+                    .and_then(|trigger| trigger.before.as_mut());
+                match shown {
+                    Some(shown) if shown.weapon_path == cycled.weapon_path => {
+                        *shown = cycled;
+                        true
+                    }
+                    _ => false,
                 }
-                _ => false,
-            };
+            });
             if held {
-                slots.seq += 1;
-            }
-            drop(slots);
-            if held {
-                broadcast(&app, &owned);
                 emit(&app, AppEvent::InventoryUpdated(owned.status_snapshot()));
             }
+
             return;
         }
     });
 }
 
 fn settle_choice<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kept: &str) {
-    let shown = lock(&state.overlays.state)
-        .riven
-        .as_ref()
-        .and_then(|trigger| trigger.before.clone());
-    let Some(shown) = shown else {
+    let Some(shown) = shown_roll(state, RivenRow::clone) else {
         return;
     };
+
     let riven = riven_display_name(&shown);
     let applied = match riven_kept_roll(&shown, kept) {
         Some(KeptRoll::Offered) => {
@@ -317,12 +318,9 @@ fn settle_after_choice<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
             if !lock(&owned.overlays.marks).choice_made {
                 return;
             }
-            let shown = lock(&owned.overlays.state)
-                .riven
-                .as_ref()
-                .and_then(|trigger| trigger.before.clone())
-                .filter(|shown| shown.pending.is_some());
-            let Some(shown) = shown else {
+            let Some(shown) =
+                shown_roll(&owned, RivenRow::clone).filter(|shown| shown.pending.is_some())
+            else {
                 lock(&owned.overlays.marks).choice_made = false;
                 return;
             };

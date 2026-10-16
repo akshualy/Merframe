@@ -5,15 +5,12 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
 use wf_market::MarketError;
 
-use super::{
-    MARKET_SIGNED_OUT_POLL, market_refresh, market_snapshot, refresh_failed, sign_out,
-    signed_in_slug,
-};
-use crate::market::MarketSnapshot;
+use super::{MARKET_SIGNED_OUT_POLL, market_refresh, refresh_failed, sign_out};
+use crate::market::{MarketSnapshot, market_snapshot};
 use crate::market_session;
-use crate::runtime::{AppEvent, emit};
+use crate::runtime::{AppEvent, emit, update_status};
 use crate::settings::MarketAccount;
-use crate::state::{AppState, lock, read, write};
+use crate::state::{AppState, lock, read};
 
 pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut failures: u32 = 0;
@@ -31,7 +28,7 @@ pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
         let interval = poll_interval(read(&state.settings).market_poll_interval(), since_activity);
 
         let checked_recently = verified_at.is_some_and(|at| at.elapsed() < Duration::from_hours(5));
-        let slug = match signed_in_slug(&state) {
+        let slug = match state.market_slug() {
             Some(slug) if checked_recently => Some(slug),
             known => {
                 let checked = checked_session(&app, &state, known.is_some()).await;
@@ -54,7 +51,8 @@ pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppSta
         }
 
         if !refresh.is_empty() {
-            let snapshot = market_snapshot(&state, refresh).await;
+            let snapshot =
+                market_snapshot(&state, refresh.orders.as_deref(), refresh.auctions).await;
             debug!(
                 orders = snapshot.orders.as_ref().map(|orders| orders.rows.len()),
                 auctions = snapshot.auctions.as_ref().map(Vec::len),
@@ -133,8 +131,7 @@ async fn refresh_unread<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
 
     let unread = chats.iter().map(|chat| chat.unread_count).sum();
     if read(&state.status).market_unread != unread {
-        write(&state.status).market_unread = unread;
-        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+        update_status(app, state, |status| status.market_unread = unread);
     }
 }
 

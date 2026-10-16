@@ -23,9 +23,9 @@ mod market_loop;
 
 use feeds::{price_task, world_state_task};
 use game::{ducatering_task, inventory_task, kiosk_task, log_task, process_task, trade_task};
-use market_loop::{auto_close, market_presence_task, market_task};
+use market_loop::{auto_close, last_trade_done, market_presence_task, market_task};
 
-pub(crate) use attach::open_game;
+pub(crate) use attach::{Attached, open_game, reattach};
 pub use game::acquire;
 pub use market_loop::MarketAutoClose;
 pub(crate) use market_loop::trade_side;
@@ -79,35 +79,33 @@ async fn bootstrap<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     } else {
         info!(riven_types, "Riven stat tables loaded");
     }
-    emit(&app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit_status(&app, &state);
 }
 
 async fn load_cached_inventory<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let owned = Arc::clone(state);
-    let loaded = tauri::async_runtime::spawn_blocking(move || {
+    let loaded = try_blocking(move || {
         lock(&owned.core)
             .load_snapshot()
             .context("Loading the stored inventory")
     })
-    .await
-    .map_err(anyhow::Error::from)
-    .flatten();
+    .await;
     match loaded {
         Ok(Some(snapshot)) => {
-            let mut status = write(&state.status);
-            status.source = InventorySource::Cached;
-            status.remember_snapshot(&snapshot);
-            status.trades_remaining = lock(&state.core)
+            let trades_remaining = lock(&state.core)
                 .inventory()
                 .map(|inventory| inventory.trades_remaining);
-            drop(status);
             info!(
                 snapshot = snapshot.id.0,
                 last_sync = snapshot.last_sync_oid,
                 taken_at = snapshot.taken_at.to_rfc3339(),
                 "Last inventory snapshot restored from the store"
             );
-            emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+            update_status(app, state, |status| {
+                status.source = InventorySource::Cached;
+                status.remember_snapshot(&snapshot);
+                status.trades_remaining = trades_remaining;
+            });
             emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
             state.prices_wake.notify_one();
         }
@@ -142,19 +140,19 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             {
                 return;
             }
-            let notice = Notice::conversation(player);
-            if settings.notifications.windows_notifications_enabled
-                && let Err(error) = show(app, &notice.title, &notice.body, &settings).await
-            {
-                warn!(?error, player, "Conversation notification not shown");
-            }
-            if settings.discord.discord_notifications_enabled {
-                let message = settings
-                    .discord
-                    .discord_message_template
-                    .replace("{tenno}", player);
-                post_webhook(state, settings.discord.discord_webhook.as_deref(), message).await;
-            }
+
+            let discord = &settings.discord;
+            let message = discord
+                .discord_notifications_enabled
+                .then(|| discord.discord_message_template.replace("{tenno}", player));
+            alert(
+                app,
+                state,
+                &settings,
+                &Notice::conversation(player),
+                message,
+            )
+            .await;
         }
         CoreEvent::RelicRewardScreen { screen, .. } => {
             if settings.copy_relic_rewards {
@@ -167,14 +165,30 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             }
         }
         CoreEvent::TradeCompleted { trade, .. } => {
+            info!(
+                offered = trade.offered.len(),
+                received = trade.received.len(),
+                plat = trade.plat,
+                "Trade completed"
+            );
+            debug!(
+                offered = ?trade.offered,
+                received = ?trade.received,
+                "Trade items"
+            );
+            count_trade(app, state);
             emit(app, AppEvent::TradesUpdated);
             if settings.market.market_auto_close {
                 auto_close(app, state, trade).await;
             }
         }
         CoreEvent::FissureAlert { fissure } => {
-            let mirrored = settings.discord.discord_fissure_alerts;
-            alert(app, state, &settings, &Notice::fissure(fissure), mirrored).await;
+            let notice = Notice::fissure(fissure);
+            let message = settings
+                .discord
+                .discord_fissure_alerts
+                .then(|| notice.webhook_message());
+            alert(app, state, &settings, &notice, message).await;
         }
         CoreEvent::TimerAlert {
             name,
@@ -182,11 +196,31 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             remaining_secs,
             ..
         } => {
-            let mirrored = settings.discord.discord_timer_alerts;
             let notice = Notice::timer(name, next_state, *remaining_secs);
-            alert(app, state, &settings, &notice, mirrored).await;
+            let message = settings
+                .discord
+                .discord_timer_alerts
+                .then(|| notice.webhook_message());
+            alert(app, state, &settings, &notice, message).await;
         }
         CoreEvent::InventoryUpdated(_) => {}
+    }
+}
+
+fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    let remaining = {
+        let mut status = write(&state.status);
+        let Some(left) = status.trades_remaining.filter(|left| *left > 0) else {
+            return;
+        };
+
+        status.trades_remaining = Some(left - 1);
+        left - 1
+    };
+
+    emit_status(app, state);
+    if remaining == 0 {
+        last_trade_done(app, state);
     }
 }
 
@@ -195,7 +229,7 @@ async fn alert<R: Runtime>(
     state: &Arc<AppState>,
     settings: &Settings,
     notice: &Notice,
-    mirrored: bool,
+    webhook: Option<String>,
 ) {
     if settings.notifications.windows_notifications_enabled
         && let Err(error) = show(app, &notice.title, &notice.body, settings).await
@@ -205,9 +239,9 @@ async fn alert<R: Runtime>(
             notice.title, notice.body, "Game event notification not shown"
         );
     }
-    if mirrored {
-        let webhook = settings.discord.discord_webhook.as_deref();
-        post_webhook(state, webhook, notice.webhook_message()).await;
+
+    if let Some(message) = webhook {
+        post_webhook(state, settings.discord.discord_webhook.as_deref(), message).await;
     }
 }
 
@@ -309,6 +343,23 @@ pub fn emit<R: Runtime>(app: &AppHandle<R>, event: AppEvent) {
     }
 }
 
+pub(crate) fn update_status<R: Runtime, T>(
+    app: &AppHandle<R>,
+    state: &AppState,
+    change: impl FnOnce(&mut GameStatus) -> T,
+) -> T {
+    let mut guard = write(&state.status);
+    let outcome = change(&mut guard);
+    drop(guard);
+
+    emit_status(app, state);
+    outcome
+}
+
+pub(crate) fn emit_status<R: Runtime>(app: &AppHandle<R>, state: &AppState) {
+    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+}
+
 pub(crate) async fn blocking<T, F>(task: &'static str, job: F) -> Option<T>
 where
     T: Send + 'static,
@@ -321,4 +372,15 @@ where
             None
         }
     }
+}
+
+pub(crate) async fn try_blocking<T, F>(job: F) -> anyhow::Result<T>
+where
+    T: Send + 'static,
+    F: FnOnce() -> anyhow::Result<T> + Send + 'static,
+{
+    tauri::async_runtime::spawn_blocking(job)
+        .await
+        .map_err(anyhow::Error::from)
+        .flatten()
 }

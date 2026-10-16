@@ -2,12 +2,11 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use wf_core::Catalog;
+use wf_core::{Catalog, Core, ItemTable};
 use wf_data::store_item_to_type;
-use wf_inventory::Inventory;
 use wf_worldstate::{
     ArchonHunt, BaroStatus, Circuit, DailyDeal, Fissure, MarketSale, NightwaveSeason, Sortie,
-    Timer, Varzia, WorldState,
+    Timer, Varzia,
 };
 
 use super::{Shared, ready};
@@ -122,30 +121,31 @@ fn baro_group_of(item: Option<&wf_data::Item>) -> &'static str {
     }
 }
 
-fn baro_offer_name(catalog: &Catalog, item_type: &str) -> String {
-    if let Some((relic, _)) = catalog.relic_by_unique_name(item_type) {
-        return format!("{} Relic", relic.name);
+fn baro_offer_name(items: &ItemTable, item_type: &str) -> String {
+    if let Some(record) = items.lookup(item_type) {
+        return record.name.clone();
     }
+
     if item_type.ends_with("/MummyQuestKeyBlueprint") {
         return "Sands of Inaros Blueprint".to_owned();
     }
+
     if item_type.contains("/AvatarImages/") {
         return "Icon".to_owned();
     }
+
     if item_type.contains("/Boosters/") {
         return "Booster".to_owned();
     }
-    "Other".to_owned()
+
+    items.name(item_type)
 }
 
-fn baro_manifest(
-    catalog: &Catalog,
-    inventory: Option<&Inventory>,
-    baro: Option<&BaroStatus>,
-) -> Vec<BaroGroup> {
+fn baro_manifest(core: &Core, baro: Option<&BaroStatus>) -> Vec<BaroGroup> {
     let Some(BaroStatus::Present { items, .. }) = baro else {
         return Vec::new();
     };
+
     let mut groups: Vec<BaroGroup> = ["Mods", "Weapons", "Cosmetics", "Others"]
         .into_iter()
         .map(|name| BaroGroup {
@@ -158,21 +158,18 @@ fn baro_manifest(
         if item_type.ends_with("/BaroTreasureBox") {
             continue;
         }
-        let known = catalog.item(&item_type);
-        let group = baro_group_of(known);
-        let name = known.map_or_else(
-            || baro_offer_name(catalog, &item_type),
-            |item| item.name.clone(),
-        );
+
+        let group = baro_group_of(core.catalog().item(&item_type));
         if let Some(target) = groups.iter_mut().find(|target| target.name == group) {
             target.items.push(BaroOffer {
-                name,
+                name: baro_offer_name(core.items(), &item_type),
                 ducats: offer.ducats,
                 credits: offer.credits,
-                owned: inventory.map(|inventory| inventory.owns(&item_type)),
+                owned: core.inventory().map(|inventory| inventory.owns(&item_type)),
             });
         }
     }
+
     for group in &mut groups {
         group.items.sort_by(|a, b| a.name.cmp(&b.name));
     }
@@ -180,42 +177,40 @@ fn baro_manifest(
     groups
 }
 
-fn darvo_deals(catalog: &Catalog, deals: Vec<DailyDeal>) -> Vec<DarvoDeal> {
+fn export_item_name(core: &Core, item_type: &str) -> Option<String> {
+    core.catalog().item(&store_item_to_type(item_type))?;
+
+    Some(core.items().name(item_type))
+}
+
+fn darvo_deals(items: &ItemTable, deals: Vec<DailyDeal>) -> Vec<DarvoDeal> {
     deals
         .into_iter()
-        .map(|deal| {
-            let item_type = store_item_to_type(&deal.store_item);
-            let name = catalog
-                .item(&item_type)
-                .map_or_else(|| item_type.clone(), |item| item.name.clone());
-            DarvoDeal {
-                name,
-                discount_percent: deal.discount_percent,
-                original_price: deal.original_price,
-                sale_price: deal.sale_price,
-                amount_total: deal.amount_total,
-                amount_sold: deal.amount_sold,
-                expiry: deal.expiry,
-            }
+        .map(|deal| DarvoDeal {
+            name: items.name(&deal.store_item),
+            discount_percent: deal.discount_percent,
+            original_price: deal.original_price,
+            sale_price: deal.sale_price,
+            amount_total: deal.amount_total,
+            amount_sold: deal.amount_sold,
+            expiry: deal.expiry,
         })
         .collect()
 }
 
-fn market_offers(
-    catalog: &Catalog,
-    inventory: Option<&Inventory>,
-    sales: Vec<MarketSale>,
-) -> Vec<MarketOffer> {
+fn market_offers(core: &Core, sales: Vec<MarketSale>) -> Vec<MarketOffer> {
     let mut offers: Vec<MarketOffer> = sales
         .into_iter()
         .filter_map(|sale| {
             let owned = match sale.package_name {
                 Some(_) => None,
-                None => inventory.map(|inventory| inventory.owns(&sale.type_name)),
+                None => core
+                    .inventory()
+                    .map(|inventory| inventory.owns(&sale.type_name)),
             };
             let name = sale
                 .package_name
-                .or_else(|| catalog.item(&sale.type_name).map(|item| item.name.clone()))?;
+                .or_else(|| export_item_name(core, &sale.type_name))?;
             Some(MarketOffer {
                 name,
                 discount_percent: sale.discount_percent,
@@ -230,17 +225,15 @@ fn market_offers(
     offers
 }
 
-fn prime_resurgence(catalog: &Catalog, varzia: Varzia) -> PrimeResurgence {
+fn prime_resurgence(core: &Core, varzia: Varzia) -> PrimeResurgence {
     let mut offerings: Vec<ResurgenceOffering> = varzia
         .items
         .iter()
         .filter_map(|item| {
-            catalog
-                .item(&store_item_to_type(&item.item_type))
-                .map(|known| ResurgenceOffering {
-                    name: known.name.clone(),
-                    regal_aya: item.regal_aya,
-                })
+            Some(ResurgenceOffering {
+                name: export_item_name(core, &item.item_type)?,
+                regal_aya: item.regal_aya,
+            })
         })
         .collect();
     offerings.sort_by(|a, b| a.name.cmp(&b.name));
@@ -253,14 +246,8 @@ fn prime_resurgence(catalog: &Catalog, varzia: Varzia) -> PrimeResurgence {
 }
 
 impl WorldStateView {
-    pub fn build(
-        world: Option<&WorldState>,
-        catalog: &Catalog,
-        inventory: Option<&Inventory>,
-        now: DateTime<Utc>,
-        fetched_at: Option<DateTime<Utc>>,
-    ) -> Self {
-        let Some(world) = world else {
+    pub fn build(core: &Core, now: DateTime<Utc>, fetched_at: Option<DateTime<Utc>>) -> Self {
+        let Some(world) = core.world() else {
             return Self {
                 fissures: Vec::new(),
                 baro: None,
@@ -276,22 +263,23 @@ impl WorldStateView {
                 fetched_at,
             };
         };
+
         let baro = world.baro(now);
         Self {
             fissures: world.fissures(now),
-            baro_manifest: baro_manifest(catalog, inventory, baro.as_ref()),
+            baro_manifest: baro_manifest(core, baro.as_ref()),
             baro,
             sortie: world.sortie(now),
             archon_hunt: world.archon_hunt(now),
             timers: world.timers(now),
-            daily_deals: darvo_deals(catalog, world.daily_deals(now)),
-            market_sales: market_offers(catalog, inventory, world.market_sales(now)),
+            daily_deals: darvo_deals(core.items(), world.daily_deals(now)),
+            market_sales: market_offers(core, world.market_sales(now)),
             circuit: world
                 .circuit(now)
-                .map(|circuit| named_circuit(catalog, &circuit)),
+                .map(|circuit| named_circuit(core.catalog(), &circuit)),
             prime_resurgence: world
                 .varzia(now)
-                .map(|varzia| prime_resurgence(catalog, varzia)),
+                .map(|varzia| prime_resurgence(core, varzia)),
             nightwave: world.season(now),
             fetched_at,
         }
@@ -302,11 +290,8 @@ impl WorldStateView {
 pub async fn worldstate(state: Shared<'_>) -> CommandResult<WorldStateView> {
     let state = ready(&state).await?;
     let fetched_at = read(&state.status).world_state_at;
-    let core = lock(&state.core);
     Ok(WorldStateView::build(
-        core.world(),
-        core.catalog(),
-        core.inventory(),
+        &lock(&state.core),
         Utc::now(),
         fetched_at,
     ))
@@ -319,6 +304,7 @@ mod tests {
     use wf_worldstate::WorldState;
 
     use super::*;
+    use crate::test_support::{core_with, empty_catalog};
 
     const FIXTURE: &str = include_str!("../../../../fixtures/worldState.json");
     const INVENTORY: &str = include_str!("../../../../fixtures/inventory.json");
@@ -331,11 +317,16 @@ mod tests {
         "tradable": false
     }]"#;
 
+    fn core_at(catalog: Catalog, world: &str, now: DateTime<Utc>) -> Core {
+        let mut core = core_with(catalog);
+        core.ingest_world_state(WorldState::parse(world).unwrap(), now);
+        core
+    }
+
     fn view() -> WorldStateView {
-        let world = WorldState::parse(FIXTURE).unwrap();
         let catalog = Catalog::from_json(ITEMS, "[]", "[]").unwrap();
         let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
-        WorldStateView::build(Some(&world), &catalog, None, now, Some(now))
+        WorldStateView::build(&core_at(catalog, FIXTURE, now), now, Some(now))
     }
 
     #[test]
@@ -402,11 +393,11 @@ mod tests {
              "EndDate":{"$date":{"$numberLong":"1788900000000"}}}
         ]}"#;
 
-        let world = WorldState::parse(SALES).unwrap();
         let catalog = Catalog::from_json(CATALOG, "[]", "[]").unwrap();
-        let inventory = Inventory::parse(INVENTORY).unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
-        let view = WorldStateView::build(Some(&world), &catalog, Some(&inventory), now, None);
+        let mut core = core_at(catalog, SALES, now);
+        core.ingest_inventory(INVENTORY, now).unwrap();
+        let view = WorldStateView::build(&core, now, None);
         let offers: Vec<(&str, u32, Option<bool>)> = view
             .market_sales
             .iter()
@@ -477,10 +468,9 @@ mod tests {
         const RELICS: &str = r#"[{"uniqueName":"/Lotus/Types/Game/Projections/T4VoidProjectionEBronze",
             "name":"Axi A1 Intact","category":"Relics","type":"Relic","tradable":true,"rewards":[]}]"#;
 
-        let world = WorldState::parse(PRESENT).expect("world state");
         let catalog = Catalog::from_json(CATALOG, RELICS, "[]").unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
-        let view = WorldStateView::build(Some(&world), &catalog, None, now, Some(now));
+        let view = WorldStateView::build(&core_at(catalog, PRESENT, now), now, Some(now));
         let groups: Vec<(&str, Vec<&str>)> = view
             .baro_manifest
             .iter()
@@ -504,7 +494,7 @@ mod tests {
                 (
                     "Others",
                     vec![
-                        "Axi A1 Relic",
+                        "Axi A1 Relic (Intact)",
                         "Booster",
                         "Ducats",
                         "Sands of Inaros Blueprint"
@@ -529,11 +519,10 @@ mod tests {
               {"ItemType":"/Lotus/StoreItems/Upgrades/Skins/Sigils/PrismaSigil","PrimePrice":200,"RegularPrice":100000}
             ]}]}"#;
 
-        let world = WorldState::parse(PRESENT).unwrap();
-        let catalog = Catalog::from_json("[]", "[]", "[]").unwrap();
-        let inventory = Inventory::parse(INVENTORY).unwrap();
         let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
-        let view = WorldStateView::build(Some(&world), &catalog, Some(&inventory), now, None);
+        let mut core = core_at(empty_catalog(), PRESENT, now);
+        core.ingest_inventory(INVENTORY, now).unwrap();
+        let view = WorldStateView::build(&core, now, None);
         let owned: Vec<Option<bool>> = view.baro_manifest[0]
             .items
             .iter()
@@ -559,7 +548,7 @@ mod tests {
     fn empty_view_before_fetch() {
         let catalog = Catalog::from_json(ITEMS, "[]", "[]").unwrap();
         let now = DateTime::from_timestamp_millis(FIXTURE_NOW_MS).unwrap();
-        let view = WorldStateView::build(None, &catalog, None, now, None);
+        let view = WorldStateView::build(&core_with(catalog), now, None);
         assert!(view.fissures.is_empty());
         assert!(view.timers.is_empty());
         assert!(view.daily_deals.is_empty());

@@ -3,7 +3,8 @@ use std::sync::Arc;
 use tauri::{AppHandle, Runtime};
 use tracing::{info, warn};
 
-use super::{market_refresh, market_snapshot, signed_in_slug};
+use super::market_refresh;
+use crate::market::market_snapshot;
 use crate::runtime::{AppEvent, emit};
 use crate::state::{AppState, read, write};
 
@@ -22,7 +23,7 @@ pub(crate) fn last_trade_done<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSta
 }
 
 async fn hide_listings<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, auctions: bool) {
-    let Some(slug) = signed_in_slug(state) else {
+    let Some(slug) = state.market_slug() else {
         return;
     };
 
@@ -46,7 +47,7 @@ async fn hide_listings<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, au
 
     let refresh = market_refresh(state, &slug).await;
     if !refresh.is_empty() {
-        let snapshot = market_snapshot(state, refresh).await;
+        let snapshot = market_snapshot(state, refresh.orders.as_deref(), refresh.auctions).await;
         emit(app, AppEvent::MarketUpdated(snapshot));
     }
 }

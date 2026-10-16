@@ -21,9 +21,13 @@ pub enum MarketCategory {
     Misc,
 }
 
+pub(crate) fn has_tag(item: &Item, tag: &str) -> bool {
+    item.tags.iter().any(|owned| owned == tag)
+}
+
 impl MarketCategory {
     pub(crate) fn of(item: &Item) -> Self {
-        let tagged = |tag: &str| item.tags.iter().any(|owned| owned == tag);
+        let tagged = |tag| has_tag(item, tag);
         if tagged("component") || tagged("blueprint") || item.slug.contains("kavasa") {
             return Self::Parts;
         }
@@ -336,16 +340,34 @@ pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Marke
     })
 }
 
+pub(crate) async fn market_snapshot(
+    state: &Arc<AppState>,
+    orders: Option<&[Order]>,
+    auctions: Option<Vec<Auction>>,
+) -> MarketSnapshot {
+    let orders = match orders {
+        Some(orders) => order_rows(state, orders).await,
+        None => None,
+    };
+    state
+        .listings
+        .remember(&state.core, orders.as_ref(), auctions.as_deref());
+
+    MarketSnapshot {
+        orders,
+        auctions,
+        at: Utc::now(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
-    use chrono::{DateTime, Utc};
     use serde_json::{Value, json};
-    use wf_core::{AlertSettings, Catalog, Core, PriceCache, PriceSource, Store};
-    use wf_market::{Item, ItemLocalization, Order, OrderType};
+    use wf_core::{Catalog, Core, PriceSource};
+    use wf_market::{Item, Order};
 
     use super::*;
+    use crate::test_support::{core_with, empty_catalog, market_item, moment, order};
 
     const INVENTORY: &str = include_str!("../../../fixtures/inventory.json");
     const ITEMS: &str = include_str!("../../../crates/wf-data/tests/fixtures/items.json");
@@ -373,28 +395,8 @@ mod tests {
 
     fn item(slug: &str, name: &str, tags: &[&str], max_rank: Option<u32>) -> Item {
         Item {
-            id: format!("id-{slug}"),
-            slug: slug.to_owned(),
-            game_ref: String::new(),
-            tags: tags.iter().map(|tag| (*tag).to_owned()).collect(),
             max_rank,
-            subtypes: None,
-            max_amber_stars: None,
-            max_cyan_stars: None,
-            tradable: Some(true),
-            bulk_tradable: None,
-            vaulted: None,
-            ducats: None,
-            rarity: None,
-            i18n: HashMap::from([(
-                "en".to_owned(),
-                ItemLocalization {
-                    name: name.to_owned(),
-                    description: None,
-                    icon: String::new(),
-                    thumb: format!("thumbs/{slug}.png"),
-                },
-            )]),
+            ..market_item(slug, name, tags)
         }
     }
 
@@ -409,32 +411,6 @@ mod tests {
             game_ref: game_ref.to_owned(),
             ..item(slug, name, tags, max_rank)
         }
-    }
-
-    fn order(slug: &str, quantity: u32, rank: Option<u32>) -> Order {
-        Order {
-            id: format!("order-{slug}"),
-            order_type: OrderType::Sell,
-            platinum: 20,
-            quantity,
-            per_trade: None,
-            subtype: None,
-            rank,
-            amber_stars: None,
-            cyan_stars: None,
-            visible: true,
-            updated_at: moment(),
-            item_id: format!("id-{slug}"),
-            user: None,
-        }
-    }
-
-    fn empty_catalog() -> Catalog {
-        Catalog::from_json("[]", "[]", "[]").unwrap()
-    }
-
-    fn moment() -> DateTime<Utc> {
-        DateTime::from_timestamp(1_757_410_800, 0).unwrap()
     }
 
     fn market_list() -> Vec<Item> {
@@ -550,13 +526,7 @@ mod tests {
 
     impl Market {
         fn new() -> Self {
-            let mut core = Core::new(
-                Store::in_memory().unwrap(),
-                catalog(),
-                Arc::new(PriceCache::default()),
-                AlertSettings::default(),
-            )
-            .unwrap();
+            let mut core = core_with(catalog());
             core.ingest_inventory(&inventory(), moment()).unwrap();
             let items = market_list();
             core.index_market(&items);
@@ -742,13 +712,7 @@ mod tests {
 
     #[test]
     fn nothing_owned_without_an_inventory() {
-        let mut core = Core::new(
-            Store::in_memory().unwrap(),
-            catalog(),
-            Arc::new(PriceCache::default()),
-            AlertSettings::default(),
-        )
-        .unwrap();
+        let mut core = core_with(catalog());
         let barrel = listed(
             "braton_prime_barrel",
             "Braton Prime Barrel",

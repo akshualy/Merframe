@@ -10,7 +10,7 @@ use wf_core::CoreEvent;
 use wf_market::{Etagged, PriceTable, RivenData, bulk_prices, bulk_riven_data};
 use wf_worldstate::WorldState;
 
-use super::{AppEvent, RIVEN_DATA_KEY, dispatch, emit};
+use super::{AppEvent, RIVEN_DATA_KEY, dispatch, emit, emit_status, try_blocking};
 use crate::market;
 use crate::state::{AppState, lock, read, write};
 
@@ -116,15 +116,13 @@ pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppStat
 
 async fn stored_riven_data(state: &Arc<AppState>) -> Option<StoredRivenData> {
     let owned = Arc::clone(state);
-    let loaded = tauri::async_runtime::spawn_blocking(move || {
+    let loaded = try_blocking(move || {
         lock(&owned.core)
             .store()
             .setting::<StoredRivenData>(RIVEN_DATA_KEY)
             .context("Reading the stored riven data")
     })
-    .await
-    .map_err(anyhow::Error::from)
-    .flatten();
+    .await;
     match loaded {
         Ok(stored) => {
             if stored.is_none() {
@@ -183,7 +181,7 @@ async fn load_price_table<R: Runtime>(
     let Some(table) = client.fetch().await? else {
         state.prices.checked(now);
         debug!("Bulk price table not modified since the last fetch");
-        emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+        emit_status(app, state);
         return Ok(0);
     };
 
@@ -196,6 +194,6 @@ async fn load_price_table<R: Runtime>(
     );
 
     emit(app, AppEvent::PricesUpdated);
-    emit(app, AppEvent::StatusUpdated(state.status_snapshot()));
+    emit_status(app, state);
     Ok(loaded)
 }

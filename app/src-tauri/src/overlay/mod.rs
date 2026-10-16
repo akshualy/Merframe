@@ -25,7 +25,8 @@ mod window;
 pub use riven::riven_item_type;
 #[cfg(target_os = "linux")]
 pub use session::adopt_xwayland;
-pub use session::{OverlaySupport, probe, uses_windows};
+use session::uses_windows;
+pub use session::{OverlaySupport, probe};
 
 use relic::{
     recommendation_after_relic, recommendation_stays, recommendation_suppressed, requiem_mission,
@@ -35,7 +36,7 @@ use riven::{
     arm_station_answer, on_dialog_answer, purchase_dialog_closes, riven_shows, show_linked_riven,
     show_station_selection, station_closes,
 };
-use window::{bounds_for, logical, open, park, retire, reveal, screen_of};
+use window::{Bounds, Screen, bounds_for, logical, open, park, place, retire, reveal, screen_of};
 
 pub const KINDS: [Kind; 5] = [
     Kind::RelicReward,
@@ -105,6 +106,25 @@ pub fn enabled(settings: &Settings, kind: Kind) -> bool {
 
 fn window_shows(only_while_game_active: bool, focused: Option<bool>, due: bool) -> bool {
     due && !(only_while_game_active && focused == Some(false))
+}
+
+fn windowed(state: &AppState, settings: &Settings) -> bool {
+    uses_windows(
+        settings.overlays.overlay_mode,
+        &read(&state.status).overlay_support,
+    )
+}
+
+fn window_bounds(screen: Screen, kind: Kind, settings: &Settings) -> Bounds {
+    let rows = settings.overlays.overlay_recommendation_count;
+    logical(
+        bounds_for(kind, placement_of(settings, kind), rows, screen),
+        screen.scale,
+    )
+}
+
+fn next_ticket(ticket: &AtomicU64) -> u64 {
+    ticket.fetch_add(1, Ordering::Relaxed) + 1
 }
 
 fn placement_of(settings: &Settings, kind: Kind) -> OverlayPlacement {
@@ -229,7 +249,7 @@ fn since(mark: Option<f64>, at: f64) -> Option<f64> {
 #[derive(Default)]
 pub struct Overlays {
     relic_picker: Mutex<wf_scan::RelicPicker>,
-    lua: Mutex<Option<wf_scan::LuaState>>,
+    game: Mutex<Option<runtime::Attached>>,
     station_script: Mutex<Option<wf_scan::LuaTable>>,
     dialog_script: Mutex<Option<wf_scan::LuaTable>>,
     state: Mutex<OverlayState>,
@@ -314,11 +334,7 @@ pub fn on_log_event<R: Runtime>(
                 marks.after_relic = recommendation_after_relic(&marks, at);
                 marks.recommendation = Some(at);
             }
-            let ticket = state
-                .overlays
-                .recommendation_ticket
-                .fetch_add(1, Ordering::Relaxed)
-                + 1;
+            let ticket = next_ticket(&state.overlays.recommendation_ticket);
             scan_recommendation(app, state, ticket);
         }
         LogEvent::InputMappingReset => {
@@ -352,7 +368,7 @@ pub fn on_log_event<R: Runtime>(
                 }
                 marks.riven = Some(at);
             }
-            let ticket = state.overlays.riven_ticket.fetch_add(1, Ordering::Relaxed) + 1;
+            let ticket = next_ticket(&state.overlays.riven_ticket);
             show_linked_riven(app, state, item_type, ticket);
         }
         LogEvent::RivenRerollScreenLoaded => {
@@ -382,7 +398,7 @@ pub fn on_log_event<R: Runtime>(
 
 fn attached_game(state: &AppState) -> Option<Box<dyn wf_mem::MemoryReader>> {
     match runtime::open_game(state) {
-        Ok(reader) => Some(reader),
+        Ok((_, reader)) => Some(reader),
         Err(error) => {
             debug!(?error, "Game process memory is not readable");
             None
@@ -394,11 +410,7 @@ pub fn notify<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, title: Stri
     if !enabled(&read(&state.settings), Kind::Notification) {
         return;
     }
-    let id = state
-        .overlays
-        .notification_ticket
-        .fetch_add(1, Ordering::Relaxed)
-        + 1;
+    let id = next_ticket(&state.overlays.notification_ticket);
     let idle = {
         let mut queue = lock(&state.overlays.notification_queue);
         queue.push_back(NotificationTrigger { id, title, body });
@@ -439,86 +451,72 @@ pub fn on_ducatering<R: Runtime>(
 }
 
 pub fn on_inventory_updated<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    let rerolling = {
-        let mut slots = lock(&state.overlays.state);
-        let rerolling = slots
+    update_slots(app, state, |slots| {
+        slots
             .riven
             .as_ref()
-            .is_some_and(|trigger| trigger.before.is_some());
-        if rerolling {
-            slots.seq += 1;
-        }
-        rerolling
-    };
-    if rerolling {
-        broadcast(app, state);
-    }
+            .is_some_and(|trigger| trigger.before.is_some())
+    });
 }
 
 pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    let screen = screen_of(app, *lock(&state.overlays.game_monitor));
     let (wanted, only_while_game_active) = {
         let settings = read(&state.settings);
         lock(&state.overlays.state).opacity = settings.overlays.overlay_opacity;
-        let windowed = uses_windows(
-            settings.overlays.overlay_mode,
-            &read(&state.status).overlay_support,
-        );
-        let rows = settings.overlays.overlay_recommendation_count;
+        let windowed = windowed(state, &settings);
         (
             KINDS.map(|kind| {
                 (
                     windowed && enabled(&settings, kind),
-                    placement_of(&settings, kind),
-                    rows,
+                    window_bounds(screen, kind, &settings),
                 )
             }),
             settings.overlays.overlay_only_while_game_active,
         )
     };
-    let screen = screen_of(app, *lock(&state.overlays.game_monitor));
-    for (kind, (keep, placement, rows)) in KINDS.into_iter().zip(wanted) {
-        let bounds = logical(bounds_for(kind, placement, rows, screen), screen.scale);
+
+    for (kind, (keep, bounds)) in KINDS.into_iter().zip(wanted) {
         match (app.get_webview_window(kind.label()), keep) {
-            (Some(window), false) => {
+            (Some(_), false) => {
                 lock(&state.overlays.windows).remove(kind.label());
-                if let Err(error) = window.close() {
-                    warn!(
-                        label = kind.label(),
-                        %error,
-                        "Overlay window close failed",
-                    );
-                }
+                retire(app, kind);
             }
-            (Some(window), true) => {
-                if let Err(error) = window
-                    .set_size(tauri::LogicalSize::new(bounds.width, bounds.height))
-                    .and_then(|()| {
-                        window.set_position(tauri::LogicalPosition::new(bounds.x, bounds.y))
-                    })
-                    .and_then(|()| window.set_zoom(1.0 / screen.scale))
-                {
-                    warn!(
-                        label = kind.label(),
-                        %error,
-                        "Overlay window resize failed"
-                    );
-                }
-            }
+            (Some(window), true) => place(&window, bounds, screen.scale),
             (None, _) => {}
         }
+
         if keep {
             if kind.permanent() {
                 load(app, state, kind);
             }
+
             let due = lock(&state.overlays.state).occupied(kind);
-            if window_shows(only_while_game_active, state.focus.focused(), due) {
-                surface(app, state, kind);
-            } else {
-                rest(app, state, kind);
-            }
+            let shows = window_shows(only_while_game_active, state.focus.focused(), due);
+            settle(app, state, kind, shows);
         }
     }
+
     broadcast(app, state);
+}
+
+fn update_slots<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    change: impl FnOnce(&mut OverlayState) -> bool,
+) -> bool {
+    let mut slots = lock(&state.overlays.state);
+    let changed = change(&mut slots);
+    if changed {
+        slots.seq += 1;
+    }
+    drop(slots);
+
+    if changed {
+        broadcast(app, state);
+    }
+
+    changed
 }
 
 fn show<R: Runtime>(
@@ -532,20 +530,17 @@ fn show<R: Runtime>(
         if !enabled(&settings, kind) {
             return;
         }
+
         (
-            uses_windows(
-                settings.overlays.overlay_mode,
-                &read(&state.status).overlay_support,
-            ),
+            windowed(state, &settings),
             settings.overlays.overlay_only_while_game_active,
         )
     };
-    {
-        let mut slots = lock(&state.overlays.state);
-        slots.seq += 1;
-        fill(&mut slots);
-    }
-    broadcast(app, state);
+
+    update_slots(app, state, |slots| {
+        fill(slots);
+        true
+    });
     if window_shows(only_while_game_active, state.focus.focused(), windowed) {
         surface(app, state, kind);
     }
@@ -555,15 +550,9 @@ fn load<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
     if app.get_webview_window(kind.label()).is_some() {
         return;
     }
-    let (placement, rows) = {
-        let settings = read(&state.settings);
-        (
-            placement_of(&settings, kind),
-            settings.overlays.overlay_recommendation_count,
-        )
-    };
+
     let screen = screen_of(app, *lock(&state.overlays.game_monitor));
-    let bounds = logical(bounds_for(kind, placement, rows, screen), screen.scale);
+    let bounds = window_bounds(screen, kind, &read(&state.settings));
     lock(&state.overlays.windows).insert(
         kind.label(),
         WindowLife {
@@ -585,6 +574,14 @@ fn surface<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
         });
     if ready {
         reveal(app, kind);
+    }
+}
+
+fn settle<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind, shows: bool) {
+    if shows {
+        surface(app, state, kind);
+    } else {
+        rest(app, state, kind);
     }
 }
 
@@ -622,11 +619,7 @@ fn rest<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
 fn preload<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
     let windowed = {
         let settings = read(&state.settings);
-        enabled(&settings, kind)
-            && uses_windows(
-                settings.overlays.overlay_mode,
-                &read(&state.status).overlay_support,
-            )
+        enabled(&settings, kind) && windowed(state, &settings)
     };
     if !windowed || app.get_webview_window(kind.label()).is_some() {
         return;
@@ -679,37 +672,27 @@ pub fn on_content_shrank<R: Runtime>(window: &tauri::WebviewWindow<R>) {
 }
 
 fn hide<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
-    {
-        let mut slots = lock(&state.overlays.state);
-        if !slots.occupied(kind) {
-            return;
-        }
-        slots.seq += 1;
+    let cleared = update_slots(app, state, |slots| {
+        let occupied = slots.occupied(kind);
         slots.clear(kind);
+        occupied
+    });
+    if cleared {
+        rest(app, state, kind);
     }
-    broadcast(app, state);
-    rest(app, state, kind);
 }
 
 fn follow_game_window<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, focused: bool) {
     let settings = read(&state.settings);
-    if !uses_windows(
-        settings.overlays.overlay_mode,
-        &read(&state.status).overlay_support,
-    ) {
+    if !windowed(state, &settings) {
         return;
     }
+
+    let only_while_game_active = settings.overlays.overlay_only_while_game_active;
     for kind in KINDS {
         let due = enabled(&settings, kind) && lock(&state.overlays.state).occupied(kind);
-        if window_shows(
-            settings.overlays.overlay_only_while_game_active,
-            Some(focused),
-            due,
-        ) {
-            surface(app, state, kind);
-        } else {
-            rest(app, state, kind);
-        }
+        let shows = window_shows(only_while_game_active, Some(focused), due);
+        settle(app, state, kind, shows);
     }
 }
 

@@ -1,6 +1,6 @@
+use std::sync::Arc;
 use std::time::Instant;
 
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use wf_core::{ListingChoices, market_name, riven_listing_payload, riven_listing_update};
@@ -12,14 +12,18 @@ use wf_market::{
 use super::{Shared, ready};
 
 use crate::error::{CommandError, CommandResult};
-use crate::market::{self, MarketOrders, MarketSnapshot, Presence};
+use crate::market::{self, MarketItems, MarketOrders, Presence};
 use crate::market_session;
 use crate::runtime::{self, AppEvent};
 use crate::settings::MarketAccount;
-use crate::state::{lock, read, write};
+use crate::state::{AppState, lock, read, write};
 
-pub(super) fn unlisted_items() -> CommandError {
+fn unlisted_items() -> CommandError {
     CommandError::from("The warframe.market item list is not loaded")
+}
+
+pub(super) async fn listed_items(state: &Arc<AppState>) -> CommandResult<Arc<MarketItems>> {
+    market::market_items(state).await.ok_or_else(unlisted_items)
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -97,9 +101,7 @@ pub async fn market_logout<R: Runtime>(app: AppHandle<R>, state: Shared<'_>) -> 
 pub async fn market_items(state: Shared<'_>) -> CommandResult<Vec<MarketItem>> {
     let state = ready(&state).await?;
 
-    let listed = market::market_items(&state)
-        .await
-        .ok_or_else(unlisted_items)?;
+    let listed = listed_items(&state).await?;
 
     let core = lock(&state.core);
     let mut items: Vec<MarketItem> = listed
@@ -174,16 +176,8 @@ pub async fn market_post_order<R: Runtime>(
         })?;
 
     let orders = state.market().orders_my().await?;
-    let rows = market::order_rows(&state, &orders).await;
-    state.listings.remember(&state.core, rows.as_ref(), None);
-    runtime::emit(
-        &app,
-        AppEvent::MarketUpdated(MarketSnapshot {
-            orders: rows,
-            auctions: None,
-            at: Utc::now(),
-        }),
-    );
+    let snapshot = market::market_snapshot(&state, Some(&orders), None).await;
+    runtime::emit(&app, AppEvent::MarketUpdated(snapshot));
 
     Ok(posted)
 }
@@ -319,10 +313,8 @@ pub async fn market_post_riven(
 pub async fn market_my_auctions(state: Shared<'_>) -> CommandResult<Vec<Auction>> {
     let state = ready(&state).await?;
 
-    let slug = read(&state.status)
-        .market_account
-        .as_ref()
-        .map(|account| account.slug.clone())
+    let slug = state
+        .market_slug()
         .ok_or_else(|| CommandError::from("Sign in to warframe.market first"))?;
     let auctions = state.market().auctions_my(&slug).await?;
 

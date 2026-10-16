@@ -5,7 +5,7 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
 use wf_market::{IncomingEvent, MarketSocket, StatusSetPayload, UserStatus};
 
-use super::{MARKET_SIGNED_OUT_POLL, sign_out, signed_in_slug};
+use super::{MARKET_SIGNED_OUT_POLL, sign_out};
 use crate::runtime::{AppEvent, emit};
 use crate::state::{AppState, read, write};
 
@@ -13,7 +13,7 @@ pub(crate) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: A
     let mut failures: u32 = 0;
     loop {
         let token = match state.market().token() {
-            Some(token) if signed_in_slug(&state).is_some() => token.to_owned(),
+            Some(token) if state.market_slug().is_some() => token.to_owned(),
             _ => {
                 tokio::time::sleep(MARKET_SIGNED_OUT_POLL).await;
                 continue;

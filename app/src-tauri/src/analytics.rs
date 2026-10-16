@@ -4,7 +4,7 @@ use serde::Serialize;
 use wf_core::{Catalog, ItemTable, StoredTrade, Turnover, market_name, traded_set};
 use wf_market::{Item, OrderType};
 
-use crate::market::MarketItems;
+use crate::market::{MarketItems, has_tag};
 use crate::runtime::trade_side;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -22,7 +22,7 @@ pub enum TradeCategory {
 
 impl TradeCategory {
     fn of(item: &Item) -> Self {
-        let tagged = |tag: &str| item.tags.iter().any(|owned| owned == tag);
+        let tagged = |tag| has_tag(item, tag);
         if item.slug.contains("riven_mod") {
             Self::Riven
         } else if tagged("set") {
@@ -174,6 +174,7 @@ mod tests {
     use wf_core::{Trade, TradeItem};
 
     use super::*;
+    use crate::test_support::empty_catalog;
 
     const ITEMS: &str = r#"[
         {"id":"1","slug":"braton_prime_set","gameRef":"","tags":["set","prime","weapon"],"i18n":{"en":{"name":"Braton Prime Set","icon":"","thumb":""}}},
@@ -194,13 +195,9 @@ mod tests {
     }
 
     fn item_table() -> ItemTable {
-        let mut table = ItemTable::build(&catalog());
+        let mut table = ItemTable::build(&empty_catalog());
         table.index_market(&listings());
         table
-    }
-
-    fn catalog() -> Catalog {
-        Catalog::from_json("[]", "[]", "[]").unwrap()
     }
 
     fn item(name: &str, count: i64, rank: Option<u32>) -> TradeItem {
@@ -307,7 +304,7 @@ mod tests {
                 0,
             ),
         ];
-        let analytics = trade_analytics(&trades, &market_items(), &item_table(), &catalog());
+        let analytics = trade_analytics(&trades, &market_items(), &item_table(), &empty_catalog());
         let categories: Vec<_> = analytics
             .categories
             .iter()
