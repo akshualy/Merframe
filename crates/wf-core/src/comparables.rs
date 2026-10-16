@@ -189,14 +189,14 @@ pub(crate) fn comparables(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wf_market::{parse_riven_auctions, parse_riven_data};
+    use crate::rivens::support::riven_table;
+    use wf_market::WeaponAuctions;
 
     const AUCTIONS: &str = include_str!("../../../fixtures/riven_auctions.json");
-    const RIVEN_DATA: &str = include_str!("../../../fixtures/riven_data.json");
 
     fn compared(stats: &[(&str, bool)]) -> RivenComparables {
-        let auctions = parse_riven_auctions(AUCTIONS).unwrap();
-        let attributes = parse_riven_data(RIVEN_DATA).unwrap().attributes;
+        let auctions = serde_json::from_str::<WeaponAuctions>(AUCTIONS).unwrap();
+        let attributes = riven_table().attributes;
         let shown: Vec<ComparedStat> = stats
             .iter()
             .map(|(slug, positive)| ComparedStat {

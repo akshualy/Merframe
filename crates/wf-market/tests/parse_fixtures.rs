@@ -1,6 +1,6 @@
 use wf_market::{
-    Item, Order, OrderType, Polarity, User, UserPrivate, UserStatus, envelope, parse_chats,
-    parse_price_table, parse_v1_auction, parse_v1_auctions,
+    Item, Order, OrderType, Polarity, PriceTable, User, UserPrivate, UserStatus, envelope,
+    parse_chats, parse_v1_auction, parse_v1_auctions,
 };
 
 #[allow(
@@ -202,7 +202,7 @@ fn malformed_envelope() {
 #[test]
 fn bulk_price_table() {
     let json = fixture("prices_bulk.json");
-    let table = parse_price_table(&json).unwrap();
+    let table = serde_json::from_str::<PriceTable>(&json).unwrap();
     assert_eq!(table.updated_at, 1_757_410_800);
     assert_eq!(table.count, 10);
     assert_eq!(table.items.len(), table.count);
@@ -225,7 +225,7 @@ fn bulk_price_table() {
 #[test]
 fn price_entry_volume_shapes() {
     let json = fixture("prices_bulk.json");
-    let table = parse_price_table(&json).unwrap();
+    let table = serde_json::from_str::<PriceTable>(&json).unwrap();
     let statistics = table.items["primed_flow"];
     assert_eq!(statistics.sell_r0, Some(20));
     assert_eq!(statistics.sell_max, Some(210));
@@ -239,8 +239,10 @@ fn price_entry_volume_shapes() {
 
 #[test]
 fn empty_price_entry() {
-    let table = parse_price_table(r#"{"updated_at":1757410800,"count":1,"items":{"forma_bp":{}}}"#)
-        .unwrap();
+    let table = serde_json::from_str::<PriceTable>(
+        r#"{"updated_at":1757410800,"count":1,"items":{"forma_bp":{}}}"#,
+    )
+    .unwrap();
     let entry = table.items["forma_bp"];
     assert_eq!(entry.sell_r0, None);
     assert_eq!(entry.sell_max, None);

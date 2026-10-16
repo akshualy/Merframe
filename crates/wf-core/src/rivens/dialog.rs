@@ -12,12 +12,12 @@ impl Grader<'_> {
     ) -> Option<RivenRow> {
         let fingerprint = RivenFingerprint::parse(fingerprint).ok()?;
         let weapon = compat_weapon(self.table?, fingerprint.compat.as_deref()?)?;
-        let riven_type = self.catalog.data().riven_data().riven_type(mod_type);
+        let riven_type = self.riven_type(mod_type);
         let identity = RivenRow {
             item_type: mod_type.to_owned(),
             ..self.identity(weapon, riven_type, inventory)
         };
-        Some(self.roll(&identity, &fingerprint, riven_type))
+        Some(self.roll(identity, &fingerprint, riven_type))
     }
 }
 
@@ -31,23 +31,11 @@ mod tests {
     use crate::rivens::support::*;
     use crate::rivens::tab::display_name;
 
-    const MELEE_RIVEN: &str = "/Lotus/Upgrades/Mods/Randomized/PlayerMeleeWeaponRandomModRare";
-    const OTHER_WEAPON: &str = "/Lotus/Weapons/Tenno/Unknown/NoSuchWeapon";
-
     const BRATONS: &str = r#"[
         {"uniqueName":"/Lotus/Weapons/Tenno/Rifle/Rifle","name":"Braton","category":"Primary","productCategory":"LongGuns","type":"Rifle","tradable":false,"omegaAttenuation":1.35},
         {"uniqueName":"/Lotus/Weapons/Tenno/Rifle/BratonPrime","name":"Braton Prime","category":"Primary","productCategory":"LongGuns","type":"Rifle","tradable":false,"omegaAttenuation":1.25},
         {"uniqueName":"/Lotus/Weapons/Tenno/Rifle/StartingRifle","name":"MK1-Braton","category":"Primary","productCategory":"LongGuns","type":"Rifle","tradable":false,"omegaAttenuation":1.35}
     ]"#;
-
-    fn braton_catalog() -> Catalog {
-        let mut items: Vec<serde_json::Value> =
-            serde_json::from_str(fixtures::RIVEN_ITEMS).unwrap();
-        let bratons: Vec<serde_json::Value> = serde_json::from_str(BRATONS).unwrap();
-        items.extend(bratons);
-        let json = serde_json::to_string(&items).unwrap();
-        Catalog::from_json(&json, fixtures::RELICS, fixtures::COMPONENTS).unwrap()
-    }
 
     fn generated_name(catalog: &Catalog, mod_type: &str, weapon: &str, roll: &str) -> String {
         let riven_type = catalog
@@ -140,7 +128,7 @@ mod tests {
             ],
             None,
         );
-        let catalog = braton_catalog();
+        let catalog = fixtures::catalog_with(fixtures::RIVEN_ITEMS, BRATONS);
         let inventory = fixtures::inventory();
         let first_braton = inventory
             .long_guns

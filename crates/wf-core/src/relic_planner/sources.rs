@@ -1,7 +1,8 @@
 use serde::Serialize;
 use wf_data::Refinement;
 
-use crate::catalog::{Catalog, Stock, part_identity};
+use crate::catalog::{Catalog, Stock};
+use crate::identity::part_identity;
 
 use super::owned_relic_count;
 use super::rewards::rarity_name;
@@ -63,7 +64,7 @@ mod tests {
         let inventory = fixtures::inventory();
         let catalog = fixtures::catalog();
         let sources = relics_for(
-            "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent",
+            fixtures::TRINITY_PRIME_SYSTEMS,
             &Stock::new(&inventory),
             &catalog,
         );

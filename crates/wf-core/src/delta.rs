@@ -107,28 +107,36 @@ fn push_changes(
 mod tests {
     use super::*;
     use crate::catalog::fixtures;
+    use serde_json::json;
 
-    fn mutated(inventory_json: &str) -> Inventory {
-        let with_more_ferrite = inventory_json.replacen(
-            r#"{"ItemCount":51923112,"ItemType":"/Lotus/Types/Items/MiscItems/Ferrite"}"#,
-            r#"{"ItemCount":51923212,"ItemType":"/Lotus/Types/Items/MiscItems/Ferrite"}"#,
-            1,
-        );
-        assert_ne!(with_more_ferrite, inventory_json);
-        let with_new_suit = with_more_ferrite.replacen(
-            r#""Suits":[{"#,
-            r#""Suits":[{"ItemType":"/Lotus/Powersuits/Ninja/Ninja","XP":0,"ItemId":{"$oid":"000000000000000000000001"}},{"#,
-            1,
-        );
-        let with_xp_only_change = with_new_suit.replacen(r#""XP":752834"#, r#""XP":752999"#, 1);
-        assert_ne!(with_xp_only_change, with_new_suit);
-        Inventory::parse(&with_xp_only_change).unwrap()
+    fn mutated() -> Inventory {
+        fixtures::inventory_with(|value| {
+            let ferrite = fixtures::entries(value, "MiscItems")
+                .iter_mut()
+                .find(|entry| entry["ItemType"] == fixtures::FERRITE)
+                .unwrap();
+            assert_eq!(ferrite["ItemCount"], 51_923_112);
+            ferrite["ItemCount"] = json!(51_923_212);
+
+            fixtures::entries(value, "Suits").insert(
+                0,
+                json!({
+                    "ItemType": "/Lotus/Powersuits/Ninja/Ninja",
+                    "XP": 0,
+                    "ItemId": { "$oid": "000000000000000000000001" },
+                }),
+            );
+
+            let data_knife = &mut fixtures::entries(value, "DataKnives")[0];
+            assert_eq!(data_knife["XP"], 752_834);
+            data_knife["XP"] = json!(752_999);
+        })
     }
 
     #[test]
     fn counts_and_equipment_not_xp() {
         let previous = fixtures::inventory();
-        let next = mutated(fixtures::INVENTORY);
+        let next = mutated();
         let deltas = compute(&previous, &next);
 
         let ferrite = deltas
@@ -157,12 +165,9 @@ mod tests {
     #[test]
     fn removed_item() {
         let previous = fixtures::inventory();
-        let stripped = fixtures::INVENTORY.replacen(
-            r#"{"ItemCount":51923112,"ItemType":"/Lotus/Types/Items/MiscItems/Ferrite"},"#,
-            "",
-            1,
-        );
-        let next = Inventory::parse(&stripped).unwrap();
+        let next = fixtures::inventory_with(|value| {
+            fixtures::drop_entries(value, &["MiscItems"], fixtures::FERRITE);
+        });
         let deltas = compute(&previous, &next);
         let ferrite = deltas
             .iter()

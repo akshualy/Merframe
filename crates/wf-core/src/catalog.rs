@@ -5,6 +5,7 @@ use serde::Serialize;
 use wf_data::{Component, GameData, Item, Refinement, Relic};
 
 use crate::error::Result;
+use crate::identity::{blueprint_of, component_of};
 
 pub(crate) const RECIPE_PREFIX: &str = "/Lotus/Types/Recipes/";
 pub(crate) const ARCANE_PREFIX: &str = "/Lotus/Upgrades/CosmeticEnhancers/";
@@ -13,13 +14,6 @@ pub(crate) const DUCATS_ITEM: &str = "/Lotus/Types/Items/MiscItems/PrimeBucks";
 pub(crate) const REQUIEM_MARKER: &str = "Requiem";
 pub(crate) const FORMA_ITEM: &str = "/Lotus/Types/Items/MiscItems/Forma";
 pub(crate) const FORMA_BLUEPRINT: &str = "/Lotus/Types/Recipes/Components/FormaBlueprint";
-
-pub(crate) const REFINEMENTS: [Refinement; 4] = [
-    Refinement::Intact,
-    Refinement::Exceptional,
-    Refinement::Flawless,
-    Refinement::Radiant,
-];
 
 pub struct Catalog {
     data: GameData,
@@ -50,6 +44,11 @@ impl Catalog {
         self.data.component_by_unique_name(unique_name)
     }
 
+    pub(crate) fn recipe(&self, unique_name: &str) -> Option<&Item> {
+        self.item(unique_name)
+            .filter(|item| item.components.is_some())
+    }
+
     pub fn items(&self) -> impl Iterator<Item = &Item> {
         self.data.items().iter().filter(|item| !item.is_skin())
     }
@@ -69,8 +68,8 @@ impl Catalog {
         if let Some(found) = self.component(unique_name) {
             return Some(found);
         }
-        let base = unique_name.strip_suffix("Blueprint")?;
-        self.component(&format!("{base}Component"))
+
+        self.component(&component_of(unique_name)?)
     }
 
     pub fn component_for_stock(&self, unique_name: &str) -> Option<(&Item, &Component)> {
@@ -83,18 +82,6 @@ impl Catalog {
 
     pub fn relic_by_unique_name(&self, unique_name: &str) -> Option<(&Relic, Refinement)> {
         self.data.relic_by_unique_name(unique_name)
-    }
-
-    pub fn icon_for(&self, unique_name: &str) -> Option<String> {
-        if let Some(item) = self.item(unique_name) {
-            return item.image_name.clone();
-        }
-        if let Some((item, component)) = self.component_for_stock(unique_name) {
-            return component_image(item, component);
-        }
-        let intact = format!("{unique_name}{}", projection_suffix(Refinement::Intact));
-        let (relic, refinement) = self.relic_by_unique_name(&intact)?;
-        relic.image_names.get(&refinement).cloned()
     }
 
     pub fn prime_parts(&self) -> impl Iterator<Item = (&Item, &Component)> {
@@ -133,36 +120,38 @@ impl Stock {
 
 fn resolve_count(unique_name: &str, counted: impl Fn(&str) -> i64) -> i64 {
     if unique_name == FORMA_BLUEPRINT {
-        return counted(FORMA_ITEM) + counted(FORMA_BLUEPRINT);
+        return forma_count(counted);
     }
+
+    let held = aliased_count(unique_name, &counted);
+    if held > 0 {
+        return held;
+    }
+
+    let alias = blueprint_of(unique_name)
+        .or_else(|| component_of(unique_name))
+        .unwrap_or_else(|| format!("{unique_name}Blueprint"));
+    counted(&alias)
+}
+
+pub(crate) fn forma_count(counted: impl Fn(&str) -> i64) -> i64 {
+    counted(FORMA_ITEM) + counted(FORMA_BLUEPRINT)
+}
+
+pub(crate) fn aliased_count(unique_name: &str, counted: impl Fn(&str) -> i64) -> i64 {
     let direct = counted(unique_name);
     if builds_from_its_own_blueprint(unique_name) {
         return direct + counted(&format!("{unique_name}Blueprint"));
     }
-    if direct > 0 {
-        return direct;
-    }
-    if let Some(base) = unique_name.strip_suffix("Component") {
-        return counted(&format!("{base}Blueprint"));
-    }
-    if let Some(base) = unique_name.strip_suffix("Blueprint") {
-        return counted(&format!("{base}Component"));
-    }
-    counted(&format!("{unique_name}Blueprint"))
+
+    direct
 }
 
-pub(crate) fn builds_from_its_own_blueprint(unique_name: &str) -> bool {
+fn builds_from_its_own_blueprint(unique_name: &str) -> bool {
     unique_name.contains("/WeaponParts/")
         && !unique_name.contains("Prime")
         && !unique_name.ends_with("Blueprint")
         && !unique_name.ends_with("Component")
-}
-
-pub(crate) fn part_identity(unique_name: &str) -> &str {
-    unique_name
-        .strip_suffix("Blueprint")
-        .or_else(|| unique_name.strip_suffix("Component"))
-        .unwrap_or(unique_name)
 }
 
 pub(crate) fn component_image(item: &Item, component: &Component) -> Option<String> {
@@ -223,30 +212,6 @@ pub(crate) fn part_name(item: &Item, component: &Component) -> String {
     }
 }
 
-pub(crate) fn projection_suffix(refinement: Refinement) -> &'static str {
-    match refinement {
-        Refinement::Intact => "Bronze",
-        Refinement::Exceptional => "Silver",
-        Refinement::Flawless => "Gold",
-        Refinement::Radiant => "Platinum",
-    }
-}
-
-pub(crate) fn refinement_from_unique_name(unique_name: &str) -> Option<Refinement> {
-    REFINEMENTS
-        .into_iter()
-        .find(|refinement| unique_name.ends_with(projection_suffix(*refinement)))
-}
-
-pub(crate) fn refinement_name(refinement: Refinement) -> &'static str {
-    match refinement {
-        Refinement::Intact => "Intact",
-        Refinement::Exceptional => "Exceptional",
-        Refinement::Flawless => "Flawless",
-        Refinement::Radiant => "Radiant",
-    }
-}
-
 pub(crate) fn display_name_from_path(path: &str) -> String {
     let tail = path.rsplit_once('/').map_or(path, |(_, tail)| tail);
     let mut out = String::with_capacity(tail.len() + 8);
@@ -261,6 +226,12 @@ pub(crate) fn display_name_from_path(path: &str) -> String {
 
 #[cfg(test)]
 pub mod fixtures {
+    use std::path::PathBuf;
+
+    use chrono::{DateTime, Utc};
+    use serde_json::{Value, json};
+    use wf_inventory::Inventory;
+
     use super::Catalog;
 
     pub const ITEMS: &str = include_str!("../../wf-data/tests/fixtures/items.json");
@@ -272,29 +243,85 @@ pub mod fixtures {
     pub const SKINS: &str = include_str!("../../wf-data/tests/fixtures/skins.json");
     pub const COMPONENTS: &str = include_str!("../../wf-data/tests/fixtures/components.json");
     pub const UPGRADE_ITEMS: &str = include_str!("../../../fixtures/upgrade_items.json");
+    pub const MISC_ITEMS: &str = include_str!("../../../fixtures/misc_items.json");
+    pub const WORLD_STATE: &str = include_str!("../../../fixtures/worldState.json");
+    pub const MY_AUCTIONS: &str = include_str!("../../wf-market/tests/fixtures/auctions_my.json");
+
+    pub const BRATON_PRIME: &str = "/Lotus/Weapons/Tenno/Rifle/BratonPrime";
+    pub const BRATON_PRIME_BLUEPRINT: &str = "/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint";
+    pub const BRATON_PRIME_BARREL: &str =
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel";
+    pub const BRATON_PRIME_STOCK: &str =
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
+    pub const TRINITY_PRIME_SYSTEMS: &str =
+        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent";
+    pub const TRINITY_PRIME_SYSTEMS_BLUEPRINT: &str =
+        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
+    pub const EXCALIBUR: &str = "/Lotus/Powersuits/Excalibur/Excalibur";
+    pub const DUAL_KAMAS: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/DualKamas";
+    pub const SINGLE_KAMA: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama";
+    pub const OROKIN_CELL: &str = "/Lotus/Types/Items/MiscItems/OrokinCell";
+    pub const FERRITE: &str = "/Lotus/Types/Items/MiscItems/Ferrite";
+
+    pub const PRIME_PARTS: [(&str, i64); 3] = [
+        (BRATON_PRIME_BARREL, 3),
+        (BRATON_PRIME_STOCK, 1),
+        (TRINITY_PRIME_SYSTEMS_BLUEPRINT, 1),
+    ];
+
+    const SYNC_OID: &str = "6a9eeb1f000000000000c001";
+
+    pub fn at(millis: i64) -> DateTime<Utc> {
+        DateTime::from_timestamp_millis(millis).unwrap()
+    }
+
+    pub fn scratch_dir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(name);
+        if dir.exists() {
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
 
     pub fn catalog() -> Catalog {
         Catalog::from_json(ITEMS, RELICS, COMPONENTS).unwrap()
     }
 
+    pub fn catalog_of(items_json: &str) -> Catalog {
+        Catalog::from_json(items_json, RELICS, "[]").unwrap()
+    }
+
+    pub fn catalog_with(items_json: &str, extra_json: &str) -> Catalog {
+        let mut merged: Vec<Value> = serde_json::from_str(items_json).unwrap();
+        let extra: Vec<Value> = serde_json::from_str(extra_json).unwrap();
+        merged.extend(extra);
+        Catalog::from_json(&Value::from(merged).to_string(), RELICS, COMPONENTS).unwrap()
+    }
+
     pub fn with_skins(items_json: &str) -> Catalog {
-        let mut merged: Vec<serde_json::Value> = serde_json::from_str(items_json).unwrap();
-        let mut skins: Vec<serde_json::Value> = serde_json::from_str(SKINS).unwrap();
-        merged.append(&mut skins);
-        let merged = serde_json::to_string(&merged).unwrap();
-        Catalog::from_json(&merged, RELICS, COMPONENTS).unwrap()
+        catalog_with(items_json, SKINS)
     }
 
     pub fn upgrade_catalog() -> Catalog {
-        Catalog::from_json(UPGRADE_ITEMS, RELICS, "[]").unwrap()
+        catalog_of(UPGRADE_ITEMS)
     }
 
     pub fn foundry_catalog() -> Catalog {
         Catalog::from_json(FOUNDRY_ITEMS, RELICS, COMPONENTS).unwrap()
     }
 
+    pub fn mastery_catalog() -> Catalog {
+        Catalog::from_json(MASTERY_ITEMS, RELICS, COMPONENTS).unwrap()
+    }
+
+    pub fn misc_catalog() -> Catalog {
+        Catalog::from_json(MISC_ITEMS, RELICS, COMPONENTS).unwrap()
+    }
+
     pub fn market_item(slug: &str, name: &str, game_ref: &str, tags: &[&str]) -> wf_market::Item {
-        serde_json::from_value(serde_json::json!({
+        serde_json::from_value(json!({
             "id": slug,
             "slug": slug,
             "gameRef": game_ref,
@@ -304,81 +331,88 @@ pub mod fixtures {
         .unwrap()
     }
 
+    pub fn inventory() -> Inventory {
+        Inventory::parse(INVENTORY).unwrap()
+    }
+
+    pub fn inventory_with(edit: impl FnOnce(&mut Value)) -> Inventory {
+        let mut value: Value = serde_json::from_str(INVENTORY).unwrap();
+        edit(&mut value);
+        Inventory::parse(&value.to_string()).unwrap()
+    }
+
+    pub fn entries<'a>(value: &'a mut Value, key: &str) -> &'a mut Vec<Value> {
+        value.get_mut(key).and_then(Value::as_array_mut).unwrap()
+    }
+
+    pub fn push_counted(value: &mut Value, key: &str, item_type: &str, count: i64) {
+        entries(value, key).push(json!({ "ItemType": item_type, "ItemCount": count }));
+    }
+
+    pub fn drop_entries(value: &mut Value, keys: &[&str], item_type: &str) {
+        for key in keys {
+            entries(value, key)
+                .retain(|entry| entry.get("ItemType").and_then(Value::as_str) != Some(item_type));
+        }
+    }
+
+    pub fn synced(oid: &str) -> String {
+        INVENTORY.replacen(SYNC_OID, oid, 1)
+    }
+
+    pub fn founder_inventory() -> Inventory {
+        inventory_with(|value| value["Accolades"] = json!({ "Founder": 4 }))
+    }
+
+    pub fn inventory_owning(counted: &[(&str, i64)]) -> Inventory {
+        inventory_with(|value| {
+            for (item_type, count) in counted {
+                push_counted(value, "MiscItems", item_type, *count);
+            }
+        })
+    }
+
     pub fn inventory_stocked(
         equipment: &[(&str, &str)],
         counted: &[(&str, &str, i64)],
-    ) -> wf_inventory::Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(INVENTORY).unwrap();
-        let object = value.as_object_mut().unwrap();
-        for key in [
-            "Suits",
-            "LongGuns",
-            "Pistols",
-            "Melee",
-            "MiscItems",
-            "Recipes",
-        ] {
-            object.insert(key.to_owned(), serde_json::json!([]));
-        }
-        for (index, (category, item_type)) in equipment.iter().enumerate() {
-            let entries = object
-                .entry((*category).to_owned())
-                .or_insert_with(|| serde_json::json!([]))
-                .as_array_mut()
-                .unwrap();
-            entries.push(serde_json::json!({
-                "ItemType": item_type,
-                "ItemId": { "$oid": format!("{index:024x}") },
-                "XP": 0,
-            }));
-        }
-        for (category, item_type, count) in counted {
-            let entries = object
-                .entry((*category).to_owned())
-                .or_insert_with(|| serde_json::json!([]))
-                .as_array_mut()
-                .unwrap();
-            entries.push(serde_json::json!({ "ItemType": item_type, "ItemCount": count }));
-        }
-        wf_inventory::Inventory::parse(&value.to_string()).unwrap()
-    }
-
-    pub fn mastery_catalog() -> Catalog {
-        Catalog::from_json(MASTERY_ITEMS, RELICS, COMPONENTS).unwrap()
-    }
-
-    pub fn inventory() -> wf_inventory::Inventory {
-        wf_inventory::Inventory::parse(INVENTORY).unwrap()
-    }
-
-    pub fn inventory_owning(counted: &[(&str, i64)]) -> wf_inventory::Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(INVENTORY).unwrap();
-        let entries = value
-            .get_mut("MiscItems")
-            .and_then(serde_json::Value::as_array_mut)
-            .expect("misc items");
-        for (item_type, count) in counted {
-            entries.push(serde_json::json!({ "ItemType": item_type, "ItemCount": count }));
-        }
-        wf_inventory::Inventory::parse(&value.to_string()).unwrap()
-    }
-
-    pub fn inventory_without_equipment(item_type: &str) -> wf_inventory::Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(INVENTORY).unwrap();
-        for key in ["Suits", "LongGuns", "Pistols", "Melee"] {
-            if let Some(entries) = value.get_mut(key).and_then(serde_json::Value::as_array_mut) {
-                entries.retain(|entry| {
-                    entry.get("ItemType").and_then(serde_json::Value::as_str) != Some(item_type)
-                });
+    ) -> Inventory {
+        inventory_with(|value| {
+            for key in [
+                "Suits",
+                "LongGuns",
+                "Pistols",
+                "Melee",
+                "MiscItems",
+                "Recipes",
+            ] {
+                value[key] = json!([]);
             }
-        }
-        wf_inventory::Inventory::parse(&value.to_string()).unwrap()
+
+            for (index, (category, item_type)) in equipment.iter().enumerate() {
+                entries(value, category).push(json!({
+                    "ItemType": item_type,
+                    "ItemId": { "$oid": format!("{index:024x}") },
+                    "XP": 0,
+                }));
+            }
+
+            for (category, item_type, count) in counted {
+                push_counted(value, category, item_type, *count);
+            }
+        })
+    }
+
+    pub fn inventory_without_equipment(item_type: &str) -> Inventory {
+        inventory_with(|value| {
+            drop_entries(value, &["Suits", "LongGuns", "Pistols", "Melee"], item_type);
+        })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use fixtures::{BRATON_PRIME_BARREL, TRINITY_PRIME_SYSTEMS, TRINITY_PRIME_SYSTEMS_BLUEPRINT};
     use wf_data::Refinement;
 
     #[test]
@@ -405,10 +439,6 @@ mod tests {
             .item("/Lotus/Upgrades/Skins/Brawler/BrawlerAltHelmet")
             .expect("helmet skin");
         assert_eq!(helmet.name, "Atlas Tartarus Helmet");
-        assert_eq!(
-            catalog.icon_for("/Lotus/Upgrades/Skins/Brawler/BrawlerAltHelmet"),
-            Some("BrawlerAltHelmet.png".to_owned())
-        );
         assert!(helmet.components.is_some());
         assert!(!helmet.masterable());
         assert!(helmet.warframe_market.is_none());
@@ -425,27 +455,6 @@ mod tests {
         assert_eq!(relic.name, "Axi A21");
         assert_eq!(refinement, Refinement::Intact);
         assert!(!relic.vaulted);
-    }
-
-    #[test]
-    fn refinement_suffixes() {
-        assert_eq!(
-            refinement_from_unique_name("T1VoidProjectionWispPrimeABronze"),
-            Some(Refinement::Intact)
-        );
-        assert_eq!(
-            refinement_from_unique_name("T1VoidProjectionWispPrimeASilver"),
-            Some(Refinement::Exceptional)
-        );
-        assert_eq!(
-            refinement_from_unique_name("T1VoidProjectionWispPrimeAGold"),
-            Some(Refinement::Flawless)
-        );
-        assert_eq!(
-            refinement_from_unique_name("T1VoidProjectionWispPrimeAPlatinum"),
-            Some(Refinement::Radiant)
-        );
-        assert_eq!(refinement_from_unique_name("SomethingElse"), None);
     }
 
     #[test]
@@ -471,22 +480,16 @@ mod tests {
     #[test]
     fn stock_matches_owned_count() {
         let inventory = fixtures::inventory_owning(&[
-            (
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-                2,
-            ),
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                3,
-            ),
+            (TRINITY_PRIME_SYSTEMS_BLUEPRINT, 2),
+            (BRATON_PRIME_BARREL, 3),
         ]);
         let stock = Stock::new(&inventory);
         for unique_name in [
-            "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent",
-            "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-            "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-            "/Lotus/Types/Items/MiscItems/Ferrite",
-            "/Lotus/Types/Items/MiscItems/OrokinCell",
+            TRINITY_PRIME_SYSTEMS,
+            TRINITY_PRIME_SYSTEMS_BLUEPRINT,
+            BRATON_PRIME_BARREL,
+            fixtures::FERRITE,
+            fixtures::OROKIN_CELL,
             "/Lotus/Types/Items/MiscItems/DoesNotExist",
         ] {
             assert_eq!(
@@ -495,10 +498,7 @@ mod tests {
                 "{unique_name}"
             );
         }
-        assert_eq!(
-            stock.count("/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent"),
-            2
-        );
+        assert_eq!(stock.count(TRINITY_PRIME_SYSTEMS), 2);
     }
 
     #[test]
@@ -510,11 +510,10 @@ mod tests {
              "category": "Misc", "type": "Misc", "tradable": false,
              "components": [{"uniqueName": "/Lotus/Types/Items/MiscItems/Forma", "itemCount": 1}]}
         ]"#;
-        let catalog = Catalog::from_json(items, fixtures::RELICS, "[]").unwrap();
+        let catalog = fixtures::catalog_of(items);
         let forma = "/Lotus/Types/Items/MiscItems/Forma";
         assert!(catalog.component(forma).is_some());
         assert!(catalog.component_for_reward(forma).is_none());
-        assert_eq!(catalog.icon_for(forma).as_deref(), Some("forma.png"));
     }
 
     #[test]
@@ -539,10 +538,7 @@ mod tests {
                 "/Lotus/Types/Recipes/Weapons/WeaponParts/BoltorBarrelBlueprint",
                 3,
             ),
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                4,
-            ),
+            (BRATON_PRIME_BARREL, 4),
             (
                 "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrelBlueprint",
                 5,
@@ -557,48 +553,17 @@ mod tests {
             stock.count("/Lotus/Types/Recipes/Weapons/WeaponParts/BoltorBarrelBlueprint"),
             3
         );
-        assert_eq!(
-            stock.count("/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel"),
-            4
-        );
+        assert_eq!(stock.count(BRATON_PRIME_BARREL), 4);
     }
 
     #[test]
     fn generic_blueprint_image() {
         let catalog = fixtures::catalog();
-        let (item, blueprint) = catalog
-            .component("/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint")
-            .unwrap();
+        let (item, blueprint) = catalog.component(fixtures::BRATON_PRIME_BLUEPRINT).unwrap();
         assert_eq!(blueprint.image_name.as_deref(), Some("blueprint.png"));
         assert_eq!(component_image(item, blueprint), item.image_name);
-        let (item, barrel) = catalog
-            .component("/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel")
-            .unwrap();
+        let (item, barrel) = catalog.component(BRATON_PRIME_BARREL).unwrap();
         assert_eq!(component_image(item, barrel), barrel.image_name);
-    }
-
-    #[test]
-    fn icon_lookup_order() {
-        let catalog = fixtures::catalog();
-        assert_eq!(
-            catalog.icon_for("/Lotus/Weapons/Tenno/Rifle/BratonPrime"),
-            catalog
-                .item("/Lotus/Weapons/Tenno/Rifle/BratonPrime")
-                .and_then(|item| item.image_name.clone())
-        );
-        assert_eq!(
-            catalog.icon_for("/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint"),
-            catalog
-                .item("/Lotus/Weapons/Tenno/Rifle/BratonPrime")
-                .and_then(|item| item.image_name.clone())
-        );
-        assert_eq!(
-            catalog
-                .icon_for("/Lotus/Types/Game/Projections/T4VoidProjectionE")
-                .as_deref(),
-            Some("RelicAxiD.png")
-        );
-        assert_eq!(catalog.icon_for("/Lotus/Nope"), None);
     }
 
     #[test]

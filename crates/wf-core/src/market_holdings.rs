@@ -4,11 +4,9 @@ use std::collections::BTreeSet;
 use wf_data::Refinement;
 use wf_inventory::{CountedItem, EquipmentItem, RivenFingerprint};
 
-use crate::catalog::{
-    RECIPE_PREFIX, REFINEMENTS, display_name_from_path, is_fish, projection_suffix, refinement_name,
-};
+use crate::catalog::{RECIPE_PREFIX, display_name_from_path, is_fish};
 use crate::identity::{ItemKind, ItemRecord, is_riven, traded_as};
-use crate::inventory_view::{UpgradeKind, complete_sets, held_parts, upgrade_kind};
+use crate::inventory_view::{UpgradeKind, complete_sets, held_parts, spare_weapons, upgrade_kind};
 use crate::view::View;
 
 fn counted(items: &[CountedItem], unique_name: &str) -> i64 {
@@ -19,8 +17,8 @@ fn counted(items: &[CountedItem], unique_name: &str) -> i64 {
         .sum()
 }
 
-fn entries<T>(items: &[T], matches: impl Fn(&T) -> bool) -> i64 {
-    items.iter().filter(|item| matches(item)).map(|_| 1).sum()
+fn entries<T>(items: impl IntoIterator<Item = T>, matches: impl Fn(&T) -> bool) -> i64 {
+    items.into_iter().filter(matches).map(|_| 1).sum()
 }
 
 fn unveiled(name: &str) -> &str {
@@ -40,9 +38,9 @@ impl<'a> View<'a> {
             ItemKind::Upgrade { .. } | ItemKind::Riven => self.upgrades(record, listed_name, rank),
             ItemKind::Relic { .. } => subtype
                 .and_then(|subtype| {
-                    REFINEMENTS.into_iter().find(|refinement| {
-                        refinement_name(*refinement).eq_ignore_ascii_case(subtype)
-                    })
+                    Refinement::ALL
+                        .into_iter()
+                        .find(|refinement| refinement.name().eq_ignore_ascii_case(subtype))
                 })
                 .map_or(0, |refinement| self.relics(unique_name, refinement)),
             ItemKind::Set { .. } => self.sets(unique_name),
@@ -72,9 +70,9 @@ impl<'a> View<'a> {
     fn relics(&self, intact: &str, refinement: Refinement) -> i64 {
         let relics = &self.account.inventory.misc_items;
         let base = intact
-            .strip_suffix(projection_suffix(Refinement::Intact))
+            .strip_suffix(Refinement::Intact.projection_suffix())
             .unwrap_or(intact);
-        let refined = counted(relics, &format!("{base}{}", projection_suffix(refinement)));
+        let refined = counted(relics, &format!("{base}{}", refinement.projection_suffix()));
         if refinement == Refinement::Intact {
             refined + counted(relics, base)
         } else {
@@ -169,19 +167,8 @@ impl<'a> View<'a> {
                 .map(|item| item.item_count)
                 .sum();
         }
-        let unranked = |owned: &EquipmentItem| owned.item_type == unique_name && owned.xp == 0;
-        let spare_equipment: i64 = [
-            &inventory.long_guns,
-            &inventory.pistols,
-            &inventory.melee,
-            &inventory.space_guns,
-            &inventory.space_melee,
-            &inventory.space_suits,
-            &inventory.sentinel_weapons,
-        ]
-        .into_iter()
-        .map(|owned| entries(owned, unranked))
-        .sum();
+        let unranked = |owned: &&EquipmentItem| owned.item_type == unique_name && owned.xp == 0;
+        let spare_equipment = entries(spare_weapons(inventory), unranked);
         let stacked: i64 = [
             &inventory.misc_items,
             &inventory.level_keys,
@@ -207,7 +194,7 @@ mod tests {
     use serde_json::{Value, json};
 
     use crate::catalog::Catalog;
-    use crate::catalog::fixtures::{self, market_item};
+    use crate::catalog::fixtures::{self, BRATON_PRIME_BARREL, catalog_of, market_item};
     use crate::identity::market_name;
     use crate::view::Fixture;
 
@@ -283,7 +270,7 @@ mod tests {
                 market_item(
                     "braton_prime_barrel",
                     "Braton Prime Barrel",
-                    "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                    BRATON_PRIME_BARREL,
                     &["component"],
                 ),
                 market_item(
@@ -371,17 +358,14 @@ mod tests {
                 )],
             )("tink", None, None)
         };
-        let both_sizes = Catalog::from_json(
+        let both_sizes = catalog_of(
             r#"[
               {"uniqueName":"/Lotus/Types/Items/Fish/Solaris/SolarisCoolCommonFishAItem",
                "name":"Tink","category":"Fish","type":"Fish","tradable":true},
               {"uniqueName":"/Lotus/Types/Items/Fish/Solaris/SolarisCoolCommonFishAMediumItem",
                "name":"Tink","category":"Fish","type":"Fish","tradable":true}
             ]"#,
-            fixtures::RELICS,
-            "[]",
-        )
-        .unwrap();
+        );
         assert_eq!(tink(both_sizes), 119);
 
         assert_eq!(tink(fixtures::catalog()), 119);
@@ -436,30 +420,30 @@ mod tests {
     }
 
     fn upgrade_inventory() -> wf_inventory::Inventory {
-        let mut inventory: Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        inventory["RawUpgrades"] = [
-            (PRIMED_CONTINUITY, 3),
-            (FEAR_SENSE, 25),
-            (CLASHING_FOREST, 158),
-            (VEILED_RIFLE, 2),
-            ("/Lotus/Upgrades/Mods/Randomized/RawRifleRandomMod", 5),
-            (ENERGIZE, 4),
-        ]
-        .iter()
-        .map(|(item_type, count)| json!({ "ItemType": item_type, "ItemCount": count }))
-        .collect();
-        inventory["Upgrades"] = [(PRIMED_CONTINUITY, 10), (CLASHING_FOREST, 3), (ENERGIZE, 5)]
+        fixtures::inventory_with(|inventory| {
+            inventory["RawUpgrades"] = [
+                (PRIMED_CONTINUITY, 3),
+                (FEAR_SENSE, 25),
+                (CLASHING_FOREST, 158),
+                (VEILED_RIFLE, 2),
+                ("/Lotus/Upgrades/Mods/Randomized/RawRifleRandomMod", 5),
+                (ENERGIZE, 4),
+            ]
             .iter()
-            .enumerate()
-            .map(|(index, (item_type, rank))| {
-                json!({
-                    "ItemType": item_type,
-                    "UpgradeFingerprint": format!("{{\"lvl\":{rank}}}"),
-                    "ItemId": { "$oid": format!("{index:024x}") },
-                })
-            })
+            .map(|(item_type, count)| json!({ "ItemType": item_type, "ItemCount": count }))
             .collect();
-        wf_inventory::Inventory::parse(&inventory.to_string()).unwrap()
+            inventory["Upgrades"] = [(PRIMED_CONTINUITY, 10), (CLASHING_FOREST, 3), (ENERGIZE, 5)]
+                .iter()
+                .enumerate()
+                .map(|(index, (item_type, rank))| {
+                    json!({
+                        "ItemType": item_type,
+                        "UpgradeFingerprint": format!("{{\"lvl\":{rank}}}"),
+                        "ItemId": { "$oid": format!("{index:024x}") },
+                    })
+                })
+                .collect();
+        })
     }
 
     #[test]
@@ -472,8 +456,7 @@ mod tests {
             "type": "Mod",
             "tradable": true,
         }));
-        let catalog =
-            Catalog::from_json(&Value::from(upgrades).to_string(), fixtures::RELICS, "[]").unwrap();
+        let catalog = catalog_of(&Value::from(upgrades).to_string());
         let owned = holdings(
             catalog,
             upgrade_inventory(),

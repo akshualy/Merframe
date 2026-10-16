@@ -15,12 +15,9 @@ pub(crate) struct ExportBundle<'a> {
 }
 
 pub(crate) fn export(dir: &Path, bundle: &ExportBundle<'_>) -> Result<()> {
-    std::fs::create_dir_all(dir).map_err(|source| CoreError::Io {
-        path: dir.to_path_buf(),
-        source,
-    })?;
+    std::fs::create_dir_all(dir).map_err(CoreError::io(dir))?;
     let path = dir.join("inventory.json");
-    std::fs::write(&path, bundle.document).map_err(|source| CoreError::Io { path, source })?;
+    std::fs::write(&path, bundle.document).map_err(CoreError::io(&path))?;
     write(dir, "items.json", &bundle.inventory.items)?;
     write(dir, "parts.json", &bundle.inventory.parts)?;
     write(dir, "mods.json", &bundle.inventory.mods)?;
@@ -35,7 +32,7 @@ pub(crate) fn export(dir: &Path, bundle: &ExportBundle<'_>) -> Result<()> {
 fn write<T: Serialize>(dir: &Path, name: &str, value: &T) -> Result<()> {
     let path = dir.join(name);
     let json = serde_json::to_vec_pretty(value)?;
-    std::fs::write(&path, json).map_err(|source| CoreError::Io { path, source })
+    std::fs::write(&path, json).map_err(CoreError::io(&path))
 }
 
 #[cfg(test)]
@@ -51,13 +48,10 @@ mod tests {
         let inventory_tab = inventory_view::tab(&fixture.view());
         let rivens_tab = rivens::Grader::new(&fixture.catalog, &fixture.items, None)
             .tab(&fixture.account.inventory, &fixture.listings);
-        let now = chrono::DateTime::from_timestamp_millis(1_788_807_069_000).unwrap();
+        let now = fixtures::at(1_788_807_069_000);
         let foundry_tab = foundry::tab(&fixture.view(), None, None, now);
 
-        let dir = std::env::temp_dir().join("wf-core-export-test");
-        if dir.exists() {
-            std::fs::remove_dir_all(&dir).expect("remove dir");
-        }
+        let dir = fixtures::scratch_dir("wf-core-export-test");
         export(
             &dir,
             &ExportBundle {

@@ -1,9 +1,6 @@
-use wf_data::Refinement;
+use wf_data::{Refinement, projection_family};
 
-use crate::catalog::{
-    REFINEMENTS, VaultStatus, display_name_from_path, projection_suffix,
-    refinement_from_unique_name,
-};
+use crate::catalog::{VaultStatus, display_name_from_path};
 use crate::identity::ItemKind;
 use crate::view::View;
 
@@ -29,10 +26,7 @@ fn projection_identity(unique_name: &str) -> (String, String) {
         return (display_name_from_path(leaf), String::new());
     };
     let rest = rest.strip_prefix("VoidProjection").unwrap_or(rest);
-    let designation = REFINEMENTS
-        .into_iter()
-        .find_map(|refinement| rest.strip_suffix(projection_suffix(refinement)))
-        .unwrap_or(rest);
+    let designation = projection_family(rest);
     if designation.is_empty() {
         return (tier.to_owned(), tier.to_owned());
     }
@@ -65,32 +59,38 @@ pub(crate) fn relics(view: &View, index: &mut ItemIndex) -> Vec<RelicRow> {
             } else {
                 let (relic, tier) = projection_identity(unique_name);
                 let refinement =
-                    refinement_from_unique_name(unique_name).unwrap_or(Refinement::Intact);
+                    Refinement::of_projection(unique_name).unwrap_or(Refinement::Intact);
                 (relic, tier, refinement)
             };
-            let record = items
+
+            let summary = match items
                 .get(unique_name)
-                .filter(|record| matches!(record.kind, ItemKind::Relic { .. }));
-            let market_slug = record.and_then(|record| record.market_slug.as_deref());
-            let summary = ItemSummary {
-                unique_name: unique_name.to_owned(),
-                name: relic,
-                image_name: record.and_then(|record| record.image_name.clone()),
-                market_slug: market_slug.map(str::to_owned),
-                prime: record.is_some_and(|record| record.prime),
-                vault: Some(
-                    record
-                        .and_then(|record| record.vault)
-                        .unwrap_or(VaultStatus::Unknown),
-                ),
-                ducats: None,
+                .filter(|record| matches!(record.kind, ItemKind::Relic { .. }))
+            {
+                Some(record) => ItemSummary {
+                    name: relic,
+                    ..ItemSummary::from(record)
+                },
+                None => ItemSummary {
+                    unique_name: unique_name.to_owned(),
+                    name: relic,
+                    image_name: None,
+                    market_slug: None,
+                    prime: false,
+                    vault: Some(VaultStatus::Unknown),
+                    ducats: None,
+                },
             };
+            let plat = summary
+                .market_slug
+                .as_deref()
+                .and_then(|slug| prices.plat(slug));
             Some(RelicRow {
                 item: index.add_marked(summary, favourites.contains(unique_name)),
                 tier,
                 refinement,
                 count,
-                plat: market_slug.and_then(|slug| prices.plat(slug)),
+                plat,
             })
         })
         .collect();
@@ -107,21 +107,22 @@ pub(crate) fn relics(view: &View, index: &mut ItemIndex) -> Vec<RelicRow> {
 mod tests {
     use std::collections::HashSet;
 
-    use super::super::tests::prices;
+    use super::super::tests::priced;
     use super::*;
     use crate::catalog::{Catalog, fixtures};
     use crate::view::Fixture;
 
     const RELIC_PROJECTIONS: &str = include_str!("../../../../fixtures/relic_projections.json");
 
-    fn projection_catalog() -> Catalog {
-        Catalog::from_json(fixtures::ITEMS, RELIC_PROJECTIONS, fixtures::COMPONENTS).unwrap()
+    fn projections() -> Fixture {
+        let catalog =
+            Catalog::from_json(fixtures::ITEMS, RELIC_PROJECTIONS, fixtures::COMPONENTS).unwrap();
+        priced(catalog, fixtures::inventory())
     }
 
     #[test]
     fn every_owned_relic_resolves() {
-        let fixture =
-            Fixture::new(projection_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = projections();
         let (rows, index) = fixture.rows(relics);
         let derived: Vec<&str> = rows
             .iter()
@@ -147,8 +148,7 @@ mod tests {
 
     #[test]
     fn lith_g12_from_sevagoth_projection() {
-        let fixture =
-            Fixture::new(projection_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = projections();
         let (rows, index) = fixture.rows(relics);
         let row = rows
             .into_iter()
@@ -165,8 +165,7 @@ mod tests {
 
     #[test]
     fn one_row_per_refinement() {
-        let fixture =
-            Fixture::new(projection_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = projections();
         let (rows, index) = fixture.rows(relics);
         let counted = |refinement: Refinement| {
             rows.iter()
@@ -183,7 +182,7 @@ mod tests {
             .filter(|row| index[row.item].name == "Lith S18")
             .collect();
         let refinements: Vec<Refinement> = refined.iter().map(|row| row.refinement).collect();
-        assert_eq!(refinements, REFINEMENTS);
+        assert_eq!(refinements, Refinement::ALL);
         let names: HashSet<&str> = refined
             .iter()
             .map(|row| index[row.item].unique_name.as_str())
@@ -193,8 +192,7 @@ mod tests {
 
     #[test]
     fn untradable_relics_dropped() {
-        let fixture =
-            Fixture::new(projection_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = projections();
         let (rows, index) = fixture.rows(relics);
         assert!(
             !rows.iter().any(|row| index[row.item]
@@ -233,8 +231,7 @@ mod tests {
 
     #[test]
     fn axi_a21_row() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = priced(fixtures::catalog(), fixtures::inventory());
         let (rows, index) = fixture.rows(relics);
         assert!(rows.iter().all(|row| row.count > 0));
 

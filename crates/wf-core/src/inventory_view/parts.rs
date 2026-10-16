@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, HashSet};
 use wf_data::{Component, Item};
 
 use super::misc::is_landing_craft_part;
-use super::{ItemIndex, ItemStatus, ItemSummary, PartRow, SetComponent, SetLink, SetRow};
+use super::{ItemIndex, ItemSummary, PartRow, SetComponent, SetLink, SetRow};
 use crate::catalog::{Stock, is_prime};
 use crate::identity::{ItemKind, ItemRecord, ItemTable, Variant};
 use crate::prices::Prices;
@@ -82,23 +82,16 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
             let set = &items[set];
             let item = catalog.item(&set.unique_name)?;
             let part = record.held_as(unique_name);
-            let slug = part.market_slug.as_deref();
             let favourite = favourites.any([unique_name, &record.unique_name, &set.unique_name]);
             Some(PartRow {
                 item: index.add_marked(ItemSummary::from(&*part), favourite),
                 count,
-                prices: Prices {
-                    sell: slug.and_then(|slug| prices.plat(slug)),
-                    buy: slug.and_then(|slug| prices.buy_plat(slug)),
-                },
+                prices: Prices::of(prices, part.market_slug.as_deref()),
                 set: SetLink {
                     item: index.add(ItemSummary::from(set)),
                     complete: set_is_complete(&account.stock, item),
                 },
-                status: ItemStatus {
-                    built: account.built(&item.unique_name),
-                    mastered: account.mastered(item),
-                },
+                status: account.status(item),
             })
         })
         .collect();
@@ -194,7 +187,6 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
             let complete = owned_parts == parts.len();
             let count = complete_sets(&parts);
             let set = items.variant(&item.unique_name, Variant::Set)?;
-            let slug = set.market_slug.as_deref();
             Some(SetRow {
                 item: index.add_marked(
                     ItemSummary::from(set),
@@ -204,14 +196,8 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
                 total_parts: parts.len(),
                 count,
                 complete,
-                status: ItemStatus {
-                    built: account.built(&item.unique_name),
-                    mastered: account.mastered(item),
-                },
-                prices: Prices {
-                    sell: slug.and_then(|slug| prices.plat(slug)),
-                    buy: slug.and_then(|slug| prices.buy_plat(slug)),
-                },
+                status: account.status(item),
+                prices: Prices::of(prices, set.market_slug.as_deref()),
                 ducats: set_ducats(&parts),
                 components: parts
                     .iter()
@@ -231,10 +217,16 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::tests::prices;
+    use serde_json::json;
+
+    use super::super::tests::{holding, priced};
     use super::*;
     use crate::account::Account;
-    use crate::catalog::{Catalog, fixtures};
+    use crate::catalog::Catalog;
+    use crate::catalog::fixtures::{
+        self, BRATON_PRIME, BRATON_PRIME_BARREL, BRATON_PRIME_STOCK, FERRITE, PRIME_PARTS,
+        TRINITY_PRIME_SYSTEMS_BLUEPRINT, drop_entries, entries, inventory_with, push_counted,
+    };
     use crate::inventory_view::tab;
     use crate::listings::MarketListings;
     use crate::view::Fixture;
@@ -242,28 +234,17 @@ mod tests {
 
     #[test]
     fn owned_parts_only() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = priced(fixtures::catalog(), fixtures::inventory());
         let (rows, _) = fixture.rows(parts);
         assert!(
             rows.is_empty(),
             "the fixture account holds no tradable prime parts"
         );
 
-        let stocked = Fixture::new(
-            fixtures::catalog(),
-            fixtures::inventory_owning(&[
-                (
-                    "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                    3,
-                ),
-                (
-                    "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-                    1,
-                ),
-            ]),
-        )
-        .with_prices(prices());
+        let stocked = holding(&[
+            (BRATON_PRIME_BARREL, 3),
+            (TRINITY_PRIME_SYSTEMS_BLUEPRINT, 1),
+        ]);
         let (rows, index) = stocked.rows(parts);
         assert_eq!(rows.len(), 2);
         assert!(rows.iter().all(|row| row.count > 0));
@@ -290,50 +271,21 @@ mod tests {
 
     #[test]
     fn pending_part_not_stock() {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        value
-            .get_mut("MiscItems")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap()
-            .push(serde_json::json!({
-                "ItemType": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                "ItemCount": 1
-            }));
-        value
-            .get_mut("PendingRecipes")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap()
-            .push(serde_json::json!({
-                "ItemType": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+        let inventory = inventory_with(|value| {
+            push_counted(value, "MiscItems", BRATON_PRIME_BARREL, 1);
+            entries(value, "PendingRecipes").push(json!({
+                "ItemType": BRATON_PRIME_BARREL,
                 "CompletionDate": { "$date": { "$numberLong": "1700000000000" } },
                 "ItemId": { "$oid": "000000000000000000000000" }
             }));
-        let fixture = Fixture::new(
-            fixtures::catalog(),
-            wf_inventory::Inventory::parse(&value.to_string()).unwrap(),
-        )
-        .with_prices(prices());
+        });
+        let fixture = priced(fixtures::catalog(), inventory);
         assert!(fixture.rows(parts).0.is_empty());
     }
 
     #[test]
     fn mastered_flag() {
-        let held = [
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                3,
-            ),
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                1,
-            ),
-            (
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-                1,
-            ),
-        ];
-        let mut fixture = Fixture::new(fixtures::catalog(), fixtures::inventory_owning(&held))
-            .with_prices(prices());
+        let mut fixture = holding(&PRIME_PARTS);
         let braton_set = |fixture: &Fixture| {
             let (found, index) = fixture.rows(sets);
             found
@@ -348,24 +300,17 @@ mod tests {
         );
         assert!(braton_set(&fixture).status.mastered);
 
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        for entry in value
-            .get_mut("XPInfo")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap()
-        {
-            if entry["ItemType"] == "/Lotus/Weapons/Tenno/Rifle/BratonPrime" {
-                entry["XP"] = serde_json::json!(1_000);
+        fixture.account = Account::new(inventory_with(|value| {
+            for entry in entries(value, "XPInfo") {
+                if entry["ItemType"] == BRATON_PRIME {
+                    entry["XP"] = json!(1_000);
+                }
             }
-        }
-        let misc = value
-            .get_mut("MiscItems")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap();
-        for (item_type, count) in held {
-            misc.push(serde_json::json!({ "ItemType": item_type, "ItemCount": count }));
-        }
-        fixture.account = Account::new(wf_inventory::Inventory::parse(&value.to_string()).unwrap());
+
+            for (item_type, count) in PRIME_PARTS {
+                push_counted(value, "MiscItems", item_type, count);
+            }
+        }));
         let (rows, index) = fixture.rows(parts);
         for row in &rows {
             assert_eq!(
@@ -393,14 +338,10 @@ mod tests {
         );
         assert_ne!(components, fixtures::COMPONENTS);
         let catalog = Catalog::from_json(fixtures::ITEMS, fixtures::RELICS, &components).unwrap();
-        let stocked = Fixture::new(
+        let stocked = priced(
             catalog,
-            fixtures::inventory_owning(&[(
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                1,
-            )]),
-        )
-        .with_prices(prices());
+            fixtures::inventory_owning(&[(BRATON_PRIME_STOCK, 1)]),
+        );
         let (rows, index) = stocked.rows(sets);
         let braton = &rows[0];
         assert_eq!(braton.total_parts, 4);
@@ -415,27 +356,16 @@ mod tests {
 
     #[test]
     fn partial_braton_set() {
-        let stocked_inventory = fixtures::inventory_owning(&[
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                3,
-            ),
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                1,
-            ),
-        ]);
+        let stocked_inventory =
+            fixtures::inventory_owning(&[(BRATON_PRIME_BARREL, 3), (BRATON_PRIME_STOCK, 1)]);
         assert!(
-            Fixture::new(fixtures::catalog(), fixtures::inventory())
-                .with_prices(prices())
+            priced(fixtures::catalog(), fixtures::inventory())
                 .rows(sets)
                 .0
                 .is_empty()
         );
 
-        let (rows, index) = Fixture::new(fixtures::catalog(), stocked_inventory.clone())
-            .with_prices(prices())
-            .rows(sets);
+        let (rows, index) = priced(fixtures::catalog(), stocked_inventory.clone()).rows(sets);
         assert_eq!(rows.len(), 1);
         let braton = &rows[0];
         assert_eq!(index[braton.item].name, "Braton Prime");
@@ -454,37 +384,17 @@ mod tests {
 
         let with_skins = || fixtures::with_skins(fixtures::ITEMS);
         assert!(
-            Fixture::new(with_skins(), fixtures::inventory())
-                .with_prices(prices())
+            priced(with_skins(), fixtures::inventory())
                 .rows(sets)
                 .0
                 .is_empty()
         );
-        assert_eq!(
-            Fixture::new(with_skins(), stocked_inventory)
-                .with_prices(prices())
-                .rows(sets)
-                .0,
-            rows
-        );
+        assert_eq!(priced(with_skins(), stocked_inventory).rows(sets).0, rows);
     }
 
     #[test]
     fn set_ducats() {
-        let stocked = Fixture::new(
-            fixtures::catalog(),
-            fixtures::inventory_owning(&[
-                (
-                    "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                    3,
-                ),
-                (
-                    "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                    1,
-                ),
-            ]),
-        )
-        .with_prices(prices());
+        let stocked = holding(&[(BRATON_PRIME_BARREL, 3), (BRATON_PRIME_STOCK, 1)]);
         let (rows, _) = stocked.rows(sets);
         assert_eq!(rows[0].ducats, 110);
     }
@@ -501,9 +411,7 @@ mod tests {
         assert!(!is_part_stock(
             "/Lotus/Types/Recipes/WarframeRecipes/ChromaBeaconCComponent"
         ));
-        assert!(is_part_stock(
-            "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel"
-        ));
+        assert!(is_part_stock(BRATON_PRIME_BARREL));
         assert!(is_part_stock(
             "/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysStarChartBlueprint"
         ));
@@ -528,7 +436,7 @@ mod tests {
         assert!(!is_part_stock(
             "/Lotus/Types/Recipes/Weapons/Skins/SkinBlueprint"
         ));
-        assert!(!is_part_stock("/Lotus/Types/Items/MiscItems/Ferrite"));
+        assert!(!is_part_stock(FERRITE));
 
         let candidates = fixtures::inventory();
         let listed = candidates
@@ -542,14 +450,7 @@ mod tests {
 
     #[test]
     fn built_and_mastered_flags() {
-        let stocked = Fixture::new(
-            fixtures::catalog(),
-            fixtures::inventory_owning(&[(
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                3,
-            )]),
-        )
-        .with_prices(prices());
+        let stocked = holding(&[(BRATON_PRIME_BARREL, 3)]);
         let (found, index) = stocked.rows(parts);
         let row = found
             .into_iter()
@@ -560,27 +461,11 @@ mod tests {
         assert!(row.status.built || row.status.mastered);
         assert!(index[row.item].vault.is_some(), "the part names a prime");
 
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        for key in ["LongGuns", "XPInfo"] {
-            let entries = value
-                .get_mut(key)
-                .and_then(serde_json::Value::as_array_mut)
-                .unwrap();
-            entries.retain(|entry| entry["ItemType"] != "/Lotus/Weapons/Tenno/Rifle/BratonPrime");
-        }
-        value
-            .get_mut("MiscItems")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap()
-            .push(serde_json::json!({
-                "ItemType": "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                "ItemCount": 3
-            }));
-        let never_built = Fixture::new(
-            fixtures::catalog(),
-            wf_inventory::Inventory::parse(&value.to_string()).unwrap(),
-        )
-        .with_prices(prices());
+        let inventory = inventory_with(|value| {
+            drop_entries(value, &["LongGuns", "XPInfo"], BRATON_PRIME);
+            push_counted(value, "MiscItems", BRATON_PRIME_BARREL, 3);
+        });
+        let never_built = priced(fixtures::catalog(), inventory);
         let (found, index) = never_built.rows(parts);
         let row = found
             .into_iter()
@@ -601,32 +486,22 @@ mod tests {
                 ],
                 &[],
             ),
-            ..Fixture::new(
-                fixtures::catalog(),
-                fixtures::inventory_owning(&[
-                    (
-                        "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                        3,
-                    ),
-                    (
-                        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-                        1,
-                    ),
-                ]),
-            )
-            .with_prices(prices())
+            ..holding(&[
+                (BRATON_PRIME_BARREL, 3),
+                (TRINITY_PRIME_SYSTEMS_BLUEPRINT, 1),
+            ])
         }
         .with_market(&[
             fixtures::market_item(
                 "braton_prime_barrel",
                 "Braton Prime Barrel",
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                BRATON_PRIME_BARREL,
                 &["component"],
             ),
             fixtures::market_item(
                 "trinity_prime_systems",
                 "Trinity Prime Systems Blueprint",
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+                TRINITY_PRIME_SYSTEMS_BLUEPRINT,
                 &["component", "blueprint"],
             ),
         ]);
@@ -663,25 +538,12 @@ mod tests {
     fn set_order_reaches_every_part() {
         let fixture = Fixture {
             listings: MarketListings::new([("braton_prime_set", OrderType::Sell)], &[]),
-            ..Fixture::new(
-                fixtures::catalog(),
-                fixtures::inventory_owning(&[
-                    (
-                        "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                        3,
-                    ),
-                    (
-                        "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                        1,
-                    ),
-                ]),
-            )
-            .with_prices(prices())
+            ..holding(&[(BRATON_PRIME_BARREL, 3), (BRATON_PRIME_STOCK, 1)])
         }
         .with_market(&[fixtures::market_item(
             "braton_prime_set",
             "Braton Prime Set",
-            "/Lotus/Weapons/Tenno/Rifle/BratonPrime",
+            BRATON_PRIME,
             &["set"],
         )]);
         let listed = tab(&fixture.view());

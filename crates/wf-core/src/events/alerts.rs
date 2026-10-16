@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
-use wf_worldstate::{Fissure, RelicTier, mission_type_name};
+use wf_worldstate::{Fissure, RelicTier, mission_type_name, node_and_planet};
 
 const ANY: &str = "all";
 
@@ -224,10 +224,7 @@ impl AlertSettings {
 }
 
 pub(super) fn fissure_planet(fissure: &Fissure) -> Option<&'static str> {
-    let name = fissure.node_name?.trim_end();
-    let inner = name.strip_suffix(')')?;
-    let open = inner.rfind('(')?;
-    let planet = inner[open + 1..].trim();
+    let (_, planet) = node_and_planet(fissure.node_name?)?;
     (!planet.is_empty()).then_some(planet)
 }
 
@@ -238,40 +235,7 @@ pub fn tier_name(tier: RelicTier) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::{DateTime, Utc};
-    use wf_worldstate::FissureTier;
-
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::from_timestamp_millis(millis).unwrap()
-    }
-
-    fn fissure(
-        tier: RelicTier,
-        mission_type: &str,
-        node_name: Option<&'static str>,
-        steel_path: bool,
-    ) -> Fissure {
-        Fissure {
-            node_id: "SolNode58".to_owned(),
-            node_name,
-            mission_type: mission_type.to_owned(),
-            mission_name: "Extermination".to_owned(),
-            tier: FissureTier::Relic(tier),
-            steel_path,
-            is_storm: false,
-            activation: at(0),
-            expiry: at(1_000_000),
-        }
-    }
-
-    fn sample() -> Fissure {
-        fissure(
-            RelicTier::Lith,
-            "MT_EXTERMINATION",
-            Some("Galatea (Neptune)"),
-            false,
-        )
-    }
+    use crate::events::support::{fissure, sample};
 
     #[test]
     fn planet_from_node_name() {

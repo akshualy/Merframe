@@ -80,10 +80,8 @@ mod tests {
     use super::*;
     use crate::catalog::fixtures::{self, market_item};
 
-    const AUCTIONS: &str = include_str!("../../wf-market/tests/fixtures/auctions_my.json");
-
     fn auctions() -> Vec<Auction> {
-        wf_market::parse_v1_auctions(AUCTIONS).unwrap()
+        wf_market::parse_v1_auctions(fixtures::MY_AUCTIONS).unwrap()
     }
 
     #[test]
@@ -93,19 +91,19 @@ mod tests {
             market_item(
                 "trinity_prime_systems",
                 "Trinity Prime Systems Blueprint",
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+                fixtures::TRINITY_PRIME_SYSTEMS_BLUEPRINT,
                 &["component", "blueprint"],
             ),
             market_item(
                 "braton_prime_set",
                 "Braton Prime Set",
-                "/Lotus/Weapons/Tenno/Rifle/BratonPrime",
+                fixtures::BRATON_PRIME,
                 &["set"],
             ),
             market_item(
                 "braton_prime_barrel",
                 "Braton Prime Barrel",
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                fixtures::BRATON_PRIME_BARREL,
                 &["component"],
             ),
         ];

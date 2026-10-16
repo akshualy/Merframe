@@ -266,6 +266,7 @@ pub(super) fn same_roll(attributes: &[AttributeGrade], fingerprint: &RivenFinger
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::catalog::fixtures;
     use crate::rivens::support::*;
 
     const DAMAGE_TAG: &str = "WeaponDamageAmountMod";
@@ -278,13 +279,8 @@ mod tests {
 
     fn rolled_of_type(riven_type: &str, tag: &str, value: i64, curse: bool) -> AttributeGrade {
         let fixture = fixture();
-        let riven_type = fixture
-            .catalog
-            .data()
-            .riven_data()
-            .riven_type(riven_type)
-            .expect("riven type");
         let grader = fixture.grader();
+        let riven_type = grader.riven_type(riven_type).expect("riven type");
         let roll = Roll {
             grader: &grader,
             riven_type: Some(riven_type),
@@ -641,8 +637,8 @@ mod tests {
 
     #[test]
     fn traded_riven_names() {
-        let catalog = riven_catalog();
-        let inventory = crate::catalog::fixtures::inventory();
+        let catalog = fixtures::catalog_with(fixtures::RIVEN_ITEMS, PRE_VEILED_ITEMS);
+        let inventory = fixtures::inventory();
         let soma = inventory
             .rivens()
             .find(|upgrade| {
@@ -665,7 +661,7 @@ mod tests {
     fn fingerprint_weapon_path() {
         assert_eq!(
             fingerprint_weapon(CURRENT_ROLL).as_deref(),
-            Some("/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep")
+            Some(ARCHON_DAGGERS)
         );
         assert_eq!(fingerprint_weapon("{"), None);
     }

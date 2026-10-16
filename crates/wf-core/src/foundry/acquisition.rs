@@ -3,8 +3,8 @@ use std::collections::HashSet;
 
 use wf_data::{Component, Drop, Item, Refinement};
 
-use crate::catalog::{Catalog, REFINEMENTS, Stock, is_part, refinement_name};
-use crate::identity::{market_slug, part_market_slug};
+use crate::catalog::{Catalog, Stock, is_part};
+use crate::identity::ItemTable;
 use crate::prices::PriceSource;
 use crate::relic_planner::owned_relic_count;
 
@@ -22,9 +22,9 @@ pub(super) fn wiki_url(catalog: &Catalog, unique_name: &str) -> Option<String> {
 }
 
 fn named_refinement(name: &str) -> Option<Refinement> {
-    REFINEMENTS
+    Refinement::ALL
         .into_iter()
-        .find(|refinement| refinement_name(*refinement) == name)
+        .find(|refinement| refinement.name() == name)
 }
 
 fn relic_refinement(location: &str) -> Option<Refinement> {
@@ -115,6 +115,7 @@ pub(super) fn component_drops(
 }
 
 pub(super) fn node_market(
+    items: &ItemTable,
     prices: &dyn PriceSource,
     parent: &Item,
     component: &Component,
@@ -122,11 +123,13 @@ pub(super) fn node_market(
     if !component.tradable {
         return None;
     }
-    let slug = if is_part(component) {
-        part_market_slug(parent, component)
+
+    let record = if is_part(component) {
+        items.part(parent, component)
     } else {
-        market_slug(&component.name)
+        items.get(&component.unique_name)
     };
+    let slug = record?.market_slug.clone()?;
     let sell = prices.plat(&slug)?;
     Some(NodeMarket { slug, sell })
 }
@@ -157,7 +160,7 @@ pub(super) fn owned_relics(catalog: &Catalog, stock: &Stock, drops: &[Drop]) -> 
         }
         rows.push(OwnedRelic {
             unique_name: unique_name.clone(),
-            name: format!("{} {}", relic.name, refinement_name(refinement)),
+            name: format!("{} {}", relic.name, refinement.name()),
             image_name: relic.image_names.get(&refinement).cloned(),
             owned,
             chance,
@@ -171,15 +174,11 @@ pub(super) fn owned_relics(catalog: &Catalog, stock: &Stock, drops: &[Drop]) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{self, BRATON_PRIME_STOCK, EXCALIBUR, FERRITE, OROKIN_CELL};
     use crate::prices::FixedPrices;
     use wf_data::Rarity;
     use wf_inventory::Inventory;
 
-    const BRATON_PRIME_STOCK: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
-    const EXCALIBUR: &str = "/Lotus/Powersuits/Excalibur/Excalibur";
-    const FERRITE: &str = "/Lotus/Types/Items/MiscItems/Ferrite";
-    const OROKIN_CELL: &str = "/Lotus/Types/Items/MiscItems/OrokinCell";
     const AXI_A1_INTACT: &str = "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze";
     const AXI_A1_EXCEPTIONAL: &str = "/Lotus/Types/Game/Projections/T4VoidProjectionESilver";
     const AXI_A1_FLAWLESS: &str = "/Lotus/Types/Game/Projections/T4VoidProjectionEGold";
@@ -410,23 +409,24 @@ mod tests {
     #[test]
     fn only_tradable_priced_parts_carry_a_market_quote() {
         let catalog = fixtures::catalog();
+        let items = ItemTable::build(&catalog);
         let (braton_prime, stock_part) = catalog.component(BRATON_PRIME_STOCK).unwrap();
         let priced = FixedPrices::new([("braton_prime_stock", 12.0)]);
         assert_eq!(
-            node_market(&priced, braton_prime, stock_part),
+            node_market(&items, &priced, braton_prime, stock_part),
             Some(NodeMarket {
                 slug: "braton_prime_stock".to_owned(),
                 sell: 12.0,
             })
         );
         assert_eq!(
-            node_market(&FixedPrices::default(), braton_prime, stock_part),
+            node_market(&items, &FixedPrices::default(), braton_prime, stock_part),
             None
         );
 
         let excalibur = catalog.item(EXCALIBUR).unwrap();
         let chassis = &excalibur.components.as_deref().unwrap()[1];
         let everything = FixedPrices::new([("excalibur_chassis_blueprint", 5.0)]);
-        assert_eq!(node_market(&everything, excalibur, chassis), None);
+        assert_eq!(node_market(&items, &everything, excalibur, chassis), None);
     }
 }

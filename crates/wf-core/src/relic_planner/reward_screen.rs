@@ -4,14 +4,14 @@ use serde::Serialize;
 use wf_data::{Component, Item};
 
 use crate::account::Account;
-use crate::catalog::{Catalog, DUCATS_ITEM, Stock, names_a_prime, part_identity};
+use crate::catalog::{Catalog, DUCATS_ITEM, Stock, names_a_prime};
 use crate::favourites::Favourites;
-use crate::identity::{ItemTable, Variant};
+use crate::identity::{ItemTable, Variant, part_identity};
 use crate::inventory_view::ItemSummary;
 use crate::prices::PriceSource;
 
 use super::missing_parts;
-use super::rewards::{RewardOwnership, favourite_reward};
+use super::rewards::{RewardOwnership, favourite_part, favourite_reward};
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -203,8 +203,7 @@ fn set_components(
                 needed: component.item_count,
                 enough: owned.is_some_and(|owned| owned >= i64::from(component.item_count)),
                 this_reward: component.unique_name == reward_component,
-                favourite: favourites
-                    .any([component.unique_name.as_str(), item.unique_name.as_str()]),
+                favourite: favourite_part(favourites, item, component),
             })
         })
         .collect()
@@ -217,12 +216,12 @@ mod tests {
     use crate::account::Account;
     use crate::catalog::{VaultStatus, fixtures};
     use crate::prices::FixedPrices;
+    use fixtures::{BRATON_PRIME_STOCK, TRINITY_PRIME_SYSTEMS, TRINITY_PRIME_SYSTEMS_BLUEPRINT};
+    use serde_json::json;
     use wf_inventory::Inventory;
 
     const TRINITY_SYSTEMS_REWARD: &str =
         "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
-    const TRINITY_SYSTEMS: &str =
-        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent";
     const STYANAX_REWARD: &str =
         "/Lotus/StoreItems/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint";
     const FORMA_REWARD: &str = "/Lotus/StoreItems/Types/Recipes/Components/FormaBlueprint";
@@ -317,12 +316,9 @@ mod tests {
 
     #[test]
     fn starred_part_or_parent() {
-        let starred: Favourites = [
-            "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-            "/Lotus/Powersuits/Trinity/TrinityPrime",
-        ]
-        .into_iter()
-        .collect();
+        let starred: Favourites = [BRATON_PRIME_STOCK, "/Lotus/Powersuits/Trinity/TrinityPrime"]
+            .into_iter()
+            .collect();
         let ranked = rank(
             Some(&Account::new(fixtures::inventory())),
             &fixtures::catalog(),
@@ -341,12 +337,10 @@ mod tests {
 
     #[test]
     fn blueprint_reward_keeps_its_own_name() {
-        const TRINITY_SYSTEMS_BLUEPRINT: &str =
-            "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
-        let starred: Favourites = [TRINITY_SYSTEMS_BLUEPRINT].into_iter().collect();
+        let starred: Favourites = [TRINITY_PRIME_SYSTEMS_BLUEPRINT].into_iter().collect();
         let ranked = rank(
             Some(&Account::new(fixtures::inventory_owning(&[(
-                TRINITY_SYSTEMS_BLUEPRINT,
+                TRINITY_PRIME_SYSTEMS_BLUEPRINT,
                 2,
             )]))),
             &fixtures::catalog(),
@@ -355,36 +349,27 @@ mod tests {
             &[TRINITY_SYSTEMS_REWARD],
         )
         .ranked;
-        assert_eq!(ranked[0].item.unique_name, TRINITY_SYSTEMS_BLUEPRINT);
+        assert_eq!(ranked[0].item.unique_name, TRINITY_PRIME_SYSTEMS_BLUEPRINT);
         assert_eq!(ranked[0].item.name, "Trinity Prime Systems");
         assert!(ranked[0].favourite);
         assert_eq!(ranked[0].ownership.unwrap().owned, 2);
     }
 
     fn inventory_without_trinity_prime(building: Option<&str>) -> Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        for key in ["Suits", "XPInfo"] {
-            value
-                .get_mut(key)
-                .and_then(serde_json::Value::as_array_mut)
-                .unwrap()
-                .retain(|entry| {
-                    entry.get("ItemType").and_then(serde_json::Value::as_str)
-                        != Some("/Lotus/Powersuits/Trinity/TrinityPrime")
-                });
-        }
-        if let Some(item_type) = building {
-            value
-                .get_mut("PendingRecipes")
-                .and_then(serde_json::Value::as_array_mut)
-                .unwrap()
-                .push(serde_json::json!({
+        fixtures::inventory_with(|value| {
+            fixtures::drop_entries(
+                value,
+                &["Suits", "XPInfo"],
+                "/Lotus/Powersuits/Trinity/TrinityPrime",
+            );
+            if let Some(item_type) = building {
+                fixtures::entries(value, "PendingRecipes").push(json!({
                     "ItemType": item_type,
                     "CompletionDate": { "$date": { "$numberLong": "1700000000000" } },
                     "ItemId": { "$oid": "000000000000000000000000" }
                 }));
-        }
-        Inventory::parse(&value.to_string()).unwrap()
+            }
+        })
     }
 
     #[test]
@@ -414,7 +399,7 @@ mod tests {
 
     #[test]
     fn owned_against_needed() {
-        let held = fixtures::inventory_owning(&[(TRINITY_SYSTEMS, 2)]);
+        let held = fixtures::inventory_owning(&[(TRINITY_PRIME_SYSTEMS, 2)]);
         let ranked = screen(held, &[TRINITY_SYSTEMS_REWARD, FORMA_REWARD]).ranked;
         assert_eq!(ranked[0].ownership.unwrap().owned, 2);
         assert_eq!(ranked[0].ownership.unwrap().needed, 1);
@@ -444,7 +429,7 @@ mod tests {
 
     #[test]
     fn prime_set_components() {
-        let held = fixtures::inventory_owning(&[(TRINITY_SYSTEMS, 1)]);
+        let held = fixtures::inventory_owning(&[(TRINITY_PRIME_SYSTEMS, 1)]);
         let ranked = screen(
             held,
             &[
@@ -464,7 +449,7 @@ mod tests {
         );
         let systems = components
             .iter()
-            .find(|component| component.item.unique_name == TRINITY_SYSTEMS)
+            .find(|component| component.item.unique_name == TRINITY_PRIME_SYSTEMS)
             .unwrap();
         assert!(systems.this_reward);
         assert_eq!(systems.item.name, "Trinity Prime Systems");
@@ -474,7 +459,7 @@ mod tests {
         assert!(
             components
                 .iter()
-                .filter(|component| component.item.unique_name != TRINITY_SYSTEMS)
+                .filter(|component| component.item.unique_name != TRINITY_PRIME_SYSTEMS)
                 .all(|component| !component.this_reward && !component.enough)
         );
 
@@ -487,7 +472,7 @@ mod tests {
 
     #[test]
     fn starred_component() {
-        let starred: Favourites = [TRINITY_SYSTEMS].into_iter().collect();
+        let starred: Favourites = [TRINITY_PRIME_SYSTEMS].into_iter().collect();
         let ranked = rank(
             Some(&Account::new(fixtures::inventory())),
             &fixtures::catalog(),
@@ -502,7 +487,7 @@ mod tests {
             .filter(|component| component.favourite)
             .map(|component| component.item.unique_name.as_str())
             .collect();
-        assert_eq!(stars, vec![TRINITY_SYSTEMS]);
+        assert_eq!(stars, vec![TRINITY_PRIME_SYSTEMS]);
     }
 
     #[test]

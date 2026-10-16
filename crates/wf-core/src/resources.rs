@@ -4,9 +4,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use wf_inventory::{ArchonCrystalSlot, Inventory};
 
-use crate::catalog::{Catalog, Stock, part_identity};
+use crate::catalog::{Catalog, Stock};
 use crate::foundry::{self, CraftNode, FoundryItem, farmed_resource, is_blueprint};
-use crate::identity::ItemTable;
+use crate::identity::{ItemTable, part_identity};
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
@@ -285,18 +285,17 @@ fn holds_a_recipe(held: &HashSet<&str>, item: &FoundryItem) -> bool {
 mod tests {
     use std::collections::BTreeSet;
 
+    use serde_json::{Value, json};
+
     use super::*;
-    use crate::catalog::{Catalog, fixtures};
+    use crate::catalog::fixtures::{
+        self, BRATON_PRIME, BRATON_PRIME_BARREL, BRATON_PRIME_BLUEPRINT, DUAL_KAMAS, EXCALIBUR,
+        OROKIN_CELL, SINGLE_KAMA, at, drop_entries, entries, inventory_with, push_counted,
+    };
     use crate::favourites::Favourites;
     use crate::view::Fixture;
 
     const NOW_MS: i64 = 1_788_807_069_000;
-    const BRATON_PRIME: &str = "/Lotus/Weapons/Tenno/Rifle/BratonPrime";
-    const BRATON_PRIME_BARREL: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel";
-    const BRATON_PRIME_BLUEPRINT: &str = "/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint";
-    const DUAL_KAMAS: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/DualKamas";
-    const EXCALIBUR: &str = "/Lotus/Powersuits/Excalibur/Excalibur";
-    const OROKIN_CELL: &str = "/Lotus/Types/Items/MiscItems/OrokinCell";
     const CERATA_BLUEPRINT: &str = "/Lotus/Weapons/ClanTech/Bio/PunctureGlaiveWeaponBlueprint";
     const MUTAGEN_MASS: &str = "/Lotus/Types/Items/Research/BioComponent";
     const MUTAGEN_MASS_BLUEPRINT: &str = "/Lotus/Types/Items/Research/BioComponentBlueprint";
@@ -313,34 +312,16 @@ mod tests {
                 owned: None,
             },
             None,
-            DateTime::from_timestamp_millis(NOW_MS).unwrap(),
-        )
-    }
-
-    fn with_recipe(json: &str, recipe: &str, count: i64) -> String {
-        json.replacen(
-            r#""Recipes":[{"#,
-            &format!(r#""Recipes":[{{"ItemType":"{recipe}","ItemCount":{count}}},{{"#),
-            1,
+            at(NOW_MS),
         )
     }
 
     fn holding(recipe: &str, count: i64) -> Inventory {
-        Inventory::parse(&with_recipe(fixtures::INVENTORY, recipe, count)).unwrap()
+        inventory_with(|value| push_counted(value, "Recipes", recipe, count))
     }
 
-    fn unbuilt_braton_prime() -> String {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        for key in ["LongGuns", "XPInfo"] {
-            let entries = value
-                .get_mut(key)
-                .and_then(serde_json::Value::as_array_mut)
-                .expect(key);
-            entries.retain(|entry| {
-                entry.get("ItemType").and_then(serde_json::Value::as_str) != Some(BRATON_PRIME)
-            });
-        }
-        value.to_string()
+    fn unbuild_braton_prime(value: &mut Value) {
+        drop_entries(value, &["LongGuns", "XPInfo"], BRATON_PRIME);
     }
 
     fn names(tab: &ResourcesTab) -> Vec<&str> {
@@ -458,10 +439,7 @@ mod tests {
             resources(
                 &Fixture {
                     favourites,
-                    ..Fixture::new(
-                        fixtures::catalog(),
-                        Inventory::parse(&unbuilt_braton_prime()).unwrap(),
-                    )
+                    ..Fixture::new(fixtures::catalog(), inventory_with(unbuild_braton_prime))
                 },
                 ResourceSource::Craftable,
                 scope,
@@ -487,10 +465,7 @@ mod tests {
 
     #[test]
     fn kind_prime_and_owned_filters() {
-        let fixture = Fixture::new(
-            fixtures::catalog(),
-            Inventory::parse(&unbuilt_braton_prime()).unwrap(),
-        );
+        let fixture = Fixture::new(fixtures::catalog(), inventory_with(unbuild_braton_prime));
         let filtered = |kind: Option<&str>, prime, owned| {
             tab(
                 &fixture.view(),
@@ -502,7 +477,7 @@ mod tests {
                     owned,
                 },
                 None,
-                DateTime::from_timestamp_millis(NOW_MS).unwrap(),
+                at(NOW_MS),
             )
         };
 
@@ -541,15 +516,17 @@ mod tests {
             )
         };
 
-        let unbuilt = unbuilt_braton_prime();
-        let bare = Inventory::parse(&unbuilt).unwrap();
+        let bare = inventory_with(unbuild_braton_prime);
         assert!(names(&sourced(&bare, ResourceSource::Held)).is_empty());
         assert_eq!(
             names(&sourced(&bare, ResourceSource::Craftable)),
             ["Braton Prime"]
         );
 
-        let held = Inventory::parse(&with_recipe(&unbuilt, BRATON_PRIME_BLUEPRINT, 1)).unwrap();
+        let held = inventory_with(|value| {
+            unbuild_braton_prime(value);
+            push_counted(value, "Recipes", BRATON_PRIME_BLUEPRINT, 1);
+        });
         let tab = sourced(&held, ResourceSource::Held);
         assert_eq!(names(&tab), ["Braton Prime"]);
     }
@@ -570,14 +547,13 @@ mod tests {
 
     #[test]
     fn pending_builds_are_left_out() {
-        let json = fixtures::INVENTORY.replacen(
-            r#""PendingRecipes":[{"#,
-            &format!(
-                r#""PendingRecipes":[{{"ItemType":"{BRATON_PRIME_BLUEPRINT}","CompletionDate":{{"$date":{{"$numberLong":"1789000000000"}}}},"ItemId":{{"$oid":"000000000000000000000001"}}}},{{"#
-            ),
-            1,
-        );
-        let inventory = Inventory::parse(&json).unwrap();
+        let inventory = inventory_with(|value| {
+            entries(value, "PendingRecipes").push(json!({
+                "ItemType": BRATON_PRIME_BLUEPRINT,
+                "CompletionDate": { "$date": { "$numberLong": "1789000000000" } },
+                "ItemId": { "$oid": "000000000000000000000001" },
+            }));
+        });
         let tab = resources(
             &Fixture::new(fixtures::catalog(), inventory),
             ResourceSource::Craftable,
@@ -630,7 +606,6 @@ mod tests {
 
     #[test]
     fn a_built_part_costs_nothing() {
-        const SINGLE_KAMA: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama";
         let inventory = fixtures::inventory_stocked(&[("Melee", SINGLE_KAMA)], &[]);
         let tab = resources(
             &Fixture::new(fixtures::foundry_catalog(), inventory),
@@ -642,7 +617,6 @@ mod tests {
 
     #[test]
     fn a_built_part_is_not_a_resource() {
-        const SINGLE_KAMA: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama";
         let inventory =
             fixtures::inventory_stocked(&[("Melee", SINGLE_KAMA), ("Melee", SINGLE_KAMA)], &[]);
         let tab = resources(
@@ -706,10 +680,9 @@ mod tests {
         const AMBER: &str = "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNira";
         const TAUFORGED_AMBER: &str = "/Lotus/Types/Gameplay/NarmerSorties/ArchonCrystalNiraMythic";
 
-        let misc = include_str!("../../../fixtures/misc_items.json");
         let tab = resources(
             &Fixture::new(
-                Catalog::from_json(misc, fixtures::RELICS, fixtures::COMPONENTS).unwrap(),
+                fixtures::misc_catalog(),
                 fixtures::inventory_owning(&[(AMBER, 7), (TAUFORGED_AMBER, 2)]),
             ),
             ResourceSource::Held,

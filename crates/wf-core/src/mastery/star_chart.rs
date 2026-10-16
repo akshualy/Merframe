@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use wf_inventory::Inventory;
+use wf_worldstate::node_and_planet;
 
 use super::routes::member_route;
 use super::{CategoryTotals, LevelUpRoute, RouteMember};
@@ -82,13 +83,9 @@ fn node_place(node_id: &str) -> String {
     let Some(info) = wf_worldstate::node_info(node_id) else {
         return node_id.to_owned();
     };
-    let value = info.value.trim();
-    match value
-        .strip_suffix(')')
-        .and_then(|inner| inner.rsplit_once('('))
-    {
-        Some((name, planet)) => format!("{}, {}", planet.trim(), name.trim()),
-        None => value.to_owned(),
+    match node_and_planet(info.value) {
+        Some((name, planet)) => format!("{planet}, {name}"),
+        None => info.value.trim().to_owned(),
     }
 }
 

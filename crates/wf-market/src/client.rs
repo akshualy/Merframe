@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use reqwest::header::{HeaderMap, HeaderValue, RETRY_AFTER};
-use reqwest::{Request, StatusCode};
+use reqwest::header::{AUTHORIZATION, HeaderMap, HeaderValue, RETRY_AFTER};
+use reqwest::{Request, Response, StatusCode};
 
 use crate::error::{MarketError, Result};
 use crate::listings::{ItemListings, Reach, item_listings};
@@ -14,6 +14,7 @@ use crate::parse;
 use crate::ratelimit::{self, RateLimiter};
 
 pub(crate) const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+pub(crate) const MERFRAME_API: &str = "https://api.merframe.net/v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ApiFamily {
@@ -78,23 +79,12 @@ impl Client {
         builder
     }
 
-    async fn send(&self, request: Request) -> Result<reqwest::Response> {
-        let _permit = self.rate_limiter.acquire().await;
-        let response = self.http.execute(request).await?;
-
-        if response.status() == StatusCode::TOO_MANY_REQUESTS {
-            return Err(rate_limited(&self.rate_limiter, response.headers()).await);
-        }
-
-        Ok(response)
-    }
-
     async fn execute<T>(
         &self,
         request: Request,
         parser: impl FnOnce(&str) -> Result<T>,
     ) -> Result<T> {
-        let response = self.send(request).await?;
+        let response = send(&self.http, &self.rate_limiter, request).await?;
         let status = response.status();
         let body = accepted(status, response.text().await?)?;
         parser(&body)
@@ -107,7 +97,7 @@ impl Client {
     pub fn items_request(&self) -> Result<Request> {
         Ok(self
             .http
-            .get("https://api.merframe.net/v1/items")
+            .get(format!("{MERFRAME_API}/items"))
             .timeout(REQUEST_TIMEOUT)
             .build()?)
     }
@@ -124,27 +114,20 @@ impl Client {
             .header("auth_type", "header")
             .json(&body)
             .build()?;
-        request.headers_mut().insert(
-            reqwest::header::AUTHORIZATION,
-            HeaderValue::from_static("JWT"),
-        );
+        request
+            .headers_mut()
+            .insert(AUTHORIZATION, HeaderValue::from_static("JWT"));
         Ok(request)
     }
 
     pub async fn login(&self, email: &str, password: &str) -> Result<String> {
         let request = self.login_request(email, password)?;
-        let response = self.send(request).await?;
+        let response = send(&self.http, &self.rate_limiter, request).await?;
         let status = response.status();
-        let authorization_header = response
-            .headers()
-            .get(reqwest::header::AUTHORIZATION)
-            .cloned();
+        let token = jwt_token(response.headers());
         accepted(status, response.text().await?)?;
 
-        authorization_header
-            .as_ref()
-            .and_then(jwt_token)
-            .ok_or(MarketError::MissingJwt)
+        token.ok_or(MarketError::MissingJwt)
     }
 
     pub fn me_request(&self) -> Result<Request> {
@@ -155,13 +138,10 @@ impl Client {
 
     pub async fn me(&self) -> Result<Session> {
         let request = self.me_request()?;
-        let response = self.send(request).await?;
+        let response = send(&self.http, &self.rate_limiter, request).await?;
         let status = response.status();
-        let rotated = response
-            .headers()
-            .get(reqwest::header::AUTHORIZATION)
-            .and_then(jwt_token)
-            .filter(|token| self.token.as_ref() != Some(token));
+        let rotated =
+            jwt_token(response.headers()).filter(|token| self.token.as_ref() != Some(token));
         let body = accepted(status, response.text().await?)?;
 
         Ok(Session {
@@ -381,15 +361,31 @@ pub(crate) fn segment(value: &str) -> String {
     encoded
 }
 
-fn jwt_token(header: &HeaderValue) -> Option<String> {
-    header
+fn jwt_token(headers: &HeaderMap) -> Option<String> {
+    headers
+        .get(AUTHORIZATION)?
         .to_str()
         .ok()?
         .strip_prefix("JWT ")
         .map(str::to_owned)
 }
 
-pub(crate) async fn rate_limited(limiter: &RateLimiter, headers: &HeaderMap) -> MarketError {
+pub(crate) async fn send(
+    http: &reqwest::Client,
+    limiter: &RateLimiter,
+    request: Request,
+) -> Result<Response> {
+    let _permit = limiter.acquire().await;
+    let response = http.execute(request).await?;
+
+    if response.status() == StatusCode::TOO_MANY_REQUESTS {
+        return Err(rate_limited(limiter, response.headers()).await);
+    }
+
+    Ok(response)
+}
+
+async fn rate_limited(limiter: &RateLimiter, headers: &HeaderMap) -> MarketError {
     let retry_after = headers
         .get(RETRY_AFTER)
         .and_then(|value| value.to_str().ok()?.parse().ok());

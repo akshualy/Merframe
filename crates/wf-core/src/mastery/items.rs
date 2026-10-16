@@ -1,14 +1,14 @@
 use std::collections::{HashMap, HashSet};
 
-use wf_data::Item;
+use wf_data::{Item, Refinement};
 use wf_inventory::Inventory;
 
 use super::{
     Acquisition, CategoryTotals, Level, MasteryComponent, MasteryGroup, MasteryItem, MasteryOptions,
 };
 use crate::account::Account;
-use crate::catalog::{Catalog, REFINEMENTS, Stock, component_image, part_identity, part_name};
-use crate::identity::market_slug;
+use crate::catalog::{Catalog, Stock, part_name};
+use crate::identity::{ItemTable, market_slug, part_identity};
 use crate::prices::PriceSource;
 use crate::view::View;
 
@@ -111,7 +111,7 @@ fn market_cost(missing: &[&MasteryComponent], prices: &dyn PriceSource) -> (u64,
     (plat_cost, !unpriced_blueprint && !quoted.is_empty())
 }
 
-fn components_of(stock: &Stock, item: &Item) -> Vec<MasteryComponent> {
+fn components_of(stock: &Stock, items: &ItemTable, item: &Item) -> Vec<MasteryComponent> {
     item.components
         .as_deref()
         .unwrap_or_default()
@@ -122,7 +122,9 @@ fn components_of(stock: &Stock, item: &Item) -> Vec<MasteryComponent> {
             MasteryComponent {
                 unique_name: component.unique_name.clone(),
                 name: part_name(item, component),
-                image_name: component_image(item, component),
+                image_name: items
+                    .part(item, component)
+                    .and_then(|part| part.image_name.clone()),
                 owned,
                 required,
                 enough: owned >= required,
@@ -143,7 +145,7 @@ impl<'a> OwnedRelicDrops<'a> {
     fn new(catalog: &'a Catalog, stock: &Stock) -> Self {
         let mut by_reward: HashMap<&'a str, Vec<(f64, f64)>> = HashMap::new();
         for relic in catalog.relics() {
-            for refinement in REFINEMENTS {
+            for refinement in Refinement::ALL {
                 let owned = relic
                     .unique_names
                     .get(&refinement)
@@ -188,6 +190,7 @@ pub(super) fn items(view: &View, options: MasteryOptions) -> Vec<MasteryItem> {
     let View {
         account,
         catalog,
+        items,
         prices,
         favourites,
         ..
@@ -206,7 +209,7 @@ pub(super) fn items(view: &View, options: MasteryOptions) -> Vec<MasteryItem> {
         let affinity = account.affinity_of(&item.unique_name);
         let current_level = item.mastery_rank_at(affinity);
         let max_level = item.max_mastery_rank();
-        let components = components_of(&account.stock, item);
+        let components = components_of(&account.stock, items, item);
         let pending_in_foundry = components
             .iter()
             .any(|component| pending.contains(component.unique_name.as_str()));
@@ -304,9 +307,7 @@ mod tests {
     use super::*;
     use crate::account::Account;
     use crate::catalog::fixtures;
-    use crate::mastery::support::{
-        entries, excluding_founders, founder_inventory, mutated, prices,
-    };
+    use crate::mastery::support::{excluding_founders, fixture, prices};
     use crate::view::Fixture;
 
     const MASTERED_PRIME_SUIT: &str = "/Lotus/Powersuits/Loki/LokiPrime";
@@ -331,11 +332,8 @@ mod tests {
                 .any(|item| item.category == "Sentinels" || item.name.contains("Kavasa"))
         );
         assert_eq!(u32::try_from(primes.len()).unwrap(), total);
-        let sold = Account::new(mutated(|value| {
-            entries(value, "Suits").retain(|entry| {
-                entry.get("ItemType").and_then(serde_json::Value::as_str)
-                    != Some(MASTERED_PRIME_SUIT)
-            });
+        let sold = Account::new(fixtures::inventory_with(|value| {
+            fixtures::drop_entries(value, &["Suits"], MASTERED_PRIME_SUIT);
         }));
         assert!(!sold.built(MASTERED_PRIME_SUIT));
         let (still_owned, sold_total) = prime_ownership(&sold, &catalog, MasteryOptions::default());
@@ -351,7 +349,7 @@ mod tests {
             &catalog,
             MasteryOptions::default(),
         );
-        let founder = Account::new(founder_inventory());
+        let founder = Account::new(fixtures::founder_inventory());
         let with_founders = prime_ownership(&founder, &catalog, MasteryOptions::default());
         let without_founders = prime_ownership(&founder, &catalog, excluding_founders());
         assert_eq!(with_founders.1 - plain.1, 3);
@@ -398,8 +396,7 @@ mod tests {
 
     #[test]
     fn no_kavasa_prime() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let rows = items(&fixture.view(), MasteryOptions::default());
         assert!(
             !rows

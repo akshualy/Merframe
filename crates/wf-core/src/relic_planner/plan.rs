@@ -3,12 +3,13 @@ use std::collections::HashSet;
 use serde::Serialize;
 use wf_data::{Refinement, Relic};
 
-use crate::catalog::{REQUIEM_MARKER, part_identity};
+use crate::catalog::REQUIEM_MARKER;
+use crate::identity::part_identity;
 use crate::view::View;
 
 use super::expectation::{Best, RefinementValue, best_refinement, refinement_values};
 use super::rewards::{RewardBreakdown, reward_breakdown};
-use super::{OwnedRefinement, owned_refinements};
+use super::{OwnedRefinement, owned_refinements, owned_total};
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -80,8 +81,7 @@ pub(crate) fn plan(
         .filter(|relic| tier.is_none_or(|tier| relic.tier == tier))
         .filter_map(|relic| {
             let owned_by_refinement = owned_refinements(&account.stock, relic);
-            let owned: i64 = owned_by_refinement.iter().map(|entry| entry.count).sum();
-            if only_owned && owned == 0 {
+            if only_owned && owned_total(&owned_by_refinement) == 0 {
                 return None;
             }
             let rewards: Vec<RewardBreakdown> = relic
@@ -122,7 +122,7 @@ fn relic_plan(
     let View {
         prices, favourites, ..
     } = *view;
-    let owned: i64 = owned_by_refinement.iter().map(|entry| entry.count).sum();
+    let owned = owned_total(&owned_by_refinement);
     let wanted_rewards: Vec<bool> = rewards
         .iter()
         .map(|reward| wanted_keys.contains(part_identity(&reward.unique_name)))
@@ -196,7 +196,6 @@ mod tests {
     use super::super::tests::prices;
     use super::super::{DEFAULT_SQUAD_SIZE, missing_parts, wanted_names};
     use super::*;
-    use crate::catalog::REFINEMENTS;
     use crate::catalog::fixtures;
     use crate::prices::FixedPrices;
     use crate::view::Fixture;
@@ -204,54 +203,42 @@ mod tests {
 
     const AXI_A1_INTACT: &str = "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze";
 
+    fn fixture(inventory: Inventory) -> Fixture {
+        Fixture::new(fixtures::catalog(), inventory).with_prices(prices())
+    }
+
+    fn relic<'a>(plans: &'a [RelicPlan], name: &str) -> &'a RelicPlan {
+        plans
+            .iter()
+            .find(|plan| plan.relic == name)
+            .expect("relic in the plan")
+    }
+
     fn inventory_owning_axi_a1() -> Inventory {
         fixtures::inventory_owning(&[(AXI_A1_INTACT, 3)])
     }
 
     fn inventory_owning_axi_a1_without(item_type: &str) -> Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        let object = value.as_object_mut().unwrap();
-        for key in ["Suits", "LongGuns", "Pistols", "Melee"] {
-            if let Some(entries) = object
-                .get_mut(key)
-                .and_then(serde_json::Value::as_array_mut)
-            {
-                entries.retain(|entry| {
-                    entry.get("ItemType").and_then(serde_json::Value::as_str) != Some(item_type)
-                });
-            }
-        }
-        if let Some(entries) = object
-            .get_mut("XPInfo")
-            .and_then(serde_json::Value::as_array_mut)
-        {
-            entries.retain(|entry| {
-                entry.get("ItemType").and_then(serde_json::Value::as_str) != Some(item_type)
-            });
-        }
-        let entries = object
-            .get_mut("MiscItems")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap();
-        entries.push(serde_json::json!({ "ItemType": AXI_A1_INTACT, "ItemCount": 3 }));
-        Inventory::parse(&value.to_string()).unwrap()
+        fixtures::inventory_with(|value| {
+            fixtures::drop_entries(
+                value,
+                &["Suits", "LongGuns", "Pistols", "Melee", "XPInfo"],
+                item_type,
+            );
+            fixtures::push_counted(value, "MiscItems", AXI_A1_INTACT, 3);
+        })
     }
 
     #[test]
     fn missing_items_and_parent_ownership() {
         let mastered = plan(
-            &Fixture::new(fixtures::catalog(), inventory_owning_axi_a1())
-                .with_prices(prices())
-                .view(),
+            &fixture(inventory_owning_axi_a1()).view(),
             &[],
             1,
             true,
             None,
         );
-        let axi = mastered
-            .iter()
-            .find(|relic| relic.relic == "Axi A1")
-            .expect("Axi A1");
+        let axi = relic(&mastered, "Axi A1");
         let short = axi
             .rewards
             .iter()
@@ -267,21 +254,13 @@ mod tests {
         assert_eq!(axi.ownership.missing_items, 0);
 
         let unmastered = plan(
-            &Fixture::new(
-                fixtures::catalog(),
-                inventory_owning_axi_a1_without("/Lotus/Weapons/Tenno/Rifle/BratonPrime"),
-            )
-            .with_prices(prices())
-            .view(),
+            &fixture(inventory_owning_axi_a1_without(fixtures::BRATON_PRIME)).view(),
             &[],
             1,
             true,
             None,
         );
-        let axi = unmastered
-            .iter()
-            .find(|relic| relic.relic == "Axi A1")
-            .expect("Axi A1");
+        let axi = relic(&unmastered, "Axi A1");
         let braton = axi
             .rewards
             .iter()
@@ -289,7 +268,7 @@ mod tests {
             .expect("Braton Prime Stock");
         assert_eq!(
             braton.component.as_deref(),
-            Some("/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock")
+            Some(fixtures::BRATON_PRIME_STOCK)
         );
         assert!(braton.ownership.needed_for_set);
         assert!(!braton.ownership.parent_owned);
@@ -299,9 +278,7 @@ mod tests {
     #[test]
     fn forma_never_blocks_all_owned() {
         let plans = plan(
-            &Fixture::new(fixtures::catalog(), inventory_owning_axi_a1())
-                .with_prices(prices())
-                .view(),
+            &fixture(inventory_owning_axi_a1()).view(),
             &[],
             1,
             true,
@@ -311,10 +288,7 @@ mod tests {
             assert!(!relic.ownership.all_items_owned);
         }
 
-        let a21 = plans
-            .iter()
-            .find(|relic| relic.relic == "Axi A21")
-            .expect("Axi A21");
+        let a21 = relic(&plans, "Axi A21");
         let forma: Vec<&RewardBreakdown> =
             a21.rewards.iter().filter(|reward| reward.forma).collect();
         assert_eq!(forma.len(), 1);
@@ -325,18 +299,13 @@ mod tests {
     #[test]
     fn ducats_per_trace() {
         let plans = plan(
-            &Fixture::new(fixtures::catalog(), inventory_owning_axi_a1())
-                .with_prices(prices())
-                .view(),
+            &fixture(inventory_owning_axi_a1()).view(),
             &[],
             1,
             true,
             None,
         );
-        let axi = plans
-            .iter()
-            .find(|relic| relic.relic == "Axi A1")
-            .expect("Axi A1");
+        let axi = relic(&plans, "Axi A1");
         assert_eq!(axi.values[0].ducats_per_trace, None);
         assert!((axi.values[0].expected_ducats - 10.132).abs() < 1e-9);
         for (value, want) in axi.values[1..].iter().zip([-0.032, -0.04264, -0.03464]) {
@@ -353,8 +322,7 @@ mod tests {
 
     #[test]
     fn favourite_relic_and_rewards() {
-        let mut fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let mut fixture = fixture(fixtures::inventory());
         let plain = plan(&fixture.view(), &[], 1, false, None);
         assert!(
             plain
@@ -362,11 +330,7 @@ mod tests {
                 .all(|entry| !entry.favourite && entry.favourite_rewards == 0)
         );
         assert_eq!(
-            plain
-                .iter()
-                .find(|entry| entry.relic == "Axi A1")
-                .expect("Axi A1")
-                .unique_name,
+            relic(&plain, "Axi A1").unique_name,
             "/Lotus/Types/Game/Projections/T4VoidProjectionEBronze"
         );
 
@@ -379,14 +343,8 @@ mod tests {
         .into_iter()
         .collect();
         let marked = plan(&fixture.view(), &[], 1, false, None);
-        let a1 = marked
-            .iter()
-            .find(|entry| entry.relic == "Axi A1")
-            .expect("Axi A1");
-        let a21 = marked
-            .iter()
-            .find(|entry| entry.relic == "Axi A21")
-            .expect("Axi A21");
+        let a1 = relic(&marked, "Axi A1");
+        let a21 = relic(&marked, "Axi A21");
         assert!(
             a1.favourite,
             "a refined stack of the family marks the whole relic"
@@ -403,8 +361,7 @@ mod tests {
 
     #[test]
     fn every_relic_in_a_fixed_order() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let order = || -> Vec<String> {
             plan(&fixture.view(), &[], DEFAULT_SQUAD_SIZE, false, None)
                 .into_iter()
@@ -426,7 +383,7 @@ mod tests {
             ]
             .into_iter()
             .collect(),
-            ..Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices())
+            ..fixture(fixtures::inventory())
         };
         let mut plans = plan(&fixture.view(), &[], 1, false, None);
         plans.sort_by_key(|plan| std::cmp::Reverse(plan.favourite_rewards));
@@ -440,10 +397,9 @@ mod tests {
 
     #[test]
     fn relic_market_quote() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("axi_a21_relic", 12.0)]).with_buy([("axi_a21_relic", 7.0)]),
-            ..Fixture::new(fixtures::catalog(), fixtures::inventory())
-        };
+        let fixture = Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(
+            FixedPrices::new([("axi_a21_relic", 12.0)]).with_buy([("axi_a21_relic", 7.0)]),
+        );
         let plans = plan(&fixture.view(), &[], 1, true, None);
         let axi = &plans[0];
         assert_eq!(
@@ -458,8 +414,7 @@ mod tests {
 
     #[test]
     fn drop_locations() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let plans = plan(&fixture.view(), &[], 1, true, None);
         let axi = &plans[0];
         assert_eq!(axi.relic, "Axi A21");
@@ -485,17 +440,13 @@ mod tests {
 
     #[test]
     fn unowned_relics_included() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let owned = plan(&fixture.view(), &[], 1, true, None);
         assert_eq!(owned.len(), 1);
 
         let everything = plan(&fixture.view(), &[], 1, false, None);
         assert_eq!(everything.len(), 2);
-        let unowned = everything
-            .iter()
-            .find(|relic| relic.relic == "Axi A1")
-            .expect("Axi A1");
+        let unowned = relic(&everything, "Axi A1");
         assert_eq!(unowned.ownership.owned, 0);
         assert!(unowned.ownership.by_refinement.is_empty());
         assert!(unowned.values.iter().all(|value| value.chances.len() == 6));
@@ -508,10 +459,8 @@ mod tests {
 
     #[test]
     fn owned_relic_values() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
-        let catalog = fixtures::catalog();
-        let wanted = wanted_names(&missing_parts(&fixture.account, &catalog));
+        let fixture = fixture(fixtures::inventory());
+        let wanted = wanted_names(&missing_parts(&fixture.account, &fixture.catalog));
         let plans = plan(&fixture.view(), &wanted, 1, true, None);
 
         assert_eq!(plans.len(), 1);
@@ -537,10 +486,8 @@ mod tests {
 
     #[test]
     fn pricy_rare_favours_radiant() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("alternox_prime_stock", 1000.0)]),
-            ..Fixture::new(fixtures::catalog(), fixtures::inventory())
-        };
+        let fixture = Fixture::new(fixtures::catalog(), fixtures::inventory())
+            .with_prices(FixedPrices::new([("alternox_prime_stock", 1000.0)]));
         let plans = plan(&fixture.view(), &[], 1, true, None);
         let axi = &plans[0];
         assert!((axi.values[0].expected_plat - 20.0).abs() < 1e-9);
@@ -553,10 +500,8 @@ mod tests {
 
     #[test]
     fn wanted_parts() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
-        let wanted =
-            vec!["/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent".to_owned()];
+        let fixture = fixture(fixtures::inventory());
+        let wanted = vec![fixtures::TRINITY_PRIME_SYSTEMS.to_owned()];
         let plans = plan(&fixture.view(), &wanted, 1, true, None);
         assert_eq!(plans.len(), 1);
         assert!((plans[0].best.wanted_chance - 0.0).abs() < f64::EPSILON);
@@ -573,8 +518,7 @@ mod tests {
 
     #[test]
     fn squad_beats_solo() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let solo = plan(&fixture.view(), &[], 1, true, None);
         let squad = plan(&fixture.view(), &[], 4, true, None);
         assert!(squad[0].values[0].expected_plat > solo[0].values[0].expected_plat);
@@ -582,8 +526,7 @@ mod tests {
 
     #[test]
     fn shares_sum_to_expected_plat() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let plans = plan(&fixture.view(), &[], DEFAULT_SQUAD_SIZE, true, None);
         let axi = &plans[0];
         assert_eq!(axi.relic, "Axi A21");
@@ -603,11 +546,9 @@ mod tests {
 
     #[test]
     fn plat_per_trace() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("alternox_prime_stock", 1000.0)]),
-            ..Fixture::new(fixtures::catalog(), fixtures::inventory())
-        };
-        let plans = plan(&fixture.view(), &[], 1, true, None);
+        let pricy = Fixture::new(fixtures::catalog(), fixtures::inventory())
+            .with_prices(FixedPrices::new([("alternox_prime_stock", 1000.0)]));
+        let plans = plan(&pricy.view(), &[], 1, true, None);
         let axi = &plans[0];
         assert_eq!(
             axi.values
@@ -626,23 +567,14 @@ mod tests {
         assert!((best_per_trace.value - 0.8).abs() < 1e-9);
         assert_eq!(axi.best.refinement, Refinement::Radiant);
 
-        let mixed = plan(
-            &Fixture::new(fixtures::catalog(), fixtures::inventory())
-                .with_prices(prices())
-                .view(),
-            &[],
-            1,
-            true,
-            None,
-        );
+        let mixed = plan(&fixture(fixtures::inventory()).view(), &[], 1, true, None);
         assert_eq!(mixed[0].best.refinement, Refinement::Intact);
         assert!(mixed[0].intact_to_radiant.plat < 0.0);
     }
 
     #[test]
     fn reward_breakdown() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let plans = plan(&fixture.view(), &[], 1, true, None);
         let axi = &plans[0];
 
@@ -671,8 +603,7 @@ mod tests {
 
     #[test]
     fn chances_per_refinement() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let catalog = fixtures::catalog();
         let plans = plan(&fixture.view(), &[], DEFAULT_SQUAD_SIZE, true, None);
         let axi = &plans[0];
@@ -680,7 +611,7 @@ mod tests {
             .relics()
             .find(|relic| relic.name == "Axi A21")
             .expect("Axi A21");
-        for (value, refinement) in axi.values.iter().zip(REFINEMENTS) {
+        for (value, refinement) in axi.values.iter().zip(Refinement::ALL) {
             let rewards = relic.rewards_for(refinement);
             assert_eq!(rewards.len(), axi.rewards.len());
             for (index, reward) in rewards.iter().enumerate() {
@@ -698,11 +629,9 @@ mod tests {
             FixedPrices::new([("styanax_prime_blueprint", 400.0)]),
         ] {
             let plans = plan(
-                &Fixture {
-                    prices,
-                    ..Fixture::new(fixtures::catalog(), fixtures::inventory())
-                }
-                .view(),
+                &Fixture::new(fixtures::catalog(), fixtures::inventory())
+                    .with_prices(prices)
+                    .view(),
                 &[],
                 DEFAULT_SQUAD_SIZE,
                 true,
@@ -727,8 +656,7 @@ mod tests {
 
     #[test]
     fn wanted_chance_grows_with_squad() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let wanted = vec!["/Lotus/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock".to_owned()];
         let solo = plan(&fixture.view(), &wanted, 1, true, None);
         let squad = plan(&fixture.view(), &wanted, 4, true, None);
@@ -739,8 +667,7 @@ mod tests {
 
     #[test]
     fn no_requiem_relics() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let plans = plan(&fixture.view(), &[], 4, true, None);
         assert!(!plans.iter().any(|entry| entry.relic.contains("Requiem")));
     }

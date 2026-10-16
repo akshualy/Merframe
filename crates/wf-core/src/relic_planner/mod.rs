@@ -3,7 +3,7 @@ use wf_data::{Refinement, Relic};
 use wf_inventory::Inventory;
 
 use crate::account::Account;
-use crate::catalog::{Catalog, REFINEMENTS, Stock};
+use crate::catalog::{Catalog, Stock};
 use crate::mastery;
 
 mod expectation;
@@ -56,7 +56,7 @@ pub(crate) fn wanted_names(parts: &[MissingPart]) -> Vec<String> {
 }
 
 fn owned_refinements(stock: &Stock, relic: &Relic) -> Vec<OwnedRefinement> {
-    REFINEMENTS
+    Refinement::ALL
         .into_iter()
         .filter_map(|refinement| {
             let unique_name = relic.unique_names.get(&refinement)?;
@@ -69,11 +69,12 @@ fn owned_refinements(stock: &Stock, relic: &Relic) -> Vec<OwnedRefinement> {
         .collect()
 }
 
+fn owned_total(refinements: &[OwnedRefinement]) -> i64 {
+    refinements.iter().map(|entry| entry.count).sum()
+}
+
 pub(crate) fn owned_relic_count(stock: &Stock, relic: &Relic) -> i64 {
-    owned_refinements(stock, relic)
-        .iter()
-        .map(|entry| entry.count)
-        .sum()
+    owned_total(&owned_refinements(stock, relic))
 }
 
 pub(crate) fn void_traces(inventory: &Inventory) -> i64 {
@@ -100,32 +101,21 @@ mod tests {
         ])
     }
 
-    fn inventory_without_affinity(item_type: &str) -> Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        let entries = value
-            .get_mut("XPInfo")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap();
-        entries.retain(|entry| {
-            entry.get("ItemType").and_then(serde_json::Value::as_str) != Some(item_type)
-        });
-        Inventory::parse(&value.to_string()).unwrap()
-    }
-
     #[test]
     fn fixture_missing_parts() {
         let account = Account::new(fixtures::inventory());
         let catalog = fixtures::catalog();
-        let missing = missing_parts(&account, &catalog);
-        assert_eq!(missing.len(), 8);
+        let parts = missing_parts(&account, &catalog);
+
+        assert_eq!(parts.len(), 8);
         assert_eq!(
             missing_parts(&account, &fixtures::with_skins(fixtures::ITEMS)),
-            missing
+            parts
         );
         assert!(
-            missing
+            parts
                 .iter()
-                .any(|part| part.unique_name.ends_with("TrinityPrimeSystemsComponent"))
+                .any(|part| part.unique_name == fixtures::TRINITY_PRIME_SYSTEMS)
         );
     }
 
@@ -135,16 +125,18 @@ mod tests {
         let mastered = missing_parts(&Account::new(fixtures::inventory()), &catalog);
         assert!(mastered.iter().all(|part| !part.mastery));
 
-        let unranked = inventory_without_affinity("/Lotus/Weapons/Tenno/Rifle/BratonPrime");
-        let missing = missing_parts(&Account::new(unranked), &catalog);
-        let braton: Vec<&MissingPart> = missing
+        let unranked = fixtures::inventory_with(|value| {
+            fixtures::drop_entries(value, &["XPInfo"], fixtures::BRATON_PRIME);
+        });
+        let unmastered = missing_parts(&Account::new(unranked), &catalog);
+        let braton: Vec<&MissingPart> = unmastered
             .iter()
             .filter(|part| part.unique_name.contains("BratonPrime"))
             .collect();
         assert_eq!(braton.len(), 4);
         assert!(braton.iter().all(|part| part.mastery));
         assert!(
-            missing
+            unmastered
                 .iter()
                 .filter(|part| part.unique_name.contains("TrinityPrime"))
                 .all(|part| !part.mastery)

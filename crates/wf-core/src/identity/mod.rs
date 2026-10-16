@@ -11,14 +11,19 @@ use wf_data::{
 use wf_inventory::RIVEN_MARKER;
 
 use crate::catalog::{
-    Catalog, REFINEMENTS, VaultStatus, component_image, display_name_from_path, is_fish, is_prime,
-    names_a_prime, part_name, refinement_name,
+    Catalog, VaultStatus, component_image, display_name_from_path, is_fish, is_prime,
+    names_a_prime, part_name,
 };
 use crate::inventory_view::ItemSummary;
 
 pub use listing::market_name;
 pub(crate) use listing::traded_as;
-pub(crate) use naming::{market_slug, part_market_slug};
+pub(crate) use naming::{blueprint_of, component_of, market_slug, part_identity, part_market_slug};
+
+pub(crate) const OUBLIETTE_KEY: &str = "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey";
+pub(crate) const LEGENDARY_CORE: &str = "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser";
+
+const FOUNDERS_PRIMES: [&str; 3] = ["Excalibur Prime", "Lato Prime", "Skana Prime"];
 
 pub(crate) struct UnlistedUpgrade {
     unique_name: &'static str,
@@ -65,7 +70,7 @@ static UPGRADES_OUTSIDE_THE_EXPORT: [UnlistedUpgrade; 6] = [
         image_name: None,
     },
     UnlistedUpgrade {
-        unique_name: "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser",
+        unique_name: LEGENDARY_CORE,
         name: "Legendary Core",
         rarity: Rarity::Legendary,
         market_slug: "legendary_fusion_core",
@@ -154,6 +159,15 @@ impl ItemRecord {
         Self::new(unique_name, name, None, ItemKind::Other)
     }
 
+    fn of(item: &Item, kind: ItemKind) -> Self {
+        Self::new(
+            &item.unique_name,
+            item.name.clone(),
+            item.image_name.clone(),
+            kind,
+        )
+    }
+
     fn new(unique_name: &str, name: String, image_name: Option<String>, kind: ItemKind) -> Self {
         Self {
             unique_name: unique_name.to_owned(),
@@ -173,7 +187,12 @@ impl ItemRecord {
         }
     }
 
-    fn vaulted(self, vaulted: Option<bool>) -> Self {
+    fn vaulted(self, item: &Item) -> Self {
+        let vaulted = if FOUNDERS_PRIMES.contains(&item.name.as_str()) {
+            Some(true)
+        } else {
+            item.vaulted
+        };
         Self {
             vault: names_a_prime(&self.name).then(|| VaultStatus::from(vaulted)),
             ..self
@@ -299,15 +318,7 @@ impl ItemTable {
     fn add_item(&mut self, item: &Item) -> ItemRef {
         if is_riven(&item.unique_name) {
             let veiled_slug = format!("{}_(veiled)", market_slug(&item.name));
-            let base = self.insert(
-                ItemRecord::new(
-                    &item.unique_name,
-                    item.name.clone(),
-                    item.image_name.clone(),
-                    ItemKind::Riven,
-                )
-                .slugged(veiled_slug),
-            );
+            let base = self.insert(ItemRecord::of(item, ItemKind::Riven).slugged(veiled_slug));
             let veiled = upgrade_record(&item.unique_name, item, " (Veiled)");
             let veiled = self.push(veiled);
             self.variants.insert((base, Variant::Veiled), veiled);
@@ -319,15 +330,7 @@ impl ItemTable {
         {
             return self.insert(upgrade_record(&item.unique_name, item, ""));
         }
-        self.insert(
-            ItemRecord::new(
-                &item.unique_name,
-                item.name.clone(),
-                item.image_name.clone(),
-                ItemKind::Item,
-            )
-            .vaulted(item.vaulted),
-        )
+        self.insert(ItemRecord::of(item, ItemKind::Item).vaulted(item))
     }
 
     fn add_parts(&mut self, catalog: &Catalog, item: &Item, base: ItemRef) {
@@ -335,14 +338,9 @@ impl ItemTable {
             return;
         };
         let set = self.push(
-            ItemRecord::new(
-                &item.unique_name,
-                item.name.clone(),
-                item.image_name.clone(),
-                ItemKind::Set { parts: Vec::new() },
-            )
-            .slugged(format!("{}_set", market_slug(&item.name)))
-            .vaulted(item.vaulted),
+            ItemRecord::of(item, ItemKind::Set { parts: Vec::new() })
+                .slugged(format!("{}_set", market_slug(&item.name)))
+                .vaulted(item),
         );
         self.variants.insert((base, Variant::Set), set);
         let parts = components
@@ -361,7 +359,7 @@ impl ItemTable {
                         },
                     )
                     .slugged(part_market_slug(item, component))
-                    .vaulted(item.vaulted)
+                    .vaulted(item)
                 };
                 let part = self.push(record);
                 let first_owner = catalog
@@ -417,7 +415,7 @@ impl ItemTable {
 
     fn add_relics(&mut self, catalog: &Catalog) {
         for relic in catalog.relics() {
-            for refinement in REFINEMENTS {
+            for refinement in Refinement::ALL {
                 let Some(unique_name) = relic.unique_names.get(&refinement) else {
                     continue;
                 };
@@ -426,7 +424,7 @@ impl ItemTable {
                     vault: Some(VaultStatus::from(Some(relic.vaulted))),
                     ..ItemRecord::new(
                         unique_name,
-                        format!("{} Relic ({})", relic.name, refinement_name(refinement)),
+                        format!("{} Relic ({})", relic.name, refinement.name()),
                         relic.image_names.get(&refinement).cloned(),
                         ItemKind::Relic { refinement },
                     )
@@ -502,12 +500,12 @@ impl ItemTable {
 }
 
 fn held_names(component: &str) -> impl Iterator<Item = String> {
-    let as_blueprint = component
-        .strip_suffix("Component")
-        .map(|base| format!("{base}Blueprint"));
-    [Some(format!("{component}Blueprint")), as_blueprint]
-        .into_iter()
-        .flatten()
+    [
+        Some(format!("{component}Blueprint")),
+        blueprint_of(component),
+    ]
+    .into_iter()
+    .flatten()
 }
 
 fn upgrade_record(unique_name: &str, item: &Item, suffix: &str) -> ItemRecord {
@@ -532,10 +530,11 @@ fn upgrade_record(unique_name: &str, item: &Item, suffix: &str) -> ItemRecord {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::fixtures::{self, market_item};
+    use crate::catalog::fixtures::{
+        self, BRATON_PRIME, BRATON_PRIME_BARREL, TRINITY_PRIME_SYSTEMS,
+        TRINITY_PRIME_SYSTEMS_BLUEPRINT, market_item,
+    };
 
-    const BARREL: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel";
-    const BRATON: &str = "/Lotus/Weapons/Tenno/Rifle/BratonPrime";
     const ENERGIZE: &str =
         "/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup";
     const HARAS: &str = "/Lotus/Upgrades/CosmeticEnhancers/Antiques/AmmoEfficencyDuringUltimate";
@@ -563,35 +562,27 @@ mod tests {
     fn parts_sets_and_relics() {
         let catalog = fixtures::catalog();
         let table = ItemTable::build(&catalog);
-        let barrel = table.get(BARREL).unwrap();
+        let barrel = table.get(BRATON_PRIME_BARREL).unwrap();
         assert_eq!(barrel.name, "Braton Prime Barrel");
         assert_eq!(barrel.market_slug.as_deref(), Some("braton_prime_barrel"));
         assert!(barrel.prime);
         assert!(barrel.vault.is_some());
         assert_eq!(
             table
-                .resolve(&format!("/Lotus/StoreItems{}", &BARREL[6..]))
+                .resolve(&format!("/Lotus/StoreItems{}", &BRATON_PRIME_BARREL[6..]))
                 .as_ref(),
             barrel
         );
         assert_eq!(table.by_market_slug("braton_prime_barrel"), Some(barrel));
-        let held_blueprint =
-            table.resolve("/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint");
-        assert_eq!(
-            held_blueprint.unique_name,
-            "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint"
-        );
+        let held_blueprint = table.resolve(TRINITY_PRIME_SYSTEMS_BLUEPRINT);
+        assert_eq!(held_blueprint.unique_name, TRINITY_PRIME_SYSTEMS_BLUEPRINT);
         assert_eq!(held_blueprint.name, "Trinity Prime Systems");
         assert_eq!(
             held_blueprint.market_slug.as_deref(),
             Some("trinity_prime_systems_blueprint")
         );
         assert_eq!(
-            slug_of(
-                &table,
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent"
-            )
-            .as_deref(),
+            slug_of(&table, TRINITY_PRIME_SYSTEMS).as_deref(),
             Some("trinity_prime_systems_blueprint")
         );
         let ItemKind::Part { set, ducats, .. } = barrel.kind else {
@@ -600,8 +591,11 @@ mod tests {
         assert_eq!(ducats, Some(15));
         assert_eq!(barrel.ducats(), ducats);
         assert_eq!(table[set].market_slug.as_deref(), Some("braton_prime_set"));
-        assert_eq!(table.variant(BRATON, Variant::Set), Some(&table[set]));
-        assert_eq!(slug_of(&table, BRATON).as_deref(), Some("braton_prime"));
+        assert_eq!(table.variant(BRATON_PRIME, Variant::Set), Some(&table[set]));
+        assert_eq!(
+            slug_of(&table, BRATON_PRIME).as_deref(),
+            Some("braton_prime")
+        );
 
         let relic = table
             .get("/Lotus/Types/Game/Projections/T4VoidProjectionESilver")
@@ -654,7 +648,7 @@ mod tests {
 
     #[test]
     fn rivens_fish_and_imprints() {
-        let catalog = Catalog::from_json(
+        let catalog = fixtures::catalog_of(
             r#"[
               {"uniqueName":"/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare",
                "name":"Rifle Riven Mod","category":"Mods","type":"Riven Mod","tradable":true},
@@ -663,10 +657,7 @@ mod tests {
               {"uniqueName":"/Lotus/Types/Game/CatbrowPet/VampireCatbrowPetPowerSuit",
                "name":"Vasca Kavat","category":"Pets","type":"Pets","tradable":false}
             ]"#,
-            fixtures::RELICS,
-            "[]",
-        )
-        .unwrap();
+        );
         let table = ItemTable::build(&catalog);
         let riven = "/Lotus/Upgrades/Mods/Randomized/LotusRifleRandomModRare";
         assert_eq!(
@@ -775,18 +766,29 @@ mod tests {
             market_item(
                 "braton_prime_set",
                 "Braton Prime Set",
-                BRATON,
+                BRATON_PRIME,
                 &["set", "weapon"],
             ),
-            market_item("barrel_listing", "Braton Prime Barrel", BARREL, &[]),
+            market_item(
+                "barrel_listing",
+                "Braton Prime Barrel",
+                BRATON_PRIME_BARREL,
+                &[],
+            ),
         ]);
         let set = table.by_market_id("braton_prime_set");
-        assert_eq!(set, table.variant(BRATON, Variant::Set));
-        assert_eq!(slug_of(&table, BRATON).as_deref(), Some("braton_prime"));
+        assert_eq!(set, table.variant(BRATON_PRIME, Variant::Set));
         assert_eq!(
-            slug_of(&table, BARREL).as_deref(),
+            slug_of(&table, BRATON_PRIME).as_deref(),
+            Some("braton_prime")
+        );
+        assert_eq!(
+            slug_of(&table, BRATON_PRIME_BARREL).as_deref(),
             Some("braton_prime_barrel")
         );
-        assert_eq!(table.by_market_id("barrel_listing"), table.get(BARREL));
+        assert_eq!(
+            table.by_market_id("barrel_listing"),
+            table.get(BRATON_PRIME_BARREL)
+        );
     }
 }

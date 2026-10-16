@@ -48,19 +48,28 @@ impl Grader<'_> {
     pub(crate) fn cycled(&self, row: &RivenRow, current: &str, pending: &str) -> Option<RivenRow> {
         let current = RivenFingerprint::parse(current).ok()?;
         let pending = RivenFingerprint::parse(pending).ok()?;
-        let riven_type = self.catalog.data().riven_data().riven_type(&row.item_type);
+        let riven_type = self.riven_type(&row.item_type);
         let shown = self.pending_from(&current, riven_type, row.disposition);
         Some(RivenRow {
-            name: shown.name,
-            rerolls: shown.rerolls,
-            polarity: shown.polarity,
-            grade: shown.grade,
-            unlisted_stat: unlisted_stat(&shown.attributes),
-            attributes: shown.attributes,
-            good_roll: shown.good_roll,
             pending: Some(self.pending_from(&pending, riven_type, row.disposition)),
-            ..row.clone()
+            ..row.clone().with_roll(shown)
         })
+    }
+}
+
+impl RivenRow {
+    pub(super) fn with_roll(self, roll: PendingRoll) -> Self {
+        Self {
+            name: roll.name,
+            rerolls: roll.rerolls,
+            polarity: roll.polarity,
+            grade: roll.grade,
+            unlisted_stat: unlisted_stat(&roll.attributes),
+            attributes: roll.attributes,
+            good_roll: roll.good_roll,
+            pending: None,
+            ..self
+        }
     }
 }
 
@@ -86,8 +95,7 @@ mod tests {
 
     #[test]
     fn current_and_pending_roll() {
-        let paid = CURRENT_ROLL.replace("\"rerolls\":74", "\"rerolls\":75");
-        let row = cycled_nepheri(&paid, PENDING_ROLL);
+        let row = cycled_nepheri(&paid_roll(), PENDING_ROLL);
 
         assert_eq!(row.item_id, "f29623082864e554d187a3f7");
         assert_eq!(row.rerolls, 75);
@@ -124,8 +132,7 @@ mod tests {
 
     #[test]
     fn kept_roll_after_cycle() {
-        let paid = CURRENT_ROLL.replace("\"rerolls\":74", "\"rerolls\":75");
-        let row = cycled_nepheri(PENDING_ROLL, &paid);
+        let row = cycled_nepheri(PENDING_ROLL, &paid_roll());
 
         assert_eq!(row.name.as_deref(), Some("Acri-gelipha"));
         assert_eq!(
@@ -145,7 +152,7 @@ mod tests {
 
     #[test]
     fn kept_station_roll() {
-        let paid = CURRENT_ROLL.replace("\"rerolls\":74", "\"rerolls\":75");
+        let paid = paid_roll();
         let row = cycled_nepheri(&paid, PENDING_ROLL);
 
         assert_eq!(kept_roll(&row, &paid), Some(KeptRoll::Current));
@@ -158,10 +165,7 @@ mod tests {
             Some(KeptRoll::Offered)
         );
 
-        let elsewhere = paid.replace(
-            "/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep",
-            "/Lotus/Weapons/Tenno/Rifle/Rifle",
-        );
+        let elsewhere = paid.replace(ARCHON_DAGGERS, "/Lotus/Weapons/Tenno/Rifle/Rifle");
         assert_eq!(kept_roll(&row, &elsewhere), None);
         assert_eq!(kept_roll(&row, "not json"), None);
         assert_eq!(

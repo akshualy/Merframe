@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use wf_data::Component;
 use wf_inventory::{CountedItem, Inventory};
 
-use crate::catalog::{FORMA_BLUEPRINT, FORMA_ITEM, builds_from_its_own_blueprint};
-use crate::identity::ambassador_blueprint;
+use crate::catalog::{aliased_count, forma_count};
+use crate::identity::{ambassador_blueprint, blueprint_of};
 
 pub(crate) struct FoundryStock {
     recipes: HashMap<String, i64>,
@@ -66,14 +66,10 @@ impl FoundryStock {
         if let Some(count) = self.misc.get(unique_name) {
             return *count;
         }
-        if unique_name.contains("Component") {
-            return self
-                .recipes
-                .get(&unique_name.replace("Component", "Blueprint"))
-                .copied()
-                .unwrap_or_default();
-        }
-        0
+
+        blueprint_of(unique_name)
+            .and_then(|blueprint| self.recipes.get(&blueprint).copied())
+            .unwrap_or_default()
     }
 
     pub(super) fn component(&self, unique_name: &str, name: &str) -> i64 {
@@ -81,13 +77,10 @@ impl FoundryStock {
             return self.held(&blueprint);
         }
         if name.contains("Forma") {
-            return self.held(FORMA_ITEM) + self.held(FORMA_BLUEPRINT);
+            return forma_count(|item_type| self.held(item_type));
         }
-        let built = self.held(unique_name);
-        if builds_from_its_own_blueprint(unique_name) {
-            return built + self.held(&format!("{unique_name}Blueprint"));
-        }
-        built
+
+        aliased_count(unique_name, |item_type| self.held(item_type))
     }
 
     fn collected(&self, unique_name: &str) -> i64 {
@@ -96,10 +89,11 @@ impl FoundryStock {
 
     pub(super) fn in_tree(&self, unique_name: &str) -> i64 {
         let stock = self.collected(unique_name);
-        if stock > 0 || !unique_name.ends_with("Component") {
+        if stock > 0 {
             return stock;
         }
-        self.collected(&unique_name.replace("Component", "Blueprint"))
+
+        blueprint_of(unique_name).map_or(0, |blueprint| self.collected(&blueprint))
     }
 
     pub(super) fn fill_slots(&self, components: &[Component]) -> Vec<SlotFill> {
@@ -143,12 +137,11 @@ pub(super) struct SlotFill {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{
+        self, SINGLE_KAMA, TRINITY_PRIME_SYSTEMS, TRINITY_PRIME_SYSTEMS_BLUEPRINT,
+    };
+    use crate::catalog::{FORMA_BLUEPRINT, FORMA_ITEM};
 
-    const SINGLE_KAMA: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama";
-    const SYSTEMS_BLUEPRINT: &str =
-        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
-    const SYSTEMS: &str = "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent";
     const SNIPER_BARREL: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/CrpArSniperBarrel";
     const AMBASSADOR_BARREL_BLUEPRINT: &str =
         "/Lotus/Types/Recipes/Weapons/WeaponParts/AmbassadorBarrelBlueprint";
@@ -158,8 +151,8 @@ mod tests {
         FoundryStock::new(&fixtures::inventory_stocked(
             &[("Melee", SINGLE_KAMA), ("Melee", SINGLE_KAMA)],
             &[
-                ("Recipes", SYSTEMS_BLUEPRINT, 3),
-                ("Recipes", SYSTEMS_BLUEPRINT, 4),
+                ("Recipes", TRINITY_PRIME_SYSTEMS_BLUEPRINT, 3),
+                ("Recipes", TRINITY_PRIME_SYSTEMS_BLUEPRINT, 4),
                 ("Recipes", AMBASSADOR_BARREL_BLUEPRINT, 1),
                 ("Recipes", KEY_BLUEPRINT, 0),
                 ("Recipes", FORMA_BLUEPRINT, 2),
@@ -172,8 +165,11 @@ mod tests {
     fn component_counts() {
         let stock = stock();
         assert_eq!(stock.component(SINGLE_KAMA, "Kama"), 2);
-        assert_eq!(stock.component(SYSTEMS_BLUEPRINT, "Blueprint"), 3);
-        assert_eq!(stock.component(SYSTEMS, "Systems"), 3);
+        assert_eq!(
+            stock.component(TRINITY_PRIME_SYSTEMS_BLUEPRINT, "Blueprint"),
+            3
+        );
+        assert_eq!(stock.component(TRINITY_PRIME_SYSTEMS, "Systems"), 3);
         assert_eq!(stock.component(SNIPER_BARREL, "Barrel"), 1);
         assert_eq!(stock.component(FORMA_ITEM, "Forma"), 7);
         assert_eq!(stock.component(KEY_BLUEPRINT, "Blueprint"), 0);
@@ -183,8 +179,8 @@ mod tests {
     fn tree_counts() {
         let stock = stock();
         assert_eq!(stock.in_tree(SINGLE_KAMA), 2);
-        assert_eq!(stock.in_tree(SYSTEMS_BLUEPRINT), 7);
-        assert_eq!(stock.in_tree(SYSTEMS), 7);
+        assert_eq!(stock.in_tree(TRINITY_PRIME_SYSTEMS_BLUEPRINT), 7);
+        assert_eq!(stock.in_tree(TRINITY_PRIME_SYSTEMS), 7);
         assert_eq!(stock.in_tree(KEY_BLUEPRINT), 1);
         assert_eq!(stock.in_tree(FORMA_ITEM), 5);
         assert_eq!(stock.in_tree(SNIPER_BARREL), 0);

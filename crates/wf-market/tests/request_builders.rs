@@ -16,6 +16,21 @@ fn body_json(request: &reqwest::Request) -> serde_json::Value {
     serde_json::from_slice(bytes).unwrap()
 }
 
+fn sell_order(item_id: &str, platinum: u32) -> CreateOrderRequest {
+    CreateOrderRequest {
+        item_id: item_id.to_owned(),
+        order_type: OrderType::Sell,
+        platinum,
+        quantity: 1,
+        visible: Some(true),
+        per_trade: None,
+        rank: None,
+        subtype: None,
+        amber_stars: None,
+        cyan_stars: None,
+    }
+}
+
 #[test]
 fn items_request() {
     let client = client();
@@ -40,18 +55,7 @@ fn orders_for_item_request() {
 #[test]
 fn create_order_request() {
     let client = client();
-    let body = CreateOrderRequest {
-        item_id: String::from("54aae292e7798909064f1575"),
-        order_type: OrderType::Sell,
-        platinum: 25,
-        quantity: 1,
-        visible: Some(true),
-        per_trade: None,
-        rank: None,
-        subtype: None,
-        amber_stars: None,
-        cyan_stars: None,
-    };
+    let body = sell_order("54aae292e7798909064f1575", 25);
     let request = client.create_order_request(&body).unwrap();
     assert_eq!(request.method(), reqwest::Method::POST);
     assert_eq!(
@@ -71,16 +75,8 @@ fn create_order_request() {
 fn create_order_with_subtype() {
     let client = client();
     let body = CreateOrderRequest {
-        item_id: "5a2feeb1c2c9e90cbdaa23ba".to_string(),
-        order_type: OrderType::Sell,
-        platinum: 12,
-        quantity: 1,
-        visible: Some(true),
-        per_trade: None,
-        rank: None,
         subtype: Some(String::from("radiant")),
-        amber_stars: None,
-        cyan_stars: None,
+        ..sell_order("5a2feeb1c2c9e90cbdaa23ba", 12)
     };
     let request = client.create_order_request(&body).unwrap();
     let json = body_json(&request);
@@ -93,16 +89,9 @@ fn create_order_with_subtype() {
 fn create_order_with_stars() {
     let client = client();
     let body = CreateOrderRequest {
-        item_id: "5a2feeb1c2c9e90cbdaa23bb".to_string(),
-        order_type: OrderType::Sell,
-        platinum: 40,
-        quantity: 1,
-        visible: Some(true),
-        per_trade: None,
-        rank: None,
-        subtype: None,
         amber_stars: Some(2),
         cyan_stars: Some(1),
+        ..sell_order("5a2feeb1c2c9e90cbdaa23bb", 40)
     };
     let request = client.create_order_request(&body).unwrap();
     let json = body_json(&request);

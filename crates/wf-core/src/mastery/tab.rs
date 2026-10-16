@@ -102,16 +102,14 @@ fn order_items(
     }
 }
 
-#[allow(
-    clippy::cast_precision_loss,
-    reason = "mastery XP stays far below 2^53"
-)]
-fn favourite_percent(favourite_xp: u64, span: u64, percent: f64) -> f64 {
-    if span == 0 {
-        return 0.0;
-    }
-    let share = 100.0 * (favourite_xp as f64 / span as f64);
-    share.min(100.0 - percent)
+fn favourite_percent(favourite_xp: u64, span: u64, rank_percent: f64) -> f64 {
+    percent(favourite_xp, span).min(100.0 - rank_percent)
+}
+
+fn combined_percent(parts: &[CategoryTotals]) -> f64 {
+    let current = parts.iter().map(|part| u64::from(part.current)).sum();
+    let max = parts.iter().map(|part| u64::from(part.max)).sum();
+    percent(current, max)
 }
 
 fn summary(inventory: &Inventory, all: &[MasteryItem]) -> MasterySummary {
@@ -119,25 +117,14 @@ fn summary(inventory: &Inventory, all: &[MasteryItem]) -> MasterySummary {
     let (intrinsic_railjack, intrinsic_duviri) = intrinsics(inventory);
     let (warframes, weapons, companions) = totals(all);
     MasterySummary {
-        content_percent: percent(
-            u64::from(warframes.current + weapons.current + companions.current),
-            u64::from(warframes.max + weapons.max + companions.max),
-        ),
-        star_percent: percent(
-            u64::from(
-                star_normal.current
-                    + star_steel.current
-                    + star_junctions.current
-                    + star_steel_junctions.current,
-            ),
-            u64::from(
-                star_normal.max + star_steel.max + star_junctions.max + star_steel_junctions.max,
-            ),
-        ),
-        intrinsic_percent: percent(
-            u64::from(intrinsic_railjack.current + intrinsic_duviri.current),
-            u64::from(intrinsic_railjack.max + intrinsic_duviri.max),
-        ),
+        content_percent: combined_percent(&[warframes, weapons, companions]),
+        star_percent: combined_percent(&[
+            star_normal,
+            star_steel,
+            star_junctions,
+            star_steel_junctions,
+        ]),
+        intrinsic_percent: combined_percent(&[intrinsic_railjack, intrinsic_duviri]),
         warframes,
         weapons,
         companions,
@@ -227,13 +214,11 @@ mod tests {
     use crate::account::Account;
     use crate::catalog::fixtures;
     use crate::mastery::items::{FOUNDERS_ITEMS, unmastered_types};
-    use crate::mastery::support::{excluding_founders, founder_inventory, prices};
-    use crate::view::Fixture;
+    use crate::mastery::support::{excluding_founders, fixture};
 
     #[test]
     fn fixture_rank_progress() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let tab = tab(&fixture.view(), MasteryOptions::default());
 
         assert_eq!(tab.rank, 14);
@@ -250,8 +235,7 @@ mod tests {
         reason = "mastery XP stays far below 2^53"
     )]
     fn favourite_xp_band() {
-        let mut fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let mut fixture = fixture(fixtures::inventory());
         let options = MasteryOptions::default();
         let plain = tab(&fixture.view(), options);
         assert!(!plain.recommended.is_empty());
@@ -286,8 +270,7 @@ mod tests {
 
     #[test]
     fn non_founder_account() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         assert!(!fixture.account.inventory.is_founder());
         let shown = items(&fixture.view(), MasteryOptions::default());
         assert!(
@@ -302,8 +285,7 @@ mod tests {
 
     #[test]
     fn founder_account() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), founder_inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::founder_inventory());
         let shown = items(&fixture.view(), MasteryOptions::default());
         assert!(
             shown
@@ -326,8 +308,7 @@ mod tests {
 
     #[test]
     fn excluded_founders_items() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), founder_inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::founder_inventory());
         let with = tab(&fixture.view(), MasteryOptions::default());
         let without = tab(&fixture.view(), excluding_founders());
 
@@ -363,8 +344,7 @@ mod tests {
 
     #[test]
     fn founder_xp_unchanged() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), founder_inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::founder_inventory());
         let breakdown = mastery_xp(&fixture.account, &fixture.catalog);
         assert_eq!(
             breakdown.total(),
@@ -377,8 +357,7 @@ mod tests {
 
     #[test]
     fn default_ordering() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let tab = tab(&fixture.view(), MasteryOptions::default());
         assert!(tab.recommended.iter().all(|item| !item.mastered));
         let first_unowned = tab.recommended.iter().position(|item| !item.owned);
@@ -396,8 +375,7 @@ mod tests {
 
     #[test]
     fn forma_rank_filter() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let without_forma = tab(
             &fixture.view(),
             MasteryOptions {
@@ -417,8 +395,7 @@ mod tests {
 
     #[test]
     fn platinum_ordering() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let tab = tab(
             &fixture.view(),
             MasteryOptions {
@@ -442,8 +419,7 @@ mod tests {
 
     #[test]
     fn relic_ordering() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = fixture(fixtures::inventory());
         let tab = tab(
             &fixture.view(),
             MasteryOptions {

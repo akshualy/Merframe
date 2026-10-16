@@ -174,7 +174,7 @@ pub struct MasteryTab {
     clippy::cast_precision_loss,
     reason = "mastery XP stays far below 2^53"
 )]
-fn percent(numerator: u64, denominator: u64) -> f64 {
+pub(crate) fn percent(numerator: u64, denominator: u64) -> f64 {
     if denominator == 0 {
         return 0.0;
     }
@@ -183,19 +183,20 @@ fn percent(numerator: u64, denominator: u64) -> f64 {
 
 #[cfg(test)]
 mod support {
+    use serde_json::{Value, json};
     use wf_inventory::Inventory;
 
     use super::MasteryOptions;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{self, entries};
     use crate::prices::FixedPrices;
+    use crate::view::Fixture;
 
     pub(super) fn prices() -> FixedPrices {
         FixedPrices::new([("trinity_prime_systems_blueprint", 14.0)])
     }
 
-    pub(super) fn founder_inventory() -> Inventory {
-        Inventory::parse(&fixtures::INVENTORY.replacen('{', r#"{"Accolades":{"Founder":4},"#, 1))
-            .unwrap()
+    pub(super) fn fixture(inventory: Inventory) -> Fixture {
+        Fixture::new(fixtures::mastery_catalog(), inventory).with_prices(prices())
     }
 
     pub(super) fn excluding_founders() -> MasteryOptions {
@@ -205,43 +206,18 @@ mod support {
         }
     }
 
-    pub(super) fn mutated(edit: impl FnOnce(&mut serde_json::Value)) -> Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        edit(&mut value);
-        Inventory::parse(&value.to_string()).unwrap()
-    }
-
-    pub(super) fn entries<'a>(
-        value: &'a mut serde_json::Value,
-        key: &str,
-    ) -> &'a mut Vec<serde_json::Value> {
-        value
-            .get_mut(key)
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap()
-    }
-
-    pub(super) fn drop_affinity(value: &mut serde_json::Value, unique_name: &str) {
-        entries(value, "XPInfo").retain(|entry| {
-            entry.get("ItemType").and_then(serde_json::Value::as_str) != Some(unique_name)
-        });
-    }
-
-    pub(super) fn set_affinity(value: &mut serde_json::Value, unique_name: &str, xp: u64) {
+    pub(super) fn set_affinity(value: &mut Value, unique_name: &str, xp: u64) {
         for entry in entries(value, "XPInfo") {
-            if entry.get("ItemType").and_then(serde_json::Value::as_str) == Some(unique_name) {
-                entry["XP"] = serde_json::json!(xp);
+            if entry.get("ItemType").and_then(Value::as_str) == Some(unique_name) {
+                entry["XP"] = json!(xp);
             }
         }
     }
 
-    pub(super) fn mission<'a>(
-        value: &'a mut serde_json::Value,
-        tag: &str,
-    ) -> &'a mut serde_json::Value {
+    pub(super) fn mission<'a>(value: &'a mut Value, tag: &str) -> &'a mut Value {
         entries(value, "Missions")
             .iter_mut()
-            .find(|entry| entry.get("Tag").and_then(serde_json::Value::as_str) == Some(tag))
+            .find(|entry| entry.get("Tag").and_then(Value::as_str) == Some(tag))
             .unwrap()
     }
 }

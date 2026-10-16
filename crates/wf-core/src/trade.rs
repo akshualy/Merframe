@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use wf_data::Refinement;
 
-use crate::catalog::{Catalog, part_name, refinement_name};
+use crate::catalog::{Catalog, part_name};
 use crate::events::{ScannedTrade, ScannedTradeItem};
 use crate::identity::ItemTable;
 use crate::rivens::traded_riven_name;
@@ -62,7 +62,7 @@ impl TradeItem {
             Some((relic, refinement)) => format!(
                 "{} Relic [{}]",
                 relic.name,
-                refinement_name(refinement).to_uppercase()
+                refinement.name().to_uppercase()
             ),
             None => fingerprint
                 .and_then(|fingerprint| traded_riven_name(catalog, item_type, fingerprint))

@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::models::{ApiEnvelope, Auction, Chat, PriceTable, RivenData, V1Payload, WeaponAuctions};
+use crate::models::{ApiEnvelope, Auction, Chat, V1Payload};
 
 pub fn envelope<T>(json: &str) -> Result<T>
 where
@@ -42,16 +42,4 @@ struct V1ChatsPayload {
 
 pub fn parse_chats(json: &str) -> Result<Vec<Chat>> {
     Ok(v1_payload::<V1ChatsPayload>(json)?.chats)
-}
-
-pub fn parse_price_table(json: &str) -> Result<PriceTable> {
-    Ok(serde_json::from_str(json)?)
-}
-
-pub fn parse_riven_data(json: &str) -> Result<RivenData> {
-    Ok(serde_json::from_str(json)?)
-}
-
-pub fn parse_riven_auctions(json: &str) -> Result<WeaponAuctions> {
-    Ok(serde_json::from_str(json)?)
 }

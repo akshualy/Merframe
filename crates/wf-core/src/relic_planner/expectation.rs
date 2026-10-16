@@ -1,8 +1,6 @@
 use serde::Serialize;
 use wf_data::{Refinement, Relic};
 
-use crate::catalog::REFINEMENTS;
-
 use super::RewardBreakdown;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -117,7 +115,7 @@ pub(super) fn refinement_values(
     wanted_rewards: &[bool],
     squad_size: u32,
 ) -> [RefinementValue; 4] {
-    let mut values = REFINEMENTS.map(|refinement| {
+    let mut values = Refinement::ALL.map(|refinement| {
         let chances: Vec<f64> = relic
             .rewards_for(refinement)
             .iter()

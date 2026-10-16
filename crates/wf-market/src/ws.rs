@@ -48,10 +48,6 @@ pub enum IncomingEvent {
     Unknown,
 }
 
-pub fn parse_event(json: &str) -> Result<IncomingEvent> {
-    Ok(serde_json::from_str(json)?)
-}
-
 pub struct MarketSocket {
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
 }
@@ -67,19 +63,17 @@ impl MarketSocket {
     }
 
     pub async fn authenticate(&mut self, token: String) -> Result<()> {
-        let envelope = Envelope {
-            route: "@wfm|cmd/auth/signIn".to_owned(),
-            id: None,
-            payload: Some(AuthSignInPayload { token }),
-        };
-        let text = serde_json::to_string(&envelope)?;
-        self.stream.send(Message::text(text)).await?;
-        Ok(())
+        self.send("@wfm|cmd/auth/signIn", AuthSignInPayload { token })
+            .await
     }
 
     pub async fn set_status(&mut self, payload: StatusSetPayload) -> Result<()> {
+        self.send("@wfm|cmd/status/set", payload).await
+    }
+
+    async fn send<P: Serialize>(&mut self, route: &str, payload: P) -> Result<()> {
         let envelope = Envelope {
-            route: "@wfm|cmd/status/set".to_owned(),
+            route: route.to_owned(),
             id: None,
             payload: Some(payload),
         };
@@ -91,7 +85,9 @@ impl MarketSocket {
     pub async fn next_event(&mut self) -> Result<Option<IncomingEvent>> {
         while let Some(message) = self.stream.next().await {
             match message? {
-                Message::Text(text) => return Ok(Some(parse_event(text.as_str())?)),
+                Message::Text(text) => {
+                    return Ok(Some(serde_json::from_str::<IncomingEvent>(text.as_str())?));
+                }
                 Message::Close(_) => break,
                 _ => {}
             }
@@ -107,26 +103,32 @@ mod tests {
     #[test]
     fn auth_frames() {
         assert!(matches!(
-            parse_event(r#"{"route":"@wfm|cmd/auth/signIn:ok"}"#).unwrap(),
+            serde_json::from_str::<IncomingEvent>(r#"{"route":"@wfm|cmd/auth/signIn:ok"}"#)
+                .unwrap(),
             IncomingEvent::AuthOk
         ));
         assert!(matches!(
-            parse_event(r#"{"route":"@wfm|cmd/auth/signIn:error","payload":"invalid token"}"#)
-                .unwrap(),
+            serde_json::from_str::<IncomingEvent>(
+                r#"{"route":"@wfm|cmd/auth/signIn:error","payload":"invalid token"}"#
+            )
+            .unwrap(),
             IncomingEvent::AuthError
         ));
         assert!(matches!(
-            parse_event(r#"{"route":"@wfm|event/reports/online","payload":{"connections":812,"authorizedUsers":97}}"#)
+            serde_json::from_str::<IncomingEvent>(r#"{"route":"@wfm|event/reports/online","payload":{"connections":812,"authorizedUsers":97}}"#)
                 .unwrap(),
             IncomingEvent::Unknown
         ));
         assert!(matches!(
-            parse_event(r#"{"route":"@wfm|event/status/set","payload":{"status":"ingame","statusSetAt":"2026-09-07T18:55:39Z","statusUntil":null,"activity":null}}"#)
+            serde_json::from_str::<IncomingEvent>(r#"{"route":"@wfm|event/status/set","payload":{"status":"ingame","statusSetAt":"2026-09-07T18:55:39Z","statusUntil":null,"activity":null}}"#)
                 .unwrap(),
             IncomingEvent::StatusSet { payload } if payload.status == UserStatus::Ingame
         ));
         assert!(matches!(
-            parse_event(r#"{"route":"@wfm|event/orders/new","payload":{}}"#).unwrap(),
+            serde_json::from_str::<IncomingEvent>(
+                r#"{"route":"@wfm|event/orders/new","payload":{}}"#
+            )
+            .unwrap(),
             IncomingEvent::Unknown
         ));
     }

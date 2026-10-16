@@ -7,7 +7,7 @@ use wf_inventory::{EquipmentItem, Inventory, RivenFingerprint, UpgradeSlot};
 use super::{ItemIndex, ItemSummary, ModHolder, ModRow, UpgradePrices};
 use crate::catalog::{ARCANE_PREFIX, Catalog};
 use crate::identity::{ItemKind, ItemTable, Variant, is_riven};
-use crate::prices::PriceSource;
+use crate::prices::{PriceSource, Prices};
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -92,11 +92,12 @@ fn upgrade_prices(
     let at_max_rank = slug
         .and_then(|slug| prices.plat_max_rank(slug))
         .filter(|p| *p > 0.0);
+    let quoted = Prices::of(prices, slug);
     let maxed = rank.is_some() && rank == max_rank && at_max_rank.is_some();
     let sell = if maxed && wanted == UpgradeKind::Mod {
         at_max_rank
     } else {
-        slug.and_then(|slug| prices.plat(slug))
+        quoted.sell
     };
     UpgradePrices {
         sell,
@@ -106,7 +107,7 @@ fn upgrade_prices(
             None
         },
         is_floor: rank.is_some_and(|rank| rank > 0) && !maxed && sell.is_some_and(|p| p > 0.0),
-        buy: slug.and_then(|slug| prices.buy_plat(slug)),
+        buy: quoted.buy,
     }
 }
 
@@ -214,17 +215,20 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
 
 #[cfg(test)]
 mod tests {
-    use super::super::tests::prices;
+    use super::super::tests::{priced, prices};
     use super::*;
     use crate::catalog::fixtures;
     use crate::prices::FixedPrices;
     use crate::view::Fixture;
     use wf_data::Rarity;
 
+    fn upgrade_fixture(prices: FixedPrices) -> Fixture {
+        Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices)
+    }
+
     #[test]
     fn every_upgrade_resolves() {
-        let fixture =
-            Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = upgrade_fixture(prices());
         let view = fixture.view();
         let mut index = ItemIndex::default();
         let rows = [mods(&view, &mut index), arcanes(&view, &mut index)].concat();
@@ -239,8 +243,7 @@ mod tests {
 
     #[test]
     fn stances_and_precepts_are_mods() {
-        let fixture =
-            Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = upgrade_fixture(prices());
         let (rows, index) = fixture.rows(mods);
         let stance = rows
             .iter()
@@ -255,8 +258,7 @@ mod tests {
 
     #[test]
     fn starter_only_mods() {
-        let fixture =
-            Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = upgrade_fixture(prices());
         let (rows, index) = fixture.rows(mods);
         let maglev = rows
             .iter()
@@ -284,8 +286,7 @@ mod tests {
 
     #[test]
     fn unlisted_upgrades() {
-        let fixture =
-            Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = upgrade_fixture(prices());
         let (found, index) = fixture.rows(arcanes);
         let arcane = found
             .into_iter()
@@ -324,12 +325,11 @@ mod tests {
 
     #[test]
     fn arcane_prices() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
+        let fixture = upgrade_fixture(
+            FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
                 .with_max_rank([("arcane_energize", 240.0)])
                 .with_buy([("arcane_energize", 7.0)]),
-            ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
-        };
+        );
         let (rows, index) = fixture.rows(arcanes);
 
         let energize: Vec<&ModRow> = rows
@@ -371,10 +371,10 @@ mod tests {
 
     #[test]
     fn listed_slug_wins_over_the_derived_one() {
-        let mut fixture = Fixture {
-            prices: FixedPrices::new([("arcane_energize", 12.0), ("arcane\u{2019}energize", 30.0)]),
-            ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
-        };
+        let mut fixture = upgrade_fixture(FixedPrices::new([
+            ("arcane_energize", 12.0),
+            ("arcane\u{2019}energize", 30.0),
+        ]));
         let listed: Vec<wf_market::Item> = serde_json::from_str(
             r#"[{"id":"1","slug":"arcane\u2019energize","gameRef":"/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup","tags":[],"i18n":{}}]"#,
         )
@@ -394,8 +394,7 @@ mod tests {
 
     #[test]
     fn rank_groups_sorted_by_name() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = priced(fixtures::catalog(), fixtures::inventory());
         let (mod_rows, mod_index) = fixture.rows(mods);
         let (arcane_rows, arcane_index) = fixture.rows(arcanes);
 
@@ -476,8 +475,7 @@ mod tests {
 
     #[test]
     fn veiled_rivens_only() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = priced(fixtures::catalog(), fixtures::inventory());
         let (rows, index) = fixture.rows(mods);
         let riven_rows: Vec<&ModRow> = rows
             .iter()
@@ -498,8 +496,7 @@ mod tests {
 
     #[test]
     fn equipped_in() {
-        let fixture =
-            Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = upgrade_fixture(prices());
         let (rows, index) = fixture.rows(mods);
         let equipped: Vec<&ModRow> = rows
             .iter()
@@ -527,12 +524,9 @@ mod tests {
     #[test]
     fn unranked_stack_equipped_by_type() {
         const SCOURGE: &str = "/Lotus/Upgrades/Mods/Melee/DualStat/PoisonEventMeleeMod";
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        value["RawUpgrades"]
-            .as_array_mut()
-            .unwrap()
-            .push(serde_json::json!({ "ItemType": SCOURGE, "ItemCount": 4 }));
-        let inventory = Inventory::parse(&value.to_string()).unwrap();
+        let inventory = fixtures::inventory_with(|value| {
+            fixtures::push_counted(value, "RawUpgrades", SCOURGE, 4);
+        });
         let fixture = Fixture::new(fixtures::mastery_catalog(), inventory);
         let (rows, index) = fixture.rows(mods);
         let stack = rows
@@ -552,8 +546,7 @@ mod tests {
 
     #[test]
     fn equipped_holders() {
-        let fixture =
-            Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = priced(fixtures::mastery_catalog(), fixtures::inventory());
         let (rows, index) = fixture.rows(mods);
         let braton = rows
             .iter()
@@ -587,11 +580,10 @@ mod tests {
 
     #[test]
     fn floor_price_marker() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
+        let fixture = upgrade_fixture(
+            FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
                 .with_max_rank([("arcane_energize", 240.0)]),
-            ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
-        };
+        );
         let (rows, index) = fixture.rows(arcanes);
 
         let at_max = rows
@@ -626,10 +618,9 @@ mod tests {
 
     #[test]
     fn maxed_serration_price() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("serration", 10.0)]).with_max_rank([("serration", 90.0)]),
-            ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
-        };
+        let fixture = upgrade_fixture(
+            FixedPrices::new([("serration", 10.0)]).with_max_rank([("serration", 90.0)]),
+        );
         let (rows, index) = fixture.rows(mods);
         let serration: Vec<&ModRow> = rows
             .iter()
@@ -660,10 +651,7 @@ mod tests {
 
     #[test]
     fn maxed_without_max_rank_price() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("serration", 10.0)]),
-            ..Fixture::new(fixtures::upgrade_catalog(), fixtures::inventory())
-        };
+        let fixture = upgrade_fixture(FixedPrices::new([("serration", 10.0)]));
         let (rows, index) = fixture.rows(mods);
         let maxed = rows
             .iter()

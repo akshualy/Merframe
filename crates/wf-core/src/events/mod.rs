@@ -102,3 +102,38 @@ impl CoreEvent {
         }
     }
 }
+
+#[cfg(test)]
+pub(super) mod support {
+    use wf_worldstate::{Fissure, FissureTier, RelicTier};
+
+    use crate::catalog::fixtures::at;
+
+    pub(super) fn fissure(
+        tier: RelicTier,
+        mission_type: &str,
+        node_name: Option<&'static str>,
+        steel_path: bool,
+    ) -> Fissure {
+        Fissure {
+            node_id: "SolNode58".to_owned(),
+            node_name,
+            mission_type: mission_type.to_owned(),
+            mission_name: "Extermination".to_owned(),
+            tier: FissureTier::Relic(tier),
+            steel_path,
+            is_storm: false,
+            activation: at(0),
+            expiry: at(1_000_000),
+        }
+    }
+
+    pub(super) fn sample() -> Fissure {
+        fissure(
+            RelicTier::Lith,
+            "MT_EXTERMINATION",
+            Some("Galatea (Neptune)"),
+            false,
+        )
+    }
+}

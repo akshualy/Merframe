@@ -1,7 +1,7 @@
-use wf_inventory::{Inventory, Upgrade};
+use indexmap::IndexMap;
+use wf_inventory::{Inventory, RivenChallenge, Upgrade};
 
-use super::grading::{compat_path, perfectness, polarity, riven_name};
-use super::listing::unlisted_stat;
+use super::grading::compat_path;
 use super::{Grader, RIVEN_MOD_SUFFIX, RivenRow, RivensTab, VeiledGroup, VeiledRiven};
 use crate::catalog::display_name_from_path;
 use crate::identity::ItemTable;
@@ -13,25 +13,45 @@ pub(super) fn weapon_class(name: &str) -> String {
         .to_owned()
 }
 
+impl VeiledRiven {
+    fn new(
+        riven_id: String,
+        item_type: &str,
+        count: i64,
+        challenge: Option<&RivenChallenge>,
+        items: &ItemTable,
+    ) -> Self {
+        let record = items.get(item_type);
+        let name = record.map(|record| record.name.clone());
+        Self {
+            riven_id,
+            item_type: item_type.to_owned(),
+            weapon_class: name.as_deref().map(weapon_class),
+            market_slug: record.and_then(|record| record.market_slug.clone()),
+            image_name: record.and_then(|record| record.image_name.clone()),
+            count,
+            progress: challenge.map_or(-1, |challenge| challenge.progress),
+            required: challenge.map_or(-1, |challenge| challenge.required),
+            pre_veiled: challenge.is_none(),
+            name,
+        }
+    }
+}
+
 fn veiled(inventory: &Inventory, items: &ItemTable) -> Vec<VeiledGroup> {
-    let mut groups: Vec<VeiledGroup> = Vec::new();
+    let mut groups: IndexMap<String, VeiledGroup> = IndexMap::new();
     let mut push = |challenge_id: String, complication: Option<String>, riven: VeiledRiven| {
         let group = groups
-            .iter_mut()
-            .find(|group| group.challenge_id == challenge_id);
-        match group {
-            Some(group) => {
-                group.count += riven.count;
-                group.rivens.push(riven);
-            }
-            None => groups.push(VeiledGroup {
-                challenge: display_name_from_path(&challenge_id),
+            .entry(challenge_id)
+            .or_insert_with_key(|challenge_id| VeiledGroup {
+                challenge_id: challenge_id.clone(),
+                challenge: display_name_from_path(challenge_id),
                 complication: complication.as_deref().map(display_name_from_path),
-                count: riven.count,
-                rivens: vec![riven],
-                challenge_id,
-            }),
-        }
+                count: 0,
+                rivens: Vec::new(),
+            });
+        group.count += riven.count;
+        group.rivens.push(riven);
     };
     for upgrade in inventory.rivens() {
         let Some(challenge) = upgrade
@@ -40,53 +60,39 @@ fn veiled(inventory: &Inventory, items: &ItemTable) -> Vec<VeiledGroup> {
         else {
             continue;
         };
-        let record = items.get(&upgrade.item_type);
-        let name = record.map(|record| record.name.clone());
         push(
             challenge.challenge_type.clone(),
             challenge.complication.clone(),
-            VeiledRiven {
-                riven_id: upgrade.item_id.as_str().to_owned(),
-                item_type: upgrade.item_type.clone(),
-                weapon_class: name.as_deref().map(weapon_class),
-                market_slug: record.and_then(|record| record.market_slug.clone()),
-                image_name: record.and_then(|record| record.image_name.clone()),
-                count: 1,
-                progress: challenge.progress,
-                required: challenge.required,
-                pre_veiled: false,
-                name,
-            },
+            VeiledRiven::new(
+                upgrade.item_id.as_str().to_owned(),
+                &upgrade.item_type,
+                1,
+                Some(&challenge),
+                items,
+            ),
         );
     }
     for stack in inventory.pre_veiled_rivens() {
-        let record = items.get(&stack.item_type);
-        let name = record.map(|record| record.name.clone());
         push(
             "Unrevealed".to_owned(),
             None,
-            VeiledRiven {
-                riven_id: format!("{}#unrevealed", stack.item_type),
-                item_type: stack.item_type.clone(),
-                weapon_class: name.as_deref().map(weapon_class),
-                market_slug: record.and_then(|record| record.market_slug.clone()),
-                image_name: record.and_then(|record| record.image_name.clone()),
-                count: stack.item_count,
-                progress: -1,
-                required: -1,
-                pre_veiled: true,
-                name,
-            },
+            VeiledRiven::new(
+                format!("{}#unrevealed", stack.item_type),
+                &stack.item_type,
+                stack.item_count,
+                None,
+                items,
+            ),
         );
     }
-    for group in &mut groups {
+    for group in groups.values_mut() {
         group.rivens.sort_by(|left, right| {
             left.name
                 .cmp(&right.name)
                 .then(left.riven_id.cmp(&right.riven_id))
         });
     }
-    groups
+    groups.into_values().collect()
 }
 
 pub fn display_name(row: &RivenRow) -> Option<String> {
@@ -142,7 +148,7 @@ impl Grader<'_> {
     ) -> Option<RivenRow> {
         let catalog = self.catalog;
         let fingerprint = upgrade.fingerprint()?;
-        let riven_type = catalog.data().riven_data().riven_type(&upgrade.item_type);
+        let riven_type = self.riven_type(&upgrade.item_type);
         let weapon_path = fingerprint.compat.as_deref().map(compat_path);
         let weapon_item = weapon_path.and_then(|path| catalog.item(path));
         let (disposition, disposition_weapon) = match (weapon_item, weapon_path) {
@@ -151,47 +157,48 @@ impl Grader<'_> {
             }
             _ => (None, None),
         };
-        let graded = self.graded(&fingerprint, riven_type, disposition);
         let mod_item = catalog.item(&upgrade.item_type);
-        let weapon = weapon_item
-            .map(|item| item.name.clone())
-            .or_else(|| weapon_path.map(display_name_from_path))
-            .or_else(|| mod_item.map(|item| item.name.clone()));
-        let name = riven_type.and_then(|found| riven_name(found, &fingerprint.buffs));
-        let weapon_slug = weapon_item
-            .and_then(|item| self.items.get(&item.unique_name))
-            .and_then(|record| record.market_slug.clone());
-        let listed_in_wfm = match (&name, &weapon_slug, fingerprint.lvl_req) {
-            (Some(name), Some(slug), Some(mastery)) => {
-                listings.lists_riven(name, slug, mastery, fingerprint.rerolls)
-            }
-            _ => false,
-        };
-        Some(RivenRow {
+        let identity = RivenRow {
             item_id: upgrade.item_id.as_str().to_owned(),
             item_type: upgrade.item_type.clone(),
             weapon_class: riven_type.map(|found| weapon_class(&found.name)),
             riven_type: riven_type.map(|found| found.name.clone()),
-            name,
-            weapon_slug,
+            weapon: weapon_item
+                .map(|item| item.name.clone())
+                .or_else(|| weapon_path.map(display_name_from_path))
+                .or_else(|| mod_item.map(|item| item.name.clone())),
+            weapon_path: weapon_path.map(str::to_owned),
+            weapon_slug: weapon_item
+                .and_then(|item| self.items.get(&item.unique_name))
+                .and_then(|record| record.market_slug.clone()),
             image_name: weapon_item
                 .or(mod_item)
                 .and_then(|item| item.image_name.clone()),
-            weapon,
-            weapon_path: weapon_path.map(str::to_owned),
             disposition,
             disposition_weapon,
-            unveiled: fingerprint.is_unveiled(),
-            rank: fingerprint.lvl,
-            rank_required: fingerprint.lvl_req,
-            rerolls: fingerprint.rerolls,
-            polarity: fingerprint.pol.as_deref().and_then(polarity),
-            grade: perfectness(&graded),
-            good_roll: self.good_roll(weapon_path, &graded, riven_type),
-            unlisted_stat: unlisted_stat(&graded),
-            attributes: graded,
-            listed_in_wfm,
+            name: None,
+            unveiled: false,
+            rank: 0,
+            rank_required: None,
+            rerolls: 0,
+            polarity: None,
+            grade: 0.0,
+            attributes: Vec::new(),
+            good_roll: None,
+            listed_in_wfm: false,
+            unlisted_stat: None,
             pending: None,
+        };
+        let row = self.roll(identity, &fingerprint, riven_type);
+        let listed_in_wfm = match (&row.name, &row.weapon_slug, row.rank_required) {
+            (Some(name), Some(slug), Some(mastery)) => {
+                listings.lists_riven(name, slug, mastery, row.rerolls)
+            }
+            _ => false,
+        };
+        Some(RivenRow {
+            listed_in_wfm,
+            ..row
         })
     }
 }
@@ -204,8 +211,6 @@ mod tests {
     use crate::rivens::support::*;
     use wf_market::OrderType;
 
-    const MY_AUCTIONS: &str = include_str!("../../../wf-market/tests/fixtures/auctions_my.json");
-
     #[test]
     fn listed_riven_marked() {
         let inventory = fixtures::inventory();
@@ -217,7 +222,7 @@ mod tests {
                 row.name.is_some() && row.weapon_slug.is_some() && row.rank_required.is_some()
             })
             .expect("listable riven");
-        let mut auctions = wf_market::parse_v1_auctions(MY_AUCTIONS).unwrap();
+        let mut auctions = wf_market::parse_v1_auctions(fixtures::MY_AUCTIONS).unwrap();
         let auction = auctions.first_mut().unwrap();
         auction.item.name = listed.name.clone().unwrap();
         auction.item.weapon_url_name = listed.weapon_slug.clone().unwrap();
@@ -245,23 +250,19 @@ mod tests {
     }
 
     fn rerolled_inventory(item_id: &str) -> Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        let upgrades = value
-            .get_mut("Upgrades")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap();
-        let entry = upgrades
-            .iter_mut()
-            .find(|entry| entry["ItemId"]["$oid"] == item_id)
-            .unwrap();
-        let raw = entry["UpgradeFingerprint"].as_str().unwrap();
-        let mut fingerprint: serde_json::Value = serde_json::from_str(raw).unwrap();
-        let rerolls = fingerprint["rerolls"].as_u64().unwrap_or(0);
-        fingerprint["rerolls"] = serde_json::json!(rerolls + 1);
-        fingerprint["buffs"][0]["Value"] = serde_json::json!(BEST_ROLL);
-        entry["UpgradeFingerprint"] =
-            serde_json::json!(serde_json::to_string(&fingerprint).unwrap());
-        Inventory::parse(&value.to_string()).unwrap()
+        fixtures::inventory_with(|value| {
+            let entry = fixtures::entries(value, "Upgrades")
+                .iter_mut()
+                .find(|entry| entry["ItemId"]["$oid"] == item_id)
+                .unwrap();
+            let raw = entry["UpgradeFingerprint"].as_str().unwrap();
+            let mut fingerprint: serde_json::Value = serde_json::from_str(raw).unwrap();
+            let rerolls = fingerprint["rerolls"].as_u64().unwrap_or(0);
+            fingerprint["rerolls"] = serde_json::json!(rerolls + 1);
+            fingerprint["buffs"][0]["Value"] = serde_json::json!(BEST_ROLL);
+            entry["UpgradeFingerprint"] =
+                serde_json::json!(serde_json::to_string(&fingerprint).unwrap());
+        })
     }
 
     #[test]

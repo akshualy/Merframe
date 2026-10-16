@@ -221,13 +221,13 @@ impl Ducatering {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{
+        self, BRATON_PRIME_BARREL, BRATON_PRIME_BLUEPRINT, BRATON_PRIME_STOCK,
+        TRINITY_PRIME_SYSTEMS_BLUEPRINT,
+    };
     use crate::prices::FixedPrices;
     use crate::view::Fixture;
 
-    const BRATON_BARREL: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel";
-
-    const STOCK: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
     const LINK: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/AkboltoPrimeLink";
     const EPITAPH_BARREL: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/EpitaphPrimeBarrel";
 
@@ -238,7 +238,11 @@ mod tests {
                 item_type: (*item_type).to_owned(),
                 name: (*name).to_owned(),
                 count: *count,
-                ducats: if *item_type == STOCK { 15 } else { 45 },
+                ducats: if *item_type == BRATON_PRIME_STOCK {
+                    15
+                } else {
+                    45
+                },
             })
             .collect()
     }
@@ -246,7 +250,7 @@ mod tests {
     fn kiosk(marked: &[(&str, &str, u32)]) -> ScannedKiosk {
         ScannedKiosk {
             owned: scanned(&[
-                (STOCK, "Braton Prime Stock", 7),
+                (BRATON_PRIME_STOCK, "Braton Prime Stock", 7),
                 (LINK, "Akbolto Prime Link", 2),
             ]),
             marked: scanned(marked),
@@ -284,15 +288,15 @@ mod tests {
 
     #[test]
     fn items_in_order() {
-        let mut run = run(&[(STOCK, 3), (LINK, 1)]);
+        let mut run = run(&[(BRATON_PRIME_STOCK, 3), (LINK, 1)]);
         assert_eq!(run.advance(&kiosk(&[])), search(0, "Braton Prime Stock"));
         assert_eq!(run.advance(&kiosk(&[])), DucateringStep::Waiting);
-        let partly = kiosk(&[(STOCK, "Braton Prime Stock", 2)]);
+        let partly = kiosk(&[(BRATON_PRIME_STOCK, "Braton Prime Stock", 2)]);
         assert_eq!(run.advance(&partly), DucateringStep::Waiting);
-        let stock = kiosk(&[(STOCK, "Braton Prime Stock", 3)]);
+        let stock = kiosk(&[(BRATON_PRIME_STOCK, "Braton Prime Stock", 3)]);
         assert_eq!(run.advance(&stock), search(1, "Akbolto Prime Link"));
         let both = kiosk(&[
-            (STOCK, "Braton Prime Stock", 3),
+            (BRATON_PRIME_STOCK, "Braton Prime Stock", 3),
             (LINK, "Akbolto Prime Link", 1),
         ]);
         assert_eq!(run.advance(&both), DucateringStep::Finished);
@@ -300,15 +304,15 @@ mod tests {
 
     #[test]
     fn sold_items_stay_done() {
-        let mut run = run(&[(STOCK, 3), (LINK, 1)]);
-        let stock = kiosk(&[(STOCK, "Braton Prime Stock", 3)]);
+        let mut run = run(&[(BRATON_PRIME_STOCK, 3), (LINK, 1)]);
+        let stock = kiosk(&[(BRATON_PRIME_STOCK, "Braton Prime Stock", 3)]);
         assert_eq!(run.advance(&stock), search(1, "Akbolto Prime Link"));
         assert_eq!(run.advance(&kiosk(&[])), DucateringStep::Waiting);
     }
 
     #[test]
     fn asks_for_no_more_than_is_owned() {
-        let mut run = run(&[(LINK, 5), (STOCK, 1)]);
+        let mut run = run(&[(LINK, 5), (BRATON_PRIME_STOCK, 1)]);
         let links = kiosk(&[(LINK, "Akbolto Prime Link", 2)]);
         assert_eq!(run.advance(&links), search(1, "Braton Prime Stock"));
     }
@@ -321,24 +325,24 @@ mod tests {
 
     #[test]
     fn state_follows_the_search() {
-        let mut run = run(&[(STOCK, 1)]);
+        let mut run = run(&[(BRATON_PRIME_STOCK, 1)]);
         assert_eq!(run.state(), DucateringState::Waiting(0));
         run.advance(&kiosk(&[]));
         assert_eq!(run.state(), DucateringState::Searching(0));
-        run.advance(&kiosk(&[(STOCK, "Braton Prime Stock", 1)]));
+        run.advance(&kiosk(&[(BRATON_PRIME_STOCK, "Braton Prime Stock", 1)]));
         assert_eq!(run.state(), DucateringState::Finished);
     }
 
     #[test]
     fn sales_add_up() {
-        let mut run = run(&[(STOCK, 3), (LINK, 1)]);
+        let mut run = run(&[(BRATON_PRIME_STOCK, 3), (LINK, 1)]);
         assert!(!run.sold());
-        run.advance(&kiosk(&[(STOCK, "Braton Prime Stock", 2)]));
+        run.advance(&kiosk(&[(BRATON_PRIME_STOCK, "Braton Prime Stock", 2)]));
         assert!(run.sold());
         assert_eq!(run.advance(&kiosk(&[])), search(0, "Braton Prime Stock"));
         assert_eq!(run.progress().items[0].count, 1);
         run.advance(&kiosk(&[
-            (STOCK, "Braton Prime Stock", 1),
+            (BRATON_PRIME_STOCK, "Braton Prime Stock", 1),
             (LINK, "Akbolto Prime Link", 1),
         ]));
         assert!(run.sold());
@@ -358,8 +362,8 @@ mod tests {
 
     #[test]
     fn sale_survives_an_empty_read() {
-        let mut run = run(&[(STOCK, 3)]);
-        run.advance(&kiosk(&[(STOCK, "Braton Prime Stock", 3)]));
+        let mut run = run(&[(BRATON_PRIME_STOCK, 3)]);
+        run.advance(&kiosk(&[(BRATON_PRIME_STOCK, "Braton Prime Stock", 3)]));
         run.advance(&kiosk(&[]));
         assert!(run.sold());
         assert_eq!(run.progress().ducats, 3 * 15);
@@ -375,11 +379,8 @@ mod tests {
         let fixture = Fixture::new(
             fixtures::catalog(),
             fixtures::inventory_owning(&[
-                (BRATON_BARREL, 3),
-                (
-                    "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-                    1,
-                ),
+                (BRATON_PRIME_BARREL, 3),
+                (TRINITY_PRIME_SYSTEMS_BLUEPRINT, 1),
             ]),
         )
         .with_prices(FixedPrices::new([
@@ -415,16 +416,13 @@ mod tests {
         let fixture = Fixture::new(
             fixtures::catalog(),
             fixtures::inventory_owning(&[
-                (BRATON_BARREL, 1),
-                (
-                    "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                    1,
-                ),
+                (BRATON_PRIME_BARREL, 1),
+                (BRATON_PRIME_STOCK, 1),
                 (
                     "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeReceiver",
                     1,
                 ),
-                ("/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint", 1),
+                (BRATON_PRIME_BLUEPRINT, 1),
             ]),
         )
         .with_prices(FixedPrices::new([("braton_prime_set", 45.0)]));

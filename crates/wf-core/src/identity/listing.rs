@@ -2,19 +2,16 @@ use std::borrow::Cow;
 
 use wf_data::Refinement;
 
-use super::{ItemKind, ItemRecord, ItemRef, ItemTable, Variant, ambassador_blueprint, market_slug};
-use crate::catalog::{RECIPE_PREFIX, RELIC_PREFIX, projection_suffix};
+use super::{
+    ItemKind, ItemRecord, ItemRef, ItemTable, LEGENDARY_CORE, OUBLIETTE_KEY, Variant,
+    ambassador_blueprint, blueprint_of, market_slug,
+};
+use crate::catalog::{RECIPE_PREFIX, RELIC_PREFIX};
 use crate::trade::name_key;
 
 static LISTINGS_OF_ANOTHER_ITEM: [(&str, &str); 3] = [
-    (
-        "Nihil's Oubliette (Key)",
-        "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey",
-    ),
-    (
-        "Legendary Fusion Core",
-        "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser",
-    ),
+    ("Nihil's Oubliette (Key)", OUBLIETTE_KEY),
+    ("Legendary Fusion Core", LEGENDARY_CORE),
     (
         "Scan Aquatic Lifeforms",
         "/Lotus/Types/Sentinels/SentinelPrecepts/LocateCreatures",
@@ -50,20 +47,23 @@ fn listed_game_ref(item: &wf_market::Item) -> Cow<'_, str> {
     Cow::Borrowed(game_ref)
 }
 
+fn tagged(item: &wf_market::Item, tag: &str) -> bool {
+    item.tags.iter().any(|owned| owned == tag)
+}
+
 fn listed_kind(item: &wf_market::Item) -> ItemKind {
-    let tagged = |tag: &str| item.tags.iter().any(|owned| owned == tag);
-    if tagged("component") || tagged("blueprint") {
+    if tagged(item, "component") || tagged(item, "blueprint") {
         return ItemKind::Other;
     }
-    if tagged("imprint") {
+    if tagged(item, "imprint") {
         return ItemKind::Imprint;
     }
-    if tagged("relic") {
+    if tagged(item, "relic") {
         return ItemKind::Relic {
             refinement: Refinement::Intact,
         };
     }
-    if tagged("mod") || tagged("arcane") || tagged("arcane_enhancement") {
+    if tagged(item, "mod") || tagged(item, "arcane") || tagged(item, "arcane_enhancement") {
         return ItemKind::Upgrade {
             rarity: None,
             max_rank: item.max_rank,
@@ -74,10 +74,10 @@ fn listed_kind(item: &wf_market::Item) -> ItemKind {
 
 pub(crate) fn traded_as(unique_name: &str) -> Cow<'_, str> {
     if unique_name.contains("/Kubrow/Collars/") {
-        Cow::Borrowed(unique_name)
-    } else {
-        Cow::Owned(unique_name.replace("Component", "Blueprint"))
+        return Cow::Borrowed(unique_name);
     }
+
+    blueprint_of(unique_name).map_or(Cow::Borrowed(unique_name), Cow::Owned)
 }
 
 impl ItemTable {
@@ -154,7 +154,7 @@ impl ItemTable {
             game_ref
                 .starts_with(RELIC_PREFIX)
                 .then(|| {
-                    let intact = projection_suffix(Refinement::Intact);
+                    let intact = Refinement::Intact.projection_suffix();
                     self.by_unique_name.get(&format!("{game_ref}{intact}"))
                 })
                 .flatten()
@@ -168,10 +168,9 @@ impl ItemTable {
     }
 
     fn variant_for(&self, base: ItemRef, item: &wf_market::Item) -> ItemRef {
-        let tagged = |wanted: &str| item.tags.iter().any(|tag| tag == wanted);
-        let variant = if tagged("set") {
+        let variant = if tagged(item, "set") {
             Variant::Set
-        } else if tagged("imprint") {
+        } else if tagged(item, "imprint") {
             Variant::Imprint
         } else if matches!(self[base].kind, ItemKind::Riven) {
             Variant::Veiled
@@ -194,7 +193,7 @@ mod tests {
             market_item(
                 "trinity_prime_systems_blueprint",
                 "Trinity Prime Systems Blueprint",
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
+                fixtures::TRINITY_PRIME_SYSTEMS_BLUEPRINT,
                 &["component", "blueprint"],
             ),
             market_item(
@@ -233,10 +232,7 @@ mod tests {
         let record = |id: &str| table.by_market_id(id).unwrap();
 
         let systems = record("trinity_prime_systems_blueprint");
-        assert_eq!(
-            systems.unique_name,
-            "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent"
-        );
+        assert_eq!(systems.unique_name, fixtures::TRINITY_PRIME_SYSTEMS);
         assert!(matches!(systems.kind, ItemKind::Part { .. }));
         assert_eq!(
             record("axi_a1_relic").kind,
@@ -299,6 +295,10 @@ mod tests {
             traded_as("/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent"),
             "/Lotus/Types/Recipes/Kubrow/Collars/PrimeKubrowCollarABandComponent",
             "kubrow collar parts trade built"
+        );
+        assert_eq!(
+            traded_as("/Lotus/Types/Recipes/Components/FormaBlueprint"),
+            "/Lotus/Types/Recipes/Components/FormaBlueprint"
         );
     }
 }

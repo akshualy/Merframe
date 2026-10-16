@@ -115,11 +115,7 @@ mod tests {
         let fixture = fixture();
         let grader = fixture.grader();
         let weapon = table_weapon_named(&fixture.table, weapon);
-        let riven_type = fixture
-            .catalog
-            .data()
-            .riven_data()
-            .riven_type(&weapon.mod_type);
+        let riven_type = grader.riven_type(&weapon.mod_type);
         let fingerprint = RivenFingerprint::parse(&rolled(&weapon.game_ref, buffs, curse)).unwrap();
         let attributes = grader.graded(&fingerprint, riven_type, Some(weapon.disposition));
         grader.good_roll(Some(weapon.game_ref.as_str()), &attributes, riven_type)

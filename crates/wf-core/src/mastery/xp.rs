@@ -9,7 +9,7 @@ use super::star_chart::star_chart_xp;
 use crate::account::Account;
 use crate::catalog::Catalog;
 
-pub(super) const WARFRAME_AFFINITY_CAP: u64 = 900_000;
+const WARFRAME_AFFINITY_CAP: u64 = 900_000;
 pub(super) const WARFRAME_MASTERY_PER_RANK: u64 = 200;
 
 pub(super) const VENARI: [(&str, &str); 2] = [
@@ -37,6 +37,10 @@ impl MasteryXp {
     pub fn total(self) -> u64 {
         self.items + self.plexus + self.venari + self.unlisted + self.star_chart + self.intrinsics
     }
+}
+
+pub(super) fn warframe_rank(affinity: u64) -> u64 {
+    mastery_level_from_affinity(affinity, true, WARFRAME_AFFINITY_CAP)
 }
 
 pub(super) fn xp_for_rank(rank: u32) -> u64 {
@@ -87,7 +91,7 @@ pub(super) fn unlisted_ranks<'a>(
                 (
                     item_type,
                     WARFRAME_MASTERY_PER_RANK,
-                    mastery_level_from_affinity(entry.xp, true, WARFRAME_AFFINITY_CAP),
+                    warframe_rank(entry.xp),
                 )
             } else {
                 (
@@ -112,20 +116,13 @@ pub(super) fn mastery_xp(account: &Account, catalog: &Catalog) -> MasteryXp {
     let plexus: u64 = inventory
         .crew_ship_harnesses
         .iter()
-        .map(|harness| {
-            mastery_level_from_affinity(harness.xp, true, WARFRAME_AFFINITY_CAP)
-                * WARFRAME_MASTERY_PER_RANK
-        })
+        .map(|harness| warframe_rank(harness.xp) * WARFRAME_MASTERY_PER_RANK)
         .sum();
 
     let venari: u64 = VENARI
         .into_iter()
         .map(|(unique_name, _)| {
-            mastery_level_from_affinity(
-                account.affinity_of(unique_name),
-                true,
-                WARFRAME_AFFINITY_CAP,
-            ) * WARFRAME_MASTERY_PER_RANK
+            warframe_rank(account.affinity_of(unique_name)) * WARFRAME_MASTERY_PER_RANK
         })
         .sum();
 

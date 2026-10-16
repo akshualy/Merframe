@@ -310,11 +310,7 @@ mod tests {
         let grader = fixture.grader();
         let tab = riven_tab();
         let cernos = by_weapon(&tab.unveiled, "Proboscis Cernos");
-        let riven_type = fixture
-            .catalog
-            .data()
-            .riven_data()
-            .riven_type(&cernos.item_type);
+        let riven_type = grader.riven_type(&cernos.item_type);
         let spliced = RivenFingerprint::parse(&rolled(
             cernos.weapon_path.as_deref().unwrap(),
             &[

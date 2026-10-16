@@ -295,7 +295,7 @@ mod tests {
 
     #[test]
     fn shared_prices_lookup() {
-        let table = wf_market::parse_price_table(TABLE).unwrap();
+        let table = serde_json::from_str::<wf_market::PriceTable>(TABLE).unwrap();
         let now = DateTime::<Utc>::from_timestamp(1_757_410_800, 0).unwrap();
         let prices = SharedPrices::default();
         assert_eq!(prices.checked_at(), None);

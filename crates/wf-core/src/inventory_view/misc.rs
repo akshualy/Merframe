@@ -5,7 +5,7 @@ use wf_inventory::{EquipmentItem, Inventory};
 
 use super::{ItemIndex, ItemSummary, MiscRow, SculptureStars};
 use crate::catalog::{Catalog, RELIC_PREFIX, is_fish};
-use crate::identity::{ItemRecord, ItemTable, Variant};
+use crate::identity::{ItemRecord, ItemTable, LEGENDARY_CORE, OUBLIETTE_KEY, Variant};
 use crate::view::View;
 
 const SCULPTURE_SOCKETS: [(&str, u32, u32); 11] = [
@@ -51,8 +51,8 @@ pub(super) fn is_misc(item_type: &str) -> bool {
     item_type == "/Lotus/Upgrades/Skins/Kubrows/Collars/PrimeKubrowCollarA"
         || is_oubliette_key(item_type)
         || item_type.starts_with("/Lotus/Types/Items/FusionTreasures")
-        || item_type.starts_with("/Lotus/Types/Items/MiscItems/PhotoboothTile")
-        || item_type.contains("/Fusers/LegendaryModFuser")
+        || is_scene(item_type)
+        || item_type == LEGENDARY_CORE
         || item_type.contains("/Resources/Mechs/")
         || is_catchable_fish(item_type)
         || is_arcane_helmet(item_type)
@@ -75,7 +75,7 @@ pub(super) fn is_landing_craft_part(item_type: &str) -> bool {
 }
 
 fn is_oubliette_key(item_type: &str) -> bool {
-    item_type == "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey"
+    item_type == OUBLIETTE_KEY
 }
 
 fn misc_source_item<'a>(catalog: &'a Catalog, unique_name: &str) -> Option<&'a Item> {
@@ -123,7 +123,7 @@ pub(super) fn is_spare_weapon_stock(item_type: &str) -> bool {
             .contains("/Lotus/Weapons/Tenno/Pistols/ConclaveLeverPistol/ConclaveLeverPistol")
 }
 
-fn spare_weapons(inventory: &Inventory) -> impl Iterator<Item = &EquipmentItem> {
+pub(crate) fn spare_weapons(inventory: &Inventory) -> impl Iterator<Item = &EquipmentItem> {
     [
         inventory.long_guns.as_slice(),
         &inventory.pistols,
@@ -256,13 +256,14 @@ fn spare_equipment_rows(view: &View, index: &mut ItemIndex) -> Vec<MiscRow> {
 mod tests {
     use std::collections::HashSet;
 
-    use super::super::tests::prices;
+    use super::super::tests::priced;
     use super::*;
-    use crate::catalog::{display_name_from_path, fixtures};
+    use crate::catalog::display_name_from_path;
+    use crate::catalog::fixtures::{self, FERRITE, catalog_of};
     use crate::prices::FixedPrices;
     use crate::view::Fixture;
 
-    const MISC_ITEMS: &str = r#"[
+    const FACTION_ITEMS: &str = r#"[
       {"uniqueName":"/Lotus/Weapons/Corpus/Pistols/CrpHandRL/PrismaAngstrum",
        "name":"Prisma Angstrum","category":"Secondary","type":"Pistols","tradable":true,
        "imageName":"prisma-angstrum.png"},
@@ -336,7 +337,7 @@ mod tests {
 
     #[test]
     fn tradable_oddments() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         assert!(!rows.is_empty());
         assert!(rows.iter().all(|row| row.count > 0));
@@ -376,7 +377,7 @@ mod tests {
 
     #[test]
     fn no_owned_cosmetic_is_tradable() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
 
         let skins: HashSet<&str> = fixture
@@ -433,7 +434,7 @@ mod tests {
 
     #[test]
     fn cosmetic_names_from_export() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         let row = |unique_name: &str| {
             rows.iter()
@@ -467,7 +468,7 @@ mod tests {
 
     #[test]
     fn tradable_gate() {
-        let catalog = Catalog::from_json(GATE_ITEMS, fixtures::RELICS, "[]").unwrap();
+        let catalog = catalog_of(GATE_ITEMS);
         let items = ItemTable::build(&catalog);
         let tradable = |unique_name: &str| is_tradable_misc(&catalog, &items, unique_name);
 
@@ -541,8 +542,8 @@ mod tests {
 
     #[test]
     fn spare_weapons_from_slots() {
-        let fixture = Fixture::new(
-            Catalog::from_json(SPARE_WEAPONS, fixtures::RELICS, "[]").unwrap(),
+        let fixture = priced(
+            catalog_of(SPARE_WEAPONS),
             fixtures::inventory_stocked(
                 &[
                     ("LongGuns", OPTICOR_VANDAL),
@@ -559,8 +560,7 @@ mod tests {
                 ],
                 &[],
             ),
-        )
-        .with_prices(prices());
+        );
         let (rows, index) = fixture.rows(misc);
         let listed = |name: &str| rows.iter().any(|row| index[row.item].name == name);
         assert!(listed("Opticor Vandal"));
@@ -578,13 +578,9 @@ mod tests {
 
     #[test]
     fn faction_weapons_and_imprints() {
-        let fixture = Fixture {
-            prices: FixedPrices::new([("prisma_angstrum", 32.0), ("vasca_kavat_imprint", 15.0)]),
-            ..Fixture::new(
-                Catalog::from_json(MISC_ITEMS, fixtures::RELICS, "[]").unwrap(),
-                fixtures::inventory(),
-            )
-        };
+        let fixture = Fixture::new(catalog_of(FACTION_ITEMS), fixtures::inventory()).with_prices(
+            FixedPrices::new([("prisma_angstrum", 32.0), ("vasca_kavat_imprint", 15.0)]),
+        );
         let (rows, index) = fixture.rows(misc);
 
         let angstrum: Vec<&MiscRow> = rows
@@ -633,14 +629,12 @@ mod tests {
         );
     }
 
-    const MISC_ITEMS_EXPORT: &str = include_str!("../../../../fixtures/misc_items.json");
-
-    fn misc_catalog() -> Catalog {
-        Catalog::from_json(MISC_ITEMS_EXPORT, fixtures::RELICS, fixtures::COMPONENTS).unwrap()
+    fn misc_fixture() -> Fixture {
+        priced(fixtures::misc_catalog(), fixtures::inventory())
     }
 
     fn misc_catalog_without(categories: &[&str]) -> Catalog {
-        let entries: Vec<serde_json::Value> = serde_json::from_str(MISC_ITEMS_EXPORT).unwrap();
+        let entries: Vec<serde_json::Value> = serde_json::from_str(fixtures::MISC_ITEMS).unwrap();
         let kept: Vec<serde_json::Value> = entries
             .into_iter()
             .filter(|entry| !categories.contains(&entry["category"].as_str().unwrap_or_default()))
@@ -657,7 +651,7 @@ mod tests {
 
     #[test]
     fn no_path_derived_names() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         let unresolved: Vec<&str> = rows
             .iter()
@@ -670,9 +664,7 @@ mod tests {
         );
 
         let (narrowed, narrowed_index) =
-            Fixture::new(misc_catalog_without(&["Fish"]), fixtures::inventory())
-                .with_prices(prices())
-                .rows(misc);
+            priced(misc_catalog_without(&["Fish"]), fixtures::inventory()).rows(misc);
         assert!(
             !narrowed
                 .iter()
@@ -684,7 +676,7 @@ mod tests {
 
     #[test]
     fn fish_sizes_share_one_market_item() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         let market = |unique_name: &str| {
             rows.iter()
@@ -717,7 +709,7 @@ mod tests {
 
     #[test]
     fn fish_names() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         let name = |unique_name: &str| {
             rows.iter()
@@ -752,7 +744,7 @@ mod tests {
 
     #[test]
     fn curated_rows_without_image() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         let without_image: Vec<(&str, &str)> = rows
             .iter()
@@ -775,7 +767,7 @@ mod tests {
 
     #[test]
     fn sculptures_split_by_filled_stars() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         let sah: Vec<_> = rows
             .iter()
@@ -855,7 +847,7 @@ mod tests {
         ));
         assert!(is_misc("/Lotus/Types/Items/Fish/EidolonFishA"));
         assert!(!is_misc("/Lotus/Types/Items/Fish/BootItem"));
-        assert!(!is_misc("/Lotus/Types/Items/MiscItems/Ferrite"));
+        assert!(!is_misc(FERRITE));
         assert!(!is_misc(
             "/Lotus/Types/Game/Projections/T1VoidProjectionABronze"
         ));
@@ -922,7 +914,7 @@ mod tests {
 
     #[test]
     fn fixture_misc_families() {
-        let fixture = Fixture::new(misc_catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = misc_fixture();
         let (rows, index) = fixture.rows(misc);
         assert_eq!(rows.len(), 44);
         let expected: BTreeMap<&str, usize> = [

@@ -1,5 +1,5 @@
 use serde::Serialize;
-use wf_data::{Rarity, RelicReward};
+use wf_data::{Component, Item, Rarity, RelicReward};
 
 use crate::catalog::Catalog;
 use crate::favourites::Favourites;
@@ -87,9 +87,11 @@ pub(super) fn favourite_reward(
     favourites.contains(unique_name)
         || catalog
             .component_for_reward(unique_name)
-            .is_some_and(|(item, component)| {
-                favourites.any([component.unique_name.as_str(), item.unique_name.as_str()])
-            })
+            .is_some_and(|(item, component)| favourite_part(favourites, item, component))
+}
+
+pub(super) fn favourite_part(favourites: &Favourites, item: &Item, component: &Component) -> bool {
+    favourites.any([component.unique_name.as_str(), item.unique_name.as_str()])
 }
 
 pub(super) fn rarity_name(rarity: Rarity) -> &'static str {

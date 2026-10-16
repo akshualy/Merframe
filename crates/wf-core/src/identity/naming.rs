@@ -28,9 +28,47 @@ pub(crate) fn part_market_slug(item: &Item, component: &Component) -> String {
     }
 }
 
+pub(crate) fn blueprint_of(component: &str) -> Option<String> {
+    component
+        .strip_suffix("Component")
+        .map(|base| format!("{base}Blueprint"))
+}
+
+pub(crate) fn component_of(blueprint: &str) -> Option<String> {
+    blueprint
+        .strip_suffix("Blueprint")
+        .map(|base| format!("{base}Component"))
+}
+
+pub(crate) fn part_identity(unique_name: &str) -> &str {
+    unique_name
+        .strip_suffix("Blueprint")
+        .or_else(|| unique_name.strip_suffix("Component"))
+        .unwrap_or(unique_name)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::catalog::fixtures::{TRINITY_PRIME_SYSTEMS, TRINITY_PRIME_SYSTEMS_BLUEPRINT};
+
+    #[test]
+    fn component_blueprint_aliases() {
+        assert_eq!(
+            blueprint_of(TRINITY_PRIME_SYSTEMS).as_deref(),
+            Some(TRINITY_PRIME_SYSTEMS_BLUEPRINT)
+        );
+        assert_eq!(
+            component_of(TRINITY_PRIME_SYSTEMS_BLUEPRINT).as_deref(),
+            Some(TRINITY_PRIME_SYSTEMS)
+        );
+        assert_eq!(blueprint_of(TRINITY_PRIME_SYSTEMS_BLUEPRINT), None);
+        assert_eq!(component_of(TRINITY_PRIME_SYSTEMS), None);
+        assert_eq!(
+            part_identity(TRINITY_PRIME_SYSTEMS),
+            part_identity(TRINITY_PRIME_SYSTEMS_BLUEPRINT)
+        );
+    }
 
     #[test]
     fn slug_rules() {

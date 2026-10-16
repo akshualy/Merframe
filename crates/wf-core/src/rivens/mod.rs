@@ -99,6 +99,10 @@ impl<'a> Grader<'a> {
         }
     }
 
+    fn riven_type(&self, unique_name: &str) -> Option<&'a RivenType> {
+        self.catalog.data().riven_data().riven_type(unique_name)
+    }
+
     fn attribute(&self, riven_type: &RivenType, tag: &str) -> Option<&'a RivenAttribute> {
         self.attributes
             .get(riven_type.unique_name.as_str())?
@@ -193,7 +197,12 @@ pub(crate) mod support {
     use crate::listings::MarketListings;
     use wf_market::{RivenData as RivenTable, RivenWeapon};
 
-    pub(crate) const RIVEN_DATA: &str = include_str!("../../../../fixtures/riven_data.json");
+    pub(crate) const ARCHON_DAGGERS: &str =
+        "/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep";
+
+    pub(crate) const OTHER_WEAPON: &str = "/Lotus/Weapons/Tenno/Unknown/NoSuchWeapon";
+
+    const RIVEN_DATA: &str = include_str!("../../../../fixtures/riven_data.json");
 
     pub(crate) const CURRENT_ROLL: &str = r#"{"compat":"/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep","lim":294146365,"lvlReq":11,"lvl":8,"rerolls":74,"pol":"AP_DEFENSE","buffs":[{"Tag":"WeaponFreezeDamageMod","Value":708669601},{"Tag":"WeaponToxinDamageMod","Value":526133492},{"Tag":"WeaponFireRateMod","Value":397284473}],"curses":[]}"#;
 
@@ -275,8 +284,12 @@ pub(crate) mod support {
 
     pub(crate) const BEST_ROLL: i64 = 1_073_741_820;
 
+    pub(crate) fn paid_roll() -> String {
+        CURRENT_ROLL.replace("\"rerolls\":74", "\"rerolls\":75")
+    }
+
     pub(crate) fn riven_table() -> RivenTable {
-        wf_market::parse_riven_data(RIVEN_DATA).expect("riven data")
+        serde_json::from_str::<wf_market::RivenData>(RIVEN_DATA).expect("riven data")
     }
 
     pub(crate) fn table_weapon_named(table: &RivenTable, name: &str) -> RivenWeapon {
@@ -302,15 +315,6 @@ pub(crate) mod support {
         )
     }
 
-    pub(crate) fn riven_catalog() -> Catalog {
-        let mut items: Vec<serde_json::Value> =
-            serde_json::from_str(fixtures::RIVEN_ITEMS).unwrap();
-        let stacks: Vec<serde_json::Value> = serde_json::from_str(PRE_VEILED_ITEMS).unwrap();
-        items.extend(stacks);
-        let json = serde_json::to_string(&items).unwrap();
-        Catalog::from_json(&json, fixtures::RELICS, fixtures::COMPONENTS).unwrap()
-    }
-
     pub(crate) struct Fixture {
         pub(crate) catalog: Catalog,
         pub(crate) items: ItemTable,
@@ -324,7 +328,7 @@ pub(crate) mod support {
     }
 
     pub(crate) fn fixture() -> Fixture {
-        let catalog = riven_catalog();
+        let catalog = fixtures::catalog_with(fixtures::RIVEN_ITEMS, PRE_VEILED_ITEMS);
         Fixture {
             items: ItemTable::build(&catalog),
             catalog,

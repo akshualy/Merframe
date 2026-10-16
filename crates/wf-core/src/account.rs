@@ -5,6 +5,7 @@ use wf_inventory::Inventory;
 
 use crate::catalog::Stock;
 use crate::foundry::FoundryStock;
+use crate::inventory_view::ItemStatus;
 
 pub(crate) struct Account {
     pub(crate) inventory: Inventory,
@@ -47,6 +48,13 @@ impl Account {
 
     pub(crate) fn holds(&self, item: &Item) -> bool {
         self.built(&item.unique_name) || self.mastered(item)
+    }
+
+    pub(crate) fn status(&self, item: &Item) -> ItemStatus {
+        ItemStatus {
+            built: self.built(&item.unique_name),
+            mastered: self.mastered(item),
+        }
     }
 }
 

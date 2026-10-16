@@ -1,55 +1,45 @@
+use std::marker::PhantomData;
+
 use reqwest::StatusCode;
 use reqwest::header::{ETAG, IF_NONE_MATCH};
+use serde::de::DeserializeOwned;
 
-use crate::client::{REQUEST_TIMEOUT, accepted, rate_limited, segment};
+use crate::client::{MERFRAME_API, REQUEST_TIMEOUT, accepted, segment, send};
 use crate::error::Result;
 use crate::models::{PriceTable, RivenData, WeaponAuctions};
-use crate::parse;
 use crate::ratelimit::{self, RateLimiter};
 
 pub struct Etagged<T> {
     http: reqwest::Client,
     url: String,
-    parse: fn(&str) -> Result<T>,
     etag: Option<String>,
     rate_limiter: RateLimiter,
+    document: PhantomData<fn() -> T>,
 }
 
 pub fn bulk_prices(http: reqwest::Client) -> Etagged<PriceTable> {
-    Etagged::new(
-        http,
-        "https://api.merframe.net/v1/prices".to_owned(),
-        parse::parse_price_table,
-    )
+    Etagged::new(http, format!("{MERFRAME_API}/prices"))
 }
 
 pub fn bulk_riven_data(http: reqwest::Client) -> Etagged<RivenData> {
-    Etagged::new(
-        http,
-        "https://api.merframe.net/v1/riven".to_owned(),
-        parse::parse_riven_data,
-    )
+    Etagged::new(http, format!("{MERFRAME_API}/riven"))
 }
 
 pub fn riven_auctions(http: reqwest::Client, weapon_slug: &str) -> Etagged<WeaponAuctions> {
     Etagged::new(
         http,
-        format!(
-            "https://api.merframe.net/v1/riven/auctions/{}",
-            segment(weapon_slug)
-        ),
-        parse::parse_riven_auctions,
+        format!("{MERFRAME_API}/riven/auctions/{}", segment(weapon_slug)),
     )
 }
 
-impl<T> Etagged<T> {
-    fn new(http: reqwest::Client, url: String, parse: fn(&str) -> Result<T>) -> Self {
+impl<T: DeserializeOwned> Etagged<T> {
+    fn new(http: reqwest::Client, url: String) -> Self {
         Self {
             http,
             url,
-            parse,
             etag: None,
             rate_limiter: ratelimit::shared(),
+            document: PhantomData,
         }
     }
 
@@ -73,13 +63,8 @@ impl<T> Etagged<T> {
             request = request.header(IF_NONE_MATCH, etag);
         }
 
-        let _permit = self.rate_limiter.acquire().await;
-        let response = request.send().await?;
+        let response = send(&self.http, &self.rate_limiter, request.build()?).await?;
         let status = response.status();
-        if status == StatusCode::TOO_MANY_REQUESTS {
-            return Err(rate_limited(&self.rate_limiter, response.headers()).await);
-        }
-
         let etag = response
             .headers()
             .get(ETAG)
@@ -99,7 +84,7 @@ impl<T> Etagged<T> {
         }
 
         let body = accepted(status, body)?;
-        let document = (self.parse)(&body)?;
+        let document = serde_json::from_str(&body)?;
         self.etag = etag;
         Ok(Some(document))
     }

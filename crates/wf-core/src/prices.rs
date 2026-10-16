@@ -23,6 +23,15 @@ pub struct Prices {
     pub buy: Option<f64>,
 }
 
+impl Prices {
+    pub(crate) fn of(source: &dyn PriceSource, slug: Option<&str>) -> Self {
+        Self {
+            sell: slug.and_then(|slug| source.plat(slug)),
+            buy: slug.and_then(|slug| source.buy_plat(slug)),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct PriceQuote {
     pub sell: Option<f64>,
@@ -225,7 +234,7 @@ mod tests {
     const TABLE: &str = include_str!("../../wf-market/tests/fixtures/prices_bulk.json");
 
     fn table() -> PriceTable {
-        wf_market::parse_price_table(TABLE).unwrap()
+        serde_json::from_str::<wf_market::PriceTable>(TABLE).unwrap()
     }
 
     fn moment() -> DateTime<Utc> {
@@ -243,6 +252,17 @@ mod tests {
         assert_eq!(prices.plat_max_rank("primed_continuity"), Some(165.0));
         assert_eq!(prices.plat("braton_prime_stock"), None);
         assert_eq!(prices.buy_plat("braton_prime_stock"), None);
+    }
+
+    #[test]
+    fn prices_of_a_slug() {
+        let source = FixedPrices::new([("braton_prime_barrel", 12.0)])
+            .with_buy([("braton_prime_barrel", 4.0)]);
+        let quoted = Prices::of(&source, Some("braton_prime_barrel"));
+        assert_eq!(quoted.sell, Some(12.0));
+        assert_eq!(quoted.buy, Some(4.0));
+
+        assert_eq!(Prices::of(&source, None), Prices::default());
     }
 
     #[test]
@@ -331,7 +351,7 @@ mod tests {
         let mut cache = PriceCache::default();
         cache.load(&table(), moment());
         let later = moment() + chrono::TimeDelta::minutes(15);
-        let smaller = wf_market::parse_price_table(
+        let smaller = serde_json::from_str::<wf_market::PriceTable>(
             r#"{"updated_at":1757411700,"count":1,"items":{"arcane_energize":{"sell_r0":60,"sell_max":900,"buy_r0":45}}}"#,
         )
         .unwrap();

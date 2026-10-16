@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub type Result<T> = std::result::Result<T, CoreError>;
 
@@ -36,4 +36,11 @@ pub enum CoreError {
     SchemaVersion(i64),
     #[error("Stored timestamp {0} ms is out of range")]
     Timestamp(i64),
+}
+
+impl CoreError {
+    pub(crate) fn io(path: &Path) -> impl FnOnce(std::io::Error) -> Self {
+        let path = path.to_path_buf();
+        |source| Self::Io { path, source }
+    }
 }

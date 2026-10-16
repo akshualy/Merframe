@@ -195,31 +195,12 @@ pub(crate) fn inventory_events(inventory: &Inventory, changes: usize) -> Vec<Cor
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{self, at};
+    use crate::events::support::sample;
     use crate::events::{CyclePhase, FissureFilter, FissureSubtype, TimerAlerts};
-    use wf_worldstate::{Fissure, FissureTier, RelicTier};
 
-    const WORLD_STATE: &str = include_str!("../../../../fixtures/worldState.json");
     const EARLY_POLL_MILLIS: i64 = 1_788_801_669_000;
     const POLL_MILLIS: i64 = 1_788_807_069_000;
-
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::from_timestamp_millis(millis).unwrap()
-    }
-
-    fn sample() -> Fissure {
-        Fissure {
-            node_id: "SolNode58".to_owned(),
-            node_name: Some("Galatea (Neptune)"),
-            mission_type: "MT_EXTERMINATION".to_owned(),
-            mission_name: "Extermination".to_owned(),
-            tier: FissureTier::Relic(RelicTier::Lith),
-            steel_path: false,
-            is_storm: false,
-            activation: at(0),
-            expiry: at(1_000_000),
-        }
-    }
 
     #[test]
     fn fissure_level_ranges() {
@@ -269,7 +250,7 @@ mod tests {
     }
 
     fn world() -> WorldState {
-        WorldState::parse(WORLD_STATE).expect("world state")
+        WorldState::parse(fixtures::WORLD_STATE).expect("world state")
     }
 
     #[test]

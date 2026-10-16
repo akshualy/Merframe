@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use flate2::Compression;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
-use rusqlite::{Connection, OptionalExtension, params};
+use rusqlite::{Connection, OptionalExtension, Params, Row, params};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use wf_inventory::Inventory;
@@ -19,6 +19,7 @@ use crate::stats::AYA_ITEM;
 use crate::trade::Trade;
 
 const MIGRATIONS: [(i64, &str); 1] = [(1, include_str!("sql/0001_init.sql"))];
+const SNAPSHOT_COLUMNS: &str = "id, taken_at, last_sync_oid, plat, credits, endo, ducats, mr";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -247,79 +248,60 @@ impl Store {
     }
 
     pub fn latest_snapshot(&self) -> Result<Option<Snapshot>> {
-        let snapshot = self
-            .connection
-            .query_row(
-                "SELECT id, taken_at, last_sync_oid, plat, credits, endo, ducats, mr \
-                 FROM snapshots ORDER BY id DESC LIMIT 1",
-                [],
-                snapshot_from_row,
-            )
-            .optional()?;
-        snapshot.transpose()
+        self.snapshot_where("ORDER BY id DESC LIMIT 1", [])
     }
 
     pub fn snapshot(&self, id: SnapshotId) -> Result<Option<Snapshot>> {
-        let snapshot = self
-            .connection
-            .query_row(
-                "SELECT id, taken_at, last_sync_oid, plat, credits, endo, ducats, mr \
-                 FROM snapshots WHERE id = ?1",
-                params![id.0],
-                snapshot_from_row,
-            )
-            .optional()?;
-        snapshot.transpose()
+        self.snapshot_where("WHERE id = ?1", params![id.0])
     }
 
     pub fn snapshot_before(&self, id: SnapshotId) -> Result<Option<Snapshot>> {
-        let snapshot = self
-            .connection
-            .query_row(
-                "SELECT id, taken_at, last_sync_oid, plat, credits, endo, ducats, mr \
-                 FROM snapshots WHERE id < ?1 ORDER BY id DESC LIMIT 1",
-                params![id.0],
-                snapshot_from_row,
-            )
-            .optional()?;
-        snapshot.transpose()
+        self.snapshot_where("WHERE id < ?1 ORDER BY id DESC LIMIT 1", params![id.0])
+    }
+
+    fn snapshot_where(&self, filter: &str, params: impl Params) -> Result<Option<Snapshot>> {
+        let mut statement = self.connection.prepare(&format!(
+            "SELECT {SNAPSHOT_COLUMNS} FROM snapshots {filter}"
+        ))?;
+        statement
+            .query_and_then(params, snapshot_from_row)?
+            .next()
+            .transpose()
+    }
+
+    fn in_range<T>(
+        &self,
+        sql: &str,
+        range: TimeRange,
+        read: impl FnMut(&Row<'_>) -> Result<T>,
+    ) -> Result<Vec<T>> {
+        let mut statement = self.connection.prepare(sql)?;
+        statement
+            .query_and_then(
+                params![range.from.timestamp_millis(), range.to.timestamp_millis()],
+                read,
+            )?
+            .collect()
     }
 
     pub fn stats_series(&self, range: TimeRange) -> Result<Vec<StatPoint>> {
-        let mut statement = self.connection.prepare(
+        self.in_range(
             "SELECT id, taken_at, plat, credits, endo, ducats, aya, mr FROM snapshots \
              WHERE taken_at >= ?1 AND taken_at <= ?2 ORDER BY taken_at",
-        )?;
-        let rows = statement.query_map(
-            params![range.from.timestamp_millis(), range.to.timestamp_millis()],
+            range,
             |row| {
-                Ok((
-                    row.get::<_, i64>(0)?,
-                    row.get::<_, i64>(1)?,
-                    row.get::<_, i64>(2)?,
-                    row.get::<_, i64>(3)?,
-                    row.get::<_, i64>(4)?,
-                    row.get::<_, i64>(5)?,
-                    row.get::<_, Option<i64>>(6)?,
-                    row.get::<_, i64>(7)?,
-                ))
+                Ok(StatPoint {
+                    snapshot: SnapshotId(row.get(0)?),
+                    at: datetime(row.get(1)?)?,
+                    plat: row.get(2)?,
+                    credits: row.get(3)?,
+                    endo: row.get(4)?,
+                    ducats: row.get(5)?,
+                    aya: row.get(6)?,
+                    mr: row.get(7)?,
+                })
             },
-        )?;
-        let mut points = Vec::new();
-        for row in rows {
-            let (id, taken_at, plat, credits, endo, ducats, aya, mr) = row?;
-            points.push(StatPoint {
-                snapshot: SnapshotId(id),
-                at: datetime(taken_at)?,
-                plat,
-                credits,
-                endo,
-                ducats,
-                aya,
-                mr,
-            });
-        }
-        Ok(points)
+        )
     }
 
     pub fn record_deltas(
@@ -400,32 +382,20 @@ impl Store {
     }
 
     pub fn trades(&self, range: TimeRange) -> Result<Vec<StoredTrade>> {
-        let mut statement = self.connection.prepare(
+        self.in_range(
             "SELECT id, at, partner, items_json FROM trades \
              WHERE at >= ?1 AND at <= ?2 ORDER BY at",
-        )?;
-        let rows = statement.query_map(
-            params![range.from.timestamp_millis(), range.to.timestamp_millis()],
+            range,
             |row| {
-                Ok((
-                    row.get::<_, i64>(0)?,
-                    row.get::<_, i64>(1)?,
-                    row.get::<_, Option<String>>(2)?,
-                    row.get::<_, String>(3)?,
-                ))
+                let items_json: String = row.get(3)?;
+                Ok(StoredTrade {
+                    id: row.get(0)?,
+                    at: datetime(row.get(1)?)?,
+                    partner: row.get(2)?,
+                    trade: serde_json::from_str(&items_json)?,
+                })
             },
-        )?;
-        let mut trades = Vec::new();
-        for row in rows {
-            let (id, at, partner, items_json) = row?;
-            trades.push(StoredTrade {
-                id,
-                at: datetime(at)?,
-                partner,
-                trade: serde_json::from_str(&items_json)?,
-            });
-        }
-        Ok(trades)
+        )
     }
 
     pub fn record_relic_opening(
@@ -444,34 +414,20 @@ impl Store {
     }
 
     pub fn relic_openings(&self, range: TimeRange) -> Result<Vec<RelicOpening>> {
-        let mut statement = self.connection.prepare(
+        self.in_range(
             "SELECT id, at, relic, reward_item, player_count FROM relic_openings \
              WHERE at >= ?1 AND at <= ?2 ORDER BY at",
-        )?;
-        let rows = statement.query_map(
-            params![range.from.timestamp_millis(), range.to.timestamp_millis()],
+            range,
             |row| {
-                Ok((
-                    row.get::<_, i64>(0)?,
-                    row.get::<_, i64>(1)?,
-                    row.get::<_, String>(2)?,
-                    row.get::<_, String>(3)?,
-                    row.get::<_, i64>(4)?,
-                ))
+                Ok(RelicOpening {
+                    id: row.get(0)?,
+                    at: datetime(row.get(1)?)?,
+                    relic: row.get(2)?,
+                    reward_item: row.get(3)?,
+                    player_count: row.get(4)?,
+                })
             },
-        )?;
-        let mut openings = Vec::new();
-        for row in rows {
-            let (id, at, relic, reward_item, player_count) = row?;
-            openings.push(RelicOpening {
-                id,
-                at: datetime(at)?,
-                relic,
-                reward_item,
-                player_count,
-            });
-        }
-        Ok(openings)
+        )
     }
 
     pub fn favourites(&self) -> Result<Favourites> {
@@ -523,25 +479,17 @@ impl Store {
     }
 }
 
-fn snapshot_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Result<Snapshot>> {
-    let id: i64 = row.get(0)?;
-    let taken_at: i64 = row.get(1)?;
-    let last_sync_oid: String = row.get(2)?;
-    let plat: i64 = row.get(3)?;
-    let credits: i64 = row.get(4)?;
-    let endo: i64 = row.get(5)?;
-    let ducats: i64 = row.get(6)?;
-    let mr: i64 = row.get(7)?;
-    Ok(datetime(taken_at).map(|taken_at| Snapshot {
-        id: SnapshotId(id),
-        taken_at,
-        last_sync_oid,
-        plat,
-        credits,
-        endo,
-        ducats,
-        mr,
-    }))
+fn snapshot_from_row(row: &Row<'_>) -> Result<Snapshot> {
+    Ok(Snapshot {
+        id: SnapshotId(row.get(0)?),
+        taken_at: datetime(row.get(1)?)?,
+        last_sync_oid: row.get(2)?,
+        plat: row.get(3)?,
+        credits: row.get(4)?,
+        endo: row.get(5)?,
+        ducats: row.get(6)?,
+        mr: row.get(7)?,
+    })
 }
 
 fn datetime(millis: i64) -> Result<DateTime<Utc>> {
@@ -568,27 +516,17 @@ fn gunzip(bytes: &[u8], path: &Path) -> Result<String> {
 
 fn write_atomically(path: &Path, bytes: &[u8]) -> Result<()> {
     let partial = path.with_extension("part");
-    std::fs::write(&partial, bytes).map_err(|source| CoreError::Io {
-        path: partial.clone(),
-        source,
-    })?;
+    std::fs::write(&partial, bytes).map_err(CoreError::io(&partial))?;
     restrict(&partial)?;
-    std::fs::rename(&partial, path).map_err(|source| CoreError::Io {
-        path: path.to_path_buf(),
-        source,
-    })
+    std::fs::rename(&partial, path).map_err(CoreError::io(path))
 }
 
 #[cfg(unix)]
 fn restrict(path: &Path) -> Result<()> {
     use std::os::unix::fs::PermissionsExt as _;
 
-    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600)).map_err(|source| {
-        CoreError::Io {
-            path: path.to_path_buf(),
-            source,
-        }
-    })
+    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
+        .map_err(CoreError::io(path))
 }
 
 #[cfg(not(unix))]
@@ -599,13 +537,10 @@ fn restrict(_path: &Path) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{self, FERRITE, at, scratch_dir, synced};
     use crate::delta;
+    use crate::rivens::support::riven_table;
     use crate::trade::TradeItem;
-
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::from_timestamp_millis(millis).unwrap()
-    }
 
     #[test]
     fn snapshot_round_trip() {
@@ -637,9 +572,7 @@ mod tests {
     #[test]
     fn older_sync_oid_refused() {
         let store = Store::in_memory().unwrap();
-        let newer_json =
-            fixtures::INVENTORY.replacen("6a9eeb1f000000000000c001", "6a9fb57d000000000000c101", 1);
-        let newer = Inventory::parse(&newer_json).unwrap();
+        let newer = Inventory::parse(&synced("6a9fb57d000000000000c101")).unwrap();
         let newest = store.record_snapshot(&newer, at(2_000_000)).unwrap();
 
         let older = fixtures::inventory();
@@ -662,9 +595,7 @@ mod tests {
         let first = store
             .record_snapshot(&fixtures::inventory(), at(1_000_000))
             .unwrap();
-        let sibling_json =
-            fixtures::INVENTORY.replacen("6a9eeb1f000000000000c001", "6a9eeb1f000000000000c000", 1);
-        let sibling = Inventory::parse(&sibling_json).unwrap();
+        let sibling = Inventory::parse(&synced("6a9eeb1f000000000000c000")).unwrap();
         let second = store.record_snapshot(&sibling, at(1_000_500)).unwrap();
         assert_ne!(first, second);
     }
@@ -675,9 +606,7 @@ mod tests {
         let inventory = fixtures::inventory();
         let first = store.record_snapshot(&inventory, at(1_000_000)).unwrap();
 
-        let changed_json =
-            fixtures::INVENTORY.replacen("6a9eeb1f000000000000c001", "6a9eeb1f000000000000c002", 1);
-        let changed = Inventory::parse(&changed_json).unwrap();
+        let changed = Inventory::parse(&synced("6a9eeb1f000000000000c002")).unwrap();
         let second = store.record_snapshot(&changed, at(2_000_000)).unwrap();
         assert_ne!(first, second);
 
@@ -696,13 +625,11 @@ mod tests {
         let store = Store::in_memory().unwrap();
         let inventory = fixtures::inventory();
         let first = store.record_snapshot(&inventory, at(1_000_000)).unwrap();
-        let changed_json =
-            fixtures::INVENTORY.replacen("6a9eeb1f000000000000c001", "6a9eeb1f000000000000c002", 1);
-        let changed = Inventory::parse(&changed_json).unwrap();
+        let changed = Inventory::parse(&synced("6a9eeb1f000000000000c002")).unwrap();
         let second = store.record_snapshot(&changed, at(2_000_000)).unwrap();
 
         let deltas = vec![delta::ItemDelta {
-            item_type: String::from("/Lotus/Types/Items/MiscItems/Ferrite"),
+            item_type: String::from(FERRITE),
             category: String::from("MiscItems"),
             before: 10,
             after: 25,
@@ -717,13 +644,8 @@ mod tests {
 
     #[test]
     fn reopen_on_disk_store() {
-        let dir = std::env::temp_dir().join("wf-core-store-test");
-        std::fs::create_dir_all(&dir).unwrap();
+        let dir = scratch_dir("wf-core-store-test");
         let path = dir.join("merframe.sqlite3");
-        if path.exists() {
-            std::fs::remove_file(&path).unwrap();
-        }
-
         let inventory = fixtures::inventory();
         let id = {
             let store = Store::open(&path).unwrap();
@@ -743,11 +665,7 @@ mod tests {
 
     #[test]
     fn inventory_cache_file() {
-        let dir = std::env::temp_dir().join("wf-core-store-inventory-cache");
-        if dir.exists() {
-            std::fs::remove_dir_all(&dir).unwrap();
-        }
-        std::fs::create_dir_all(&dir).unwrap();
+        let dir = scratch_dir("wf-core-store-inventory-cache");
         let path = dir.join("merframe.sqlite");
         let cache = dir.join("inventory.json.gz");
 
@@ -849,8 +767,7 @@ mod tests {
 
     #[test]
     fn riven_data_setting_round_trip() {
-        const RIVEN_DATA: &str = include_str!("../../../fixtures/riven_data.json");
-        let document = wf_market::parse_riven_data(RIVEN_DATA).expect("riven data");
+        let document = riven_table();
         let store = Store::in_memory().unwrap();
         store.set_setting("riven_data", &document).unwrap();
         let read = store
@@ -862,12 +779,8 @@ mod tests {
 
     #[test]
     fn favourites_toggle_and_reopen() {
-        let dir = std::env::temp_dir().join("wf-core-store-favourites-test");
-        std::fs::create_dir_all(&dir).unwrap();
+        let dir = scratch_dir("wf-core-store-favourites-test");
         let path = dir.join("merframe.sqlite3");
-        if path.exists() {
-            std::fs::remove_file(&path).unwrap();
-        }
         let mirage = "/Lotus/Powersuits/Mirage/MirageWarframe";
         let styanax = "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint";
         {

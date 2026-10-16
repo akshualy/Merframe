@@ -19,7 +19,7 @@ use crate::events::{self, AlertSettings, CoreEvent, Engine, ScannedRewards, Scan
 use crate::export::{ExportBundle, export};
 use crate::favourites::Favourites;
 use crate::foundry::{self, FoundryTab};
-use crate::identity::{ItemRecord, ItemTable};
+use crate::identity::{ItemKind, ItemRecord, ItemTable};
 use crate::inventory_view::{self, InventoryTab, ItemSummary};
 use crate::listings::MarketListings;
 use crate::mastery::{self, MasteryOptions, MasteryTab};
@@ -383,8 +383,11 @@ impl Core {
                 .relics()
                 .filter(|(_, count)| *count > 0)
                 .filter_map(|(unique_name, _)| {
-                    let (relic, _) = self.catalog.relic_by_unique_name(unique_name)?;
-                    relic.market_info.as_ref().map(|info| info.url_name.clone())
+                    self.items
+                        .get(unique_name)
+                        .filter(|record| matches!(record.kind, ItemKind::Relic { .. }))?
+                        .market_slug
+                        .clone()
                 })
                 .collect(),
         )
@@ -554,15 +557,12 @@ impl Core {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{self, TRINITY_PRIME_SYSTEMS, at, scratch_dir, synced};
     use crate::events::ScannedTradeItem;
     use crate::events::{CyclePhase, FissureFilter, InventorySummary, TimerAlerts};
     use crate::prices::FixedPrices;
     use crate::resources::{ResourceScope, ResourceSource};
-
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::from_timestamp_millis(millis).unwrap()
-    }
+    use crate::rivens::support::{PENDING_ROLL, paid_roll, riven_table};
 
     fn core_over(store: Store) -> Core {
         Core::new(
@@ -578,9 +578,14 @@ mod tests {
         core_over(Store::in_memory().unwrap())
     }
 
+    fn ingested() -> Core {
+        let mut core = core();
+        core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
+            .unwrap();
+        core
+    }
+
     const REROLLED_ITEM: &str = "f29623082864e554d187a3f7";
-    const ROLL_75: &str = r#"{"compat":"/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep","lim":294146365,"lvlReq":11,"lvl":8,"rerolls":75,"pol":"AP_DEFENSE","buffs":[{"Tag":"WeaponFreezeDamageMod","Value":708669601},{"Tag":"WeaponToxinDamageMod","Value":526133492},{"Tag":"WeaponFireRateMod","Value":397284473}],"curses":[]}"#;
-    const OFFERED_75: &str = r#"{"compat":"/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep","lim":294146365,"lvlReq":11,"lvl":8,"rerolls":75,"pol":"AP_DEFENSE","buffs":[{"Tag":"WeaponFreezeDamageMod","Value":741320000},{"Tag":"WeaponCritDamageMod","Value":903450000},{"Tag":"WeaponFireDamageMod","Value":512780000}],"curses":[{"Tag":"SlideAttackCritChanceMod","Value":268940000}]}"#;
 
     #[test]
     fn riven_row_matches_tab() {
@@ -616,9 +621,10 @@ mod tests {
         core.ingest_inventory(fixtures::INVENTORY, at(1_000))
             .unwrap();
         assert_eq!(rerolled_row(&core).rerolls, 74);
-        assert!(!core.apply_reroll("000000000000000000000000", ROLL_75, OFFERED_75));
+        let paid = paid_roll();
+        assert!(!core.apply_reroll("000000000000000000000000", &paid, PENDING_ROLL));
 
-        assert!(core.apply_reroll(REROLLED_ITEM, ROLL_75, OFFERED_75));
+        assert!(core.apply_reroll(REROLLED_ITEM, &paid, PENDING_ROLL));
         let current = rerolled_row(&core);
         assert_eq!(current.rerolls, 75);
         assert_eq!(current.attributes.len(), 3);
@@ -631,7 +637,7 @@ mod tests {
         assert_eq!(kept.attributes[1].tag, "WeaponCritDamageMod");
         assert!(!core.keep_pending_roll(REROLLED_ITEM));
 
-        assert!(core.apply_reroll(REROLLED_ITEM, ROLL_75, OFFERED_75));
+        assert!(core.apply_reroll(REROLLED_ITEM, &paid, PENDING_ROLL));
         assert!(core.discard_pending_roll(REROLLED_ITEM));
         assert!(!core.keep_pending_roll(REROLLED_ITEM));
         assert_eq!(rerolled_row(&core).attributes.len(), 3);
@@ -674,8 +680,7 @@ mod tests {
             .unwrap();
         assert_eq!(core.latest_snapshot(), Some(&first));
 
-        let changed =
-            fixtures::INVENTORY.replacen("6a9eeb1f000000000000c001", "6a9eeb1f000000000000c002", 1);
+        let changed = synced("6a9eeb1f000000000000c002");
         core.ingest_inventory(&changed, at(3_000_000)).unwrap();
         let second = core.latest_snapshot().unwrap();
         assert_eq!(second.taken_at, at(3_000_000));
@@ -685,11 +690,7 @@ mod tests {
 
     #[test]
     fn load_cached_snapshot() {
-        let dir = std::env::temp_dir().join("wf-core-facade-cached-inventory");
-        if dir.exists() {
-            std::fs::remove_dir_all(&dir).unwrap();
-        }
-        std::fs::create_dir_all(&dir).unwrap();
+        let dir = scratch_dir("wf-core-facade-cached-inventory");
         let path = dir.join("merframe.sqlite");
 
         let mut writer = core_over(Store::open(&path).unwrap());
@@ -716,12 +717,7 @@ mod tests {
 
     #[test]
     fn unparsed_inventory_is_kept_apart_from_the_cache() {
-        let dir = std::env::temp_dir().join("wf-core-facade-raw-inventory");
-        if dir.exists() {
-            std::fs::remove_dir_all(&dir).unwrap();
-        }
-        std::fs::create_dir_all(&dir).unwrap();
-
+        let dir = scratch_dir("wf-core-facade-raw-inventory");
         let mut core = core_over(Store::open(&dir.join("merframe.sqlite")).unwrap());
         assert!(core.ingest_inventory("{}", at(1_000_000)).is_err());
         assert!(dir.join("inventory_latest_raw.json.gz").exists());
@@ -730,16 +726,12 @@ mod tests {
 
     #[test]
     fn changed_inventory_deltas() {
-        let mut core = core();
-        core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
-            .unwrap();
-        let changed = fixtures::INVENTORY
-            .replacen("6a9eeb1f000000000000c001", "6a9eeb1f000000000000c002", 1)
-            .replacen(
-                r#"{"ItemCount":51923112,"ItemType":"/Lotus/Types/Items/MiscItems/Ferrite"}"#,
-                r#"{"ItemCount":51923260,"ItemType":"/Lotus/Types/Items/MiscItems/Ferrite"}"#,
-                1,
-            );
+        let mut core = ingested();
+        let changed = synced("6a9eeb1f000000000000c002").replacen(
+            r#"{"ItemCount":51923112,"ItemType":"/Lotus/Types/Items/MiscItems/Ferrite"}"#,
+            r#"{"ItemCount":51923260,"ItemType":"/Lotus/Types/Items/MiscItems/Ferrite"}"#,
+            1,
+        );
         let events = core.ingest_inventory(&changed, at(90_000_000)).unwrap();
         match &events[0] {
             CoreEvent::InventoryUpdated(InventorySummary { changes, .. }) => {
@@ -755,12 +747,12 @@ mod tests {
 
     #[test]
     fn two_snapshots_same_day() {
-        let mut core = core();
-        core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
-            .unwrap();
-        let richer = fixtures::INVENTORY
-            .replacen("6a9eeb1f000000000000c001", "6a9eeb1f000000000000c002", 1)
-            .replacen(r#""PremiumCredits":5249"#, r#""PremiumCredits":5427"#, 1);
+        let mut core = ingested();
+        let richer = synced("6a9eeb1f000000000000c002").replacen(
+            r#""PremiumCredits":5249"#,
+            r#""PremiumCredits":5427"#,
+            1,
+        );
         core.ingest_inventory(&richer, at(80_000_000)).unwrap();
         let stats = core.stats_tab(TimeRange::all(), at(80_000_000)).unwrap();
         assert_eq!(stats.series.len(), 1);
@@ -813,16 +805,14 @@ mod tests {
         assert!(summary.prime_owned <= summary.prime_total);
         assert!(summary.prime_percent > 0.0);
         assert!(
-            core.relics_for("/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent")
+            core.relics_for(TRINITY_PRIME_SYSTEMS)
                 .is_some_and(|sources| !sources.is_empty())
         );
     }
 
     #[test]
     fn relic_plans_of_one_tier() {
-        let mut core = core();
-        core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
-            .unwrap();
+        let core = ingested();
         let squad = relic_planner::DEFAULT_SQUAD_SIZE;
         let tab = core.relic_planner_tab(squad, true).unwrap();
         assert!(!tab.plans.is_empty());
@@ -844,7 +834,7 @@ mod tests {
         let mut core = core();
         assert!(core.riven_attribution().is_none());
 
-        core.set_riven_data(crate::rivens::support::riven_table());
+        core.set_riven_data(riven_table());
         assert!(
             core.riven_attribution()
                 .is_some_and(|attribution| attribution.contains("44bananas"))
@@ -853,9 +843,7 @@ mod tests {
 
     #[test]
     fn favourite_toggle_across_tabs() {
-        let mut core = core();
-        core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
-            .unwrap();
+        let mut core = ingested();
         let relic = "/Lotus/Types/Game/Projections/T4VoidProjectionStyanaxPrimeABronze";
         assert!(core.favourites.is_empty());
 
@@ -1054,8 +1042,7 @@ mod tests {
             timers: TimerAlerts::from_iter([CyclePhase::EarthDay, CyclePhase::EarthNight]),
             timer_lead_secs: 86_400,
         });
-        let world_state = WorldState::parse(include_str!("../../../fixtures/worldState.json"))
-            .expect("world state");
+        let world_state = WorldState::parse(fixtures::WORLD_STATE).expect("world state");
         let early = at(1_788_801_669_000);
         let now = at(1_788_807_069_000);
         let first = core.ingest_world_state(world_state.clone(), early);
@@ -1077,10 +1064,8 @@ mod tests {
     #[test]
     fn export_needs_inventory() {
         let mut core = core();
-        let dir = std::env::temp_dir().join("wf-core-facade-export");
-        if dir.exists() {
-            std::fs::remove_dir_all(&dir).unwrap();
-        }
+        let root = scratch_dir("wf-core-facade-export");
+        let dir = root.join("export");
         core.export(&dir, at(0)).unwrap();
         assert!(!dir.exists());
 
@@ -1092,6 +1077,6 @@ mod tests {
             std::fs::read_to_string(dir.join("inventory.json")).unwrap(),
             fixtures::INVENTORY
         );
-        std::fs::remove_dir_all(&dir).unwrap();
+        std::fs::remove_dir_all(&root).unwrap();
     }
 }

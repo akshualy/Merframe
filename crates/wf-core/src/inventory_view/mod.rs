@@ -16,7 +16,7 @@ mod parts;
 mod relics;
 mod upgrades;
 
-pub(crate) use misc::misc;
+pub(crate) use misc::{misc, spare_weapons};
 pub(crate) use parts::{complete_sets, held_parts, parts, sets};
 pub(crate) use relics::relics;
 pub(crate) use upgrades::{UpgradeKind, arcanes, mods, upgrade_kind};
@@ -260,8 +260,13 @@ pub(crate) fn tab(view: &View) -> InventoryTab {
 
 #[cfg(test)]
 mod tests {
+    use wf_inventory::Inventory;
+
     use super::*;
-    use crate::catalog::{fixtures, names_a_prime};
+    use crate::catalog::fixtures::{
+        self, BRATON_PRIME, BRATON_PRIME_BARREL, PRIME_PARTS, TRINITY_PRIME_SYSTEMS_BLUEPRINT,
+    };
+    use crate::catalog::{Catalog, names_a_prime};
     use crate::identity::ItemTable;
     use crate::listings::MarketListings;
     use crate::prices::FixedPrices;
@@ -276,6 +281,14 @@ mod tests {
         ])
     }
 
+    pub(super) fn priced(catalog: Catalog, inventory: Inventory) -> Fixture {
+        Fixture::new(catalog, inventory).with_prices(prices())
+    }
+
+    pub(super) fn holding(counted: &[(&str, i64)]) -> Fixture {
+        priced(fixtures::catalog(), fixtures::inventory_owning(counted))
+    }
+
     impl ItemIndex {
         pub(super) fn favourite(&self, item: usize) -> bool {
             self.favourites.contains(&item)
@@ -284,20 +297,11 @@ mod tests {
 
     #[test]
     fn vault_pill() {
-        let stocked = Fixture::new(
-            fixtures::catalog(),
-            fixtures::inventory_owning(&[(
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-                1,
-            )]),
-        )
-        .with_prices(prices());
+        let stocked = holding(&[(TRINITY_PRIME_SYSTEMS_BLUEPRINT, 1)]);
         let (rows, index) = stocked.rows(parts);
         assert!(index[rows[0].item].vault.is_some());
 
-        let (mod_rows, _) = Fixture::new(fixtures::catalog(), fixtures::inventory())
-            .with_prices(prices())
-            .rows(mods);
+        let (mod_rows, _) = priced(fixtures::catalog(), fixtures::inventory()).rows(mods);
         assert!(!mod_rows.is_empty());
 
         let (sets, index) = stocked.rows(sets);
@@ -311,9 +315,7 @@ mod tests {
     fn index_shares_equal_summaries() {
         let catalog = fixtures::catalog();
         let items = ItemTable::build(&catalog);
-        let barrel = items
-            .get("/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel")
-            .unwrap();
+        let barrel = items.get(BRATON_PRIME_BARREL).unwrap();
         let mut index = ItemIndex::default();
         let first = index.add(ItemSummary::from(barrel));
         let again = index.add(ItemSummary::from(barrel));
@@ -329,8 +331,7 @@ mod tests {
 
     #[test]
     fn one_entry_per_item() {
-        let fixture =
-            Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(prices());
+        let fixture = priced(fixtures::catalog(), fixtures::inventory());
         let tab = tab(&fixture.view());
         assert!(!tab.misc.is_empty());
         let distinct: std::collections::HashSet<&ItemSummary> = tab.items.iter().collect();
@@ -375,19 +376,19 @@ mod tests {
                 ],
                 &[],
             ),
-            ..Fixture::new(fixtures::catalog(), favourite_fixture()).with_prices(prices())
+            ..holding(&PRIME_PARTS)
         }
         .with_market(&[
             fixtures::market_item(
                 "braton_prime_barrel",
                 "Braton Prime Barrel",
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
+                BRATON_PRIME_BARREL,
                 &["component"],
             ),
             fixtures::market_item(
                 "braton_prime_set",
                 "Braton Prime Set",
-                "/Lotus/Weapons/Tenno/Rifle/BratonPrime",
+                BRATON_PRIME,
                 &["set"],
             ),
         ]);
@@ -402,27 +403,9 @@ mod tests {
         assert_eq!(slugs(&tab.buying), [Some("braton_prime_set")]);
     }
 
-    fn favourite_fixture() -> wf_inventory::Inventory {
-        fixtures::inventory_owning(&[
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel",
-                3,
-            ),
-            (
-                "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock",
-                1,
-            ),
-            (
-                "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint",
-                1,
-            ),
-        ])
-    }
-
     #[test]
     fn favourites_across_tab() {
-        let mut fixture =
-            Fixture::new(fixtures::catalog(), favourite_fixture()).with_prices(prices());
+        let mut fixture = holding(&PRIME_PARTS);
         let plain = tab(&fixture.view());
         assert!(!plain.mods.is_empty());
         assert!(!plain.arcanes.is_empty());
@@ -463,8 +446,7 @@ mod tests {
 
     #[test]
     fn favourite_set_marks_parts() {
-        let mut fixture =
-            Fixture::new(fixtures::catalog(), favourite_fixture()).with_prices(prices());
+        let mut fixture = holding(&PRIME_PARTS);
         let (rows, index) = fixture.rows(sets);
         let set = rows
             .into_iter()

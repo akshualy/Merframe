@@ -1,8 +1,7 @@
-use wf_data::{DEFAULT_MAX_RANK, mastery_level_from_affinity};
+use wf_data::DEFAULT_MAX_RANK;
 
 use super::xp::{
-    VENARI, WARFRAME_AFFINITY_CAP, WARFRAME_MASTERY_PER_RANK, counted_affinity_types,
-    unlisted_ranks,
+    VENARI, WARFRAME_MASTERY_PER_RANK, counted_affinity_types, unlisted_ranks, warframe_rank,
 };
 use super::{LevelUpRoute, MasteryItem, RouteMember, intrinsics, star_chart};
 use crate::account::Account;
@@ -53,14 +52,6 @@ fn ranks_phrase(ranks: u32) -> String {
     }
 }
 
-pub(super) fn rank_member(name: String, ranks: u32, xp_per_rank: u64) -> RouteMember {
-    RouteMember {
-        name,
-        detail: ranks_phrase(ranks),
-        xp: xp_per_rank * u64::from(ranks),
-    }
-}
-
 fn item_routes(items: &[MasteryItem]) -> [LevelUpRoute; 2] {
     let mut owned: Vec<RouteMember> = Vec::new();
     let mut unowned: Vec<RouteMember> = Vec::new();
@@ -84,47 +75,41 @@ fn item_routes(items: &[MasteryItem]) -> [LevelUpRoute; 2] {
 }
 
 fn ranks_left(affinity: u64) -> u32 {
-    let rank = mastery_level_from_affinity(affinity, true, WARFRAME_AFFINITY_CAP);
+    let rank = warframe_rank(affinity);
     DEFAULT_MAX_RANK.saturating_sub(u32::try_from(rank).unwrap_or(DEFAULT_MAX_RANK))
 }
 
-fn rank_route(
+pub(super) fn rank_route(
     kind: &'static str,
     label: &'static str,
-    entries: impl IntoIterator<Item = (String, u32)>,
+    entries: impl IntoIterator<Item = (String, u32, u64)>,
 ) -> LevelUpRoute {
     let mut count = 0;
     let mut members = Vec::new();
-    for (name, ranks) in entries {
+    for (name, ranks, xp_per_rank) in entries {
         if ranks == 0 {
             continue;
         }
         count += ranks;
-        members.push(rank_member(name, ranks, WARFRAME_MASTERY_PER_RANK));
+        members.push(RouteMember {
+            name,
+            detail: ranks_phrase(ranks),
+            xp: xp_per_rank * u64::from(ranks),
+        });
     }
     route(kind, label, "rank", count, members)
 }
 
 fn unlisted_route(account: &Account, catalog: &Catalog, table: &ItemTable) -> LevelUpRoute {
     let counted = counted_affinity_types(account, catalog);
-    let mut count = 0;
-    let mut members = Vec::new();
-    for (item_type, per_rank, rank) in unlisted_ranks(&account.inventory, &counted) {
-        let left = u32::try_from(u64::from(DEFAULT_MAX_RANK).saturating_sub(rank))
-            .unwrap_or(DEFAULT_MAX_RANK);
-        if left == 0 {
-            continue;
-        }
-        count += left;
-        members.push(rank_member(table.name(item_type), left, per_rank));
-    }
-    route(
-        "unlisted_gear",
-        "Rank up modular gear you own",
-        "rank",
-        count,
-        members,
-    )
+    let entries = unlisted_ranks(&account.inventory, &counted)
+        .into_iter()
+        .map(|(item_type, per_rank, rank)| {
+            let left = u32::try_from(u64::from(DEFAULT_MAX_RANK).saturating_sub(rank))
+                .unwrap_or(DEFAULT_MAX_RANK);
+            (table.name(item_type), left, per_rank)
+        });
+    rank_route("unlisted_gear", "Rank up modular gear you own", entries)
 }
 
 pub(super) fn level_up_routes(
@@ -137,10 +122,13 @@ pub(super) fn level_up_routes(
     let plexus = rank_route(
         "plexus",
         "Rank up the Railjack Plexus",
-        inventory
-            .crew_ship_harnesses
-            .iter()
-            .map(|harness| ("Plexus".to_owned(), ranks_left(harness.xp))),
+        inventory.crew_ship_harnesses.iter().map(|harness| {
+            (
+                "Plexus".to_owned(),
+                ranks_left(harness.xp),
+                WARFRAME_MASTERY_PER_RANK,
+            )
+        }),
     );
     let venari = rank_route(
         "venari",
@@ -149,6 +137,7 @@ pub(super) fn level_up_routes(
             (
                 name.to_owned(),
                 ranks_left(account.affinity_of(unique_name)),
+                WARFRAME_MASTERY_PER_RANK,
             )
         }),
     );
@@ -173,19 +162,17 @@ mod tests {
     use wf_inventory::Inventory;
 
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{self, EXCALIBUR, drop_entries, entries, inventory_with};
     use crate::mastery::MasteryOptions;
     use crate::mastery::items::items;
-    use crate::mastery::support::{drop_affinity, entries, mission, mutated, prices, set_affinity};
-    use crate::view::Fixture;
+    use crate::mastery::support::{fixture, mission, set_affinity};
 
-    const EXCALIBUR: &str = "/Lotus/Powersuits/Excalibur/Excalibur";
     const VENARI_PRIME: &str = "/Lotus/Powersuits/Khora/Kavat/KhoraPrimeKavatPowerSuit";
     const AMP_BARREL: &str =
         "/Lotus/Weapons/Corpus/OperatorAmplifiers/Set1/Barrel/CorpAmpSet1BarrelPartB";
 
     fn for_account(inventory: Inventory) -> Vec<LevelUpRoute> {
-        let fixture = Fixture::new(fixtures::mastery_catalog(), inventory).with_prices(prices());
+        let fixture = fixture(inventory);
         let rows = items(&fixture.view(), MasteryOptions::default());
         level_up_routes(&fixture.account, &fixture.catalog, &fixture.items, &rows)
     }
@@ -204,9 +191,9 @@ mod tests {
 
     #[test]
     fn sorted_by_xp() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             value["PlayerSkills"]["LPS_TACTICAL"] = serde_json::json!(4);
-            drop_affinity(value, VENARI_PRIME);
+            drop_entries(value, &["XPInfo"], VENARI_PRIME);
             entries(value, "Missions").retain(|entry| {
                 entry.get("Tag").and_then(serde_json::Value::as_str) != Some("SolNode27")
             });
@@ -220,7 +207,9 @@ mod tests {
     #[test]
     fn owned_gear_route() {
         let before = for_account(fixtures::inventory());
-        let after = for_account(mutated(|value| drop_affinity(value, EXCALIBUR)));
+        let after = for_account(inventory_with(|value| {
+            drop_entries(value, &["XPInfo"], EXCALIBUR);
+        }));
         let before = route(&before, "owned_items").unwrap();
         let after = route(&after, "owned_items").unwrap();
         assert_eq!(after.count, before.count + 1);
@@ -231,11 +220,8 @@ mod tests {
     #[test]
     fn unowned_gear_route() {
         let before = for_account(fixtures::inventory());
-        let after = for_account(mutated(|value| {
-            drop_affinity(value, EXCALIBUR);
-            entries(value, "Suits").retain(|entry| {
-                entry.get("ItemType").and_then(serde_json::Value::as_str) != Some(EXCALIBUR)
-            });
+        let after = for_account(inventory_with(|value| {
+            drop_entries(value, &["XPInfo", "Suits"], EXCALIBUR);
         }));
         let before = route(&before, "unowned_items").unwrap();
         let after = route(&after, "unowned_items").unwrap();
@@ -245,7 +231,7 @@ mod tests {
 
     #[test]
     fn uncleared_nodes() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             entries(value, "Missions").retain(|entry| {
                 !matches!(
                     entry.get("Tag").and_then(serde_json::Value::as_str),
@@ -264,7 +250,7 @@ mod tests {
 
     #[test]
     fn node_cleared_off_steel_path() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             mission(value, "SolNode27")["Tier"] = serde_json::json!(0);
         }));
         assert!(route(&routes, "star_chart").is_none());
@@ -275,7 +261,7 @@ mod tests {
 
     #[test]
     fn missing_junction() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             entries(value, "Missions").retain(|entry| {
                 entry.get("Tag").and_then(serde_json::Value::as_str) != Some("EarthToVenusJunction")
             });
@@ -291,7 +277,7 @@ mod tests {
 
     #[test]
     fn junction_beaten_off_steel_path() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             let junction = mission(value, "EarthToVenusJunction");
             junction["Completes"] = serde_json::json!(1);
             junction["Tier"] = serde_json::json!(0);
@@ -304,7 +290,7 @@ mod tests {
 
     #[test]
     fn railjack_intrinsic_ranks() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             value["PlayerSkills"]["LPS_TACTICAL"] = serde_json::json!(4);
         }));
         let railjack = route(&routes, "railjack_intrinsics").unwrap();
@@ -316,7 +302,7 @@ mod tests {
 
     #[test]
     fn drifter_intrinsic_ranks() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             value["PlayerSkills"]["LPS_DRIFT_RIDING"] = serde_json::json!(0);
         }));
         let duviri = route(&routes, "duviri_intrinsics").unwrap();
@@ -327,7 +313,7 @@ mod tests {
 
     #[test]
     fn plexus_ranks() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             entries(value, "CrewShipHarnesses")[0]["XP"] = serde_json::json!(0);
         }));
         let plexus = route(&routes, "plexus").unwrap();
@@ -337,14 +323,16 @@ mod tests {
 
     #[test]
     fn venari_and_venari_prime() {
-        let routes = for_account(mutated(|value| drop_affinity(value, VENARI_PRIME)));
+        let routes = for_account(inventory_with(|value| {
+            drop_entries(value, &["XPInfo"], VENARI_PRIME);
+        }));
         let venari = route(&routes, "venari").unwrap();
         assert_eq!(venari.count, 30);
         assert_eq!(venari.xp_available, 6000);
 
-        let both = for_account(mutated(|value| {
-            drop_affinity(value, VENARI_PRIME);
-            drop_affinity(value, VENARI[0].0);
+        let both = for_account(inventory_with(|value| {
+            drop_entries(value, &["XPInfo"], VENARI_PRIME);
+            drop_entries(value, &["XPInfo"], VENARI[0].0);
         }));
         let venari = route(&both, "venari").unwrap();
         assert_eq!(venari.count, 60);
@@ -353,7 +341,7 @@ mod tests {
 
     #[test]
     fn modular_gear_ranks() {
-        let routes = for_account(mutated(|value| {
+        let routes = for_account(inventory_with(|value| {
             set_affinity(value, AMP_BARREL, 312_500);
         }));
         let modular = route(&routes, "unlisted_gear").expect("unlisted gear");
@@ -362,8 +350,8 @@ mod tests {
     }
 
     fn account_with_every_route_left() -> Inventory {
-        mutated(|value| {
-            drop_affinity(value, EXCALIBUR);
+        inventory_with(|value| {
+            drop_entries(value, &["XPInfo"], EXCALIBUR);
             mission(value, "SolNode108")["Tier"] = serde_json::json!(0);
             entries(value, "Missions").retain(|entry| {
                 !matches!(
@@ -374,7 +362,7 @@ mod tests {
             value["PlayerSkills"]["LPS_TACTICAL"] = serde_json::json!(4);
             value["PlayerSkills"]["LPS_DRIFT_RIDING"] = serde_json::json!(0);
             entries(value, "CrewShipHarnesses")[0]["XP"] = serde_json::json!(0);
-            drop_affinity(value, VENARI_PRIME);
+            drop_entries(value, &["XPInfo"], VENARI_PRIME);
             set_affinity(value, AMP_BARREL, 312_500);
         })
     }

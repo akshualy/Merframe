@@ -139,10 +139,7 @@ pub(crate) fn summary(account: &Account, catalog: &Catalog, series: &[StatPoint]
 }
 
 fn prime_percent(owned: u32, total: u32) -> f64 {
-    if total == 0 {
-        return 0.0;
-    }
-    (100.0 * (f64::from(owned) / f64::from(total))).floor()
+    mastery::percent(u64::from(owned), u64::from(total)).floor()
 }
 
 #[cfg(test)]

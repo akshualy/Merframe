@@ -2,8 +2,7 @@ use wf_data::{Item, RivenType};
 use wf_inventory::{Inventory, RivenFingerprint};
 use wf_market::{RivenData as RivenTable, RivenWeapon};
 
-use super::grading::{compat_path, perfectness, polarity, riven_name};
-use super::listing::unlisted_stat;
+use super::grading::compat_path;
 use super::tab::weapon_class;
 use super::{Grader, RivenRow};
 use crate::catalog::Catalog;
@@ -135,24 +134,16 @@ impl Grader<'_> {
 
     pub(super) fn roll(
         &self,
-        identity: &RivenRow,
+        identity: RivenRow,
         fingerprint: &RivenFingerprint,
         riven_type: Option<&RivenType>,
     ) -> RivenRow {
-        let graded = self.graded(fingerprint, riven_type, identity.disposition);
+        let shown = self.pending_from(fingerprint, riven_type, identity.disposition);
         RivenRow {
-            name: riven_type.and_then(|found| riven_name(found, &fingerprint.buffs)),
             unveiled: fingerprint.is_unveiled(),
             rank: fingerprint.lvl,
             rank_required: fingerprint.lvl_req,
-            rerolls: fingerprint.rerolls,
-            polarity: fingerprint.pol.as_deref().and_then(polarity),
-            grade: perfectness(&graded),
-            good_roll: self.good_roll(identity.weapon_path.as_deref(), &graded, riven_type),
-            unlisted_stat: unlisted_stat(&graded),
-            attributes: graded,
-            pending: None,
-            ..identity.clone()
+            ..identity.with_roll(shown)
         }
     }
 
@@ -166,17 +157,13 @@ impl Grader<'_> {
         let shown = RivenFingerprint::parse(shown).ok()?;
         let offered = offered.map(RivenFingerprint::parse).transpose().ok()?;
         let weapon = compat_weapon(self.table?, shown.compat.as_deref()?)?;
-        let riven_type = self
-            .catalog
-            .data()
-            .riven_data()
-            .riven_type(&weapon.mod_type);
+        let riven_type = self.riven_type(&weapon.mod_type);
         let identity = self.identity(weapon, riven_type, inventory);
-        let row = self.roll(&identity, &shown, riven_type);
+        let row = self.roll(identity, &shown, riven_type);
         Some(RivenRow {
             item_id: item_id.to_owned(),
             pending: offered
-                .map(|offered| self.pending_from(&offered, riven_type, identity.disposition)),
+                .map(|offered| self.pending_from(&offered, riven_type, row.disposition)),
             ..row
         })
     }
@@ -196,7 +183,6 @@ mod tests {
     use crate::rivens::tab::display_name;
 
     const STATION_ITEM: &str = "19afb0d351ebb3350bab634c";
-    const OTHER_WEAPON: &str = "/Lotus/Weapons/Tenno/Unknown/NoSuchWeapon";
 
     fn at_station(shown: &str, offered: Option<&str>) -> Option<RivenRow> {
         fixture()
@@ -224,8 +210,7 @@ mod tests {
 
     #[test]
     fn cycled_station_second_roll() {
-        let paid = CURRENT_ROLL.replace("\"rerolls\":74", "\"rerolls\":75");
-        let row = at_station(&paid, Some(PENDING_ROLL)).unwrap();
+        let row = at_station(&paid_roll(), Some(PENDING_ROLL)).unwrap();
 
         assert_eq!(row.rerolls, 75);
         assert_eq!(row.name.as_deref(), Some("Geli-toxidra"));
@@ -244,10 +229,7 @@ mod tests {
         assert!(at_station("not json", None).is_none());
         assert!(at_station(CURRENT_ROLL, Some("{")).is_none());
         assert!(at_station(r#"{"rerolls":3,"buffs":[],"curses":[]}"#, None).is_none());
-        let elsewhere = CURRENT_ROLL.replace(
-            "/Lotus/Weapons/Archon/Melee/DualDaggers/ArchonDualDaggersPlayerWep",
-            OTHER_WEAPON,
-        );
+        let elsewhere = CURRENT_ROLL.replace(ARCHON_DAGGERS, OTHER_WEAPON);
         assert!(at_station(&elsewhere, None).is_none());
     }
 

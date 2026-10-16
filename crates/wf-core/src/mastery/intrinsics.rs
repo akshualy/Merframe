@@ -1,6 +1,6 @@
 use wf_inventory::Inventory;
 
-use super::routes::{rank_member, route};
+use super::routes::rank_route;
 use super::{Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryGroup, MasteryItem};
 
 pub(super) const INTRINSIC_MASTERY_XP: u64 = 1500;
@@ -19,17 +19,14 @@ fn intrinsic_route(
     label: &'static str,
     trees: &[(&'static str, u32)],
 ) -> LevelUpRoute {
-    let mut count = 0;
-    let mut members = Vec::new();
-    for (name, rank) in trees {
-        let left = INTRINSIC_RANKS_PER_SCHOOL.saturating_sub(*rank);
-        if left == 0 {
-            continue;
-        }
-        count += left;
-        members.push(rank_member((*name).to_owned(), left, INTRINSIC_MASTERY_XP));
-    }
-    route(kind, label, "rank", count, members)
+    let entries = trees.iter().map(|(name, rank)| {
+        (
+            (*name).to_owned(),
+            INTRINSIC_RANKS_PER_SCHOOL.saturating_sub(*rank),
+            INTRINSIC_MASTERY_XP,
+        )
+    });
+    rank_route(kind, label, entries)
 }
 
 pub(super) fn routes(inventory: &Inventory) -> [LevelUpRoute; 2] {

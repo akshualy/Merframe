@@ -5,7 +5,7 @@ use wf_data::{Component, Item, base_warframe_name, helminth_ability, store_item_
 use wf_inventory::Inventory;
 use wf_worldstate::WorldState;
 
-use crate::catalog::{Catalog, VaultStatus, component_image, is_prime, is_umbra, part_name};
+use crate::catalog::{Catalog, is_prime, is_umbra, part_name};
 use crate::identity::ItemTable;
 use crate::mastery::{includes_founders, kind_of, masterable};
 use crate::view::View;
@@ -67,6 +67,7 @@ pub(crate) fn items(
     let View {
         account,
         catalog,
+        items,
         favourites,
         ..
     } = *view;
@@ -90,27 +91,7 @@ pub(crate) fn items(
     let mut rows: Vec<FoundryItem> =
         masterable(catalog, includes_founders(inventory, include_founders))
             .map(|item| {
-                let recipe = item.components.as_deref().unwrap_or_default();
-                let components: Vec<FoundryComponent> = account
-                    .foundry
-                    .fill_slots(recipe)
-                    .into_iter()
-                    .zip(recipe)
-                    .map(|(slot, component)| FoundryComponent {
-                        favourite: favourites.contains(&component.unique_name),
-                        unique_name: component.unique_name.clone(),
-                        name: component_name(catalog, item, component),
-                        image_name: component_image(item, component),
-                        owned: slot.filled,
-                        required: slot.required,
-                        enough: slot.satisfied,
-                        owned_relics: owned_relics(
-                            catalog,
-                            &account.stock,
-                            component.drops.as_deref().unwrap_or_default(),
-                        ),
-                    })
-                    .collect();
+                let components = foundry_components(view, item);
                 let pending_here = components
                     .iter()
                     .any(|component| pending.contains(component.unique_name.as_str()));
@@ -123,10 +104,13 @@ pub(crate) fn items(
                     type_name: item.item_type.clone(),
                     image_name: item.image_name.clone(),
                     wiki_url: wiki_url(catalog, &item.unique_name),
-                    prime: is_prime(item).then(|| Prime {
-                        vault: vault_status(item),
-                        resurgence: resurgence.contains(item.unique_name.as_str()),
-                    }),
+                    prime: items
+                        .get(&item.unique_name)
+                        .and_then(|record| record.vault)
+                        .map(|vault| Prime {
+                            vault,
+                            resurgence: resurgence.contains(item.unique_name.as_str()),
+                        }),
                     mastered: account.mastered(item),
                     progress: Progress {
                         owned,
@@ -163,6 +147,39 @@ pub(crate) fn items(
     rows
 }
 
+fn foundry_components(view: &View, item: &Item) -> Vec<FoundryComponent> {
+    let View {
+        account,
+        catalog,
+        items,
+        favourites,
+        ..
+    } = *view;
+    let recipe = item.components.as_deref().unwrap_or_default();
+    account
+        .foundry
+        .fill_slots(recipe)
+        .into_iter()
+        .zip(recipe)
+        .map(|(slot, component)| FoundryComponent {
+            favourite: favourites.contains(&component.unique_name),
+            unique_name: component.unique_name.clone(),
+            name: component_name(catalog, item, component),
+            image_name: items
+                .part(item, component)
+                .and_then(|part| part.image_name.clone()),
+            owned: slot.filled,
+            required: slot.required,
+            enough: slot.satisfied,
+            owned_relics: owned_relics(
+                catalog,
+                &account.stock,
+                component.drops.as_deref().unwrap_or_default(),
+            ),
+        })
+        .collect()
+}
+
 fn prime_resurgence(world: Option<&WorldState>, now: DateTime<Utc>) -> HashSet<String> {
     let Some(varzia) = world.and_then(|world| world.varzia(now)) else {
         return HashSet::new();
@@ -192,13 +209,6 @@ fn helminth(item: &Item, subsumed: &HashSet<&str>) -> Option<Helminth> {
         ability: ability.to_owned(),
         subsumed: subsumed.contains(base_warframe_name(&item.name)),
     })
-}
-
-fn vault_status(item: &Item) -> VaultStatus {
-    if ["Excalibur Prime", "Lato Prime", "Skana Prime"].contains(&item.name.as_str()) {
-        return VaultStatus::Vaulted;
-    }
-    VaultStatus::from(item.vaulted)
 }
 
 fn crafting_parents(catalog: &Catalog) -> HashMap<&str, Vec<String>> {
@@ -256,30 +266,37 @@ pub(crate) fn timers(world: &WorldState, now: DateTime<Utc>) -> Vec<WorldTimer> 
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{
+        self, DUAL_KAMAS, EXCALIBUR, SINGLE_KAMA, at, drop_entries, entries, inventory_with,
+        push_counted,
+    };
     use crate::foundry::details;
     use crate::view::Fixture;
 
-    const DUAL_KAMAS: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/DualKamas";
-    const SINGLE_KAMA: &str = "/Lotus/Weapons/Tenno/Melee/DualKamas/SingleKama";
+    const BANSHEE_PRIME: &str = "/Lotus/Powersuits/Banshee/BansheePrime";
+    const BOAR: &str = "/Lotus/Weapons/Tenno/Shotgun/FullAutoShotgun";
+    const SKANA: &str = "/Lotus/Weapons/Tenno/Melee/LongSword/LongSword";
+    const VARZIA_TRADING_MS: i64 = 1_788_807_069_000;
 
-    fn at(millis: i64) -> DateTime<Utc> {
-        DateTime::from_timestamp_millis(millis).unwrap()
+    fn foundry_fixture() -> Fixture {
+        Fixture::new(fixtures::foundry_catalog(), fixtures::inventory())
     }
 
-    fn without_excalibur() -> serde_json::Value {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        if let Some(entries) = value
-            .get_mut("Suits")
-            .and_then(serde_json::Value::as_array_mut)
-        {
-            entries.retain(|entry| {
-                entry.get("ItemType").and_then(serde_json::Value::as_str)
-                    != Some("/Lotus/Powersuits/Excalibur/Excalibur")
-            });
-        }
-        value
+    fn foundry_rows(fixture: &Fixture) -> Vec<FoundryItem> {
+        items(&fixture.view(), None, None, at(VARZIA_TRADING_MS))
+    }
+
+    fn world_state() -> WorldState {
+        WorldState::parse(fixtures::WORLD_STATE).expect("world state")
+    }
+
+    fn row<'a>(rows: &'a [FoundryItem], unique_name: &str) -> &'a FoundryItem {
+        rows.iter()
+            .find(|row| row.unique_name == unique_name)
+            .unwrap()
     }
 
     #[test]
@@ -304,13 +321,14 @@ mod tests {
 
     #[test]
     fn pending_part_blueprint_resolves_to_its_component() {
-        let mut value = without_excalibur();
-        value["PendingRecipes"] = serde_json::json!([{
-            "ItemType": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetBlueprint",
-            "CompletionDate": { "$date": { "$numberLong": "1787000100000" } },
-            "ItemId": { "$oid": "0123456789abcdef01234567" }
-        }]);
-        let inventory = Inventory::parse(&value.to_string()).unwrap();
+        let inventory = inventory_with(|value| {
+            drop_entries(value, &["Suits"], EXCALIBUR);
+            value["PendingRecipes"] = json!([{
+                "ItemType": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetBlueprint",
+                "CompletionDate": { "$date": { "$numberLong": "1787000100000" } },
+                "ItemId": { "$oid": "0123456789abcdef01234567" }
+            }]);
+        });
         let fixture = Fixture::new(fixtures::catalog(), inventory);
         let now = at(1_787_000_000_000);
 
@@ -322,7 +340,7 @@ mod tests {
         );
 
         let rows = items(&fixture.view(), None, None, now);
-        let excalibur = row(&rows, "/Lotus/Powersuits/Excalibur/Excalibur");
+        let excalibur = row(&rows, EXCALIBUR);
         assert!(excalibur.progress.pending);
         assert!(excalibur.progress.owned);
     }
@@ -330,12 +348,14 @@ mod tests {
     #[test]
     fn favourite_flags() {
         let mut fixture = Fixture::new(fixtures::catalog(), fixtures::inventory());
-        let now = at(1_788_807_069_000);
-        let plain = items(&fixture.view(), None, None, now);
-        let braton = plain
-            .iter()
-            .find(|row| row.name == "Braton Prime")
-            .expect("Braton Prime");
+        let braton_of = |rows: &[FoundryItem]| {
+            rows.iter()
+                .find(|row| row.name == "Braton Prime")
+                .expect("Braton Prime")
+                .clone()
+        };
+
+        let braton = braton_of(&foundry_rows(&fixture));
         assert!(!braton.favourite);
         assert!(
             braton
@@ -348,11 +368,8 @@ mod tests {
         fixture.favourites = [braton.unique_name.clone(), barrel.clone()]
             .into_iter()
             .collect();
-        let rows = items(&fixture.view(), None, None, now);
-        let braton = rows
-            .iter()
-            .find(|row| row.name == "Braton Prime")
-            .expect("Braton Prime");
+        let rows = foundry_rows(&fixture);
+        let braton = braton_of(&rows);
         assert!(braton.favourite);
         assert_eq!(
             braton
@@ -374,9 +391,9 @@ mod tests {
     fn whole_catalog_listed() {
         let fixture = Fixture::new(
             fixtures::catalog(),
-            fixtures::inventory_without_equipment("/Lotus/Powersuits/Excalibur/Excalibur"),
+            fixtures::inventory_without_equipment(EXCALIBUR),
         );
-        let rows = items(&fixture.view(), None, None, at(1_788_807_069_000));
+        let rows = foundry_rows(&fixture);
         let names: Vec<&str> = rows.iter().map(|row| row.name.as_str()).collect();
         assert_eq!(names, vec!["Braton Prime", "Excalibur", "Trinity Prime"]);
 
@@ -420,20 +437,15 @@ mod tests {
             fixtures::with_skins(fixtures::ITEMS),
             fixture.account.inventory.clone(),
         );
-        assert_eq!(
-            items(&with_skins.view(), None, None, at(1_788_807_069_000)),
-            rows
-        );
+        assert_eq!(foundry_rows(&with_skins), rows);
     }
 
     #[test]
     fn helminth_and_archon_shards() {
-        let rows = items(
-            &Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).view(),
-            None,
-            None,
-            at(1_788_807_069_000),
-        );
+        let rows = foundry_rows(&Fixture::new(
+            fixtures::mastery_catalog(),
+            fixtures::inventory(),
+        ));
         let row = |name: &str| rows.iter().find(|row| row.name == name).unwrap();
 
         let excalibur = row("Excalibur");
@@ -459,12 +471,10 @@ mod tests {
 
     #[test]
     fn necramech_rows() {
-        let rows = items(
-            &Fixture::new(fixtures::mastery_catalog(), fixtures::inventory()).view(),
-            None,
-            None,
-            at(1_788_807_069_000),
-        );
+        let rows = foundry_rows(&Fixture::new(
+            fixtures::mastery_catalog(),
+            fixtures::inventory(),
+        ));
         let row = |name: &str| rows.iter().find(|row| row.name == name).unwrap();
 
         for name in ["Voidrig", "Bonewidow"] {
@@ -486,16 +496,24 @@ mod tests {
 
     #[test]
     fn ready_to_build() {
-        let inventory_json = serde_json::to_string(&without_excalibur()).unwrap().replacen(
-            r#""Recipes":[{"#,
-            r#""Recipes":[{"ItemType":"/Lotus/Types/Recipes/WarframeRecipes/ExcaliburBlueprint","ItemCount":1},{"ItemType":"/Lotus/Types/Recipes/WarframeRecipes/ExcaliburChassisComponent","ItemCount":1},{"ItemType":"/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetComponent","ItemCount":1},{"ItemType":"/Lotus/Types/Recipes/WarframeRecipes/ExcaliburSystemsComponent","ItemCount":1},{"#,
-            1,
-        );
-        let fixture = Fixture::new(
-            fixtures::catalog(),
-            wf_inventory::Inventory::parse(&inventory_json).unwrap(),
-        );
-        let rows = items(&fixture.view(), None, None, at(1_788_807_069_000));
+        let inventory = inventory_with(|value| {
+            drop_entries(value, &["Suits"], EXCALIBUR);
+            for part in [
+                "ExcaliburBlueprint",
+                "ExcaliburChassisComponent",
+                "ExcaliburHelmetComponent",
+                "ExcaliburSystemsComponent",
+            ] {
+                push_counted(
+                    value,
+                    "Recipes",
+                    &format!("/Lotus/Types/Recipes/WarframeRecipes/{part}"),
+                    1,
+                );
+            }
+        });
+        let fixture = Fixture::new(fixtures::catalog(), inventory);
+        let rows = foundry_rows(&fixture);
         let excalibur = rows.iter().find(|row| row.name == "Excalibur").unwrap();
         assert!(excalibur.progress.ready_to_build);
         assert!(
@@ -510,7 +528,7 @@ mod tests {
     #[test]
     fn world_state_timers() {
         let world = world_state();
-        let now = at(1_788_807_069_000);
+        let now = at(VARZIA_TRADING_MS);
         let timers = timers(&world, now);
         assert!(!timers.is_empty());
         let cetus = timers.iter().find(|timer| timer.name == "Cetus").unwrap();
@@ -521,45 +539,23 @@ mod tests {
         );
     }
 
-    const BANSHEE_PRIME: &str = "/Lotus/Powersuits/Banshee/BansheePrime";
-    const BOAR: &str = "/Lotus/Weapons/Tenno/Shotgun/FullAutoShotgun";
-    const SKANA: &str = "/Lotus/Weapons/Tenno/Melee/LongSword/LongSword";
-    const VARZIA_TRADING_MS: i64 = 1_788_807_069_000;
-
-    fn world_state() -> WorldState {
-        WorldState::parse(include_str!("../../../../fixtures/worldState.json"))
-            .expect("world state")
-    }
-
     fn inventory_at_rank(rank: u32) -> Inventory {
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        value["PlayerLevel"] = serde_json::json!(rank);
-        Inventory::parse(&value.to_string()).unwrap()
-    }
-
-    fn row<'a>(rows: &'a [FoundryItem], unique_name: &str) -> &'a FoundryItem {
-        rows.iter()
-            .find(|row| row.unique_name == unique_name)
-            .unwrap()
+        inventory_with(|value| value["PlayerLevel"] = json!(rank))
     }
 
     #[test]
     fn mastery_requirement() {
-        let veteran = items(
-            &Fixture::new(fixtures::foundry_catalog(), inventory_at_rank(36)).view(),
-            None,
-            None,
-            at(VARZIA_TRADING_MS),
-        );
+        let veteran = foundry_rows(&Fixture::new(
+            fixtures::foundry_catalog(),
+            inventory_at_rank(36),
+        ));
         assert!(veteran.iter().all(|row| row.mastery.met));
         assert_eq!(row(&veteran, BOAR).mastery.required, Some(2));
 
-        let fresh = items(
-            &Fixture::new(fixtures::foundry_catalog(), inventory_at_rank(1)).view(),
-            None,
-            None,
-            at(VARZIA_TRADING_MS),
-        );
+        let fresh = foundry_rows(&Fixture::new(
+            fixtures::foundry_catalog(),
+            inventory_at_rank(1),
+        ));
         assert!(row(&fresh, SKANA).mastery.met);
         assert!(row(&fresh, DUAL_KAMAS).mastery.met);
         assert!(!row(&fresh, BOAR).mastery.met);
@@ -567,7 +563,7 @@ mod tests {
 
     #[test]
     fn varzia_resurgence() {
-        let fixture = Fixture::new(fixtures::foundry_catalog(), fixtures::inventory());
+        let fixture = foundry_fixture();
         let world = world_state();
 
         let trading = items(&fixture.view(), Some(&world), None, at(VARZIA_TRADING_MS));
@@ -599,33 +595,19 @@ mod tests {
 
     #[test]
     fn incarnon_adapted_copy() {
-        let untouched = items(
-            &Fixture::new(fixtures::foundry_catalog(), fixtures::inventory()).view(),
-            None,
-            None,
-            at(VARZIA_TRADING_MS),
-        );
+        let untouched = foundry_rows(&foundry_fixture());
         assert_eq!(row(&untouched, SKANA).incarnon, Some(false));
         assert_eq!(row(&untouched, BOAR).incarnon, Some(false));
 
-        let mut value: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
-        value
-            .get_mut("Melee")
-            .and_then(serde_json::Value::as_array_mut)
-            .unwrap()
-            .push(serde_json::json!({
+        let adapted = inventory_with(|value| {
+            entries(value, "Melee").push(json!({
                 "ItemType": SKANA,
                 "ItemId": { "$oid": "00000000000000000000beef" },
                 "XP": 0,
                 "SkillTree": "0121",
             }));
-        let adapted = wf_inventory::Inventory::parse(&value.to_string()).unwrap();
-        let rows = items(
-            &Fixture::new(fixtures::foundry_catalog(), adapted).view(),
-            None,
-            None,
-            at(VARZIA_TRADING_MS),
-        );
+        });
+        let rows = foundry_rows(&Fixture::new(fixtures::foundry_catalog(), adapted));
         assert_eq!(row(&rows, SKANA).incarnon, Some(true));
         assert_eq!(row(&rows, BOAR).incarnon, Some(false));
         assert_eq!(row(&rows, DUAL_KAMAS).incarnon, Some(false));
@@ -656,12 +638,7 @@ mod tests {
         assert_eq!(listed(&ordinary, None), 0);
         assert_eq!(listed(&ordinary, Some(true)), 3);
 
-        let founder = Inventory::parse(&fixtures::INVENTORY.replacen(
-            '{',
-            r#"{"Accolades":{"Founder":4},"#,
-            1,
-        ))
-        .unwrap();
+        let founder = fixtures::founder_inventory();
         assert!(founder.is_founder());
         assert_eq!(listed(&founder, None), 3);
         assert_eq!(listed(&founder, Some(false)), 0);
@@ -669,12 +646,7 @@ mod tests {
 
     #[test]
     fn single_kama_crafts_into_dual() {
-        let rows = items(
-            &Fixture::new(fixtures::foundry_catalog(), fixtures::inventory()).view(),
-            None,
-            None,
-            at(VARZIA_TRADING_MS),
-        );
+        let rows = foundry_rows(&foundry_fixture());
         let kama = row(&rows, SINGLE_KAMA);
         assert_eq!(kama.crafts_into, Some(vec!["Dual Kamas".to_owned()]));
         assert_eq!(row(&rows, DUAL_KAMAS).crafts_into, Some(vec![]));
@@ -691,12 +663,7 @@ mod tests {
                 3,
             )],
         );
-        let rows = items(
-            &Fixture::new(fixtures::catalog(), inventory).view(),
-            None,
-            None,
-            at(VARZIA_TRADING_MS),
-        );
+        let rows = foundry_rows(&Fixture::new(fixtures::catalog(), inventory));
         let braton = rows.iter().find(|row| row.name == "Braton Prime").unwrap();
         assert_eq!(
             braton.wiki_url.as_deref(),
@@ -728,12 +695,7 @@ mod tests {
 
     #[test]
     fn prime_vault_status() {
-        let rows = items(
-            &Fixture::new(fixtures::foundry_catalog(), fixtures::inventory()).view(),
-            None,
-            None,
-            at(VARZIA_TRADING_MS),
-        );
+        let rows = foundry_rows(&foundry_fixture());
         assert!(row(&rows, BANSHEE_PRIME).prime.is_some());
         assert_eq!(row(&rows, SKANA).prime, None);
     }
