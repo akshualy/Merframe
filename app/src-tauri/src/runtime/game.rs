@@ -329,6 +329,7 @@ async fn completed_trade(
         .await
         .flatten();
         if let Some(trade) = trade.filter(|trade| trade.completed) {
+            debug!(?trade, "Trade screen read");
             return Some(scanned_trade(trade));
         }
     }
@@ -397,6 +398,11 @@ async fn watch_trade<R: Runtime>(
                         received = trade.received.len(),
                         plat = trade.plat,
                         "Trade completed"
+                    );
+                    debug!(
+                        offered = ?trade.offered,
+                        received = ?trade.received,
+                        "Trade items"
                     );
                     count_trade(app, state);
                 }

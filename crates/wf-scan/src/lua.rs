@@ -546,6 +546,12 @@ pub(crate) mod tests {
             )
         }
 
+        pub(crate) fn blob(&mut self, bytes: &[u8]) -> u64 {
+            let at = self.take(bytes.len());
+            self.put(at, bytes);
+            address(at)
+        }
+
         pub(crate) fn userdata_field(&mut self, name: &str, object: u64) -> Field {
             (self.text(name), u32::from(STRING_TAG), object, USERDATA_TAG)
         }

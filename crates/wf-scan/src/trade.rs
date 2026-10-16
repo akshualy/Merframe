@@ -1,6 +1,7 @@
 use wf_mem::MemoryReader;
 
 use crate::lua::{LuaState, LuaTable, LuaValue};
+use crate::upgrade::upgrade_fingerprint;
 
 const TRADE_SCRIPT: &str = "AcceptTrade";
 const SUCCESS_FLAG_OWNER: &str = "TradeBuddyDestroyed";
@@ -11,6 +12,8 @@ const NAME: &str = "Name";
 const FULL_NAME: &str = "FullName";
 const COUNT: &str = "Count";
 const FINGERPRINT: &str = "Fingerprint";
+const CARD: &str = "Card";
+const CARD_UPGRADE: &str = "mUpgrade";
 const PARTNER: &str = "PLAYER_NAME";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -85,8 +88,19 @@ fn slot<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<Trade
         name: element.text(reader, NAME)?,
         item_type: element.text(reader, FULL_NAME),
         count: element.field(reader, COUNT)?.whole()?,
-        fingerprint: element.filled_text(reader, FINGERPRINT),
+        fingerprint: element
+            .filled_text(reader, FINGERPRINT)
+            .or_else(|| card_fingerprint(reader, element)),
     })
+}
+
+fn card_fingerprint<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<String> {
+    let record = element
+        .field(reader, CARD)?
+        .table()?
+        .field(reader, CARD_UPGRADE)?
+        .userdata()?;
+    upgrade_fingerprint(reader, record)
 }
 
 #[cfg(test)]
@@ -94,8 +108,10 @@ mod tests {
     use super::*;
     use crate::fake::FakeReader;
     use crate::lua::tests::{Heap, read_with};
+    use crate::upgrade::fixtures::record;
 
     const ARCANE: &str = "/Lotus/Upgrades/CosmeticEnhancers/Offensive/OrbsOnResidualContact";
+    const RIVEN: &str = "/Lotus/Upgrades/Mods/Randomized/LotusPistolRandomModRare";
 
     type Entry<'a> = (&'a str, &'a [(&'a str, &'a str)], f32);
 
@@ -179,6 +195,46 @@ mod tests {
                 completed: true,
             })
         );
+    }
+
+    #[test]
+    fn riven_fingerprint_comes_from_the_card() {
+        let roll = "{\"compat\":\"/Lotus/Weapons/Tenno/Pistol/HandCannon\",\"lvl\":8}";
+        let reader = Heap::with_scripts(|heap| {
+            let text = heap.blob(roll.as_bytes());
+            let upgrade = heap.blob(&record(roll, Some(text)));
+            let card = [heap.userdata_field(CARD_UPGRADE, upgrade)];
+            let card = heap.table(&card);
+            let riven = [
+                heap.text_field(CLIP, "PlayerTradeMenu.MenuEntry"),
+                heap.text_field(NAME, "Lex Riven Mod"),
+                heap.text_field(FULL_NAME, RIVEN),
+                heap.number_field(COUNT, 1.0),
+                heap.table_field(CARD, card),
+            ];
+            let riven = heap.table(&riven);
+            let plat = [
+                heap.text_field(CLIP, "PartnerTradeMenu.MenuEntry"),
+                heap.text_field(NAME, "Platinum"),
+                heap.number_field(COUNT, 170.0),
+            ];
+            let plat = heap.table(&plat);
+            let grids = [heap.grid(ELEMENTS, &[riven]), heap.grid(ELEMENTS, &[plat])];
+            let accept = heap.function_field(TRADE_SCRIPT, &grids);
+            vec![heap.table(&[accept])]
+        });
+        let screen = read_with(&reader, TradeScreen::read).unwrap();
+
+        assert_eq!(
+            screen.offered,
+            [TradeSlot {
+                name: String::from("Lex Riven Mod"),
+                item_type: Some(RIVEN.to_owned()),
+                count: 1,
+                fingerprint: Some(roll.to_owned()),
+            }]
+        );
+        assert_eq!(screen.received[0].fingerprint, None);
     }
 
     #[test]

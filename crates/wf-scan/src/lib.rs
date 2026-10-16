@@ -12,6 +12,7 @@ mod relic;
 mod roots;
 mod station;
 mod trade;
+mod upgrade;
 
 #[cfg(test)]
 mod fake;
@@ -28,3 +29,4 @@ pub use lua::{LuaState, LuaTable};
 pub use relic::{RelicPicker, RelicPickerNode};
 pub use station::StationRiven;
 pub use trade::{TradeScreen, TradeSlot};
+pub use upgrade::upgrade_fingerprint;
