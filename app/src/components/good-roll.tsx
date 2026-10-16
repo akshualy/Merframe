@@ -17,17 +17,6 @@ function statKey(alternative: AlternativeMatch): string {
     .join(" ");
 }
 
-export function desiredAttributes(view: GoodRollView): Set<string> {
-  const stats = view.alternatives
-    .flatMap((alternative) => [
-      ...alternative.mandatory,
-      ...alternative.optional,
-    ])
-    .concat(view.accepted_bad)
-    .filter((stat) => stat.matches);
-  return new Set(stats.map(statLabel));
-}
-
 function StatBadge({ stat }: { stat: StatMatch }) {
   return (
     <Badge

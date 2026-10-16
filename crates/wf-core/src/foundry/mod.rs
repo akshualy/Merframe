@@ -150,6 +150,7 @@ pub struct FoundryItem {
     pub helminth: Option<Helminth>,
     pub archon_shards: Option<u32>,
     pub favourite: bool,
+    pub any_favourite: bool,
     pub components: Vec<FoundryComponent>,
 }
 

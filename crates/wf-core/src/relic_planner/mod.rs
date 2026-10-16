@@ -4,6 +4,7 @@ use wf_inventory::Inventory;
 
 use crate::account::Account;
 use crate::catalog::{Catalog, Stock};
+use crate::identity::ItemTable;
 use crate::mastery;
 
 mod expectation;
@@ -34,10 +35,15 @@ pub struct OwnedRefinement {
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct MissingPart {
     pub unique_name: String,
+    pub name: String,
     pub mastery: bool,
 }
 
-pub(crate) fn missing_parts(account: &Account, catalog: &Catalog) -> Vec<MissingPart> {
+pub(crate) fn missing_parts(
+    account: &Account,
+    catalog: &Catalog,
+    items: &ItemTable,
+) -> Vec<MissingPart> {
     let unmastered = mastery::unmastered_types(account, catalog);
     catalog
         .prime_parts()
@@ -46,13 +52,10 @@ pub(crate) fn missing_parts(account: &Account, catalog: &Catalog) -> Vec<Missing
         })
         .map(|(item, component)| MissingPart {
             unique_name: component.unique_name.clone(),
+            name: items.name(&component.unique_name),
             mastery: unmastered.contains(item.unique_name.as_str()),
         })
         .collect()
-}
-
-pub(crate) fn wanted_names(parts: &[MissingPart]) -> Vec<String> {
-    parts.iter().map(|part| part.unique_name.clone()).collect()
 }
 
 fn owned_refinements(stock: &Stock, relic: &Relic) -> Vec<OwnedRefinement> {
@@ -101,34 +104,39 @@ mod tests {
         ])
     }
 
+    fn missing(account: &Account, catalog: &Catalog) -> Vec<MissingPart> {
+        missing_parts(account, catalog, &ItemTable::build(catalog))
+    }
+
     #[test]
     fn fixture_missing_parts() {
         let account = Account::new(fixtures::inventory());
         let catalog = fixtures::catalog();
-        let parts = missing_parts(&account, &catalog);
+        let parts = missing(&account, &catalog);
 
         assert_eq!(parts.len(), 8);
         assert_eq!(
-            missing_parts(&account, &fixtures::with_skins(fixtures::ITEMS)),
+            missing(&account, &fixtures::with_skins(fixtures::ITEMS)),
             parts
         );
-        assert!(
-            parts
-                .iter()
-                .any(|part| part.unique_name == fixtures::TRINITY_PRIME_SYSTEMS)
-        );
+
+        let systems = parts
+            .iter()
+            .find(|part| part.unique_name == fixtures::TRINITY_PRIME_SYSTEMS)
+            .expect("Trinity Prime Systems");
+        assert_eq!(systems.name, "Trinity Prime Systems");
     }
 
     #[test]
     fn mastery_flag() {
         let catalog = fixtures::catalog();
-        let mastered = missing_parts(&Account::new(fixtures::inventory()), &catalog);
+        let mastered = missing(&Account::new(fixtures::inventory()), &catalog);
         assert!(mastered.iter().all(|part| !part.mastery));
 
         let unranked = fixtures::inventory_with(|value| {
             fixtures::drop_entries(value, &["XPInfo"], fixtures::BRATON_PRIME);
         });
-        let unmastered = missing_parts(&Account::new(unranked), &catalog);
+        let unmastered = missing(&Account::new(unranked), &catalog);
         let braton: Vec<&MissingPart> = unmastered
             .iter()
             .filter(|part| part.unique_name.contains("BratonPrime"))

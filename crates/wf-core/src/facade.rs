@@ -356,24 +356,35 @@ impl Core {
         Some(resources::tab(&self.view()?, query, include_founders, now))
     }
 
-    pub fn relic_planner_tab(&self, squad_size: u32, only_owned: bool) -> Option<RelicPlannerTab> {
+    pub fn relic_planner_tab(
+        &self,
+        squad_size: u32,
+        only_owned: bool,
+        wanted: &[String],
+    ) -> Option<RelicPlannerTab> {
         let view = self.view()?;
-        let missing_parts = relic_planner::missing_parts(view.account, view.catalog);
-        let wanted = relic_planner::wanted_names(&missing_parts);
         Some(RelicPlannerTab {
             squad_size,
             only_owned,
             void_traces: relic_planner::void_traces(&view.account.inventory),
-            plans: relic_planner::plan(&view, &wanted, squad_size, only_owned, None),
-            missing_parts,
+            missing_parts: relic_planner::missing_parts(view.account, view.catalog, view.items),
+            plans: relic_planner::plan(&view, wanted, squad_size, only_owned, None),
         })
     }
 
-    pub fn relic_plans(&self, tier: Option<&str>, squad_size: u32) -> Option<Vec<RelicPlan>> {
-        let view = self.view()?;
-        let wanted =
-            relic_planner::wanted_names(&relic_planner::missing_parts(view.account, view.catalog));
-        Some(relic_planner::plan(&view, &wanted, squad_size, true, tier))
+    pub fn relic_plans(
+        &self,
+        tier: Option<&str>,
+        squad_size: u32,
+        wanted: &[String],
+    ) -> Option<Vec<RelicPlan>> {
+        Some(relic_planner::plan(
+            &self.view()?,
+            wanted,
+            squad_size,
+            true,
+            tier,
+        ))
     }
 
     pub fn owned_relic_slugs(&self) -> Option<Vec<String>> {
@@ -790,7 +801,7 @@ mod tests {
             .is_some()
         );
         let planner = core
-            .relic_planner_tab(relic_planner::DEFAULT_SQUAD_SIZE, true)
+            .relic_planner_tab(relic_planner::DEFAULT_SQUAD_SIZE, true, &[])
             .unwrap();
         assert_eq!(planner.missing_parts.len(), 8);
         assert_eq!(planner.plans.len(), 1);
@@ -814,9 +825,9 @@ mod tests {
     fn relic_plans_of_one_tier() {
         let core = ingested();
         let squad = relic_planner::DEFAULT_SQUAD_SIZE;
-        let tab = core.relic_planner_tab(squad, true).unwrap();
+        let tab = core.relic_planner_tab(squad, true, &[]).unwrap();
         assert!(!tab.plans.is_empty());
-        assert_eq!(core.relic_plans(None, squad).unwrap(), tab.plans);
+        assert_eq!(core.relic_plans(None, squad, &[]).unwrap(), tab.plans);
 
         for tier in ["Lith", "Meso", "Neo", "Axi"] {
             let of_tier: Vec<RelicPlan> = tab
@@ -825,7 +836,7 @@ mod tests {
                 .filter(|plan| plan.tier == tier)
                 .cloned()
                 .collect();
-            assert_eq!(core.relic_plans(Some(tier), squad).unwrap(), of_tier);
+            assert_eq!(core.relic_plans(Some(tier), squad, &[]).unwrap(), of_tier);
         }
     }
 
@@ -858,7 +869,7 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(starred, vec![relic.to_owned()]);
         assert!(
-            core.relic_planner_tab(relic_planner::DEFAULT_SQUAD_SIZE, true)
+            core.relic_planner_tab(relic_planner::DEFAULT_SQUAD_SIZE, true, &[])
                 .unwrap()
                 .plans
                 .iter()

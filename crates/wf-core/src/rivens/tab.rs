@@ -183,6 +183,7 @@ impl Grader<'_> {
             rerolls: 0,
             polarity: None,
             grade: 0.0,
+            grade_letter: "D",
             attributes: Vec::new(),
             good_roll: None,
             listed_in_wfm: false,
@@ -207,6 +208,7 @@ impl Grader<'_> {
 mod tests {
     use super::*;
     use crate::catalog::fixtures;
+    use crate::rivens::grading::{perfectness, roll_grade};
     use crate::rivens::listing::{ListingChoices, listing_payload};
     use crate::rivens::support::*;
     use wf_market::OrderType;
@@ -263,6 +265,18 @@ mod tests {
             entry["UpgradeFingerprint"] =
                 serde_json::json!(serde_json::to_string(&fingerprint).unwrap());
         })
+    }
+
+    #[test]
+    fn letter_of_the_mean_grade() {
+        let tab = riven_tab();
+
+        assert!(!tab.unveiled.is_empty());
+        assert!(
+            tab.unveiled
+                .iter()
+                .all(|row| row.grade_letter == roll_grade(perfectness(&row.attributes)))
+        );
     }
 
     #[test]

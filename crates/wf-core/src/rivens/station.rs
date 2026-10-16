@@ -124,6 +124,7 @@ impl Grader<'_> {
             rerolls: 0,
             polarity: None,
             grade: 0.0,
+            grade_letter: "D",
             attributes: Vec::new(),
             good_roll: None,
             listed_in_wfm: false,

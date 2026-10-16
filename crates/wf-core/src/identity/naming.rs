@@ -2,7 +2,7 @@ use wf_data::{Component, Item};
 
 use crate::catalog::part_name;
 
-pub(crate) fn market_slug(display_name: &str) -> String {
+pub fn market_slug(display_name: &str) -> String {
     let mut slug = String::with_capacity(display_name.len());
     let mut pending_separator = false;
     for ch in display_name.chars() {

@@ -7,14 +7,13 @@ import { Hint } from "@/components/ui/hint";
 import { percent, plat } from "@/lib/format";
 import {
   highestOwnedRefinement,
-  isFavourite,
   matchesRelicFilters,
   RADIANT,
   type RelicFilters,
   refinementValue,
+  showsWanted,
   storedOverlayFilters,
   subscribeOverlayFilters,
-  wantedChance,
 } from "@/lib/relic-filters";
 import { refinementTone } from "@/lib/relics";
 import { parseStoredJson } from "@/lib/storage";
@@ -52,12 +51,11 @@ function recommended(
   refinement: RecommendationRefinement,
   limit: number,
   filters: RelicFilters | null,
-  squadSize: number,
 ) {
-  const wantedKeys = new Set(filters?.wanted ?? []);
+  const showWanted = showsWanted(plans);
   const rows: RecommendedRelic[] = [];
   for (const plan of plans) {
-    if (filters && !matchesRelicFilters(plan, filters, wantedKeys)) {
+    if (filters && !matchesRelicFilters(plan, filters)) {
       continue;
     }
     const value = valuedAt(plan, refinement);
@@ -68,10 +66,7 @@ function recommended(
       plan,
       refinement: value.refinement,
       plat: value.expected_plat,
-      chanceOfWanted:
-        wantedKeys.size === 0
-          ? null
-          : wantedChance(plan, value, wantedKeys, squadSize),
+      chanceOfWanted: showWanted ? value.wanted_chance : null,
     });
   }
   const orderFavouritesFirst = filters?.favourite === "order";
@@ -104,13 +99,7 @@ export function RelicRecommendationOverlay({
   squadSize: number;
   compact?: boolean;
 }) {
-  const recommendedRows = recommended(
-    plans,
-    refinement,
-    limit,
-    filters,
-    squadSize,
-  );
+  const recommendedRows = recommended(plans, refinement, limit, filters);
   const valuedWord = refinement === "owned" ? "Owned refinement" : RADIANT;
 
   if (recommendedRows.length === 0) {
@@ -151,7 +140,7 @@ export function RelicRecommendationOverlay({
               <span className="truncate text-sm font-medium">
                 {row.plan.relic}
               </span>
-              {isFavourite(row.plan) && (
+              {row.plan.any_favourite && (
                 <Star
                   className="text-accent size-3.5 shrink-0"
                   fill="currentColor"

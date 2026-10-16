@@ -65,11 +65,15 @@ pub async fn relic_planner_tab(
     state: Shared<'_>,
     squad_size: Option<u32>,
     only_owned: Option<bool>,
+    wanted: Vec<String>,
 ) -> CommandResult<RelicPlannerTab> {
     let state = ready(&state).await?;
     let squad = squad_size.unwrap_or(wf_core::DEFAULT_SQUAD_SIZE);
     let owned = only_owned.unwrap_or(true);
-    compute(state, move |core| core.relic_planner_tab(squad, owned)).await
+    compute(state, move |core| {
+        core.relic_planner_tab(squad, owned, &wanted)
+    })
+    .await
 }
 
 #[tauri::command]
@@ -77,10 +81,11 @@ pub async fn relic_plans(
     state: Shared<'_>,
     tier: Option<String>,
     squad_size: u32,
+    wanted: Vec<String>,
 ) -> CommandResult<Vec<RelicPlan>> {
     let state = ready(&state).await?;
     compute(state, move |core| {
-        core.relic_plans(tier.as_deref(), squad_size)
+        core.relic_plans(tier.as_deref(), squad_size, &wanted)
     })
     .await
 }

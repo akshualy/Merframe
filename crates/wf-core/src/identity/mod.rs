@@ -18,7 +18,8 @@ use crate::inventory_view::ItemSummary;
 
 pub use listing::market_name;
 pub(crate) use listing::traded_as;
-pub(crate) use naming::{blueprint_of, component_of, market_slug, part_identity, part_market_slug};
+pub use naming::market_slug;
+pub(crate) use naming::{blueprint_of, component_of, part_identity, part_market_slug};
 
 pub(crate) const OUBLIETTE_KEY: &str = "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey";
 pub(crate) const LEGENDARY_CORE: &str = "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser";

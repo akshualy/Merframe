@@ -5,8 +5,8 @@ import {
   attributeText,
   attributeValue,
   gradeTone,
+  gradeVariant,
   rivenAuctionUrl,
-  rollQuality,
 } from "@/lib/rivens";
 import type { AttributeGrade } from "@/types";
 
@@ -28,6 +28,7 @@ const initialCombo: AttributeGrade = {
   max: 3,
   curse: false,
   spliced: false,
+  desired: false,
 };
 
 const attackSpeed: AttributeGrade = {
@@ -48,19 +49,16 @@ const attackSpeed: AttributeGrade = {
   max: 5,
   curse: false,
   spliced: false,
+  desired: false,
 };
 
-describe("rollQuality", () => {
-  it("letter per grade band", () => {
-    expect(rollQuality(0.95).label).toBe("S");
-    expect(rollQuality(0.8423).label).toBe("A");
-    expect(rollQuality(0.6).label).toBe("B");
-    expect(rollQuality(0.5).label).toBe("C");
-    expect(rollQuality(0.1).label).toBe("D");
-  });
-
-  it("warning tone for the lowest band", () => {
-    expect(rollQuality(0.1).variant).toBe("warning");
+describe("gradeVariant", () => {
+  it("variant per letter", () => {
+    expect(gradeVariant("S")).toBe("default");
+    expect(gradeVariant("A")).toBe("accent");
+    expect(gradeVariant("B")).toBe("secondary");
+    expect(gradeVariant("C")).toBe("muted");
+    expect(gradeVariant("D")).toBe("warning");
   });
 });
 

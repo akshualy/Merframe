@@ -27,12 +27,13 @@ import {
   matchesRelicFilters,
   type RelicFilters,
   refinementValue,
-  wantedChance,
+  showsWanted,
   writeOverlayFilters,
 } from "@/lib/relic-filters";
 import { REFINEMENTS, RELIC_TIERS } from "@/lib/relics";
 import { notify } from "@/lib/toast";
 import { usePreferencesStore } from "@/stores/preferences-store";
+import type { MissingPart } from "@/types";
 import {
   type PlannerRow,
   plannerColumns,
@@ -71,19 +72,24 @@ export function RelicPlannerPage() {
   const [refined, setRefined] = useState<YesNo | null>(null);
   const [tierOwned, setTierOwned] = useState<string | null>(null);
   const [favourite, setFavourite] = useState<FavouriteFilter | null>(null);
-  const [wanted, setWanted] = useState<string[]>([]);
-  const [selectedPart, setSelectedPart] = useState<string | null>(null);
+  const [wanted, setWanted] = useState<MissingPart[]>([]);
+  const [selectedPart, setSelectedPart] = useState<MissingPart | null>(null);
   const wantedPanel = useRef<HTMLDivElement>(null);
   const sourcesPanel = useRef<HTMLDivElement>(null);
   const [params] = useSearchParams();
 
+  const wantedPaths = useMemo(
+    () => wanted.map((part) => part.unique_name),
+    [wanted],
+  );
+
   const load = useCallback(
-    () => api.relicPlannerTab(squadSize, onlyOwned),
-    [squadSize, onlyOwned],
+    () => api.relicPlannerTab(squadSize, onlyOwned, wantedPaths),
+    [squadSize, onlyOwned, wantedPaths],
   );
 
   const { data, error, loading } = useAsyncData(
-    `relic_planner_tab:${JSON.stringify([squadSize, onlyOwned])}`,
+    `relic_planner_tab:${JSON.stringify([squadSize, onlyOwned, wantedPaths])}`,
     load,
     ["inventoryUpdated", "pricesUpdated", "favouriteUpdated"],
   );
@@ -93,8 +99,6 @@ export function RelicPlannerPage() {
   };
 
   const missing = data?.missing_parts ?? [];
-
-  const wantedKeys = useMemo(() => new Set(wanted), [wanted]);
 
   const filters = useMemo<RelicFilters>(
     () => ({
@@ -107,7 +111,7 @@ export function RelicPlannerPage() {
       stacked,
       refined,
       tierOwned,
-      wanted,
+      wanted: wantedPaths,
     }),
     [
       squadSize,
@@ -119,7 +123,7 @@ export function RelicPlannerPage() {
       stacked,
       refined,
       tierOwned,
-      wanted,
+      wantedPaths,
     ],
   );
 
@@ -141,7 +145,7 @@ export function RelicPlannerPage() {
         .filter(
           (plan) =>
             (era === ALL_ERAS || plan.tier === era) &&
-            matchesRelicFilters(plan, filters, wantedKeys),
+            matchesRelicFilters(plan, filters),
         )
         .flatMap<PlannerRow>((plan) => {
           const best = refinement === ANY_REFINEMENT;
@@ -153,7 +157,7 @@ export function RelicPlannerPage() {
             {
               plan,
               value,
-              rewards: rewardViews(plan, value, wantedKeys, squadSize),
+              rewards: rewardViews(plan, value),
               perTrace: best
                 ? (plan.best.plat_per_trace?.value ?? null)
                 : value.plat_per_trace,
@@ -166,11 +170,10 @@ export function RelicPlannerPage() {
               ducatTraceRefinement: best
                 ? (plan.best.ducats_per_trace?.refinement ?? null)
                 : value.refinement,
-              chanceOfWanted: wantedChance(plan, value, wantedKeys, squadSize),
             },
           ];
         }),
-    [owned, era, filters, refinement, wantedKeys, squadSize],
+    [owned, era, filters, refinement],
   );
 
   const best = useMemo(
@@ -186,8 +189,8 @@ export function RelicPlannerPage() {
   );
 
   const columns = useMemo(
-    () => plannerColumns(squadSize, wantedKeys),
-    [squadSize, wantedKeys],
+    () => plannerColumns(squadSize, showsWanted(owned)),
+    [squadSize, owned],
   );
 
   if (loading && !data) {

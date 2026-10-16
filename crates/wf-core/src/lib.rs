@@ -41,7 +41,7 @@ pub use foundry::{
     CraftDetails, CraftNode, CraftSummary, FoundryComponent, FoundryItem, FoundryTab, Helminth,
     MasteryGate, NeededItem, NodeDrop, OwnedRelic, PendingBuild, Prime, Progress, WorldTimer,
 };
-pub use identity::{ItemRecord, ItemTable, market_name};
+pub use identity::{ItemRecord, ItemTable, market_name, market_slug};
 pub use inventory_view::{
     InventoryTab, ItemStatus, ItemSummary, MiscRow, ModHolder, ModRow, PartRow, RelicRow,
     SculptureStars, SetComponent, SetLink, SetRow, UpgradePrices,

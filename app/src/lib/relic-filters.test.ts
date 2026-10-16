@@ -2,11 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   ANY_REFINEMENT,
   highestOwnedRefinement,
-  isFavourite,
   matchesRelicFilters,
   type RelicFilters,
   refinementValue,
-  wantedChance,
+  showsWanted,
 } from "@/lib/relic-filters";
 import type { RelicPlan } from "@/types";
 import planner from "./relic-filters.test-data.json";
@@ -70,96 +69,46 @@ describe("highestOwnedRefinement", () => {
   });
 });
 
-describe("wantedChance", () => {
-  const axi = relic("Axi A20");
-  const intact = refinementValue(axi, "Intact");
-  const alternox = new Set([
-    "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
-  ]);
-
-  it("single drop chance for one player", () => {
-    if (!intact) {
-      throw new Error("Intact value missing");
-    }
-    expect(wantedChance(axi, intact, alternox, 1)).toBeCloseTo(2);
-  });
-
-  it("compounds over the squad", () => {
-    if (!intact) {
-      throw new Error("Intact value missing");
-    }
-    expect(wantedChance(axi, intact, alternox, 4)).toBeCloseTo(
-      (1 - 0.98 ** 4) * 100,
-    );
-  });
-
-  it("zero when nothing wanted drops", () => {
-    if (!intact) {
-      throw new Error("Intact value missing");
-    }
-    expect(wantedChance(axi, intact, new Set(["/Lotus/Nothing"]), 4)).toBe(0);
-  });
-});
-
-describe("isFavourite", () => {
-  it("favourite relic or favourite reward", () => {
-    expect(isFavourite(relic("Axi A20"))).toBe(true);
-    expect(isFavourite(relic("Lith B11"))).toBe(false);
+describe("showsWanted", () => {
+  it("only when a plan carries a wanted reward", () => {
+    expect(showsWanted(plans)).toBe(true);
+    expect(showsWanted([relic("Lith B11"), relic("Lith P5")])).toBe(false);
   });
 });
 
 describe("matchesRelicFilters", () => {
   const axi = relic("Axi A20");
-  const none = new Set<string>();
 
   it("open filters match", () => {
-    expect(matchesRelicFilters(axi, open, none)).toBe(true);
-  });
-
-  it("wanted parts must drop", () => {
-    const alternox = new Set([
-      "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
-    ]);
-    expect(matchesRelicFilters(axi, open, alternox)).toBe(true);
-    expect(matchesRelicFilters(relic("Lith B11"), open, alternox)).toBe(false);
+    expect(matchesRelicFilters(axi, open)).toBe(true);
   });
 
   it("favourite", () => {
-    expect(matchesRelicFilters(axi, { ...open, favourite: "yes" }, none)).toBe(
-      true,
-    );
-    expect(matchesRelicFilters(axi, { ...open, favourite: "no" }, none)).toBe(
-      false,
-    );
+    expect(matchesRelicFilters(axi, { ...open, favourite: "yes" })).toBe(true);
+    expect(matchesRelicFilters(axi, { ...open, favourite: "no" })).toBe(false);
   });
 
   it("vaulted", () => {
-    expect(matchesRelicFilters(axi, { ...open, vaulted: "no" }, none)).toBe(
-      false,
-    );
+    expect(matchesRelicFilters(axi, { ...open, vaulted: "no" })).toBe(false);
   });
 
   it("stacked means ten or more", () => {
-    expect(matchesRelicFilters(axi, { ...open, stacked: "yes" }, none)).toBe(
-      false,
-    );
+    expect(matchesRelicFilters(axi, { ...open, stacked: "yes" })).toBe(false);
     expect(
-      matchesRelicFilters(relic("Lith P5"), { ...open, stacked: "yes" }, none),
+      matchesRelicFilters(relic("Lith P5"), { ...open, stacked: "yes" }),
     ).toBe(true);
   });
 
   it("refined excludes intact only stacks", () => {
-    expect(matchesRelicFilters(axi, { ...open, refined: "no" }, none)).toBe(
-      true,
-    );
+    expect(matchesRelicFilters(axi, { ...open, refined: "no" })).toBe(true);
   });
 
   it("tier owned", () => {
-    expect(
-      matchesRelicFilters(axi, { ...open, tierOwned: "Intact" }, none),
-    ).toBe(true);
-    expect(
-      matchesRelicFilters(axi, { ...open, tierOwned: "Radiant" }, none),
-    ).toBe(false);
+    expect(matchesRelicFilters(axi, { ...open, tierOwned: "Intact" })).toBe(
+      true,
+    );
+    expect(matchesRelicFilters(axi, { ...open, tierOwned: "Radiant" })).toBe(
+      false,
+    );
   });
 });

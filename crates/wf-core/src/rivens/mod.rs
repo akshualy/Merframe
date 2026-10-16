@@ -126,6 +126,7 @@ pub struct PendingRoll {
     pub rerolls: u32,
     pub polarity: Option<Polarity>,
     pub grade: f64,
+    pub grade_letter: &'static str,
     pub attributes: Vec<AttributeGrade>,
     pub good_roll: Option<GoodRollView>,
 }
@@ -150,6 +151,7 @@ pub struct RivenRow {
     pub rerolls: u32,
     pub polarity: Option<Polarity>,
     pub grade: f64,
+    pub grade_letter: &'static str,
     pub attributes: Vec<AttributeGrade>,
     pub good_roll: Option<GoodRollView>,
     pub listed_in_wfm: bool,

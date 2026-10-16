@@ -46,13 +46,14 @@ export function RecommendationSlot({
   const tier = trigger?.tier ?? null;
   const filters = useOverlayFilters();
   const squadSize = filters?.squadSize ?? DEFAULT_SQUAD_SIZE;
+  const wanted = filters?.wanted;
   const reloadKey = useMemo(
-    () => (shown ? { tier, squadSize, changes } : null),
-    [shown, tier, squadSize, changes],
+    () => (shown ? { tier, squadSize, wanted: wanted ?? [], changes } : null),
+    [shown, tier, squadSize, wanted, changes],
   );
   const plans = useLoaded(
     reloadKey,
-    (key) => api.relicPlans(key.tier, key.squadSize),
+    (key) => api.relicPlans(key.tier, key.squadSize, key.wanted),
     (cause) => {
       logError("Ranking the owned relics", cause);
       return [];

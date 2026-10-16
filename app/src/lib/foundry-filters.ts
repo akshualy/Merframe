@@ -57,8 +57,7 @@ const FLAGS: Record<FilterKey, (item: FoundryItem) => Flag> = {
     item.components.length > 0 ? item.progress.ready_to_build : null,
   enoughMastery: (item) =>
     item.mastery.required === null ? null : item.mastery.met,
-  favourite: (item) =>
-    item.favourite || item.components.some((component) => component.favourite),
+  favourite: (item) => item.any_favourite,
   subsumed: (item) => (item.helminth === null ? null : item.helminth.subsumed),
   archonShards: (item) =>
     item.archon_shards === null ? null : item.archon_shards > 0,

@@ -59,6 +59,7 @@ pub struct RelicPlan {
     pub intact_to_radiant: IntactToRadiant,
     pub favourite: bool,
     pub favourite_rewards: usize,
+    pub any_favourite: bool,
     pub drops: Vec<DropLocation>,
     pub drop_locations: usize,
 }
@@ -87,14 +88,17 @@ pub(crate) fn plan(
             let rewards: Vec<RewardBreakdown> = relic
                 .rewards_for(Refinement::Intact)
                 .iter()
-                .map(|reward| reward_breakdown(view, reward))
+                .map(|reward| reward_breakdown(view, reward, &wanted_keys))
                 .collect();
+            if !wanted_keys.is_empty() && !rewards.iter().any(|reward| reward.wanted) {
+                return None;
+            }
+
             Some(relic_plan(
                 view,
                 relic,
                 owned_by_refinement,
                 rewards,
-                &wanted_keys,
                 squad_size,
             ))
         })
@@ -116,18 +120,15 @@ fn relic_plan(
     relic: &Relic,
     owned_by_refinement: Vec<OwnedRefinement>,
     rewards: Vec<RewardBreakdown>,
-    wanted_keys: &HashSet<&str>,
     squad_size: u32,
 ) -> RelicPlan {
     let View {
         prices, favourites, ..
     } = *view;
     let owned = owned_total(&owned_by_refinement);
-    let wanted_rewards: Vec<bool> = rewards
-        .iter()
-        .map(|reward| wanted_keys.contains(part_identity(&reward.unique_name)))
-        .collect();
-    let values = refinement_values(relic, &rewards, &wanted_rewards, squad_size).to_vec();
+    let values = refinement_values(relic, &rewards, squad_size).to_vec();
+    let favourite = favourites.any(relic.unique_names.values().map(String::as_str));
+    let favourite_rewards = rewards.iter().filter(|reward| reward.favourite).count();
     RelicPlan {
         relic: relic.name.clone(),
         unique_name: relic
@@ -166,8 +167,9 @@ fn relic_plan(
             plat: values[3].expected_plat - values[0].expected_plat,
             ducats: values[3].expected_ducats - values[0].expected_ducats,
         },
-        favourite: favourites.any(relic.unique_names.values().map(String::as_str)),
-        favourite_rewards: rewards.iter().filter(|reward| reward.favourite).count(),
+        favourite,
+        favourite_rewards,
+        any_favourite: favourite || favourite_rewards > 0,
         drops: relic
             .drops
             .iter()
@@ -192,9 +194,9 @@ fn mission_node_label(location: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::super::DEFAULT_SQUAD_SIZE;
     use super::super::rewards::rarity_name;
     use super::super::tests::prices;
-    use super::super::{DEFAULT_SQUAD_SIZE, missing_parts, wanted_names};
     use super::*;
     use crate::catalog::fixtures;
     use crate::prices::FixedPrices;
@@ -327,7 +329,7 @@ mod tests {
         assert!(
             plain
                 .iter()
-                .all(|entry| !entry.favourite && entry.favourite_rewards == 0)
+                .all(|entry| !entry.any_favourite && entry.favourite_rewards == 0)
         );
         assert_eq!(
             relic(&plain, "Axi A1").unique_name,
@@ -352,6 +354,7 @@ mod tests {
         assert_eq!(a1.favourite_rewards, 1);
         assert!(!a21.favourite);
         assert_eq!(a21.favourite_rewards, 2);
+        assert!(a1.any_favourite && a21.any_favourite);
         assert!(
             a1.rewards
                 .iter()
@@ -460,8 +463,7 @@ mod tests {
     #[test]
     fn owned_relic_values() {
         let fixture = fixture(fixtures::inventory());
-        let wanted = wanted_names(&missing_parts(&fixture.account, &fixture.catalog));
-        let plans = plan(&fixture.view(), &wanted, 1, true, None);
+        let plans = plan(&fixture.view(), &[], 1, true, None);
 
         assert_eq!(plans.len(), 1);
         let axi = &plans[0];
@@ -502,9 +504,7 @@ mod tests {
     fn wanted_parts() {
         let fixture = fixture(fixtures::inventory());
         let wanted = vec![fixtures::TRINITY_PRIME_SYSTEMS.to_owned()];
-        let plans = plan(&fixture.view(), &wanted, 1, true, None);
-        assert_eq!(plans.len(), 1);
-        assert!((plans[0].best.wanted_chance - 0.0).abs() < f64::EPSILON);
+        assert!(plan(&fixture.view(), &wanted, 1, true, None).is_empty());
 
         let braton = plan(
             &fixture.view(),
@@ -663,6 +663,41 @@ mod tests {
         assert!(solo[0].best.wanted_chance > 0.0);
         assert!(squad[0].best.wanted_chance > solo[0].best.wanted_chance);
         assert!(squad[0].best.wanted_chance <= 100.0);
+    }
+
+    #[test]
+    fn wanted_chance_of_one_reward() {
+        let fixture = fixture(fixtures::inventory());
+        let wanted = vec!["/Lotus/Types/Recipes/Weapons/WeaponParts/AlternoxPrimeStock".to_owned()];
+        let solo = &plan(&fixture.view(), &wanted, 1, true, None)[0];
+        let squad = &plan(&fixture.view(), &wanted, 4, true, None)[0];
+        let stock = solo
+            .rewards
+            .iter()
+            .position(|reward| reward.wanted)
+            .expect("wanted reward");
+        let four_tries = (1.0 - 0.98f64.powi(4)) * 100.0;
+
+        assert_eq!(solo.rewards[stock].name, "Alternox Prime Stock");
+        assert_eq!(
+            solo.rewards.iter().filter(|reward| reward.wanted).count(),
+            1
+        );
+        assert!((solo.values[0].wanted_chance - 2.0).abs() < 1e-9);
+        assert!((solo.values[0].squad_chances[stock] - 2.0).abs() < 1e-9);
+        assert!((squad.values[0].wanted_chance - four_tries).abs() < 1e-9);
+        assert!((squad.values[0].squad_chances[stock] - four_tries).abs() < 1e-9);
+
+        assert!(
+            plan(
+                &fixture.view(),
+                &["/Lotus/Nothing".to_owned()],
+                4,
+                true,
+                None,
+            )
+            .is_empty()
+        );
     }
 
     #[test]

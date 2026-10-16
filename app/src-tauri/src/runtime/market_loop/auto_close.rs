@@ -3,7 +3,7 @@ use std::sync::Arc;
 use serde::Serialize;
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
-use wf_core::{Trade, TradeItem, relic_refinement, traded_set};
+use wf_core::{Trade, TradeItem, market_slug, relic_refinement, traded_set};
 use wf_market::{Auction, Item, Order, OrderType};
 
 use super::market_refresh;
@@ -164,7 +164,7 @@ fn traded_items(items: &[TradeItem]) -> Vec<TradedItem> {
 
             Some(TradedItem {
                 name: item.name.clone(),
-                slug: trade_slug(&item.name),
+                slug: market_slug(&item.name),
                 quantity,
                 rank: item.rank,
             })
@@ -178,29 +178,11 @@ fn matching_auction<'a>(slug: &str, auctions: &'a [Auction]) -> Option<&'a Aucti
         .find(|auction| !auction.closed && auction_slug(auction) == slug)
 }
 
-fn trade_slug(name: &str) -> String {
-    let mut slug = String::with_capacity(name.len());
-    let mut separated = false;
-    for ch in name.chars() {
-        if ch.is_ascii_alphanumeric() {
-            if separated && !slug.is_empty() {
-                slug.push('_');
-            }
-            separated = false;
-            slug.extend(ch.to_lowercase());
-        } else {
-            separated = true;
-        }
-    }
-
-    slug
-}
-
 fn auction_slug(auction: &Auction) -> String {
     format!(
         "{}_{}",
         auction.item.weapon_url_name,
-        trade_slug(&auction.item.name)
+        market_slug(&auction.item.name)
     )
 }
 
@@ -329,14 +311,6 @@ mod tests {
     }
 
     #[test]
-    fn trade_slugs() {
-        assert_eq!(trade_slug("Octavia Prime Systems"), "octavia_prime_systems");
-        assert_eq!(trade_slug("Primed Continuity"), "primed_continuity");
-        assert_eq!(trade_slug("Okina Acri-Vexicak"), "okina_acri_vexicak");
-        assert_eq!(trade_slug("Axi A1 Relic"), "axi_a1_relic");
-    }
-
-    #[test]
     fn open_auction_by_slug() {
         let auctions = vec![
             auction("closed-one", "okina", "acri-vexicak", true),
@@ -344,7 +318,7 @@ mod tests {
             auction("other-weapon", "kuva_bramma", "crita-critacan", false),
         ];
         assert_eq!(auction_slug(&auctions[1]), "okina_acri_vexicak");
-        let slug = trade_slug("Okina Acri-Vexicak");
+        let slug = market_slug("Okina Acri-Vexicak");
         let matched = matching_auction(&slug, &auctions).expect("open auction");
         assert_eq!(matched.id, "open-one");
         assert!(matching_auction("okina_visi_visitio", &auctions).is_none());

@@ -1,7 +1,7 @@
 use wf_data::RivenType;
 use wf_inventory::RivenFingerprint;
 
-use super::grading::{compat_path, perfectness, polarity, riven_name, same_roll};
+use super::grading::{compat_path, perfectness, polarity, riven_name, roll_grade, same_roll};
 use super::listing::unlisted_stat;
 use super::{Grader, PendingRoll, RivenRow};
 
@@ -30,17 +30,16 @@ impl Grader<'_> {
         riven_type: Option<&RivenType>,
         disposition: Option<f64>,
     ) -> PendingRoll {
-        let graded = self.graded(fingerprint, riven_type, disposition);
+        let good = self.good_roll_of(fingerprint.compat.as_deref());
+        let graded = self.graded(fingerprint, riven_type, disposition, good);
+        let grade = perfectness(&graded);
         PendingRoll {
             name: riven_type.and_then(|found| riven_name(found, &fingerprint.buffs)),
             rerolls: fingerprint.rerolls,
             polarity: fingerprint.pol.as_deref().and_then(polarity),
-            grade: perfectness(&graded),
-            good_roll: self.good_roll(
-                fingerprint.compat.as_deref().map(compat_path),
-                &graded,
-                riven_type,
-            ),
+            grade,
+            grade_letter: roll_grade(grade),
+            good_roll: good.map(|good| self.good_roll(good, &graded, riven_type)),
             attributes: graded,
         }
     }
@@ -64,6 +63,7 @@ impl RivenRow {
             rerolls: roll.rerolls,
             polarity: roll.polarity,
             grade: roll.grade,
+            grade_letter: roll.grade_letter,
             unlisted_stat: unlisted_stat(&roll.attributes),
             attributes: roll.attributes,
             good_roll: roll.good_roll,

@@ -1,7 +1,7 @@
 import type { YesNo } from "@/lib/filters";
 import { REFINEMENTS } from "@/lib/relics";
 import { readStored, writeStoredJson } from "@/lib/storage";
-import type { RefinementValue, RelicPlan, RewardBreakdown } from "@/types";
+import type { RefinementValue, RelicPlan } from "@/types";
 
 const OVERLAY_FILTERS_KEY = "merframe.relicPlanner.overlayFilters";
 export const ANY_REFINEMENT = "any";
@@ -20,13 +20,6 @@ export interface RelicFilters {
   refined: YesNo | null;
   tierOwned: string | null;
   wanted: string[];
-}
-
-export function isWanted(
-  reward: RewardBreakdown,
-  wanted: Set<string>,
-): boolean {
-  return reward.component !== null && wanted.has(reward.component);
 }
 
 export function storedOverlayFilters(): string | null {
@@ -56,28 +49,16 @@ export function refinementValue(
   return plan.values.find((entry) => entry.refinement === target);
 }
 
+export function showsWanted(plans: RelicPlan[]): boolean {
+  return plans.some((plan) => plan.rewards.some((reward) => reward.wanted));
+}
+
 export function highestOwnedRefinement(plan: RelicPlan): string | undefined {
   return REFINEMENTS.filter((refinement) =>
     plan.ownership.by_refinement.some(
       (entry) => entry.refinement === refinement && entry.count > 0,
     ),
   ).at(-1);
-}
-
-export function wantedChance(
-  plan: RelicPlan,
-  value: RefinementValue,
-  wantedKeys: Set<string>,
-  squadSize: number,
-): number {
-  let missed = 1;
-  plan.rewards.forEach((reward, index) => {
-    if (!isWanted(reward, wantedKeys)) {
-      return;
-    }
-    missed *= (1 - (value.chances[index] ?? 0) / 100) ** squadSize;
-  });
-  return (1 - missed) * 100;
 }
 
 function matches(flag: boolean, filter: YesNo | null): boolean {
@@ -96,26 +77,14 @@ function ownsTier(plan: RelicPlan, tier: string): boolean {
   );
 }
 
-export function isFavourite(plan: RelicPlan): boolean {
-  return plan.favourite || plan.favourite_rewards > 0;
-}
-
-function dropsWanted(plan: RelicPlan, wantedKeys: Set<string>): boolean {
-  return plan.rewards.some((reward) => isWanted(reward, wantedKeys));
-}
-
 export function matchesRelicFilters(
   plan: RelicPlan,
   filters: RelicFilters,
-  wantedKeys: Set<string>,
 ): boolean {
-  if (wantedKeys.size > 0 && !dropsWanted(plan, wantedKeys)) {
+  if (filters.favourite === "yes" && !plan.any_favourite) {
     return false;
   }
-  if (filters.favourite === "yes" && !isFavourite(plan)) {
-    return false;
-  }
-  if (filters.favourite === "no" && isFavourite(plan)) {
+  if (filters.favourite === "no" && plan.any_favourite) {
     return false;
   }
   if (!matches(plan.vaulted, filters.vaulted)) {

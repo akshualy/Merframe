@@ -7,4 +7,4 @@ import type { RefinementValue } from "./RefinementValue";
 import type { RelicMarket } from "./RelicMarket";
 import type { RewardBreakdown } from "./RewardBreakdown";
 
-export type RelicPlan = { relic: string, unique_name: string, tier: string, image_name: string | null, market: RelicMarket | null, vaulted: boolean, ownership: Ownership, rewards: Array<RewardBreakdown>, values: Array<RefinementValue>, best: Best, intact_to_radiant: IntactToRadiant, favourite: boolean, favourite_rewards: number, drops: Array<DropLocation>, drop_locations: number, };
+export type RelicPlan = { relic: string, unique_name: string, tier: string, image_name: string | null, market: RelicMarket | null, vaulted: boolean, ownership: Ownership, rewards: Array<RewardBreakdown>, values: Array<RefinementValue>, best: Best, intact_to_radiant: IntactToRadiant, favourite: boolean, favourite_rewards: number, any_favourite: boolean, drops: Array<DropLocation>, drop_locations: number, };

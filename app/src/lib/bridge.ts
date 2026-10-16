@@ -110,13 +110,14 @@ export const api = {
     }),
   resourcesTab: (query: ResourceQuery) =>
     call<ResourcesTab>("resources_tab", { query }),
-  relicPlannerTab: (squadSize?: number, onlyOwned?: boolean) =>
+  relicPlannerTab: (squadSize: number, onlyOwned: boolean, wanted: string[]) =>
     call<RelicPlannerTab>("relic_planner_tab", {
-      squadSize: squadSize ?? null,
-      onlyOwned: onlyOwned ?? null,
+      squadSize,
+      onlyOwned,
+      wanted,
     }),
-  relicPlans: (tier: string | null, squadSize: number) =>
-    call<RelicPlan[]>("relic_plans", { tier, squadSize }),
+  relicPlans: (tier: string | null, squadSize: number, wanted: string[]) =>
+    call<RelicPlan[]>("relic_plans", { tier, squadSize, wanted }),
   rivensTab: () => call<RivensTab>("rivens_tab"),
   rivenComparables: (weaponSlug: string, shown: ComparedStat[]) =>
     call<RivenComparables | null>("riven_comparables", { weaponSlug, shown }),

@@ -1,11 +1,7 @@
 import { Check, ExternalLink, Minus } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { PolarityIcon } from "@/components/game-icon";
-import {
-  desiredAttributes,
-  GoodRollAttribution,
-  GoodRollBlock,
-} from "@/components/good-roll";
+import { GoodRollAttribution, GoodRollBlock } from "@/components/good-roll";
 import { ItemImage, prefetchImages } from "@/components/item-image";
 import { RivenListings } from "@/components/riven-listings";
 import { SplicedMark } from "@/components/spliced-mark";
@@ -17,8 +13,8 @@ import { displayNameFromPath, percent } from "@/lib/format";
 import {
   attributeValue,
   gradeTone,
+  gradeVariant,
   rivenAuctionUrl,
-  rollQuality,
 } from "@/lib/rivens";
 import { cn } from "@/lib/utils";
 import type { AttributeGrade, RivenRow } from "@/types";
@@ -36,13 +32,7 @@ function attributeLabel(attribute: AttributeGrade): string {
   return attribute.name ?? attribute.tag;
 }
 
-function Attribute({
-  attribute,
-  desired,
-}: {
-  attribute: AttributeGrade;
-  desired: boolean;
-}) {
+function Attribute({ attribute }: { attribute: AttributeGrade }) {
   return (
     <div className="grid grid-cols-subgrid col-span-4 text-sm items-center">
       <span
@@ -60,7 +50,7 @@ function Attribute({
       <span className={cn("w-6 shrink-0", gradeTone(attribute.grade))}>
         {attribute.grade}
       </span>
-      {desired ? (
+      {attribute.desired ? (
         <Check className="text-accent size-3.5 shrink-0" aria-label="Desired" />
       ) : (
         <Minus className="text-muted-foreground size-3.5 shrink-0" />
@@ -70,10 +60,6 @@ function Attribute({
 }
 
 function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
-  const quality = rollQuality(riven.grade);
-  const desired = riven.good_roll
-    ? desiredAttributes(riven.good_roll)
-    : new Set<string>();
   const slug = riven.weapon_slug;
 
   const handleCompare = useCallback(async () => {
@@ -112,17 +98,15 @@ function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
           )}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Badge variant={quality.variant}>{quality.label}</Badge>
+          <Badge variant={gradeVariant(riven.grade_letter)}>
+            {riven.grade_letter}
+          </Badge>
           <span className="text-xs tabular-nums">{percent(riven.grade)}</span>
         </div>
       </div>
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] gap-1.5">
         {riven.attributes.map((attribute) => (
-          <Attribute
-            key={attribute.tag}
-            attribute={attribute}
-            desired={desired.has(attributeLabel(attribute))}
-          />
+          <Attribute key={attribute.tag} attribute={attribute} />
         ))}
       </div>
       {riven.good_roll && (

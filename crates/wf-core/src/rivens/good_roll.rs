@@ -1,9 +1,10 @@
 use serde::Serialize;
 use wf_data::RivenType;
-use wf_market::StatRef;
+use wf_market::{GoodRoll, StatRef};
 
 use super::Grader;
 use super::grading::AttributeGrade;
+use super::station::compat_weapon;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -47,19 +48,18 @@ impl Grader<'_> {
         }
     }
 
+    pub(super) fn good_roll_of(&self, weapon_path: Option<&str>) -> Option<&GoodRoll> {
+        let table = self.table?;
+        let weapon = compat_weapon(table, weapon_path?)?;
+        table.good_rolls.get(&weapon.name.to_lowercase())
+    }
+
     pub(super) fn good_roll(
         &self,
-        weapon_path: Option<&str>,
+        good: &GoodRoll,
         attributes: &[AttributeGrade],
         riven_type: Option<&RivenType>,
-    ) -> Option<GoodRollView> {
-        let table = self.table?;
-        let path = weapon_path?;
-        let weapon = table
-            .weapons
-            .iter()
-            .find(|weapon| weapon.game_ref == path)?;
-        let good = table.good_rolls.get(&weapon.name.to_lowercase())?;
+    ) -> GoodRollView {
         let tags = |curse: bool| -> Vec<&str> {
             attributes
                 .iter()
@@ -96,13 +96,29 @@ impl Grader<'_> {
             .iter()
             .map(|stat| self.stat_match(stat, &curses, riven_type))
             .collect();
-        Some(GoodRollView {
+        GoodRollView {
             matches: alternatives.iter().any(|alternative| alternative.complete)
                 && (curses.is_empty() || accepted_bad.iter().any(|stat| stat.matches)),
             alternatives,
             accepted_bad,
-        })
+        }
     }
+}
+
+pub(super) fn desires(good: &GoodRoll, tag: &str, curse: bool) -> bool {
+    let has_tag = |stats: &[StatRef]| {
+        stats
+            .iter()
+            .any(|stat| stat.tags.iter().any(|named| named == tag))
+    };
+
+    if curse {
+        return has_tag(&good.accepted_bad);
+    }
+
+    good.alternatives
+        .iter()
+        .any(|alternative| has_tag(&alternative.mandatory) || has_tag(&alternative.optional))
 }
 
 #[cfg(test)]
@@ -111,14 +127,35 @@ mod tests {
     use crate::rivens::support::*;
     use wf_inventory::RivenFingerprint;
 
+    fn desired_tags(weapon: &str, buffs: &[&str], curse: Option<&str>) -> Vec<String> {
+        let fixture = fixture();
+        let grader = fixture.grader();
+        let weapon = table_weapon_named(&fixture.table, weapon);
+        let riven_type = grader.riven_type(&weapon.mod_type);
+        let fingerprint = RivenFingerprint::parse(&rolled(&weapon.game_ref, buffs, curse)).unwrap();
+        let good = grader.good_roll_of(Some(weapon.game_ref.as_str()));
+        grader
+            .graded(&fingerprint, riven_type, Some(weapon.disposition), good)
+            .into_iter()
+            .filter(|attribute| attribute.desired)
+            .map(|attribute| attribute.tag)
+            .collect()
+    }
+
     fn roll_view(weapon: &str, buffs: &[&str], curse: Option<&str>) -> Option<GoodRollView> {
         let fixture = fixture();
         let grader = fixture.grader();
         let weapon = table_weapon_named(&fixture.table, weapon);
         let riven_type = grader.riven_type(&weapon.mod_type);
         let fingerprint = RivenFingerprint::parse(&rolled(&weapon.game_ref, buffs, curse)).unwrap();
-        let attributes = grader.graded(&fingerprint, riven_type, Some(weapon.disposition));
-        grader.good_roll(Some(weapon.game_ref.as_str()), &attributes, riven_type)
+        let good = grader.good_roll_of(Some(weapon.game_ref.as_str()))?;
+        let attributes = grader.graded(
+            &fingerprint,
+            riven_type,
+            Some(weapon.disposition),
+            Some(good),
+        );
+        Some(grader.good_roll(good, &attributes, riven_type))
     }
 
     #[test]
@@ -253,6 +290,32 @@ mod tests {
         .unwrap();
         assert!(!without.matches);
         assert!(!without.alternatives[0].complete);
+    }
+
+    #[test]
+    fn desired_attributes() {
+        let buffs = [
+            "WeaponCritDamageMod",
+            "WeaponFireIterationsMod",
+            "WeaponDamageAmountMod",
+        ];
+        assert_eq!(
+            desired_tags("Onos", &buffs, Some("WeaponArmorPiercingDamageMod")),
+            [buffs.as_slice(), &["WeaponArmorPiercingDamageMod"]].concat()
+        );
+        assert_eq!(
+            desired_tags("Onos", &buffs, Some("WeaponAmmoMaxMod")),
+            buffs
+        );
+        assert_eq!(
+            desired_tags(
+                "Ferrox",
+                &["WeaponDamageAmountMod", "WeaponToxinDamageMod"],
+                None
+            ),
+            ["WeaponDamageAmountMod", "WeaponToxinDamageMod"]
+        );
+        assert!(desired_tags("Dex Nikana", &["WeaponMeleeDamageMod"], None).is_empty());
     }
 
     #[test]

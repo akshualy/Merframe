@@ -1,20 +1,20 @@
 import { percent } from "@/lib/format";
 import type { AttributeGrade } from "@/types";
 
-export function rollQuality(grade: number) {
-  if (grade >= 0.9) {
-    return { label: "S", variant: "default" as const };
+export function gradeVariant(grade: string) {
+  if (grade === "S") {
+    return "default";
   }
-  if (grade >= 0.75) {
-    return { label: "A", variant: "accent" as const };
+  if (grade === "A") {
+    return "accent";
   }
-  if (grade >= 0.6) {
-    return { label: "B", variant: "secondary" as const };
+  if (grade === "B") {
+    return "secondary";
   }
-  if (grade >= 0.4) {
-    return { label: "C", variant: "muted" as const };
+  if (grade === "C") {
+    return "muted";
   }
-  return { label: "D", variant: "warning" as const };
+  return "warning";
 }
 
 export function gradeTone(grade: string): string {

@@ -7,9 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLoaded } from "@/hooks/use-loaded";
 import { api, reportError } from "@/lib/bridge";
-import { displayNameFromPath, num, percent } from "@/lib/format";
+import { num, percent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MissingPart } from "@/types";
+
+function holds(parts: MissingPart[], part: MissingPart): boolean {
+  return parts.some((entry) => entry.unique_name === part.unique_name);
+}
 
 export function WantedParts({
   missing,
@@ -19,23 +23,17 @@ export function WantedParts({
   onSelect,
 }: {
   missing: MissingPart[];
-  wanted: string[];
-  setWanted: Dispatch<SetStateAction<string[]>>;
-  selected: string | null;
-  onSelect: (path: string) => void;
+  wanted: MissingPart[];
+  setWanted: Dispatch<SetStateAction<MissingPart[]>>;
+  selected: MissingPart | null;
+  onSelect: (part: MissingPart) => void;
 }) {
   const [query, setQuery] = useState("");
   const search = query.trim().toLowerCase();
   const candidates = missing
-    .map((part) => ({
-      path: part.unique_name,
-      name: displayNameFromPath(part.unique_name),
-    }))
-    .filter((entry) => entry.name.toLowerCase().includes(search))
+    .filter((part) => part.name.toLowerCase().includes(search))
     .slice(0, 40);
-  const masteryParts = missing
-    .filter((part) => part.mastery)
-    .map((part) => part.unique_name);
+  const masteryParts = missing.filter((part) => part.mastery);
 
   return (
     <Section
@@ -52,11 +50,11 @@ export function WantedParts({
           />
           <Button
             variant="outline"
-            disabled={masteryParts.every((path) => wanted.includes(path))}
+            disabled={masteryParts.every((part) => holds(wanted, part))}
             onClick={() =>
               setWanted((current) => [
                 ...current,
-                ...masteryParts.filter((path) => !current.includes(path)),
+                ...masteryParts.filter((part) => !holds(current, part)),
               ])
             }
           >
@@ -65,18 +63,20 @@ export function WantedParts({
         </div>
         {wanted.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {wanted.map((path) => (
-              <Badge key={path} variant="accent" asChild>
+            {wanted.map((part) => (
+              <Badge key={part.unique_name} variant="accent" asChild>
                 <button
                   type="button"
                   className="cursor-pointer"
                   onClick={() =>
                     setWanted((current) =>
-                      current.filter((entry) => entry !== path),
+                      current.filter(
+                        (entry) => entry.unique_name !== part.unique_name,
+                      ),
                     )
                   }
                 >
-                  {displayNameFromPath(path)}
+                  {part.name}
                   <X className="size-3" />
                 </button>
               </Badge>
@@ -84,24 +84,22 @@ export function WantedParts({
           </div>
         )}
         <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto">
-          {candidates.map((entry) => (
-            <li key={entry.path}>
+          {candidates.map((part) => (
+            <li key={part.unique_name}>
               <button
                 type="button"
                 onClick={() => {
-                  onSelect(entry.path);
+                  onSelect(part);
                   setWanted((current) =>
-                    current.includes(entry.path)
-                      ? current
-                      : [...current, entry.path],
+                    holds(current, part) ? current : [...current, part],
                   );
                 }}
                 className={cn(
                   "hover:bg-secondary/60 w-full cursor-pointer truncate rounded-md px-2 py-1 text-left text-sm",
-                  selected === entry.path && "bg-secondary",
+                  selected?.unique_name === part.unique_name && "bg-secondary",
                 )}
               >
-                {entry.name}
+                {part.name}
               </button>
             </li>
           ))}
@@ -111,10 +109,10 @@ export function WantedParts({
   );
 }
 
-export function PartSources({ part }: { part: string | null }) {
+export function PartSources({ part }: { part: MissingPart | null }) {
   const sources =
     useLoaded(
-      part,
+      part?.unique_name ?? null,
       async (path) => {
         const relics = await api.relicsFor(path);
         prefetchImages(relics.map((source) => source.image_name));
@@ -129,7 +127,7 @@ export function PartSources({ part }: { part: string | null }) {
   return (
     <Section
       title="Drops From"
-      description={part ? displayNameFromPath(part) : "No part selected."}
+      description={part ? part.name : "No part selected."}
     >
       <ul className="flex flex-col gap-1.5">
         {sources.length === 0 && (

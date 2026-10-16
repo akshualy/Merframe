@@ -26,6 +26,7 @@
       },
       "archon_shards": 2,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/ExcaliburChassis",
@@ -65,6 +66,7 @@
       },
       "archon_shards": 0,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/NovaChassis",
@@ -104,6 +106,7 @@
       "helminth": null,
       "archon_shards": 0,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/NovaPrimeChassis",
@@ -143,6 +146,7 @@
       "helminth": null,
       "archon_shards": 0,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/MesaPrimeChassis",
@@ -179,6 +183,7 @@
       "helminth": null,
       "archon_shards": null,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/VoidrigCasing",
@@ -215,6 +220,7 @@
       "helminth": null,
       "archon_shards": null,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/Hexenon",
@@ -254,6 +260,7 @@
       "helminth": null,
       "archon_shards": null,
       "favourite": false,
+      "any_favourite": true,
       "components": [
         {
           "unique_name": "/Lotus/Test/BratonPrimeBarrel",
@@ -290,6 +297,7 @@
       "helminth": null,
       "archon_shards": null,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/KamaBlueprint",
@@ -326,6 +334,7 @@
       "helminth": null,
       "archon_shards": null,
       "favourite": false,
+      "any_favourite": false,
       "components": [
         {
           "unique_name": "/Lotus/Test/Cryotic",

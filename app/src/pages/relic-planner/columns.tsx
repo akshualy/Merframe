@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { num, percent, plat } from "@/lib/format";
-import { isWanted } from "@/lib/relic-filters";
 import { REFINEMENTS, refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import type { RefinementValue, RelicPlan, RewardBreakdown } from "@/types";
@@ -19,7 +18,6 @@ export interface RewardView {
   chance: number;
   squadChance: number;
   share: number;
-  wanted: boolean;
 }
 
 export interface PlannerRow {
@@ -30,25 +28,18 @@ export interface PlannerRow {
   perTraceRefinement: string | null;
   ducatsPerTrace: number | null;
   ducatTraceRefinement: string | null;
-  chanceOfWanted: number;
 }
 
 export function rewardViews(
   plan: RelicPlan,
   value: RefinementValue,
-  wantedKeys: Set<string>,
-  squadSize: number,
 ): RewardView[] {
-  return plan.rewards.map((reward, index) => {
-    const chance = value.chances[index] ?? 0;
-    return {
-      reward,
-      chance,
-      squadChance: (1 - (1 - chance / 100) ** squadSize) * 100,
-      share: value.expected_plat_shares[index] ?? 0,
-      wanted: isWanted(reward, wantedKeys),
-    };
-  });
+  return plan.rewards.map((reward, index) => ({
+    reward,
+    chance: value.chances[index] ?? 0,
+    squadChance: value.squad_chances[index] ?? 0,
+    share: value.expected_plat_shares[index] ?? 0,
+  }));
 }
 
 export function searchValue(row: PlannerRow): string {
@@ -70,7 +61,7 @@ function HeaderHint({ label, hint }: { label: string; hint: string }) {
 
 export function plannerColumns(
   squadSize: number,
-  wantedKeys: Set<string>,
+  showWanted: boolean,
 ): ColumnDef<PlannerRow>[] {
   const list: ColumnDef<PlannerRow>[] = [
     {
@@ -254,7 +245,7 @@ export function plannerColumns(
       cell: ({ row }) => num(row.original.plan.ownership.missing_items),
     },
   ];
-  if (wantedKeys.size > 0) {
+  if (showWanted) {
     list.push({
       id: "wanted_chance",
       header: () => (
@@ -264,10 +255,12 @@ export function plannerColumns(
         />
       ),
       meta: { numeric: true, label: "Wanted chance" },
-      accessorFn: (row) => row.chanceOfWanted,
+      accessorFn: (row) => row.value.wanted_chance,
       cell: ({ row }) => (
-        <span className={row.original.chanceOfWanted > 0 ? "text-accent" : ""}>
-          {percent(row.original.chanceOfWanted / 100)}
+        <span
+          className={row.original.value.wanted_chance > 0 ? "text-accent" : ""}
+        >
+          {percent(row.original.value.wanted_chance / 100)}
         </span>
       ),
     });

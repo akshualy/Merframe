@@ -1,8 +1,11 @@
+use std::collections::HashSet;
+
 use serde::Serialize;
 use wf_data::{Component, Item, Rarity, RelicReward};
 
 use crate::catalog::Catalog;
 use crate::favourites::Favourites;
+use crate::identity::part_identity;
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -27,9 +30,14 @@ pub struct RewardBreakdown {
     pub ownership: RewardOwnership,
     pub forma: bool,
     pub favourite: bool,
+    pub wanted: bool,
 }
 
-pub(super) fn reward_breakdown(view: &View, reward: &RelicReward) -> RewardBreakdown {
+pub(super) fn reward_breakdown(
+    view: &View,
+    reward: &RelicReward,
+    wanted: &HashSet<&str>,
+) -> RewardBreakdown {
     let View {
         account,
         catalog,
@@ -76,6 +84,7 @@ pub(super) fn reward_breakdown(view: &View, reward: &RelicReward) -> RewardBreak
         ducats: component.and_then(|(_, component)| component.ducats),
         ownership,
         favourite: favourite_reward(catalog, favourites, unique_name),
+        wanted: wanted.contains(part_identity(unique_name)),
     }
 }
 

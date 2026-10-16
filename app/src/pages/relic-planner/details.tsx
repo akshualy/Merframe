@@ -27,7 +27,8 @@ function rarityVariant(
 }
 
 function RewardRow({ view }: { view: RewardView }) {
-  const { reward, chance, squadChance, share, wanted } = view;
+  const { reward, chance, squadChance, share } = view;
+  const { wanted } = reward;
   return (
     <li className="flex items-center gap-2 border-t py-1.5 text-sm first:border-t-0">
       <ItemImage imageName={reward.image_name} size={24} alt={reward.name} />

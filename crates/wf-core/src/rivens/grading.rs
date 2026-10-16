@@ -4,9 +4,10 @@ use wf_data::{
     roll_multiplier, roll_share, trait_multipliers,
 };
 use wf_inventory::{RivenFingerprint, RivenStat};
-use wf_market::Polarity;
+use wf_market::{GoodRoll, Polarity};
 
 use super::Grader;
+use super::good_roll::desires;
 use crate::catalog::Catalog;
 
 const GRADE_BANDS: [(f64, &str); 10] = [
@@ -21,6 +22,8 @@ const GRADE_BANDS: [(f64, &str); 10] = [
     (0.875, "A"),
     (0.975, "A+"),
 ];
+
+const ROLL_BANDS: [(f64, &str); 4] = [(0.9, "S"), (0.75, "A"), (0.6, "B"), (0.4, "C")];
 
 const COMPAT_FIXUPS: [(&str, &str); 2] = [
     (
@@ -53,6 +56,7 @@ pub struct AttributeGrade {
     pub max: Option<f64>,
     pub curse: bool,
     pub spliced: bool,
+    pub desired: bool,
 }
 
 pub(super) fn compat_path(compat: &str) -> &str {
@@ -68,11 +72,13 @@ impl Grader<'_> {
         fingerprint: &RivenFingerprint,
         riven_type: Option<&RivenType>,
         disposition: Option<f64>,
+        good: Option<&GoodRoll>,
     ) -> Vec<AttributeGrade> {
         let roll = Roll {
             grader: self,
             riven_type,
             disposition,
+            good,
             multipliers: trait_multipliers(fingerprint.buffs.len(), fingerprint.curses.len()),
         };
         fingerprint
@@ -89,6 +95,7 @@ struct Roll<'a> {
     grader: &'a Grader<'a>,
     riven_type: Option<&'a RivenType>,
     disposition: Option<f64>,
+    good: Option<&'a GoodRoll>,
     multipliers: Option<TraitMultipliers>,
 }
 
@@ -98,6 +105,7 @@ impl Roll<'_> {
             grader,
             riven_type,
             disposition,
+            good,
             multipliers,
         } = *self;
         let modifier: Option<&StatDefinition> =
@@ -142,8 +150,16 @@ impl Roll<'_> {
             tag: stat.tag.clone(),
             curse,
             spliced: modifier.is_some_and(|modifier| modifier.spliced),
+            desired: good.is_some_and(|good| desires(good, &stat.tag, curse)),
         }
     }
+}
+
+pub(super) fn roll_grade(mean: f64) -> &'static str {
+    ROLL_BANDS
+        .iter()
+        .find(|(floor, _)| mean >= *floor)
+        .map_or("D", |(_, grade)| grade)
 }
 
 fn letter(percentile: f64) -> &'static str {
@@ -285,6 +301,7 @@ mod tests {
             grader: &grader,
             riven_type: Some(riven_type),
             disposition: Some(1.0),
+            good: None,
             multipliers: trait_multipliers(2, 1),
         };
         roll.grade(
@@ -436,6 +453,16 @@ mod tests {
             assert!((0.0..=1.0).contains(&row.grade), "{}", row.grade);
         }
         assert!(tab.unveiled[0].grade >= tab.unveiled[tab.unveiled.len() - 1].grade);
+    }
+
+    #[test]
+    fn roll_grade_bands() {
+        assert_eq!(roll_grade(0.95), "S");
+        assert_eq!(roll_grade(0.9), "S");
+        assert_eq!(roll_grade(0.75), "A");
+        assert_eq!(roll_grade(0.6), "B");
+        assert_eq!(roll_grade(0.4), "C");
+        assert_eq!(roll_grade(0.39), "D");
     }
 
     #[test]

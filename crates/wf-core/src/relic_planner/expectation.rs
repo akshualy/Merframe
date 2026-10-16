@@ -14,6 +14,7 @@ pub struct RefinementValue {
     pub plat_per_trace: Option<f64>,
     pub ducats_per_trace: Option<f64>,
     pub chances: Vec<f64>,
+    pub squad_chances: Vec<f64>,
     pub expected_plat_shares: Vec<f64>,
 }
 
@@ -112,7 +113,6 @@ fn trace_cost(refinement: Refinement) -> u32 {
 pub(super) fn refinement_values(
     relic: &Relic,
     rewards: &[RewardBreakdown],
-    wanted_rewards: &[bool],
     squad_size: u32,
 ) -> [RefinementValue; 4] {
     let mut values = Refinement::ALL.map(|refinement| {
@@ -135,11 +135,15 @@ pub(super) fn refinement_values(
         let expected_ducats: f64 = best_of_squad_shares(&ducat_outcomes, squad_size)
             .iter()
             .sum();
-        let missed: f64 = wanted_rewards
+        let squad_chances: Vec<f64> = chances
             .iter()
-            .zip(&chances)
-            .filter(|(wanted, _)| **wanted)
-            .map(|(_, chance)| (1.0 - chance / 100.0).powi(squad_size as i32))
+            .map(|chance| (1.0 - (1.0 - chance / 100.0).powi(squad_size as i32)) * 100.0)
+            .collect();
+        let missed: f64 = rewards
+            .iter()
+            .zip(&squad_chances)
+            .filter(|(reward, _)| reward.wanted)
+            .map(|(_, chance)| 1.0 - chance / 100.0)
             .product();
         RefinementValue {
             refinement,
@@ -150,6 +154,7 @@ pub(super) fn refinement_values(
             plat_per_trace: None,
             ducats_per_trace: None,
             chances,
+            squad_chances,
             expected_plat_shares,
         }
     });

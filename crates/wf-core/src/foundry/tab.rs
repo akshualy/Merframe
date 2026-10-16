@@ -96,6 +96,7 @@ pub(crate) fn items(
                     .iter()
                     .any(|component| pending.contains(component.unique_name.as_str()));
                 let owned = account.built(&item.unique_name) || pending_here;
+                let favourite = favourites.contains(&item.unique_name);
                 let kind = kind_of(item);
                 FoundryItem {
                     unique_name: item.unique_name.clone(),
@@ -138,7 +139,9 @@ pub(crate) fn items(
                             .copied()
                             .unwrap_or_default()
                     }),
-                    favourite: favourites.contains(&item.unique_name),
+                    favourite,
+                    any_favourite: favourite
+                        || components.iter().any(|component| component.favourite),
                     components,
                 }
             })
@@ -357,6 +360,7 @@ mod tests {
 
         let braton = braton_of(&foundry_rows(&fixture));
         assert!(!braton.favourite);
+        assert!(!braton.any_favourite);
         assert!(
             braton
                 .components
@@ -365,12 +369,23 @@ mod tests {
         );
 
         let barrel = braton.components[0].unique_name.clone();
+        fixture.favourites = [barrel.clone()].into_iter().collect();
+        let child_starred = braton_of(&foundry_rows(&fixture));
+        assert!(!child_starred.favourite);
+        assert!(child_starred.any_favourite);
+
+        fixture.favourites = [braton.unique_name.clone()].into_iter().collect();
+        let own_starred = braton_of(&foundry_rows(&fixture));
+        assert!(own_starred.favourite);
+        assert!(own_starred.any_favourite);
+
         fixture.favourites = [braton.unique_name.clone(), barrel.clone()]
             .into_iter()
             .collect();
         let rows = foundry_rows(&fixture);
         let braton = braton_of(&rows);
         assert!(braton.favourite);
+        assert!(braton.any_favourite);
         assert_eq!(
             braton
                 .components

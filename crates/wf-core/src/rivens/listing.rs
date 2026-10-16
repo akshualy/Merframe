@@ -136,6 +136,7 @@ mod tests {
             rerolls: 0,
             polarity: None,
             grade: 0.0,
+            grade_letter: "D",
             attributes: Vec::new(),
             good_roll: None,
             unlisted_stat: None,
@@ -321,7 +322,7 @@ mod tests {
             Some("WeaponReloadSpeedMod"),
         ))
         .unwrap();
-        let attributes = grader.graded(&spliced, riven_type, cernos.disposition);
+        let attributes = grader.graded(&spliced, riven_type, cernos.disposition, None);
         let row = RivenRow {
             unlisted_stat: unlisted_stat(&attributes),
             attributes,

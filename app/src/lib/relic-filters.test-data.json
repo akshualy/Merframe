@@ -30,7 +30,8 @@
             "parent_owned": true
           },
           "forma": false,
-          "favourite": true
+          "favourite": true,
+          "wanted": true
         }
       ],
       "values": [
@@ -43,6 +44,7 @@
           "plat_per_trace": null,
           "ducats_per_trace": null,
           "chances": [2.0],
+          "squad_chances": [2.0],
           "expected_plat_shares": [1.0]
         },
         {
@@ -54,6 +56,7 @@
           "plat_per_trace": -0.1,
           "ducats_per_trace": 0.2,
           "chances": [10.0],
+          "squad_chances": [10.0],
           "expected_plat_shares": [2.0]
         }
       ],
@@ -67,6 +70,7 @@
       "intact_to_radiant": { "plat": -5.0, "ducats": 10.0 },
       "favourite": true,
       "favourite_rewards": 0,
+      "any_favourite": true,
       "drops": [],
       "drop_locations": 0
     },
@@ -95,6 +99,7 @@
           "plat_per_trace": null,
           "ducats_per_trace": null,
           "chances": [],
+          "squad_chances": [],
           "expected_plat_shares": []
         }
       ],
@@ -108,6 +113,7 @@
       "intact_to_radiant": { "plat": 0.0, "ducats": 0.0 },
       "favourite": false,
       "favourite_rewards": 0,
+      "any_favourite": false,
       "drops": [],
       "drop_locations": 0
     },
@@ -136,6 +142,7 @@
           "plat_per_trace": null,
           "ducats_per_trace": null,
           "chances": [],
+          "squad_chances": [],
           "expected_plat_shares": []
         }
       ],
@@ -149,6 +156,7 @@
       "intact_to_radiant": { "plat": 0.0, "ducats": 0.0 },
       "favourite": false,
       "favourite_rewards": 0,
+      "any_favourite": false,
       "drops": [],
       "drop_locations": 0
     }

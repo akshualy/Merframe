@@ -71,10 +71,10 @@ struct Holdings<'a> {
 }
 
 impl<'a> Holdings<'a> {
-    fn new(account: &'a Account, catalog: &Catalog) -> Self {
+    fn new(account: &'a Account, catalog: &Catalog, items: &ItemTable) -> Self {
         Self {
             account,
-            missing: missing_parts(account, catalog)
+            missing: missing_parts(account, catalog, items)
                 .iter()
                 .map(|part| part_identity(&part.unique_name).to_owned())
                 .collect(),
@@ -129,7 +129,7 @@ pub(crate) fn recommend(
     favourites: &Favourites,
     rewards: &[ItemSummary],
 ) -> RewardScreen {
-    let holdings = account.map(|account| Holdings::new(account, catalog));
+    let holdings = account.map(|account| Holdings::new(account, catalog, items));
     let mut ranked: Vec<RankedReward> = rewards
         .iter()
         .map(|reward| {
