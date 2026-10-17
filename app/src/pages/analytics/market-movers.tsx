@@ -13,9 +13,9 @@ import { OptionTabs } from "@/components/option-tabs";
 import { ErrorNote, Section, TableSkeleton } from "@/components/page";
 import { PieChart } from "@/components/pie-chart";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { SwitchField } from "@/components/ui/switch";
 import { useAsyncData } from "@/hooks/use-async-data";
+import { useFilters } from "@/hooks/use-filters";
 import { api } from "@/lib/bridge";
 import { changeTone } from "@/lib/chart";
 import { num, plat } from "@/lib/format";
@@ -68,6 +68,12 @@ function valueChange(mover: MarketMover): number | null {
 }
 
 const PAGE_SIZE = 10;
+
+interface MoverFilters {
+  category: string | null;
+  price: string | null;
+  volume: string | null;
+}
 
 const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS).map(
   ([value, label]) => ({ value, label }),
@@ -168,9 +174,12 @@ const COLUMNS: ColumnDef<MarketMover>[] = [
 export function MarketMovers() {
   const [range, setRange] = useState<MarketWindow>("7");
   const [measure, setMeasure] = useState<Measure>("value");
-  const [category, setCategory] = useState<string | null>(null);
-  const [price, setPrice] = useState<string | null>(null);
-  const [volume, setVolume] = useState<string | null>(null);
+  const filters = useFilters<MoverFilters>({
+    category: null,
+    price: null,
+    volume: null,
+  });
+  const { category, price, volume } = filters.values;
   const [compare, setCompare] = useState(false);
   const comparable = range !== "90";
   const compared = compare && comparable;
@@ -244,15 +253,13 @@ export function MarketMovers() {
       }
       action={
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="compare">Compare to previous</Label>
-            <Switch
-              id="compare"
-              checked={compared}
-              disabled={!comparable}
-              onCheckedChange={setCompare}
-            />
-          </div>
+          <SwitchField
+            id="compare"
+            label="Compare to previous"
+            checked={compared}
+            disabled={!comparable}
+            onChange={setCompare}
+          />
           <OptionTabs value={range} options={WINDOWS} onChange={setRange} />
         </div>
       }
@@ -270,34 +277,24 @@ export function MarketMovers() {
           data={rows}
           resetKey={JSON.stringify([range, measure, category, price, volume])}
           filters={
-            <FilterGrid
-              activeFilters={
-                [category, price, volume].filter((value) => value !== null)
-                  .length
-              }
-              onClear={() => {
-                setCategory(null);
-                setPrice(null);
-                setVolume(null);
-              }}
-            >
+            <FilterGrid activeFilters={filters.active} onClear={filters.clear}>
               <FilterSelect
                 label="Category"
                 value={category}
                 options={CATEGORY_OPTIONS}
-                onChange={setCategory}
+                onChange={(value) => filters.set("category", value)}
               />
               <FilterSelect
                 label="Unit price"
                 value={price}
                 options={PRICE_OPTIONS}
-                onChange={setPrice}
+                onChange={(value) => filters.set("price", value)}
               />
               <FilterSelect
                 label="Volume"
                 value={volume}
                 options={VOLUME_OPTIONS}
-                onChange={setVolume}
+                onChange={(value) => filters.set("volume", value)}
               />
             </FilterGrid>
           }

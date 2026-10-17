@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback } from "react";
+import { Amount } from "@/components/currency";
 import { DataTable } from "@/components/data-table";
-import { GameIcon } from "@/components/game-icon";
 import {
   EmptyPanel,
   ErrorNote,
@@ -13,7 +13,7 @@ import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
 import { TradesSection } from "@/components/trades-section";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { api } from "@/lib/bridge";
-import { changeTone } from "@/lib/chart";
+import { changeTone, signed } from "@/lib/chart";
 import { num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -51,8 +51,7 @@ const CATEGORY_COLUMNS: ColumnDef<CategoryStatement>[] = [
       const profit = getValue<number>();
       return (
         <span className={cn("font-medium", changeTone(profit))}>
-          {profit > 0 ? "+" : ""}
-          {num(profit)}
+          {signed(profit, num)}
         </span>
       );
     },
@@ -69,15 +68,6 @@ const TRADED_COLUMNS: ColumnDef<TradedTotal>[] = [
   },
   totalValueColumn(),
 ];
-
-function Platinum({ value, tone }: { value: number; tone?: string }) {
-  return (
-    <span className={cn("flex items-center gap-1.5", tone)}>
-      {num(value)}
-      <GameIcon name="platinum" size={16} alt="Platinum" />
-    </span>
-  );
-}
 
 export function TradeHistory() {
   const timeframe = usePreferencesStore((state) => state.timeframe);
@@ -101,6 +91,15 @@ export function TradeHistory() {
     (sum, entry) => sum + entry.expenses,
     0,
   );
+  const totals = [
+    { label: "Total revenue", value: revenue },
+    { label: "Total expenses", value: expenses },
+    {
+      label: "Profit",
+      value: revenue - expenses,
+      className: changeTone(revenue - expenses),
+    },
+  ];
 
   return (
     <>
@@ -112,17 +111,17 @@ export function TradeHistory() {
       {error && <ErrorNote message={error} />}
 
       <div className="grid gap-4 @3xl:grid-cols-3">
-        <Stat label="Total revenue" value={<Platinum value={revenue} />} />
-        <Stat label="Total expenses" value={<Platinum value={expenses} />} />
-        <Stat
-          label="Profit"
-          value={
-            <Platinum
-              value={revenue - expenses}
-              tone={changeTone(revenue - expenses)}
-            />
-          }
-        />
+        {totals.map((total) => (
+          <Stat
+            key={total.label}
+            label={total.label}
+            value={
+              <Amount currency="platinum" plain className={total.className}>
+                {num(total.value)}
+              </Amount>
+            }
+          />
+        ))}
       </div>
 
       {data.categories.length === 0 ? (

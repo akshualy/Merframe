@@ -9,10 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+import { SwitchField } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { api, reportError } from "@/lib/bridge";
@@ -86,8 +86,7 @@ function PriceField({
   onBlur?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{label}</Label>
+    <Field id={id} label={label}>
       <Input
         id={id}
         value={value}
@@ -95,7 +94,7 @@ function PriceField({
         onBlur={onBlur}
         inputMode="numeric"
       />
-    </div>
+    </Field>
   );
 }
 
@@ -148,14 +147,12 @@ export function ListingDialog({
                 <TabsTrigger value="auction">Auction</TabsTrigger>
               </TabsList>
             </Tabs>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="visible">Visible</Label>
-              <Switch
-                id="visible"
-                checked={form.visible}
-                onCheckedChange={(visible) => setForm({ ...form, visible })}
-              />
-            </div>
+            <SwitchField
+              id="visible"
+              label="Visible"
+              checked={form.visible}
+              onChange={(visible) => setForm({ ...form, visible })}
+            />
           </div>
 
           {form.direct ? (
@@ -195,8 +192,7 @@ export function ListingDialog({
           )}
 
           {rankEditable && (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="rank">Mod rank {form.rank}</Label>
+            <Field id="rank" label={`Mod rank ${form.rank}`}>
               <Slider
                 id="rank"
                 min={0}
@@ -207,18 +203,17 @@ export function ListingDialog({
                   setForm({ ...form, rank })
                 }
               />
-            </div>
+            </Field>
           )}
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="note">Note</Label>
+          <Field id="note" label="Note">
             <Textarea
               id="note"
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
               placeholder="Optional note shown on the auction"
             />
-          </div>
+          </Field>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>

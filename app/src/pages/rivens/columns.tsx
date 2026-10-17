@@ -8,7 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { displayNameFromPath, num, percent } from "@/lib/format";
-import { attributeText, gradeTone, gradeVariant } from "@/lib/rivens";
+import {
+  attributeText,
+  disposition,
+  gradeTone,
+  gradeVariant,
+} from "@/lib/rivens";
 import { cn } from "@/lib/utils";
 import type { RivenRow } from "@/types";
 
@@ -70,10 +75,7 @@ export function rivenColumns(
       accessorKey: "disposition",
       header: () => <span title="Disposition">Dispo</span>,
       meta: { numeric: true, label: "Disposition" },
-      cell: ({ row }) =>
-        row.original.disposition === null
-          ? "-"
-          : row.original.disposition.toFixed(2),
+      cell: ({ row }) => disposition(row.original.disposition),
     },
     {
       accessorKey: "rank_required",

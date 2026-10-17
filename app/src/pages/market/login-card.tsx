@@ -2,8 +2,8 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ErrorNote, Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { api, errorMessage } from "@/lib/bridge";
 import { notify } from "@/lib/toast";
 
@@ -36,8 +36,7 @@ export function LoginCard({ onDone }: { onDone: () => void }) {
       className="max-w-xl"
     >
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
+        <Field id="email" label="Email">
           <Input
             id="email"
             type="email"
@@ -45,9 +44,8 @@ export function LoginCard({ onDone }: { onDone: () => void }) {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="username"
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
+        </Field>
+        <Field id="password" label="Password">
           <Input
             id="password"
             type="password"
@@ -55,7 +53,7 @@ export function LoginCard({ onDone }: { onDone: () => void }) {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
           />
-        </div>
+        </Field>
         {failure && <ErrorNote message={failure} />}
         <Button onClick={handleSubmit} disabled={busy || !email || !password}>
           Sign In

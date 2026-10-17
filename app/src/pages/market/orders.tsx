@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Ellipsis, RefreshCw, TriangleAlert, Wrench } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { FilterGrid } from "@/components/filter-grid";
@@ -16,14 +16,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useFilters } from "@/hooks/use-filters";
 import { itemAt } from "@/lib/arrays";
 import { api } from "@/lib/bridge";
+import type { FilterOption, YesNo } from "@/lib/filters";
 import { dateTime, num } from "@/lib/format";
 import type {
   ItemSummary,
@@ -32,6 +31,7 @@ import type {
   OrderRow,
   OrderType,
 } from "@/types";
+import { ListingToolbar, RowActions, VisibleBadge } from "./listing-controls";
 
 const CATEGORIES: { value: MarketCategory; label: string }[] = [
   { value: "parts", label: "Parts" },
@@ -47,10 +47,16 @@ const SIDES: { value: OrderType; label: string }[] = [
   { value: "buy", label: "Buy" },
 ];
 
-const MISSING = [
+const MISSING: FilterOption<YesNo>[] = [
   { value: "yes", label: "Missing items" },
   { value: "no", label: "Fully stocked" },
 ];
+
+interface OrderFilters {
+  category: MarketCategory | null;
+  side: OrderType | null;
+  missing: YesNo | null;
+}
 
 interface ListedOrder {
   order: OrderRow;
@@ -79,9 +85,12 @@ export function OrdersTable({
 }) {
   const { items, rows } = orders;
   const [confirming, setConfirming] = useState<"fix" | "remove" | null>(null);
-  const [category, setCategory] = useState<string | null>(null);
-  const [side, setSide] = useState<string | null>(null);
-  const [missing, setMissing] = useState<string | null>(null);
+  const filters = useFilters<OrderFilters>({
+    category: null,
+    side: null,
+    missing: null,
+  });
+  const { category, side, missing } = filters.values;
 
   const entries = useMemo(
     () => rows.map((order) => ({ order, item: itemAt(items, order.item) })),
@@ -210,12 +219,9 @@ export function OrdersTable({
         id: "visible",
         accessorFn: ({ order }) => order.visible,
         header: "Visible",
-        cell: ({ row }) =>
-          row.original.order.visible ? (
-            <Badge variant="accent">visible</Badge>
-          ) : (
-            <Badge variant="muted">hidden</Badge>
-          ),
+        cell: ({ row }) => (
+          <VisibleBadge visible={row.original.order.visible} />
+        ),
       },
       {
         id: "updated_at",
@@ -232,98 +238,80 @@ export function OrdersTable({
           const { order, item } = row.original;
           const slug = item.market_slug;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  aria-label="Order actions"
+            <RowActions label="Order actions">
+              {slug && (
+                <DropdownMenuItem
+                  onSelect={() => onCompare(slug, order.order_type, order.rank)}
                 >
-                  <Ellipsis className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {slug && (
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      onCompare(slug, order.order_type, order.rank)
-                    }
-                  >
-                    Compare on the market
-                  </DropdownMenuItem>
-                )}
-                {order.show_warning && (
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      runMarketAction(
-                        api.marketFixOrders(order.id),
-                        "Listing matched to the inventory",
-                      )
-                    }
-                  >
-                    Fix the missing items
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
+                  Compare on the market
+                </DropdownMenuItem>
+              )}
+              {order.show_warning && (
                 <DropdownMenuItem
                   onSelect={() =>
                     runMarketAction(
-                      api.marketUpdateOrder(order.id, {
-                        platinum: Math.max(1, order.platinum - 1),
-                      }),
-                      "Price lowered by 1",
+                      api.marketFixOrders(order.id),
+                      "Listing matched to the inventory",
                     )
                   }
                 >
-                  Lower price by 1
+                  Fix the missing items
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() =>
-                    runMarketAction(
-                      api.marketUpdateOrder(order.id, {
-                        visible: !order.visible,
-                      }),
-                      order.visible ? "Order hidden" : "Order shown",
-                    )
-                  }
-                >
-                  {order.visible ? "Hide order" : "Show order"}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() =>
-                    runMarketAction(
-                      api.marketCloseOrder(order.id, 1),
-                      "Order closed for one unit",
-                    )
-                  }
-                >
-                  Mark one as sold
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() =>
-                    runMarketAction(
-                      api.marketDeleteOrder(order.id),
-                      "Order deleted",
-                    )
-                  }
-                >
-                  Delete order
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={() =>
+                  runMarketAction(
+                    api.marketUpdateOrder(order.id, {
+                      platinum: Math.max(1, order.platinum - 1),
+                    }),
+                    "Price lowered by 1",
+                  )
+                }
+              >
+                Lower price by 1
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() =>
+                  runMarketAction(
+                    api.marketUpdateOrder(order.id, {
+                      visible: !order.visible,
+                    }),
+                    order.visible ? "Order hidden" : "Order shown",
+                  )
+                }
+              >
+                {order.visible ? "Hide order" : "Show order"}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() =>
+                  runMarketAction(
+                    api.marketCloseOrder(order.id, 1),
+                    "Order closed for one unit",
+                  )
+                }
+              >
+                Mark one as sold
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() =>
+                  runMarketAction(
+                    api.marketDeleteOrder(order.id),
+                    "Order deleted",
+                  )
+                }
+              >
+                Delete order
+              </DropdownMenuItem>
+            </RowActions>
           );
         },
       },
     ],
     [onCompare, runMarketAction],
   );
-
-  const active = [category, side, missing].filter(
-    (value) => value !== null,
-  ).length;
 
   const missingCount = rows.filter((row) => row.show_warning).length;
 
@@ -385,75 +373,47 @@ export function OrdersTable({
         rowKey={({ order }) => order.id}
         emptyMessage="No order matches these filters."
         toolbar={
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Wrench className="size-4" />
-                  Bulk Actions
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  disabled={rows.length === 0}
-                  onSelect={() => onSetVisibility(true)}
-                >
-                  Show all orders
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={rows.length === 0}
-                  onSelect={() => onSetVisibility(false)}
-                >
-                  Hide all orders
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={missingCount === 0}
-                  onSelect={() => setConfirming("fix")}
-                >
-                  Fix all missing items ({num(missingCount)})
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  disabled={rows.length === 0}
-                  variant="destructive"
-                  onSelect={() => setConfirming("remove")}
-                >
-                  Remove all orders
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline" size="sm" onClick={onRefresh}>
-              <RefreshCw className="size-4" />
-              Refresh
-            </Button>
-          </>
+          <ListingToolbar
+            noun="orders"
+            empty={rows.length === 0}
+            onSetVisibility={onSetVisibility}
+            onRefresh={onRefresh}
+          >
+            <DropdownMenuItem
+              disabled={missingCount === 0}
+              onSelect={() => setConfirming("fix")}
+            >
+              Fix all missing items ({num(missingCount)})
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              disabled={rows.length === 0}
+              variant="destructive"
+              onSelect={() => setConfirming("remove")}
+            >
+              Remove all orders
+            </DropdownMenuItem>
+          </ListingToolbar>
         }
         filters={
-          <FilterGrid
-            activeFilters={active}
-            onClear={() => {
-              setCategory(null);
-              setSide(null);
-              setMissing(null);
-            }}
-          >
+          <FilterGrid activeFilters={filters.active} onClear={filters.clear}>
             <FilterSelect
               label="Group"
               value={category}
               options={CATEGORIES}
-              onChange={setCategory}
+              onChange={(value) => filters.set("category", value)}
             />
             <FilterSelect
               label="Side"
               value={side}
               options={SIDES}
-              onChange={setSide}
+              onChange={(value) => filters.set("side", value)}
             />
             <FilterSelect
               label="Stock"
               value={missing}
               options={MISSING}
-              onChange={setMissing}
+              onChange={(value) => filters.set("missing", value)}
             />
           </FilterGrid>
         }

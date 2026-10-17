@@ -6,19 +6,24 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
-import { GameIcon } from "@/components/game-icon";
-import { ErrorNote, Page, Quoted, Section, Stat } from "@/components/page";
+import { Amount } from "@/components/currency";
+import { Page, Section, Stat } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useListen } from "@/hooks/use-listen";
-import { api, errorMessage, logError, reportError } from "@/lib/bridge";
+import { useTabParam } from "@/hooks/use-tab-param";
+import {
+  api,
+  errorMessage,
+  logError,
+  openExternal,
+  reportError,
+} from "@/lib/bridge";
 import { ago, MARKET_CHATS_URL, num } from "@/lib/format";
-import { usePageQuote } from "@/lib/quotes";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
@@ -34,7 +39,6 @@ type MarketTab = "orders" | "auctions";
 const ACTIVE_POLL_MS = 60_000;
 
 export function MarketPage() {
-  const quote = usePageQuote("market");
   const status = useAppStore((state) => state.status);
   const setStatus = useAppStore((state) => state.setStatus);
   const { orders, auctions, refreshedAt, setListings, clearListings } =
@@ -49,8 +53,7 @@ export function MarketPage() {
     );
   const openListing = useMarketPanelStore((state) => state.openListing);
   const showPanel = useMarketPanelStore((state) => state.show);
-  const [params, setParams] = useSearchParams();
-  const tab = (params.get("tab") as MarketTab | null) ?? "orders";
+  const [tab, setTab] = useTabParam<MarketTab>("orders");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sessionRejected, setSessionRejected] = useState(false);
@@ -151,14 +154,6 @@ export function MarketPage() {
     [runMarketAction],
   );
 
-  const handleOpenMessages = useCallback(async () => {
-    try {
-      await api.openUrl(MARKET_CHATS_URL);
-    } catch (error) {
-      reportError(error);
-    }
-  }, []);
-
   const handleSignOut = useCallback(async () => {
     try {
       await api.marketLogout();
@@ -186,17 +181,17 @@ export function MarketPage() {
     return (
       <Page
         title="warframe.market"
-        description={<Quoted quote={quote} />}
+        quote="market"
         actions={
           <Button variant="outline" onClick={showPanel}>
             <Store className="size-4" />
             Buy / Sell
           </Button>
         }
+        error={
+          sessionRejected ? "warframe.market rejected the stored session" : null
+        }
       >
-        {sessionRejected && (
-          <ErrorNote message="warframe.market rejected the stored session" />
-        )}
         <LoginCard onDone={handleSignedIn} />
       </Page>
     );
@@ -217,7 +212,10 @@ export function MarketPage() {
             <Store className="size-4" />
             Buy / Sell
           </Button>
-          <Button variant="outline" onClick={handleOpenMessages}>
+          <Button
+            variant="outline"
+            onClick={() => openExternal(MARKET_CHATS_URL)}
+          >
             <Mail className="size-4" />
             Messages
             {unread > 0 && <Badge variant="accent">{num(unread)}</Badge>}
@@ -228,9 +226,8 @@ export function MarketPage() {
           </Button>
         </>
       }
+      error={error}
     >
-      {error && <ErrorNote message={error} />}
-
       {tradesLeft !== null && (
         <div className="grid gap-3 @sm:grid-cols-2 @5xl:grid-cols-4">
           <Stat
@@ -255,10 +252,9 @@ export function MarketPage() {
             <Figure
               label="Listed value"
               value={
-                <span className="flex items-center gap-1">
+                <Amount currency="platinum" plain>
                   {num(totals.plat)}
-                  <GameIcon name="platinum" size={16} alt="Platinum" />
-                </span>
+                </Amount>
               }
             />
             <Figure
@@ -278,12 +274,7 @@ export function MarketPage() {
           <Skeleton className="h-48 w-full" />
         ) : (
           <div className={cn("transition-opacity", loading && "opacity-60")}>
-            <Tabs
-              value={tab}
-              onValueChange={(next) =>
-                setParams({ tab: next }, { replace: true })
-              }
-            >
+            <Tabs value={tab} onValueChange={setTab}>
               <TabsList className="mb-4">
                 <TabsTrigger value="orders">
                   Orders ({num(orders.rows.length)})

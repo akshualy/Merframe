@@ -1,23 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
 import { DataTable } from "@/components/data-table";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect } from "@/components/filter-select";
 import { GoodRollAttribution } from "@/components/good-roll";
 import { prefetchImages } from "@/components/item-image";
-import {
-  EmptyPanel,
-  ErrorNote,
-  Page,
-  Quoted,
-  Section,
-  TableSkeleton,
-} from "@/components/page";
+import { EmptyPanel, Page, Section } from "@/components/page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
+import { useTabParam } from "@/hooks/use-tab-param";
 import { api } from "@/lib/bridge";
+import { plainOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
-import { usePageQuote } from "@/lib/quotes";
+import { attributeLabel } from "@/lib/rivens";
 import type { RivenRow } from "@/types";
 import { rivenColumns } from "./columns";
 import { RivenDetails } from "./details";
@@ -25,15 +19,13 @@ import { RivenListingDialog } from "./listing-dialog";
 import { VeiledChallenge } from "./veiled";
 
 export function RivensPage() {
-  const quote = usePageQuote("rivens");
   const { data, error, loading } = useAsyncData("rivens_tab", api.rivensTab, [
     "inventoryUpdated",
     "pricesUpdated",
     "rivenDataUpdated",
     "marketUpdated",
   ]);
-  const [params, setParams] = useSearchParams();
-  const tab = params.get("tab") ?? "unveiled";
+  const [tab, setTab] = useTabParam<"unveiled" | "veiled">("unveiled");
   const [listing, setListing] = useState<RivenRow | null>(null);
   const [weaponClass, setWeaponClass] = useState<string | null>(null);
 
@@ -75,25 +67,15 @@ export function RivensPage() {
   const columns = useMemo(() => rivenColumns(setListing), []);
   const handleCloseListing = useCallback(() => setListing(null), []);
 
-  if (loading && !data) {
-    return (
-      <Page title="Riven Explorer" description={<Quoted quote={quote} />}>
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
   return (
-    <Page title="Riven Explorer" description={<Quoted quote={quote} />}>
-      {error && <ErrorNote message={error} />}
-
+    <Page
+      title="Riven Explorer"
+      quote="rivens"
+      loading={loading && !data}
+      error={error}
+    >
       <Section>
-        <Tabs
-          value={tab}
-          onValueChange={(value) =>
-            setParams({ tab: value }, { replace: true })
-          }
-        >
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="unveiled">
               Unveiled ({num(data?.unveiled.length ?? 0)})
@@ -113,9 +95,7 @@ export function RivensPage() {
                 [
                   row.weapon ?? "",
                   row.name ?? "",
-                  ...row.attributes.map(
-                    (attribute) => attribute.name ?? attribute.tag,
-                  ),
+                  ...row.attributes.map(attributeLabel),
                 ].join(" ")
               }
               initialSorting={[{ id: "grade", desc: true }]}
@@ -129,10 +109,7 @@ export function RivensPage() {
                     <FilterSelect
                       label="Weapon class"
                       value={weaponClass}
-                      options={classes.map((value) => ({
-                        value,
-                        label: value,
-                      }))}
+                      options={plainOptions(classes)}
                       onChange={setWeaponClass}
                     />
                   </FilterGrid>

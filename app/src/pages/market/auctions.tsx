@@ -1,33 +1,25 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Ellipsis, RefreshCw, Wrench } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { api, reportError } from "@/lib/bridge";
+import { api, openExternal } from "@/lib/bridge";
 import { dateTime, num } from "@/lib/format";
 import { rivenAuctionUrl } from "@/lib/rivens";
+import { capitalize } from "@/lib/world";
 import { ListingDialog, type ListingForm } from "@/pages/rivens/listing-dialog";
 import { useMarketItemsStore } from "@/stores/market-items-store";
 import type { Auction, MarketItem } from "@/types";
+import { ListingToolbar, RowActions, VisibleBadge } from "./listing-controls";
 
 function titleCase(slug: string): string {
   return slug
     .split(/[_\s]+/)
     .filter((word) => word.length > 0)
-    .map((word) =>
-      word
-        .split("-")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join("-"),
-    )
+    .map((word) => word.split("-").map(capitalize).join("-"))
     .join(" ");
 }
 
@@ -123,11 +115,7 @@ export function AuctionsTable({
         header: "Visible",
         cell: ({ row }) => (
           <span className="flex items-center gap-2">
-            {row.original.visible ? (
-              <Badge variant="accent">visible</Badge>
-            ) : (
-              <Badge variant="muted">hidden</Badge>
-            )}
+            <VisibleBadge visible={row.original.visible} />
             {row.original.private && <Badge variant="muted">private</Badge>}
             {row.original.closed && <Badge variant="muted">closed</Badge>}
           </span>
@@ -149,63 +137,45 @@ export function AuctionsTable({
         enableSorting: false,
         enableHiding: false,
         cell: ({ row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                aria-label="Auction actions"
-              >
-                <Ellipsis className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onSelect={async () => {
-                  try {
-                    await api.openUrl(
-                      rivenAuctionUrl(row.original.item.weapon_url_name),
-                    );
-                  } catch (error) {
-                    reportError(error);
-                  }
-                }}
-              >
-                Compare on the market
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => setEditing(row.original)}>
-                Edit auction
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() =>
-                  runMarketAction(
-                    api.marketSetAuctionVisible(
-                      row.original.id,
-                      !row.original.visible,
-                    ),
-                    row.original.visible ? "Auction hidden" : "Auction shown",
-                  )
-                }
-              >
-                {row.original.visible ? "Hide auction" : "Show auction"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                disabled={row.original.closed}
-                onSelect={() =>
-                  runMarketAction(
-                    api.marketCloseAuction(row.original.id),
-                    "Auction closed",
-                  )
-                }
-              >
-                Close auction
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <RowActions label="Auction actions">
+            <DropdownMenuItem
+              onSelect={() =>
+                openExternal(rivenAuctionUrl(row.original.item.weapon_url_name))
+              }
+            >
+              Compare on the market
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setEditing(row.original)}>
+              Edit auction
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() =>
+                runMarketAction(
+                  api.marketSetAuctionVisible(
+                    row.original.id,
+                    !row.original.visible,
+                  ),
+                  row.original.visible ? "Auction hidden" : "Auction shown",
+                )
+              }
+            >
+              {row.original.visible ? "Hide auction" : "Show auction"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={row.original.closed}
+              onSelect={() =>
+                runMarketAction(
+                  api.marketCloseAuction(row.original.id),
+                  "Auction closed",
+                )
+              }
+            >
+              Close auction
+            </DropdownMenuItem>
+          </RowActions>
         ),
       },
     ],
@@ -219,34 +189,12 @@ export function AuctionsTable({
         columns={columns}
         data={auctions}
         toolbar={
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Wrench className="size-4" />
-                  Bulk Actions
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  disabled={auctions.length === 0}
-                  onSelect={() => onSetVisibility(true)}
-                >
-                  Show all auctions
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={auctions.length === 0}
-                  onSelect={() => onSetVisibility(false)}
-                >
-                  Hide all auctions
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline" size="sm" onClick={onRefresh}>
-              <RefreshCw className="size-4" />
-              Refresh
-            </Button>
-          </>
+          <ListingToolbar
+            noun="auctions"
+            empty={auctions.length === 0}
+            onSetVisibility={onSetVisibility}
+            onRefresh={onRefresh}
+          />
         }
         searchPlaceholder="Filter auctions"
         initialSorting={[{ id: "updated", desc: true }]}

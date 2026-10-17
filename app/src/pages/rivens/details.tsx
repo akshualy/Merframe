@@ -3,7 +3,12 @@ import { RivenListings } from "@/components/riven-listings";
 import { SplicedMark } from "@/components/spliced-mark";
 import { Hint } from "@/components/ui/hint";
 import { percent } from "@/lib/format";
-import { attributeRange, attributeValue, gradeTone } from "@/lib/rivens";
+import {
+  attributeLabel,
+  attributeRange,
+  attributeValue,
+  gradeTone,
+} from "@/lib/rivens";
 import { cn } from "@/lib/utils";
 import type { RivenRow } from "@/types";
 
@@ -22,7 +27,7 @@ export function RivenDetails({ riven }: { riven: RivenRow }) {
               )}
             >
               <span className="flex items-center gap-2 text-sm font-medium">
-                {attribute.name ?? attribute.tag}
+                {attributeLabel(attribute)}
                 <SplicedMark attribute={attribute} />
               </span>
               <Hint as="span">

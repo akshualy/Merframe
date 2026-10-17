@@ -1,13 +1,10 @@
-import { Page, Quoted } from "@/components/page";
-import { usePageQuote } from "@/lib/quotes";
+import { Page } from "@/components/page";
 import { MarketMovers } from "./market-movers";
 import { TradeHistory } from "./trade-history";
 
 export function AnalyticsPage() {
-  const quote = usePageQuote("analytics");
-
   return (
-    <Page title="Trading Analytics" description={<Quoted quote={quote} />}>
+    <Page title="Trading Analytics" quote="analytics">
       <MarketMovers />
       <TradeHistory />
     </Page>

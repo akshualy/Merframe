@@ -1,17 +1,9 @@
 import { useEffect } from "react";
+import { OptionSelect } from "@/components/option-select";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { api, logError, reportError } from "@/lib/bridge";
 import { usePresenceStore } from "@/stores/presence-store";
 import type { Presence, UserStatus } from "@/types";
-
-const UNSET = "unset";
 
 const OPTIONS: { value: UserStatus; label: string }[] = [
   { value: "invisible", label: "Offline" },
@@ -54,28 +46,15 @@ export function PresenceControl() {
         />
         Follow the game
       </label>
-      <Select
-        value={presence.live ?? presence.status ?? UNSET}
+      <OptionSelect
+        label="warframe.market status"
+        value={presence.live ?? presence.status}
+        options={OPTIONS}
+        anyLabel="Status untouched"
+        onChange={(status) => push({ ...presence, status })}
+        size="sm"
         disabled={presence.auto}
-        onValueChange={(value) =>
-          push({
-            ...presence,
-            status: value === UNSET ? null : (value as UserStatus),
-          })
-        }
-      >
-        <SelectTrigger size="sm" aria-label="warframe.market status">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={UNSET}>Status untouched</SelectItem>
-          {OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
     </div>
   );
 }
