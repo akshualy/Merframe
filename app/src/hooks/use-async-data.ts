@@ -23,7 +23,7 @@ function remember(key: string, payload: unknown) {
 
 export function useAsyncData<T>(
   key: string,
-  load: (() => Promise<T>) | null,
+  load: () => Promise<T>,
   reloadOn: readonly EventName[] = [],
 ): AsyncData<T> {
   const [data, setData] = useState<T | null>(
@@ -34,10 +34,6 @@ export function useAsyncData<T>(
   const { attempt, cancel } = useLatestAttempt();
 
   const reload = useCallback(async () => {
-    if (!load) {
-      return;
-    }
-
     if (cache.has(key)) {
       setData(cache.get(key) as T);
     }

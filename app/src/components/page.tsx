@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Hint } from "@/components/ui/hint";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Quote } from "@/lib/quotes";
+import { type PageQuoteKey, type Quote, usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 
 export function Quoted({ quote }: { quote: Quote }) {
@@ -15,15 +15,28 @@ export function Quoted({ quote }: { quote: Quote }) {
   );
 }
 
+function PageQuote({ page }: { page: PageQuoteKey }) {
+  const quote = usePageQuote(page);
+  return <Quoted quote={quote} />;
+}
+
+type Subtitle =
+  | { quote: PageQuoteKey; description?: never }
+  | { description: ReactNode; quote?: never };
+
 export function Page({
   title,
+  quote,
   description,
   actions,
+  loading = false,
+  error = null,
   children,
-}: {
+}: Subtitle & {
   title: string;
-  description: ReactNode;
   actions?: ReactNode;
+  loading?: boolean;
+  error?: string | null;
   children: ReactNode;
 }) {
   return (
@@ -31,13 +44,22 @@ export function Page({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-primary text-2xl font-bold">{title}</h1>
-          <p className="text-muted-foreground text-sm">{description}</p>
+          <p className="text-muted-foreground text-sm">
+            {quote === undefined ? description : <PageQuote page={quote} />}
+          </p>
         </div>
         {actions && (
           <div className="flex flex-wrap items-center gap-2">{actions}</div>
         )}
       </header>
-      {children}
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <>
+          {error && <ErrorNote message={error} />}
+          {children}
+        </>
+      )}
     </div>
   );
 }

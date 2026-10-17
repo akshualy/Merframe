@@ -1,12 +1,10 @@
 import { Save, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { ErrorNote, Page, Quoted } from "@/components/page";
+import { Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { api, errorMessage, reportError } from "@/lib/bridge";
-import { usePageQuote } from "@/lib/quotes";
+import { api, reportError } from "@/lib/bridge";
 import { notify } from "@/lib/toast";
-import { useAppStore } from "@/stores/app-store";
+import { useAppStore, useSettings } from "@/stores/app-store";
 import type { Settings } from "@/types";
 import { PricesAndData, StatsTabSetting } from "./data";
 import { FissureAlerts } from "./fissures";
@@ -14,54 +12,31 @@ import { NotificationChannels } from "./notifications";
 import { CycleTimers } from "./timers";
 
 export function SettingsPage() {
-  const quote = usePageQuote("settings");
-  const stored = useAppStore((state) => state.settings);
+  const stored = useSettings();
   const setStored = useAppStore((state) => state.setSettings);
-  const [draft, setDraft] = useState<Settings | null>(stored);
+  const [draft, setDraft] = useState(stored);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (stored) {
-      setDraft(stored);
-    }
+    setDraft(stored);
   }, [stored]);
-
-  useEffect(() => {
-    if (stored) {
-      return;
-    }
-    async function load() {
-      try {
-        const next = await api.settingsGet();
-        setStored(next);
-        setDraft(next);
-      } catch (error) {
-        setError(errorMessage(error));
-      }
-    }
-    load();
-  }, [stored, setStored]);
 
   const patch = useCallback(
     (next: Partial<Settings>) =>
-      setDraft((current) => current && { ...current, ...next }),
+      setDraft((current) => ({ ...current, ...next })),
     [],
   );
 
   const patchAlerts = useCallback(
     (next: Partial<Settings["alerts"]>) =>
-      setDraft(
-        (current) =>
-          current && { ...current, alerts: { ...current.alerts, ...next } },
-      ),
+      setDraft((current) => ({
+        ...current,
+        alerts: { ...current.alerts, ...next },
+      })),
     [],
   );
 
   const handleSave = useCallback(async () => {
-    if (!draft) {
-      return;
-    }
     setSaving(true);
     try {
       setStored(await api.settingsSet(draft));
@@ -75,19 +50,10 @@ export function SettingsPage() {
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(stored);
 
-  if (!draft) {
-    return (
-      <Page title="Settings" description={<Quoted quote={quote} />}>
-        {error && <ErrorNote message={error} />}
-        {!error && <Skeleton className="h-96 w-full" />}
-      </Page>
-    );
-  }
-
   return (
     <Page
       title="Settings"
-      description={<Quoted quote={quote} />}
+      quote="settings"
       actions={
         <Button onClick={handleSave} disabled={saving || !dirty}>
           <Save className="size-4" />
@@ -95,7 +61,6 @@ export function SettingsPage() {
         </Button>
       }
     >
-      {error && <ErrorNote message={error} />}
       <div className="sticky top-2 z-10 h-10">
         {dirty && (
           <button

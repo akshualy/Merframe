@@ -8,6 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PositionPicker } from "@/components/ui/position-picker";
@@ -205,8 +206,7 @@ export function NotificationChannels({
           >
             Mirror cycle timers to Discord
           </SwitchRow>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="webhook">Discord webhook URL</Label>
+          <Field id="webhook" label="Discord webhook URL">
             <Input
               id="webhook"
               value={draft.discord_webhook ?? ""}
@@ -215,13 +215,17 @@ export function NotificationChannels({
               }
               placeholder="https://discord.com/api/webhooks/"
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="template">
-              Conversation notification,{" "}
-              <span className="text-accent">{"{tenno}"}</span> is the sender's
-              name
-            </Label>
+          </Field>
+          <Field
+            id="template"
+            label={
+              <>
+                Conversation notification,{" "}
+                <span className="text-accent">{"{tenno}"}</span> is the sender's
+                name
+              </>
+            }
+          >
             <Input
               id="template"
               value={draft.discord_message_template}
@@ -229,7 +233,7 @@ export function NotificationChannels({
                 patch({ discord_message_template: e.target.value })
               }
             />
-          </div>
+          </Field>
         </div>
       </div>
     </Section>

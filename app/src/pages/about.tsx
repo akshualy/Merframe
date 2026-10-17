@@ -3,13 +3,12 @@ import { check } from "@tauri-apps/plugin-updater";
 import { ExternalLink, FolderOpen, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import Merframe from "@/components/icons/merframe";
-import { Page, Quoted, Section } from "@/components/page";
+import { Page, Section } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { api, reportError } from "@/lib/bridge";
+import { api, openExternal, reportError } from "@/lib/bridge";
 import { ago } from "@/lib/format";
-import { usePageQuote } from "@/lib/quotes";
 import { notify } from "@/lib/toast";
 import { useAppStore } from "@/stores/app-store";
 
@@ -29,7 +28,6 @@ const CREDIT_LINKS = [
 ];
 
 export function AboutPage() {
-  const quote = usePageQuote("about");
   const status = useAppStore((state) => state.status);
   const setUpdate = useAppStore((state) => state.setUpdate);
   const [version, setVersion] = useState("");
@@ -67,16 +65,8 @@ export function AboutPage() {
     }
   }, [setUpdate]);
 
-  const handleOpen = useCallback(async (url: string) => {
-    try {
-      await api.openUrl(url);
-    } catch (error) {
-      reportError(error);
-    }
-  }, []);
-
   return (
-    <Page title="About" description={<Quoted quote={quote} />}>
+    <Page title="About" quote="about">
       <Section>
         <div className="flex flex-col gap-6 @sm:flex-row @sm:items-center">
           <Merframe className="text-primary size-24 shrink-0" />
@@ -110,7 +100,7 @@ export function AboutPage() {
                   key={link.url}
                   variant="outline"
                   size="sm"
-                  onClick={() => handleOpen(link.url)}
+                  onClick={() => openExternal(link.url)}
                 >
                   {link.label}
                   <ExternalLink className="size-3.5" />
@@ -162,7 +152,7 @@ export function AboutPage() {
               key={link.url}
               variant="outline"
               size="sm"
-              onClick={() => handleOpen(link.url)}
+              onClick={() => openExternal(link.url)}
             >
               {link.label}
               <ExternalLink className="size-3.5" />

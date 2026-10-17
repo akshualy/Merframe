@@ -1,24 +1,15 @@
 import { FileSearch, FolderOpen } from "lucide-react";
 import { useCallback } from "react";
+import { SelectField } from "@/components/option-select";
 import { Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { api, reportError } from "@/lib/bridge";
 import { dateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import type { OrderType, Settings, TraderStatus } from "@/types";
 import { CheckboxRow, MinutesSlider, type Patch, SwitchRow } from "./row";
-
-const ANY_LANGUAGE = "any";
 
 const TRADER_STATUS: { value: TraderStatus; label: string }[] = [
   { value: "ingame", label: "In game" },
@@ -100,49 +91,23 @@ export function PricesAndData({
             }
           />
           <div className="grid gap-3 @sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="trader-status">Trader order</Label>
-              <Select
-                value={draft.market_trader_status}
-                onValueChange={(value) =>
-                  patch({ market_trader_status: value as TraderStatus })
-                }
-              >
-                <SelectTrigger id="trader-status" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRADER_STATUS.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="trader-locale">Trader language</Label>
-              <Select
-                value={draft.market_trader_locale ?? ANY_LANGUAGE}
-                onValueChange={(value) =>
-                  patch({
-                    market_trader_locale: value === ANY_LANGUAGE ? null : value,
-                  })
-                }
-              >
-                <SelectTrigger id="trader-locale" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ANY_LANGUAGE}>Any language</SelectItem>
-                  {TRADER_LANGUAGES.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectField
+              id="trader-status"
+              label="Trader order"
+              value={draft.market_trader_status}
+              options={TRADER_STATUS}
+              onChange={(value) => patch({ market_trader_status: value })}
+              className="w-full"
+            />
+            <SelectField
+              id="trader-locale"
+              label="Trader language"
+              value={draft.market_trader_locale}
+              options={TRADER_LANGUAGES}
+              anyLabel="Any language"
+              onChange={(value) => patch({ market_trader_locale: value })}
+              className="w-full"
+            />
           </div>
         </div>
         <div className="flex flex-col gap-4">
@@ -183,26 +148,14 @@ export function PricesAndData({
               Hide auctions too
             </CheckboxRow>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="set-part-click">Clicking a set part opens</Label>
-            <Select
-              value={draft.set_part_click}
-              onValueChange={(value) =>
-                patch({ set_part_click: value as OrderType })
-              }
-            >
-              <SelectTrigger id="set-part-click" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SET_PART_CLICK.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectField
+            id="set-part-click"
+            label="Clicking a set part opens"
+            value={draft.set_part_click}
+            options={SET_PART_CLICK}
+            onChange={(value) => patch({ set_part_click: value })}
+            className="w-full"
+          />
           <CheckboxRow
             checked={draft.take_rank_into_account}
             onChange={(checked) => patch({ take_rank_into_account: checked })}

@@ -1,14 +1,9 @@
 import { Plus, Trash2 } from "lucide-react";
+import { OptionSelect } from "@/components/option-select";
 import { Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { type FilterOption, plainOptions } from "@/lib/filters";
 import { occurrenceKeys } from "@/lib/keys";
 import { RELIC_TIERS } from "@/lib/relics";
 import type { FissureFilter, FissureSubtype, Settings } from "@/types";
@@ -16,7 +11,9 @@ import { type PatchAlerts, SwitchRow } from "./row";
 
 const ANY = "all";
 
-const MISSION_TYPES: { value: string; label: string }[] = [
+const TIERS = plainOptions(RELIC_TIERS);
+
+const MISSION_TYPES: FilterOption[] = [
   { value: "MT_ASSASSINATION", label: "Assassination" },
   { value: "MT_CAPTURE", label: "Capture" },
   { value: "MT_DEFENSE", label: "Defense" },
@@ -40,61 +37,61 @@ const MISSION_TYPES: { value: string; label: string }[] = [
   { value: "Orphix", label: "Orphix" },
 ];
 
-const LOCATIONS = [
-  "Mercury",
-  "Venus",
-  "Earth",
-  "Lua",
-  "Mars",
-  "Phobos",
-  "Deimos",
-  "Ceres",
-  "Jupiter",
-  "Europa",
-  "Saturn",
-  "Uranus",
-  "Neptune",
-  "Pluto",
-  "Eris",
-  "Sedna",
-  "Void",
-  "Kuva Fortress",
-  "Zariman",
-]
-  .map((planet) => ({ value: planet, label: planet }))
-  .concat({ value: "Veil", label: "Veil Proxima" });
+const LOCATIONS: FilterOption[] = [
+  ...plainOptions([
+    "Mercury",
+    "Venus",
+    "Earth",
+    "Lua",
+    "Mars",
+    "Phobos",
+    "Deimos",
+    "Ceres",
+    "Jupiter",
+    "Europa",
+    "Saturn",
+    "Uranus",
+    "Neptune",
+    "Pluto",
+    "Eris",
+    "Sedna",
+    "Void",
+    "Kuva Fortress",
+    "Zariman",
+  ]),
+  { value: "Veil", label: "Veil Proxima" },
+];
 
-const SUBTYPES: { value: FissureSubtype; label: string }[] = [
+const SUBTYPES: FilterOption<FissureSubtype>[] = [
   { value: "normal", label: "Normal" },
   { value: "steelPath", label: "Steel Path" },
   { value: "voidStorm", label: "Void Storm" },
 ];
 
-function ColumnSelect({
+function ColumnSelect<T extends string>({
+  label,
   value,
-  onChange,
   anyLabel,
   options,
+  onChange,
 }: {
-  value: string;
-  onChange: (value: string) => void;
+  label: string;
+  value: T | typeof ANY;
   anyLabel: string;
-  options: { value: string; label: string }[];
+  options: readonly FilterOption<T>[];
+  onChange: (value: T | typeof ANY) => void;
 }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-full">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ANY}>{anyLabel}</SelectItem>
-        {options.map(({ value, label }) => (
-          <SelectItem key={value} value={value}>
-            {label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex flex-col gap-1">
+      <Label className="text-xs">{label}</Label>
+      <OptionSelect<T | typeof ANY>
+        label={label}
+        value={value}
+        options={[{ value: ANY, label: anyLabel }, ...options]}
+        onChange={onChange}
+        className="w-full"
+      />
+    </div>
   );
 }
 
@@ -136,47 +133,34 @@ export function FissureAlerts({
             key={filterKeys[index]}
             className="grid items-end gap-3 @sm:grid-cols-[1fr_1fr_1fr_1fr_auto]"
           >
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs">Tier</Label>
-              <ColumnSelect
-                value={row.tier}
-                anyLabel="Any tier"
-                options={RELIC_TIERS.map((tier) => ({
-                  value: tier,
-                  label: tier,
-                }))}
-                onChange={(tier) => patchFilter(index, { tier })}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs">Mission</Label>
-              <ColumnSelect
-                value={row.mission}
-                anyLabel="Any mission"
-                options={MISSION_TYPES}
-                onChange={(mission) => patchFilter(index, { mission })}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs">Location</Label>
-              <ColumnSelect
-                value={row.location}
-                anyLabel="Any planet"
-                options={LOCATIONS}
-                onChange={(location) => patchFilter(index, { location })}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs">Subtype</Label>
-              <ColumnSelect
-                value={row.subtype}
-                anyLabel="Any subtype"
-                options={SUBTYPES}
-                onChange={(subtype) =>
-                  patchFilter(index, { subtype: subtype as FissureSubtype })
-                }
-              />
-            </div>
+            <ColumnSelect
+              label="Tier"
+              value={row.tier}
+              anyLabel="Any tier"
+              options={TIERS}
+              onChange={(tier) => patchFilter(index, { tier })}
+            />
+            <ColumnSelect
+              label="Mission"
+              value={row.mission}
+              anyLabel="Any mission"
+              options={MISSION_TYPES}
+              onChange={(mission) => patchFilter(index, { mission })}
+            />
+            <ColumnSelect
+              label="Location"
+              value={row.location}
+              anyLabel="Any planet"
+              options={LOCATIONS}
+              onChange={(location) => patchFilter(index, { location })}
+            />
+            <ColumnSelect
+              label="Subtype"
+              value={row.subtype}
+              anyLabel="Any subtype"
+              options={SUBTYPES}
+              onChange={(subtype) => patchFilter(index, { subtype })}
+            />
             <Button
               variant="outline"
               size="icon"

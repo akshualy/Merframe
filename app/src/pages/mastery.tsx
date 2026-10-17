@@ -1,33 +1,22 @@
 import { ChevronDown } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage, prefetchImages } from "@/components/item-image";
-import {
-  CardGrid,
-  EmptyNote,
-  ErrorNote,
-  Page,
-  Quoted,
-  Section,
-  Surface,
-  TableSkeleton,
-} from "@/components/page";
+import { OptionTabs } from "@/components/option-tabs";
+import { CardGrid, EmptyNote, Page, Section, Surface } from "@/components/page";
 import { Pagination } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { usePaged } from "@/hooks/use-paged";
-import { api, errorMessage } from "@/lib/bridge";
-import { num, percent } from "@/lib/format";
+import { api } from "@/lib/bridge";
+import { counted, num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
-import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
-import { useAppStore } from "@/stores/app-store";
+import { useAppStore, useSettings } from "@/stores/app-store";
 import type {
   CategoryTotals,
   LevelUpRoute,
@@ -137,10 +126,7 @@ function RouteCard({
         />
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium">{route.label}</span>
-          <Hint as="span">
-            {num(route.count)}{" "}
-            {route.count === 1 ? route.unit : `${route.unit}s`}
-          </Hint>
+          <Hint as="span">{counted(route.count, route.unit)}</Hint>
         </span>
         <span className="text-primary text-sm font-bold">
           +{num(route.xp_available)} XP
@@ -174,23 +160,18 @@ function RouteCard({
 }
 
 export function MasteryPage() {
-  const quote = usePageQuote("mastery");
-  const settings = useAppStore((state) => state.settings);
-  const setSettings = useAppStore((state) => state.setSettings);
+  const settings = useSettings();
+  const saveSettings = useAppStore((state) => state.saveSettings);
   const [ordering, setOrdering] = useState<MasteryOrdering>("closest");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [openRoute, setOpenRoute] = useState<string | null>(null);
 
-  const settingsRead = settings !== null;
-  const includeForma = settings?.include_forma_ranks ?? true;
-  const founders = settings?.include_founders_items ?? null;
+  const includeForma = settings.include_forma_ranks;
+  const founders = settings.include_founders_items;
 
-  const load = useMemo(
-    () =>
-      settingsRead
-        ? () => api.masteryTab(ordering, founders, includeForma)
-        : null,
-    [settingsRead, ordering, founders, includeForma],
+  const load = useCallback(
+    () => api.masteryTab(ordering, founders, includeForma),
+    [ordering, founders, includeForma],
   );
 
   const { data, error, loading } = useAsyncData(
@@ -210,21 +191,8 @@ export function MasteryPage() {
     prefetchImages(topItems.map((item) => item.image_name));
   }, [topItems]);
 
-  const choose = async (patch: Partial<Settings>) => {
-    if (!settings) {
-      return;
-    }
-    const next = { ...settings, ...patch };
-    setSettings(next);
-    setSaveError(null);
-    try {
-      await api.settingsSet(next);
-    } catch (error) {
-      const message = errorMessage(error);
-      setSaveError(message);
-      toast.error(message);
-    }
-  };
+  const choose = async (patch: Partial<Settings>) =>
+    setSaveError(await saveSettings(patch));
 
   const founder = data?.founder ?? false;
   const includeFounders = founders ?? data?.include_founders ?? false;
@@ -239,25 +207,15 @@ export function MasteryPage() {
     </CheckboxField>
   );
 
-  if (loading && !data) {
-    return (
-      <Page title="Mastery" description={<Quoted quote={quote} />}>
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
   const summary = data?.summary;
-  const problem = error ?? saveError;
-
   return (
     <Page
       title="Mastery"
-      description={<Quoted quote={quote} />}
+      quote="mastery"
       actions={foundersToggle}
+      loading={loading && !data}
+      error={error ?? saveError}
     >
-      {problem && <ErrorNote message={problem} />}
-
       <Surface className="w-fit flex-row items-center gap-6 px-6 py-4">
         <div className="flex items-center gap-3">
           <GameIcon name="mastered" size={40} alt="Mastery rank" />
@@ -347,18 +305,11 @@ export function MasteryPage() {
             >
               Include ranks past 30
             </CheckboxField>
-            <Tabs
+            <OptionTabs
               value={ordering}
-              onValueChange={(value) => setOrdering(value as MasteryOrdering)}
-            >
-              <TabsList>
-                {ORDERINGS.map((entry) => (
-                  <TabsTrigger key={entry.value} value={entry.value}>
-                    {entry.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+              options={ORDERINGS}
+              onChange={setOrdering}
+            />
           </div>
         }
       >

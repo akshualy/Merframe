@@ -4,21 +4,13 @@ import { type Bar, BarChart } from "@/components/bar-chart";
 import { DataTable } from "@/components/data-table";
 import { type Day, DayStrip } from "@/components/day-strip";
 import { LineChart, type Point } from "@/components/line-chart";
-import {
-  ErrorNote,
-  Page,
-  Quoted,
-  Section,
-  Stat,
-  TableSkeleton,
-} from "@/components/page";
+import { Page, Section, Stat } from "@/components/page";
 import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
 import { TradesSection } from "@/components/trades-section";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { api } from "@/lib/bridge";
-import { changeTone } from "@/lib/chart";
+import { changeTone, signed } from "@/lib/chart";
 import { dateTime, dayLabel, num, percent, spansYears } from "@/lib/format";
-import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import type { DailyCount, DeltaRow, OpeningRow, StatPoint } from "@/types";
@@ -56,15 +48,13 @@ const DELTA_COLUMNS: ColumnDef<DeltaRow>[] = [
     meta: { numeric: true },
     cell: ({ row }) => (
       <span className={cn("font-medium", changeTone(row.original.delta))}>
-        {row.original.delta > 0 ? "+" : ""}
-        {num(row.original.delta)}
+        {signed(row.original.delta, num)}
       </span>
     ),
   },
 ];
 
 export function StatsPage() {
-  const quote = usePageQuote("stats");
   const timeframe = usePreferencesStore((state) => state.timeframe);
   const load = useCallback(() => api.statsTab(sinceMs(timeframe)), [timeframe]);
   const { data, error, loading } = useAsyncData(
@@ -168,18 +158,6 @@ export function StatsPage() {
   );
   const bestRelicDay = Math.max(0, ...dayBars.relics.map((bar) => bar.value));
 
-  if (loading && !data) {
-    return (
-      <Page
-        title="Stats"
-        description={<Quoted quote={quote} />}
-        actions={<TimeframeTabs />}
-      >
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
   const firstDay = days.at(0);
   const lastDay = days.at(-1);
   const windowLabel =
@@ -192,11 +170,11 @@ export function StatsPage() {
   return (
     <Page
       title="Stats"
-      description={<Quoted quote={quote} />}
+      quote="stats"
       actions={<TimeframeTabs />}
+      loading={loading && !data}
+      error={error}
     >
-      {error && <ErrorNote message={error} />}
-
       <div className="grid gap-4 @sm:grid-cols-2 @3xl:grid-cols-4">
         <Stat
           label="Prime collection"

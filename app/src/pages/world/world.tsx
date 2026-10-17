@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
-import { CardGrid, EmptyNote, Page, Quoted, Section } from "@/components/page";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OptionTabs } from "@/components/option-tabs";
+import { CardGrid, EmptyNote, Page, Section } from "@/components/page";
 import { useNow } from "@/hooks/use-now";
 import { api, reportError } from "@/lib/bridge";
 import { secondsUntil } from "@/lib/format";
-import { usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -31,7 +30,6 @@ const PATH_FILTERS: { value: FissurePath; label: string }[] = [
 ];
 
 export function WorldPage() {
-  const quote = usePageQuote("world");
   const data = useAppStore((state) => state.world);
   const setWorld = useAppStore((state) => state.setWorld);
   const now = useNow();
@@ -77,7 +75,7 @@ export function WorldPage() {
   );
 
   return (
-    <Page title="World" description={<Quoted quote={quote} />}>
+    <Page title="World" quote="world">
       {data?.timers.length ? (
         <CardGrid>
           {data.timers.map((timer) => (
@@ -92,18 +90,11 @@ export function WorldPage() {
         title="Void Fissures"
         description={`${fissures.length} active`}
         action={
-          <Tabs
+          <OptionTabs
             value={fissurePath}
-            onValueChange={(value) => setFissurePath(value as FissurePath)}
-          >
-            <TabsList>
-              {PATH_FILTERS.map(({ value, label }) => (
-                <TabsTrigger key={value} value={value}>
-                  {label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+            options={PATH_FILTERS}
+            onChange={setFissurePath}
+          />
         }
       >
         <FissuresByTier fissures={fissures} now={now} />
