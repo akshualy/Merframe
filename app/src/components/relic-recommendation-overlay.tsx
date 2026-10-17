@@ -1,10 +1,11 @@
 import { Star } from "lucide-react";
 import { useMemo, useSyncExternalStore } from "react";
+import { Amount } from "@/components/currency";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { EmptyNote } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Hint } from "@/components/ui/hint";
-import { percent, plat } from "@/lib/format";
+import { counted, percent, plat } from "@/lib/format";
 import {
   highestOwnedRefinement,
   matchesRelicFilters,
@@ -117,7 +118,7 @@ export function RelicRecommendationOverlay({
       <Hint>
         Values at{" "}
         <span className={refinementTone(valuedWord)}>{valuedWord}</span>,{" "}
-        {squadSize} {squadSize === 1 ? "player" : "players"} with this relic
+        {counted(squadSize, "player")} with this relic
       </Hint>
       <ul className={cn("flex flex-col", compact ? "gap-1" : "gap-2")}>
         {recommendedRows.map((row) => (
@@ -166,10 +167,12 @@ export function RelicRecommendationOverlay({
                 {percent(row.chanceOfWanted / 100)}
               </span>
             )}
-            <span className="text-primary flex w-16 shrink-0 items-center justify-end gap-0.5 text-sm font-bold tabular-nums">
+            <Amount
+              currency="platinum"
+              className="w-16 shrink-0 justify-end text-sm font-bold"
+            >
               {plat(row.plat)}
-              <GameIcon name="platinum" size={16} alt="Platinum" />
-            </span>
+            </Amount>
           </li>
         ))}
       </ul>

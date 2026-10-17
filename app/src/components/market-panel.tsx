@@ -5,21 +5,15 @@ import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
 import { ItemImage } from "@/components/item-image";
 import { OrderList } from "@/components/market-order-list";
+import { SelectField } from "@/components/option-select";
 import { EmptyNote } from "@/components/page";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Hint } from "@/components/ui/hint";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api, reportError } from "@/lib/bridge";
+import { api, openExternal, reportError } from "@/lib/bridge";
 import { marketUrl } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -44,15 +38,14 @@ function NumberField({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <Label htmlFor={id}>{label}</Label>
+    <Field id={id} label={label}>
       <Input
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         inputMode="numeric"
       />
-    </div>
+    </Field>
   );
 }
 
@@ -212,17 +205,6 @@ export function MarketPanel() {
     }
   }, [request, items, takeRequest, handlePick]);
 
-  const handleOpenMarket = useCallback(async () => {
-    if (!selected) {
-      return;
-    }
-    try {
-      await api.openUrl(marketUrl(selected.slug));
-    } catch (error) {
-      reportError(error);
-    }
-  }, [selected]);
-
   const handlePost = useCallback(async () => {
     if (!selected) {
       return;
@@ -322,7 +304,7 @@ export function MarketPanel() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleOpenMarket}
+                onClick={() => openExternal(marketUrl(selected.slug))}
                 title="Open on warframe.market"
               >
                 <ExternalLink className="size-4" />
@@ -403,21 +385,16 @@ export function MarketPanel() {
               />
             )}
             {hasSubtypes && (
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="order-subtype">Type</Label>
-                <Select value={subtype} onValueChange={setSubtype}>
-                  <SelectTrigger id="order-subtype">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subtypes.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {capitalize(option)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <SelectField
+                id="order-subtype"
+                label="Type"
+                value={subtype}
+                options={subtypes.map((option) => ({
+                  value: option,
+                  label: capitalize(option),
+                }))}
+                onChange={setSubtype}
+              />
             )}
           </div>
           <Button onClick={handlePost} disabled={posting}>

@@ -6,10 +6,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { YesNo } from "@/lib/filters";
+import { ANY, type YesNo } from "@/lib/filters";
 import type { Facet } from "@/lib/foundry-filters";
-
-const ANY_VALUE = "any";
 
 function LockNote({ reason }: { reason: string }) {
   return (
@@ -48,14 +46,14 @@ export function FilterSegment({
       <ToggleGroup
         type="single"
         aria-label={label}
-        value={value ?? ANY_VALUE}
+        value={value ?? ANY}
         disabled={fixed}
         onValueChange={(next) => {
           if (next === "") {
             return;
           }
 
-          onChange(next === ANY_VALUE ? null : (next as YesNo));
+          onChange(next === ANY ? null : (next as YesNo));
         }}
       >
         <ToggleGroupItem
@@ -66,7 +64,7 @@ export function FilterSegment({
           {yes}
         </ToggleGroupItem>
         <ToggleGroupItem
-          value={ANY_VALUE}
+          value={ANY}
           aria-label="Any"
           className="data-[state=on]:bg-transparent data-[state=on]:text-foreground data-[state=on]:shadow-none"
         >

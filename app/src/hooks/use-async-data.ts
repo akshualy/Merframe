@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useState } from "react";
+import { useLatestAttempt } from "@/hooks/use-latest-attempt";
 import { useListen } from "@/hooks/use-listen";
-import { type EventName, errorMessage } from "@/lib/bridge";
+import type { EventName } from "@/lib/bridge";
 
 export interface AsyncData<T> {
   data: T | null;
@@ -31,48 +31,33 @@ export function useAsyncData<T>(
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!cache.has(key));
-  const newest = useRef(0);
+  const { attempt, cancel } = useLatestAttempt();
 
   const reload = useCallback(async () => {
     if (!load) {
       return;
     }
-    newest.current += 1;
-    const attempt = newest.current;
-    const stale = () => attempt !== newest.current;
 
     if (cache.has(key)) {
       setData(cache.get(key) as T);
     }
+
     setLoading(true);
-    try {
-      const payload = await load();
-      if (stale()) {
-        return;
-      }
-      remember(key, payload);
-      setData(payload);
-      setError(null);
-    } catch (error) {
-      if (stale()) {
-        return;
-      }
-      const message = errorMessage(error);
-      setError(message);
-      toast.error(message);
-    } finally {
-      if (!stale()) {
-        setLoading(false);
-      }
-    }
-  }, [key, load]);
+    await attempt(load, {
+      loaded: (payload) => {
+        remember(key, payload);
+        setData(payload);
+        setError(null);
+      },
+      failed: setError,
+      settled: () => setLoading(false),
+    });
+  }, [key, load, attempt]);
 
   useEffect(() => {
     reload();
-    return () => {
-      newest.current += 1;
-    };
-  }, [reload]);
+    return cancel;
+  }, [reload, cancel]);
 
   useListen(reloadOn, reload);
 

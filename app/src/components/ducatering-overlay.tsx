@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { GameIcon } from "@/components/game-icon";
+import { Amount } from "@/components/currency";
 import { ItemImage } from "@/components/item-image";
 import { Progress } from "@/components/ui/progress";
 import { num } from "@/lib/format";
@@ -31,15 +31,13 @@ const EMPTY_COPY = {
 
 function Prices({ entry, size }: { entry: DucateringEntry; size: number }) {
   return (
-    <span className="flex shrink-0 flex-col items-end text-xs tabular-nums">
-      <span className="text-primary flex items-center gap-0.5">
+    <span className="flex shrink-0 flex-col items-end text-xs">
+      <Amount currency="platinum" size={size}>
         {num(entry.plat)}
-        <GameIcon name="platinum" size={size} alt="Platinum" />
-      </span>
-      <span className="text-accent flex items-center gap-0.5">
+      </Amount>
+      <Amount currency="ducats" size={size}>
         {num(entry.ducats)}
-        <GameIcon name="ducats" size={size} alt="Ducats" />
-      </span>
+      </Amount>
     </span>
   );
 }
@@ -88,8 +86,10 @@ export function DucateringOverlay({
               {current.item.name}
             </span>
             <span className="text-muted-foreground flex items-center gap-1 text-sm tabular-nums">
-              Add {num(current.count)} for {num(current.count * current.ducats)}
-              <GameIcon name="ducats" size={16} alt="Ducats" />
+              Add {num(current.count)} for
+              <Amount currency="ducats" plain>
+                {num(current.count * current.ducats)}
+              </Amount>
             </span>
           </span>
           <Prices entry={current} size={14} />
@@ -126,10 +126,9 @@ export function DucateringOverlay({
       {soldCount > 0 && (
         <div className="text-muted-foreground flex items-center justify-end gap-1 text-xs">
           <span>Sold {num(soldCount)}</span> items for
-          <span className="text-accent flex items-center gap-0.5 tabular-nums">
+          <Amount currency="ducats" size={14}>
             {num(ducats)}
-            <GameIcon name="ducats" size={14} alt="Ducats" />
-          </span>
+          </Amount>
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { Check, ExternalLink, Minus } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { PolarityIcon } from "@/components/game-icon";
 import { GoodRollAttribution, GoodRollBlock } from "@/components/good-roll";
 import { ItemImage, prefetchImages } from "@/components/item-image";
@@ -8,10 +8,12 @@ import { SplicedMark } from "@/components/spliced-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { api, reportError } from "@/lib/bridge";
+import { openExternal } from "@/lib/bridge";
 import { displayNameFromPath, percent } from "@/lib/format";
 import {
+  attributeLabel,
   attributeValue,
+  disposition,
   gradeTone,
   gradeVariant,
   rivenAuctionUrl,
@@ -26,10 +28,6 @@ function rivenName(riven: RivenRow): string {
   return parts.length > 0
     ? parts.join(" ")
     : displayNameFromPath(riven.item_type);
-}
-
-function attributeLabel(attribute: AttributeGrade): string {
-  return attribute.name ?? attribute.tag;
 }
 
 function Attribute({ attribute }: { attribute: AttributeGrade }) {
@@ -62,17 +60,6 @@ function Attribute({ attribute }: { attribute: AttributeGrade }) {
 function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
   const slug = riven.weapon_slug;
 
-  const handleCompare = useCallback(async () => {
-    if (!slug) {
-      return;
-    }
-    try {
-      await api.openUrl(rivenAuctionUrl(slug));
-    } catch (error) {
-      reportError(error);
-    }
-  }, [slug]);
-
   return (
     <div className="flex w-80 max-w-full flex-col rounded-lg border gap-3 px-2 py-1.5">
       <div className="flex items-center gap-2">
@@ -90,7 +77,7 @@ function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
           </span>
           {riven.disposition !== null && (
             <Hint as="span">
-              Dispo x{riven.disposition.toFixed(2)}
+              Dispo x{disposition(riven.disposition)}
               {riven.disposition_weapon
                 ? ` on ${riven.disposition_weapon}`
                 : ""}
@@ -112,20 +99,20 @@ function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
       {riven.good_roll && (
         <GoodRollBlock view={riven.good_roll} className="border-t pt-1.5" />
       )}
-      {riven.weapon_slug && (
+      {slug && (
         <RivenListings
-          weaponSlug={riven.weapon_slug}
+          weaponSlug={slug}
           attributes={riven.attributes}
           limit={compact ? 3 : 5}
           className="border-t pt-1.5"
         />
       )}
-      {riven.weapon_slug && !compact && (
+      {slug && !compact && (
         <Button
           variant="outline"
           size="sm"
           className="self-start"
-          onClick={handleCompare}
+          onClick={() => openExternal(rivenAuctionUrl(slug))}
         >
           <ExternalLink className="size-3.5" />
           Compare on warframe.market

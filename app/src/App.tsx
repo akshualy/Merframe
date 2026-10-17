@@ -1,7 +1,6 @@
 import { check } from "@tauri-apps/plugin-updater";
-import { lazy, Suspense, useCallback, useEffect, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router";
-import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
 import { AppSidebar } from "@/components/app-sidebar";
 import { EventBridge } from "@/components/event-bridge";
@@ -11,8 +10,9 @@ import { StartupScreen } from "@/components/startup-screen";
 import { StatusBar } from "@/components/status-bar";
 import { Toaster } from "@/components/ui/sonner";
 import { UpdateDialog } from "@/components/update-dialog";
-import { api, errorMessage, logError } from "@/lib/bridge";
-import { useAppStore } from "@/stores/app-store";
+import { useLatestAttempt } from "@/hooks/use-latest-attempt";
+import { api, logError } from "@/lib/bridge";
+import { useAppStore, useSettings } from "@/stores/app-store";
 import { useMarketItemsStore } from "@/stores/market-items-store";
 
 const AboutPage = lazy(() =>
@@ -64,7 +64,7 @@ const WorldPage = lazy(() =>
 );
 
 function useBoot() {
-  const newest = useRef(0);
+  const { attempt, cancel } = useLatestAttempt();
   const { setReady, setBootError, setStatus, setSettings } = useAppStore(
     useShallow((state) => ({
       setReady: state.setReady,
@@ -74,54 +74,35 @@ function useBoot() {
     })),
   );
 
-  const boot = useCallback(async () => {
-    newest.current += 1;
-    const attempt = newest.current;
+  const boot = useCallback(() => {
     setBootError(null);
-    try {
-      const [status, settings] = await Promise.all([
-        api.gameStatus(),
-        api.settingsGet(),
-      ]);
-      if (attempt !== newest.current) {
-        return;
-      }
-      setStatus(status);
-      setSettings(settings);
-      setReady(true);
-    } catch (error) {
-      if (attempt !== newest.current) {
-        return;
-      }
-      const message = errorMessage(error);
-      setBootError(message);
-      toast.error(message);
-    }
-  }, [setBootError, setReady, setSettings, setStatus]);
+    return attempt(() => Promise.all([api.gameStatus(), api.settingsGet()]), {
+      loaded: ([status, settings]) => {
+        setStatus(status);
+        setSettings(settings);
+        setReady(true);
+      },
+      failed: setBootError,
+    });
+  }, [attempt, setBootError, setReady, setSettings, setStatus]);
 
   useEffect(() => {
     boot();
-    return () => {
-      newest.current += 1;
-    };
-  }, [boot]);
+    return cancel;
+  }, [boot, cancel]);
 
   return boot;
 }
 
 function MainWindow() {
   const retry = useBoot();
-  const { ready, bootError, settings, setUpdate } = useAppStore(
+  const { ready, bootError } = useAppStore(
     useShallow((state) => ({
       ready: state.ready,
       bootError: state.bootError,
-      settings: state.settings,
-      setUpdate: state.setUpdate,
     })),
   );
   const setItems = useMarketItemsStore((state) => state.setItems);
-  const statsTab = settings?.stats_tab_enabled ?? true;
-  const checkForUpdates = settings?.check_for_updates ?? true;
 
   useEffect(() => {
     if (!ready) {
@@ -132,30 +113,31 @@ function MainWindow() {
       .then(setItems, (error) => logError("Market items", error));
   }, [ready, setItems]);
 
-  useEffect(() => {
-    if (!ready || !checkForUpdates) {
-      return;
-    }
-    api
-      .updatesSupported()
-      .then((supported) => (supported ? check() : null))
-      .then(setUpdate, (error) => logError("Update check", error));
-  }, [ready, checkForUpdates, setUpdate]);
-
   return (
     <>
       <EventBridge />
-      {ready ? (
-        <Shell statsTab={statsTab} />
-      ) : (
-        <StartupScreen error={bootError} onRetry={retry} />
-      )}
+      {ready ? <Shell /> : <StartupScreen error={bootError} onRetry={retry} />}
       <Toaster />
     </>
   );
 }
 
-function Shell({ statsTab }: { statsTab: boolean }) {
+function Shell() {
+  const settings = useSettings();
+  const setUpdate = useAppStore((state) => state.setUpdate);
+  const checkForUpdates = settings.check_for_updates;
+
+  useEffect(() => {
+    if (!checkForUpdates) {
+      return;
+    }
+
+    api
+      .updatesSupported()
+      .then((supported) => (supported ? check() : null))
+      .then(setUpdate, (error) => logError("Update check", error));
+  }, [checkForUpdates, setUpdate]);
+
   return (
     <div className="flex h-full w-full overflow-hidden">
       <AppSidebar />
@@ -179,7 +161,11 @@ function Shell({ statsTab }: { statsTab: boolean }) {
                 <Route
                   path="/stats"
                   element={
-                    statsTab ? <StatsPage /> : <Navigate to="/world" replace />
+                    settings.stats_tab_enabled ? (
+                      <StatsPage />
+                    ) : (
+                      <Navigate to="/world" replace />
+                    )
                   }
                 />
                 <Route path="/settings" element={<SettingsPage />} />

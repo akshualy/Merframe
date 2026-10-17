@@ -4,6 +4,7 @@ import {
   type ReactNode,
   useState,
 } from "react";
+import type { TooltipContentProps } from "recharts";
 import { Hint } from "@/components/ui/hint";
 import { HEIGHT, WIDTH } from "@/lib/chart";
 import { cn } from "@/lib/utils";
@@ -128,6 +129,17 @@ export function ChartReadings({
       ))}
     </div>
   );
+}
+
+export function readingsTooltip<T extends { label: string }>(
+  readings: (entry: T) => Reading[],
+) {
+  return ({ active, payload }: TooltipContentProps) => {
+    const entry: T | undefined = payload[0]?.payload;
+    return active && entry ? (
+      <ChartReadings label={entry.label} readings={readings(entry)} />
+    ) : null;
+  };
 }
 
 export function ChartTooltip({

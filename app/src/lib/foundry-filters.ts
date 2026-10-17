@@ -1,4 +1,4 @@
-import { failsYesNo, passesYesNo, type YesNo } from "@/lib/filters";
+import { failsYesNo, passesYesNo, withYesNo, type YesNo } from "@/lib/filters";
 import type { FoundryItem } from "@/types";
 
 export const CATEGORIES = [
@@ -183,14 +183,7 @@ export function withFilter(
   key: FilterKey,
   mode: YesNo | null,
 ): Filters {
-  const next = { ...filters };
-  if (mode === null) {
-    delete next[key];
-  } else {
-    next[key] = mode;
-  }
-
-  return prune(items, next, key);
+  return prune(items, withYesNo(filters, key, mode), key);
 }
 
 function searchFoundry(item: FoundryItem, search: string): boolean {

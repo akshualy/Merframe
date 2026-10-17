@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { GameIcon } from "@/components/game-icon";
+import { Amount } from "@/components/currency";
 import { EmptyNote } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -138,8 +138,9 @@ export function OrderList({
                 side === "sell" ? "text-primary" : "text-accent",
               )}
             >
-              {order.platinum}
-              <GameIcon name="platinum" size={16} alt="Platinum" />
+              <Amount currency="platinum" plain>
+                {order.platinum}
+              </Amount>
               {bundle > 1 ? ` (${unitPrice(order)})` : ""}
             </button>
           </li>

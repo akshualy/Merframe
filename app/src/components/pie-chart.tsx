@@ -6,7 +6,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { ChartReadings } from "@/components/chart-hover";
+import { readingsTooltip } from "@/components/chart-hover";
 import { Hint } from "@/components/ui/hint";
 import { percent } from "@/lib/format";
 
@@ -57,22 +57,14 @@ export function PieChart({
               </Pie>
               <Tooltip
                 isAnimationActive={false}
-                content={({ active, payload }) => {
-                  const slice: Slice | undefined = payload[0]?.payload;
-                  return active && slice ? (
-                    <ChartReadings
-                      label={slice.label}
-                      readings={[
-                        {
-                          key: slice.key,
-                          color: slice.color,
-                          text: format(slice.value),
-                          note: percent(slice.value / total, 0),
-                        },
-                      ]}
-                    />
-                  ) : null;
-                }}
+                content={readingsTooltip<Slice>((slice) => [
+                  {
+                    key: slice.key,
+                    color: slice.color,
+                    text: format(slice.value),
+                    note: percent(slice.value / total, 0),
+                  },
+                ])}
               />
             </Chart>
           </ResponsiveContainer>

@@ -11,6 +11,14 @@ export function num(value: number | null | undefined): string {
   return NUMBER.format(Math.round(value));
 }
 
+export function counted(
+  count: number,
+  singular: string,
+  plural = `${singular}s`,
+): string {
+  return `${num(count)} ${count === 1 ? singular : plural}`;
+}
+
 export function plat(value: number | null | undefined): string {
   if (value === null || value === undefined) {
     return "-";

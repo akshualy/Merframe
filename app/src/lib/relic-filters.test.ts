@@ -1,27 +1,22 @@
 import { describe, expect, it } from "vitest";
+import { ANY } from "@/lib/filters";
 import {
-  ANY_REFINEMENT,
   highestOwnedRefinement,
   matchesRelicFilters,
   type RelicFilters,
   refinementValue,
   showsWanted,
 } from "@/lib/relic-filters";
+import { findOrThrow } from "@/lib/testing";
 import type { RelicPlan } from "@/types";
 import planner from "./relic-filters.test-data.json";
 
 const plans = planner.plans as RelicPlan[];
-const relic = (name: string) => {
-  const plan = plans.find((entry) => entry.relic === name);
-  if (!plan) {
-    throw new Error(`${name} missing from the test data`);
-  }
-  return plan;
-};
+const relic = (name: string) => findOrThrow(plans, name, (plan) => plan.relic);
 
 const open: RelicFilters = {
   squadSize: 4,
-  refinement: ANY_REFINEMENT,
+  refinement: ANY,
   favourite: null,
   vaulted: null,
   setsOwned: null,
@@ -36,9 +31,7 @@ describe("refinementValue", () => {
   const axi = relic("Axi A20");
 
   it("best refinement for any", () => {
-    expect(refinementValue(axi, ANY_REFINEMENT)?.refinement).toBe(
-      axi.best.refinement,
-    );
+    expect(refinementValue(axi, ANY)?.refinement).toBe(axi.best.refinement);
   });
 
   it("named refinement", () => {

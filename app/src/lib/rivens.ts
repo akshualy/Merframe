@@ -51,12 +51,20 @@ export function attributeRange(attribute: AttributeGrade): string | null {
   return `${low.toFixed(1)} to ${high.toFixed(1)}`;
 }
 
+export function attributeLabel(attribute: AttributeGrade): string {
+  return attribute.name ?? attribute.tag;
+}
+
 export function attributeText(attribute: AttributeGrade): string {
-  const name = attribute.name ?? attribute.tag;
+  const name = attributeLabel(attribute);
   const value = attributeValue(attribute);
   return value === null
     ? `${name} ${percent(attribute.percentile, 0)}`
     : `${value} ${name}`;
+}
+
+export function disposition(value: number | null): string {
+  return value === null ? "-" : value.toFixed(2);
 }
 
 export function rivenAuctionUrl(weaponSlug: string): string {

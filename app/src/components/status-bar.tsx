@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useNow } from "@/hooks/use-now";
 import { ago, countdown, secondsUntil } from "@/lib/format";
+import { nodeLabel } from "@/lib/world";
 import { useAppStore } from "@/stores/app-store";
 
 const FISSURE_PREVIEW = 8;
@@ -94,7 +95,7 @@ export function StatusBar() {
                 {fissures.slice(0, FISSURE_PREVIEW).map((fissure) => (
                   <li key={`${fissure.node_id}-${fissure.expiry}`}>
                     {fissure.tier} {fissure.mission_name} at{" "}
-                    {fissure.node_name ?? fissure.node_id}
+                    {nodeLabel(fissure.node_name, fissure.node_id)}
                     {fissure.steel_path ? " (Steel Path)" : ""}
                     {fissure.is_storm ? " (Void Storm)" : ""},{" "}
                     {countdown(secondsUntil(fissure.expiry, now))} left

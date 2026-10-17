@@ -1,23 +1,17 @@
 import { ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Amount } from "@/components/currency";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect } from "@/components/filter-select";
-import { GameIcon } from "@/components/game-icon";
 import { ItemCard } from "@/components/inventory-item-card";
 import { prefetchImages } from "@/components/item-image";
+import { OptionSelect } from "@/components/option-select";
 import { CardGrid, EmptyPanel } from "@/components/page";
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { usePaged } from "@/hooks/use-paged";
-import { type YesNo, yesNoOptions } from "@/lib/filters";
+import { plainOptions, withYesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
   ducats,
@@ -32,7 +26,6 @@ import {
   keeps,
   loadFilters,
   ORDERINGS,
-  type Ordering,
   refinementsFor,
   saveFilters,
   sortEntries,
@@ -40,7 +33,7 @@ import {
   yesNoFiltersFor,
 } from "@/lib/inventory-filters";
 
-const MIN_PLAT_CHOICES = [5, 10, 15];
+const MIN_PLAT_CHOICES = plainOptions(["5", "10", "15"]);
 
 export function InventoryTabView({
   tab,
@@ -116,21 +109,13 @@ export function InventoryTabView({
           placeholder="Search"
         />
 
-        <Select
+        <OptionSelect
+          label="Order by"
           value={filters.ordering}
-          onValueChange={(value) => update({ ordering: value as Ordering })}
-        >
-          <SelectTrigger className="w-44" aria-label="Order by">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ORDERINGS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          options={ORDERINGS}
+          onChange={(ordering) => update({ ordering })}
+          className="w-44"
+        />
 
         <Button
           variant="outline"
@@ -163,32 +148,29 @@ export function InventoryTabView({
             label={group.label}
             value={filters.yesNo[group.key] ?? null}
             options={yesNoOptions(group.yes, group.no)}
-            onChange={(mode) => {
-              const next = { ...filters.yesNo };
-              if (mode === null) {
-                delete next[group.key];
-              } else {
-                next[group.key] = mode as YesNo;
-              }
-              update({ yesNo: next });
-            }}
+            onChange={(mode) =>
+              update({
+                yesNo: withYesNo(filters.yesNo, group.key, mode),
+              })
+            }
           />
         ))}
         {refinements.length > 0 && (
           <FilterSelect
             label="Refinement"
             value={filters.refinement}
-            options={refinements.map((value) => ({ value, label: value }))}
-            onChange={(value) => update({ refinement: value })}
+            options={plainOptions(refinements)}
+            onChange={(value) =>
+              update({
+                refinement: value,
+              })
+            }
           />
         )}
         <FilterSelect
           label="Min plat"
           value={filters.minPlat === null ? null : String(filters.minPlat)}
-          options={MIN_PLAT_CHOICES.map((value) => ({
-            value: String(value),
-            label: String(value),
-          }))}
+          options={MIN_PLAT_CHOICES}
           onChange={(value) =>
             update({ minPlat: value === null ? null : Number(value) })
           }
@@ -218,20 +200,18 @@ export function InventoryTabView({
           title="Total of the rows shown"
         >
           Ducats
-          <span className="text-foreground flex items-center gap-0.5 font-semibold tabular-nums">
+          <Amount currency="ducats" className="text-foreground font-semibold">
             {num(selection.ducats)}
-            <GameIcon name="ducats" size={16} alt="Ducats" />
-          </span>
+          </Amount>
         </span>
         <span
           className="flex items-center gap-1"
           title="Total of the rows shown"
         >
           Platinum
-          <span className="text-primary flex items-center gap-0.5 font-semibold tabular-nums">
+          <Amount currency="platinum" className="font-semibold">
             {num(selection.plat)}
-            <GameIcon name="platinum" size={16} alt="Platinum" />
-          </span>
+          </Amount>
         </span>
       </div>
     </div>

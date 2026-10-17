@@ -1,56 +1,12 @@
 import { Star } from "lucide-react";
 import { useEffect } from "react";
-import { GameIcon } from "@/components/game-icon";
+import { Amount } from "@/components/currency";
 import { ItemImage, prefetchImages } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { num } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
 import { cn } from "@/lib/utils";
 import type { RankedComponent, RankedReward, RewardScreen } from "@/types";
-
-function Platinum({
-  amount,
-  size = 16,
-  className,
-}: {
-  amount: string;
-  size?: number;
-  className?: string;
-}) {
-  return (
-    <span
-      className={cn(
-        "text-primary flex items-center gap-0.5 tabular-nums",
-        className,
-      )}
-    >
-      {amount}
-      <GameIcon name="platinum" size={size} alt="Platinum" />
-    </span>
-  );
-}
-
-function Ducats({
-  amount,
-  size = 16,
-  className,
-}: {
-  amount: string;
-  size?: number;
-  className?: string;
-}) {
-  return (
-    <span
-      className={cn(
-        "text-accent flex items-center gap-0.5 tabular-nums",
-        className,
-      )}
-    >
-      {amount}
-      <GameIcon name="ducats" size={size} alt="Ducats" />
-    </span>
-  );
-}
 
 function RewardComponentTile({ component }: { component: RankedComponent }) {
   return (
@@ -129,8 +85,12 @@ function RewardTile({
       </span>
 
       <span className="flex items-center gap-2">
-        <Platinum amount={num(reward.plat)} className="text-sm font-bold" />
-        <Ducats amount={num(reward.item.ducats)} className="text-sm" />
+        <Amount currency="platinum" className="text-sm font-bold">
+          {num(reward.plat)}
+        </Amount>
+        <Amount currency="ducats" className="text-sm">
+          {num(reward.item.ducats)}
+        </Amount>
         {reward.item.vault === "vaulted" && (
           <Badge variant="vaulted" className="ml-auto">
             Vaulted
@@ -160,11 +120,9 @@ function RewardTile({
       {reward.set_plat !== null && (
         <span className="flex items-center gap-1.5 text-xs">
           <span className="text-muted-foreground">Set</span>
-          <Platinum
-            amount={num(reward.set_plat)}
-            size={14}
-            className="font-medium"
-          />
+          <Amount currency="platinum" size={14} className="font-medium">
+            {num(reward.set_plat)}
+          </Amount>
         </span>
       )}
     </li>
@@ -201,15 +159,15 @@ export function RelicRewardOverlay({
         <div className="text-muted-foreground flex items-center justify-end gap-4 text-xs">
           <span className="flex items-center gap-1">
             Platinum
-            <Platinum
-              amount={num(screen.account.plat)}
-              size={14}
-              className="font-medium"
-            />
+            <Amount currency="platinum" size={14} className="font-medium">
+              {num(screen.account.plat)}
+            </Amount>
           </span>
           <span className="flex items-center gap-1">
             Ducats
-            <Ducats amount={num(screen.account.ducats)} size={14} />
+            <Amount currency="ducats" size={14}>
+              {num(screen.account.ducats)}
+            </Amount>
           </span>
         </div>
       )}

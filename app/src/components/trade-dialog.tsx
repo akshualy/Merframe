@@ -1,5 +1,6 @@
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
+import { SelectField } from "@/components/option-select";
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
@@ -10,15 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import type { FilterOption } from "@/lib/filters";
 import { useMarketItemsStore } from "@/stores/market-items-store";
 import type { StoredTrade, Trade, TradeItem } from "@/types";
 
@@ -45,6 +41,10 @@ export interface TradeEntry {
 }
 
 const ITEM_NAMES_ID = "trade-item-names";
+const DIRECTIONS: FilterOption<TradeDraft["direction"]>[] = [
+  { value: "received", label: "Received" },
+  { value: "paid", label: "Paid" },
+];
 
 let nextKey = 0;
 
@@ -241,53 +241,48 @@ export function TradeDialog({
           ))}
         </datalist>
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="trade-at">When</Label>
+          <Field id="trade-at" label="When">
             <DateTimePicker
               id="trade-at"
               value={draft.at}
               onChange={(at) => setDraft({ ...draft, at })}
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="trade-partner">Partner</Label>
+          </Field>
+          <Field id="trade-partner" label="Partner">
             <Input
               id="trade-partner"
               value={draft.partner}
               placeholder="Player name"
               onChange={(e) => setDraft({ ...draft, partner: e.target.value })}
             />
-          </div>
+          </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="trade-plat">Platinum</Label>
+            <Field id="trade-plat" label="Platinum">
               <Input
                 id="trade-plat"
                 inputMode="numeric"
                 value={draft.plat}
-                onChange={(e) => setDraft({ ...draft, plat: e.target.value })}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="trade-direction">Direction</Label>
-              <Select
-                value={draft.direction}
-                onValueChange={(direction) =>
+                onChange={(e) =>
                   setDraft({
                     ...draft,
-                    direction: direction as TradeDraft["direction"],
+                    plat: e.target.value,
                   })
                 }
-              >
-                <SelectTrigger id="trade-direction" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="received">Received</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              />
+            </Field>
+            <SelectField
+              id="trade-direction"
+              label="Direction"
+              value={draft.direction}
+              options={DIRECTIONS}
+              onChange={(direction) =>
+                setDraft({
+                  ...draft,
+                  direction,
+                })
+              }
+              className="w-full"
+            />
           </div>
           <ItemRows
             label="Offered"

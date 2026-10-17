@@ -15,9 +15,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { NavLink } from "react-router";
-import Merframe from "@/components/icons/merframe";
+import { BrandBar } from "@/components/brand-bar";
 import { cn } from "@/lib/utils";
-import { useAppStore } from "@/stores/app-store";
+import { useSettings } from "@/stores/app-store";
 
 const NAV = [
   { to: "/world", label: "World", icon: Globe },
@@ -64,17 +64,11 @@ function Item({
 }
 
 export function AppSidebar() {
-  const settings = useAppStore((state) => state.settings);
-  const statsTab = settings?.stats_tab_enabled ?? true;
+  const statsTab = useSettings().stats_tab_enabled;
 
   return (
     <aside className="bg-card flex w-60 shrink-0 flex-col border-r">
-      <div className="flex h-14 items-center gap-2 border-b px-4">
-        <Merframe className="text-primary size-7" />
-        <span className="text-foreground text-lg font-bold tracking-tight">
-          Merframe
-        </span>
-      </div>
+      <BrandBar />
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
         {NAV.filter((entry) => statsTab || entry.to !== "/stats").map(
           (entry) => (

@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ANY } from "@/lib/filters";
 import type { Category } from "@/lib/foundry-filters";
-import { ANY_REFINEMENT } from "@/lib/relic-filters";
+import { readStored, readStoredJson } from "@/lib/storage";
 import type {
   FissurePath,
   ResourceScope,
@@ -37,7 +38,7 @@ interface PreferencesState {
 const TABLE_KEY = /^merframe\.table\.(.+)\.hiddenColumns$/;
 
 function legacy<T extends string>(key: string, fallback: T): T {
-  return (localStorage.getItem(key) as T | null) ?? fallback;
+  return (readStored(key) as T | null) ?? fallback;
 }
 
 function legacyHiddenColumns(): Record<string, string[]> {
@@ -45,7 +46,7 @@ function legacyHiddenColumns(): Record<string, string[]> {
   for (const key of Object.keys(localStorage)) {
     const tableId = TABLE_KEY.exec(key)?.[1];
     if (tableId) {
-      hiddenColumns[tableId] = JSON.parse(localStorage.getItem(key) ?? "[]");
+      hiddenColumns[tableId] = readStoredJson<string[]>(key) ?? [];
     }
   }
   return hiddenColumns;
@@ -53,13 +54,13 @@ function legacyHiddenColumns(): Record<string, string[]> {
 
 export const DEFAULT_SQUAD_SIZE = 4;
 
-const legacySquadSize = localStorage.getItem("merframe.relicPlanner.squadSize");
+const legacySquadSize = readStored("merframe.relicPlanner.squadSize");
 
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
       squadSize: legacySquadSize ? Number(legacySquadSize) : DEFAULT_SQUAD_SIZE,
-      refinement: legacy("merframe.relicPlanner.refinement", ANY_REFINEMENT),
+      refinement: legacy("merframe.relicPlanner.refinement", ANY),
       era: legacy("merframe.relicPlanner.era", "all"),
       fissurePath: legacy<FissurePath>("merframe.world.fissurePath", "normal"),
       timeframe: legacy<Timeframe>("merframe.stats.timeframe", "30"),

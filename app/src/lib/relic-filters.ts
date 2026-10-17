@@ -1,10 +1,9 @@
-import type { YesNo } from "@/lib/filters";
+import { ANY, failsYesNo, type YesNo } from "@/lib/filters";
 import { REFINEMENTS } from "@/lib/relics";
 import { readStored, writeStoredJson } from "@/lib/storage";
 import type { RefinementValue, RelicPlan } from "@/types";
 
 const OVERLAY_FILTERS_KEY = "merframe.relicPlanner.overlayFilters";
-export const ANY_REFINEMENT = "any";
 export const RADIANT = "Radiant";
 
 export type FavouriteFilter = YesNo | "order";
@@ -44,8 +43,7 @@ export function refinementValue(
   plan: RelicPlan,
   refinement: string,
 ): RefinementValue | undefined {
-  const target =
-    refinement === ANY_REFINEMENT ? plan.best.refinement : refinement;
+  const target = refinement === ANY ? plan.best.refinement : refinement;
   return plan.values.find((entry) => entry.refinement === target);
 }
 
@@ -61,15 +59,21 @@ export function highestOwnedRefinement(plan: RelicPlan): string | undefined {
   ).at(-1);
 }
 
-function matches(flag: boolean, filter: YesNo | null): boolean {
-  return filter === null || (filter === "yes") === flag;
-}
-
 function isRefined(plan: RelicPlan): boolean {
   return plan.ownership.by_refinement.some(
     (entry) => entry.refinement !== REFINEMENTS[0],
   );
 }
+
+type RelicFlag = "vaulted" | "setsOwned" | "itemsOwned" | "stacked" | "refined";
+
+const RELIC_FLAGS: [RelicFlag, (plan: RelicPlan) => boolean][] = [
+  ["vaulted", (plan) => plan.vaulted],
+  ["setsOwned", (plan) => plan.ownership.all_sets_owned],
+  ["itemsOwned", (plan) => plan.ownership.all_items_owned],
+  ["stacked", (plan) => plan.ownership.owned >= 10],
+  ["refined", isRefined],
+];
 
 function ownsTier(plan: RelicPlan, tier: string): boolean {
   return plan.ownership.by_refinement.some(
@@ -87,19 +91,12 @@ export function matchesRelicFilters(
   if (filters.favourite === "no" && plan.any_favourite) {
     return false;
   }
-  if (!matches(plan.vaulted, filters.vaulted)) {
-    return false;
-  }
-  if (!matches(plan.ownership.all_sets_owned, filters.setsOwned)) {
-    return false;
-  }
-  if (!matches(plan.ownership.all_items_owned, filters.itemsOwned)) {
-    return false;
-  }
-  if (!matches(plan.ownership.owned >= 10, filters.stacked)) {
-    return false;
-  }
-  if (!matches(isRefined(plan), filters.refined)) {
+
+  const failsFlag = RELIC_FLAGS.some(([key, flag]) => {
+    const mode = filters[key];
+    return mode !== null && failsYesNo(mode, flag(plan));
+  });
+  if (failsFlag) {
     return false;
   }
   if (filters.tierOwned !== null && !ownsTier(plan, filters.tierOwned)) {

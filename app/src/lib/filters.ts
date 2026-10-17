@@ -1,5 +1,7 @@
 export type YesNo = "yes" | "no";
 
+export const ANY = "any";
+
 export function failsYesNo(mode: YesNo, flag: boolean | null): boolean {
   return (mode === "yes") !== flag;
 }
@@ -17,14 +19,35 @@ export function passesYesNo<K extends string>(
   return true;
 }
 
-export interface FilterOption {
-  value: string;
+export function withYesNo<K extends string>(
+  filters: Partial<Record<K, YesNo>>,
+  key: K,
+  mode: YesNo | null,
+): Partial<Record<K, YesNo>> {
+  const next = { ...filters };
+  if (mode === null) {
+    delete next[key];
+  } else {
+    next[key] = mode;
+  }
+
+  return next;
+}
+
+export interface FilterOption<T extends string = string> {
+  value: T;
   label: string;
 }
 
-export function yesNoOptions(yes: string, no: string): FilterOption[] {
+export function yesNoOptions(yes: string, no: string): FilterOption<YesNo>[] {
   return [
     { value: "yes", label: yes },
     { value: "no", label: no },
   ];
+}
+
+export function plainOptions<T extends string>(
+  values: readonly T[],
+): FilterOption<T>[] {
+  return values.map((value) => ({ value, label: value }));
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ago,
   countdown,
+  counted,
   dateTime,
   dayLabel,
   displayNameFromPath,
@@ -22,6 +23,18 @@ describe("num", () => {
   it("dash for missing", () => {
     expect(num(null)).toBe("-");
     expect(num(undefined)).toBe("-");
+  });
+});
+
+describe("counted", () => {
+  it("singular for one, plural otherwise", () => {
+    expect(counted(1, "relic")).toBe("1 relic");
+    expect(counted(0, "relic")).toBe("0 relics");
+    expect(counted(1200, "relic")).toBe("1,200 relics");
+  });
+
+  it("irregular plural", () => {
+    expect(counted(2, "item needs", "items need")).toBe("2 items need");
   });
 });
 

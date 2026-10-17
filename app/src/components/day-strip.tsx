@@ -4,12 +4,12 @@ import {
   useChartHover,
 } from "@/components/chart-hover";
 import {
+  AXIS_TICK,
   HEIGHT,
   INNER_HEIGHT,
   labelledTicks,
   PADDING,
   TICK_BASELINE,
-  TICK_FONT,
   tickWidth,
   tickX,
   WIDTH,
@@ -216,9 +216,7 @@ export function DayStrip({
               x={tickX(tick.centre, tick.text)}
               y={TICK_BASELINE}
               textAnchor="middle"
-              fontSize={TICK_FONT}
-              fill="currentColor"
-              fillOpacity={0.6}
+              {...AXIS_TICK}
             >
               {tick.text}
             </text>

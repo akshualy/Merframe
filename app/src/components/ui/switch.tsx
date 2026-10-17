@@ -3,6 +3,7 @@
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import type * as React from "react";
 
+import { Field } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 function Switch({
@@ -26,4 +27,29 @@ function Switch({
   );
 }
 
-export { Switch };
+function SwitchField({
+  id,
+  label,
+  checked,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <Field id={id} label={label} inline>
+      <Switch
+        id={id}
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={onChange}
+      />
+    </Field>
+  );
+}
+
+export { Switch, SwitchField };

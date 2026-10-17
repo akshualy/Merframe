@@ -1,5 +1,6 @@
 import { Archive, CircleCheck, Receipt, ShoppingCart, Tag } from "lucide-react";
 import { memo, type ReactNode } from "react";
+import { Amount } from "@/components/currency";
 import { EquippedDialog } from "@/components/equipped-dialog";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
@@ -10,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { num } from "@/lib/format";
 import {
   buyPlat,
+  completion,
   crafted,
   ducats,
   equippedIn,
@@ -18,16 +20,16 @@ import {
   type InventoryFlags,
   rank,
   refinement,
-  type SetPart,
+  type SetEntry,
   sellPlat,
   vault,
 } from "@/lib/inventory-entries";
 import type { InventoryTabKey } from "@/lib/inventory-filters";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
-import { useAppStore } from "@/stores/app-store";
+import { useSettings } from "@/stores/app-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
-import type { OrderType, SetRow } from "@/types";
+import type { OrderType } from "@/types";
 
 function RankedPlat({
   side,
@@ -57,16 +59,14 @@ function RankedPlat({
       {value === null ? (
         <span className="text-muted-foreground">-</span>
       ) : (
-        <span
-          className={cn(
-            "flex items-center gap-0.5 text-xs font-bold tabular-nums",
-            tone ?? "text-primary",
-          )}
+        <Amount
+          currency="platinum"
+          size={14}
+          className={cn("text-xs font-bold", tone)}
         >
           {num(value)}
           {floor ? "+" : ""}
-          <GameIcon name="platinum" size={14} alt="Platinum" />
-        </span>
+        </Amount>
       )}
     </>
   );
@@ -86,13 +86,13 @@ function RankedPlat({
   return <span className="flex items-baseline gap-1 text-xs">{body}</span>;
 }
 
-function SetParts({ set, parts }: { set: SetRow; parts: SetPart[] }) {
+function SetParts({ set }: { set: SetEntry }) {
   const openListing = useMarketPanelStore((state) => state.openListing);
-  const side = useAppStore((state) => state.settings?.set_part_click ?? "sell");
+  const side = useSettings().set_part_click;
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-1">
-        {parts.map(({ component, item }) => {
+        {set.parts.map(({ component, item }) => {
           const slug = item.market_slug;
           return (
             <button
@@ -115,14 +115,12 @@ function SetParts({ set, parts }: { set: SetRow; parts: SetPart[] }) {
       </div>
       <div className="flex items-center gap-2">
         <Progress
-          value={Math.round(
-            (set.owned_parts / Math.max(set.total_parts, 1)) * 100,
-          )}
+          value={Math.round(completion(set) * 100)}
           className="h-1.5 flex-1"
-          indicatorClassName={set.complete ? "bg-accent" : undefined}
+          indicatorClassName={set.row.complete ? "bg-accent" : undefined}
         />
         <Hint as="span" className="tabular-nums">
-          {set.owned_parts}/{set.total_parts}
+          {set.row.owned_parts}/{set.row.total_parts}
         </Hint>
       </div>
     </div>
@@ -159,6 +157,11 @@ function Meta({
     <span className={cn("flex items-center gap-1", className)}>{children}</span>
   );
 }
+
+const LISTINGS = [
+  { flag: "selling", label: "Selling" },
+  { flag: "buying", label: "Buying" },
+] as const;
 
 function marketSubtype(entry: InventoryEntry): string | null {
   switch (entry.kind) {
@@ -202,6 +205,15 @@ function ItemCardInner({
   const starSockets = sculpture
     ? sculpture.amber_sockets + sculpture.cyan_sockets
     : 0;
+  const listed: string[] = [];
+  for (const { flag, label } of LISTINGS) {
+    if (flags[flag].has(row.item)) {
+      listed.push(label);
+    }
+    if (setItem !== null && flags[flag].has(setItem)) {
+      listed.push(`${label} in set`);
+    }
+  }
 
   return (
     <div className="bg-card hover:border-primary/50 flex gap-4 rounded-xl border p-4 transition-colors">
@@ -217,9 +229,10 @@ function ItemCardInner({
           <ImageTag className="top-1 right-1">x{num(row.count)}</ImageTag>
         )}
         {itemDucats ? (
-          <ImageTag className="text-accent bottom-1 left-1/2 -translate-x-1/2">
-            {num(itemDucats)}
-            <GameIcon name="ducats" size={14} alt="Ducats" />
+          <ImageTag className="bottom-1 left-1/2 -translate-x-1/2">
+            <Amount currency="ducats" size={14}>
+              {num(itemDucats)}
+            </Amount>
           </ImageTag>
         ) : null}
       </div>
@@ -280,30 +293,12 @@ function ItemCardInner({
               Complete
             </Meta>
           )}
-          {flags.selling.has(row.item) && (
-            <Meta className="text-primary">
+          {listed.map((label) => (
+            <Meta key={label} className="text-primary">
               <Tag className="size-3.5" />
-              Selling
+              {label}
             </Meta>
-          )}
-          {setItem !== null && flags.selling.has(setItem) && (
-            <Meta className="text-primary">
-              <Tag className="size-3.5" />
-              Selling in set
-            </Meta>
-          )}
-          {flags.buying.has(row.item) && (
-            <Meta className="text-primary">
-              <Tag className="size-3.5" />
-              Buying
-            </Meta>
-          )}
-          {setItem !== null && flags.buying.has(setItem) && (
-            <Meta className="text-primary">
-              <Tag className="size-3.5" />
-              Buying in set
-            </Meta>
-          )}
+          ))}
         </div>
         {equipped && (
           <EquippedDialog
@@ -313,7 +308,7 @@ function ItemCardInner({
             label={equipped}
           />
         )}
-        {set && <SetParts set={set.row} parts={set.parts} />}
+        {set && <SetParts set={set} />}
         {slug && (
           <div className="mt-auto flex flex-wrap items-center justify-end gap-2 pt-1.5">
             {upgrade && tab === "arcanes" ? (

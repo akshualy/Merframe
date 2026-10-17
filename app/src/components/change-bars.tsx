@@ -10,9 +10,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ChartReadings } from "@/components/chart-hover";
+import { readingsTooltip } from "@/components/chart-hover";
 import { Hint } from "@/components/ui/hint";
-import { AXIS_TICK } from "@/lib/chart";
+import { AXIS_TICK, BAR_CURSOR, changeColor, signed } from "@/lib/chart";
 
 export interface ChangeRow {
   key: string;
@@ -22,8 +22,7 @@ export interface ChangeRow {
 }
 
 export function signedPercent(change: number): string {
-  const percent = Math.round(change * 100);
-  return `${percent > 0 ? "+" : ""}${percent}%`;
+  return signed(Math.round(change * 100), (percent) => `${percent}%`);
 }
 
 function EndLabel({ x, y, width, height, value }: LabelProps) {
@@ -43,10 +42,6 @@ function EndLabel({ x, y, width, height, value }: LabelProps) {
       {signedPercent(change)}
     </text>
   );
-}
-
-function colorOf(change: number): string {
-  return change < 0 ? "var(--chart-loss)" : "var(--chart-gain)";
 }
 
 export function ChangeBars({
@@ -87,24 +82,16 @@ export function ChangeBars({
               />
               <ReferenceLine x={0} stroke="currentColor" strokeOpacity={0.2} />
               <Tooltip
-                cursor={{ fill: "currentColor", fillOpacity: 0.08 }}
+                cursor={BAR_CURSOR}
                 isAnimationActive={false}
-                content={({ active, payload }) => {
-                  const row: ChangeRow | undefined = payload[0]?.payload;
-                  return active && row ? (
-                    <ChartReadings
-                      label={row.label}
-                      readings={[
-                        {
-                          key: row.key,
-                          color: colorOf(row.change),
-                          text: signedPercent(row.change),
-                          note: row.note,
-                        },
-                      ]}
-                    />
-                  ) : null;
-                }}
+                content={readingsTooltip<ChangeRow>((row) => [
+                  {
+                    key: row.key,
+                    color: changeColor(row.change),
+                    text: signedPercent(row.change),
+                    note: row.note,
+                  },
+                ])}
               />
               <Bar
                 dataKey="change"
@@ -113,7 +100,7 @@ export function ChangeBars({
                 isAnimationActive={false}
               >
                 {rows.map((row) => (
-                  <Cell key={row.key} fill={colorOf(row.change)} />
+                  <Cell key={row.key} fill={changeColor(row.change)} />
                 ))}
                 <LabelList dataKey="change" content={EndLabel} />
               </Bar>

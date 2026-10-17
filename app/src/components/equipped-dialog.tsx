@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { num } from "@/lib/format";
+import { counted, num } from "@/lib/format";
 import type { ModHolder } from "@/types";
 
 const CONFIG_LETTERS = "ABCDEF";
@@ -39,7 +39,7 @@ export function EquippedDialog({
           <DialogTitle>{name}</DialogTitle>
           <DialogDescription>
             {rank === null ? "Equipped" : `Rank ${rank}, equipped`} in{" "}
-            {num(holders.length)} {holders.length === 1 ? "item" : "items"}
+            {counted(holders.length, "item")}
           </DialogDescription>
         </DialogHeader>
         <ul className="-mr-2 flex max-h-96 flex-col gap-1 overflow-y-auto pr-2">

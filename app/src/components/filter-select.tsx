@@ -1,17 +1,38 @@
 import { FilterField } from "@/components/filter-grid";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/option-select";
 import type { FilterOption } from "@/lib/filters";
 import { cn } from "@/lib/utils";
 
-const ANY_VALUE = "any";
+export function FilterSingleSelect<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: T;
+  options: readonly FilterOption<T>[];
+  onChange: (value: T) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <FilterField label={label}>
+      <OptionSelect
+        label={label}
+        value={value}
+        options={options}
+        onChange={onChange}
+        size="sm"
+        dense
+        className="w-full"
+        disabled={disabled}
+      />
+    </FilterField>
+  );
+}
 
-export function FilterSelect({
+export function FilterSelect<T extends string>({
   label,
   value,
   options,
@@ -20,77 +41,25 @@ export function FilterSelect({
   disabled,
 }: {
   label: string;
-  value: string | null;
-  options: readonly FilterOption[];
-  onChange: (value: string | null) => void;
+  value: T | null;
+  options: readonly FilterOption<T>[];
+  onChange: (value: T | null) => void;
   anyLabel?: string;
   disabled?: boolean;
 }) {
   return (
     <FilterField label={label}>
-      <Select
-        value={value ?? ANY_VALUE}
-        onValueChange={(next) => onChange(next === ANY_VALUE ? null : next)}
+      <OptionSelect
+        label={label}
+        value={value}
+        options={options}
+        onChange={onChange}
+        anyLabel={anyLabel}
+        size="sm"
+        dense
+        className={cn("w-full", value === null && "text-muted-foreground")}
         disabled={disabled}
-      >
-        <SelectTrigger
-          size="sm"
-          aria-label={label}
-          className={cn(
-            "w-full text-xs",
-            value === null && "text-muted-foreground",
-          )}
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ANY_VALUE} className="text-xs">
-            {anyLabel}
-          </SelectItem>
-          {options.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-              className="text-xs"
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </FilterField>
-  );
-}
-
-export function FilterSingleSelect<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: T;
-  options: readonly { value: T; label: string }[];
-  onChange: (value: T) => void;
-}) {
-  return (
-    <FilterField label={label}>
-      <Select value={value} onValueChange={(next) => onChange(next as T)}>
-        <SelectTrigger size="sm" aria-label={label} className="w-full text-xs">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-              className="text-xs"
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
     </FilterField>
   );
 }

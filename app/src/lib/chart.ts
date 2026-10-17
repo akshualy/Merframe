@@ -12,12 +12,26 @@ export const AXIS_TICK = {
   fillOpacity: 0.6,
 };
 export const GRID = { stroke: "currentColor", strokeOpacity: 0.1 };
+export const MARGIN = { top: 8, right: 8, bottom: 0, left: 0 };
+export const LINE_CURSOR = { stroke: "currentColor", strokeOpacity: 0.3 };
+export const BAR_CURSOR = { fill: "currentColor", fillOpacity: 0.08 };
 
 export function changeTone(change: number): string | undefined {
   if (change === 0) {
     return undefined;
   }
   return change > 0 ? "text-chart-gain" : "text-chart-loss";
+}
+
+export function changeColor(change: number): string {
+  return change < 0 ? "var(--chart-loss)" : "var(--chart-gain)";
+}
+
+export function signed(
+  value: number,
+  format: (value: number) => string,
+): string {
+  return `${value > 0 ? "+" : ""}${format(value)}`;
 }
 
 const GLYPH_WIDTH = 0.6;

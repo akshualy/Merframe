@@ -1,32 +1,12 @@
-import type { ReactNode } from "react";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { SwitchField } from "@/components/ui/switch";
 import type { DucateringHidden, Settings } from "@/types";
 
 const HIDDEN: { value: DucateringHidden; label: string }[] = [
   { value: "listed", label: "Hide items you are selling" },
   { value: "complete_sets", label: "Hide parts of complete sets" },
 ];
-
-function Field({
-  id,
-  label,
-  children,
-}: {
-  id: string;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <Label htmlFor={id} className="text-sm">
-        {label}
-      </Label>
-      {children}
-    </div>
-  );
-}
 
 function PlatInput({
   id,
@@ -74,17 +54,18 @@ export function DucateringFilters({
     });
   return (
     <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2">
-      <Field id="ducatering-most-ducats" label="Most Ducats first">
-        <Switch
-          id="ducatering-most-ducats"
-          checked={settings.ducatering_most_ducats_first}
-          disabled={disabled}
-          onCheckedChange={(checked) =>
-            update({ ducatering_most_ducats_first: checked })
-          }
-        />
-      </Field>
-      <Field id="ducatering-max-plat" label="Hide above">
+      <SwitchField
+        id="ducatering-most-ducats"
+        label="Most Ducats first"
+        checked={settings.ducatering_most_ducats_first}
+        disabled={disabled}
+        onChange={(checked) =>
+          update({
+            ducatering_most_ducats_first: checked,
+          })
+        }
+      />
+      <Field id="ducatering-max-plat" label="Hide above" inline>
         <PlatInput
           id="ducatering-max-plat"
           value={settings.ducatering_max_plat}
@@ -93,16 +74,16 @@ export function DucateringFilters({
         />
       </Field>
       {HIDDEN.map(({ value, label }) => (
-        <Field key={value} id={`ducatering-${value}`} label={label}>
-          <Switch
-            id={`ducatering-${value}`}
-            checked={settings.ducatering_hidden.includes(value)}
-            disabled={disabled}
-            onCheckedChange={(checked) => setHidden(value, checked)}
-          />
-        </Field>
+        <SwitchField
+          key={value}
+          id={`ducatering-${value}`}
+          label={label}
+          checked={settings.ducatering_hidden.includes(value)}
+          disabled={disabled}
+          onChange={(checked) => setHidden(value, checked)}
+        />
       ))}
-      <Field id="ducatering-set-plat" label="Hide sets above">
+      <Field id="ducatering-set-plat" label="Hide sets above" inline>
         <PlatInput
           id="ducatering-set-plat"
           value={settings.ducatering_hidden_set_plat}

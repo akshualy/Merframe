@@ -18,11 +18,10 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { api } from "@/lib/bridge";
-import { type YesNo, yesNoOptions } from "@/lib/filters";
+import { ANY, type YesNo, yesNoOptions } from "@/lib/filters";
 import { num, plat } from "@/lib/format";
 import { usePageQuote } from "@/lib/quotes";
 import {
-  ANY_REFINEMENT,
   type FavouriteFilter,
   matchesRelicFilters,
   type RelicFilters,
@@ -148,7 +147,7 @@ export function RelicPlannerPage() {
             matchesRelicFilters(plan, filters),
         )
         .flatMap<PlannerRow>((plan) => {
-          const best = refinement === ANY_REFINEMENT;
+          const best = refinement === ANY;
           const value = refinementValue(plan, refinement);
           if (!value) {
             return [];
@@ -310,7 +309,7 @@ export function RelicPlannerPage() {
                 label="Refinement"
                 value={refinement}
                 options={[
-                  { value: ANY_REFINEMENT, label: "Any" },
+                  { value: ANY, label: "Any" },
                   ...REFINEMENTS.map((entry) => ({
                     value: entry,
                     label: entry,

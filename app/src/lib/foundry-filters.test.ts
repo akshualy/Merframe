@@ -8,18 +8,12 @@ import {
   prune,
   withFilter,
 } from "@/lib/foundry-filters";
+import { findOrThrow } from "@/lib/testing";
 import type { FoundryItem } from "@/types";
 import foundry from "./foundry-filters.test-data.json";
 
 const items = foundry.items as FoundryItem[];
-const byName = (name: string) => {
-  const item = items.find((entry) => entry.name === name);
-  if (!item) {
-    throw new Error(`${name} missing from the test data`);
-  }
-
-  return item;
-};
+const byName = (name: string) => findOrThrow(items, name, (item) => item.name);
 
 const warframes = inCategory(items, "warframe");
 const primaries = inCategory(items, "primary");
@@ -72,7 +66,7 @@ describe("foundryMatches", () => {
     expect(foundryMatches(nova, "", { subsumed: "no" })).toBe(false);
   });
 
-  it("favourite from components", () => {
+  it("favourite mark", () => {
     expect(
       foundryMatches(byName("Braton Prime"), "", { favourite: "yes" }),
     ).toBe(true);

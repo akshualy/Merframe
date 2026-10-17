@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { DucateringOverlay } from "@/components/ducatering-overlay";
 import { EmptyNote } from "@/components/page";
 import {
@@ -7,7 +7,6 @@ import {
 } from "@/components/relic-recommendation-overlay";
 import { RelicRewardOverlay } from "@/components/relic-reward-overlay";
 import { RivenOverlay, RivenRerollOverlay } from "@/components/riven-overlay";
-import { useListen } from "@/hooks/use-listen";
 import { useLoaded } from "@/hooks/use-loaded";
 import { api, logError } from "@/lib/bridge";
 import { DEFAULT_SQUAD_SIZE } from "@/stores/preferences-store";
@@ -38,18 +37,14 @@ export function RecommendationSlot({
   trigger: RecommendationTrigger | null;
   compact?: boolean;
 }) {
-  const [changes, setChanges] = useState(0);
-  useListen(["favouriteUpdated", "inventoryUpdated", "pricesUpdated"], () =>
-    setChanges((count) => count + 1),
-  );
   const shown = trigger !== null;
   const tier = trigger?.tier ?? null;
   const filters = useOverlayFilters();
   const squadSize = filters?.squadSize ?? DEFAULT_SQUAD_SIZE;
   const wanted = filters?.wanted;
   const reloadKey = useMemo(
-    () => (shown ? { tier, squadSize, wanted: wanted ?? [], changes } : null),
-    [shown, tier, squadSize, wanted, changes],
+    () => (shown ? { tier, squadSize, wanted: wanted ?? [] } : null),
+    [shown, tier, squadSize, wanted],
   );
   const plans = useLoaded(
     reloadKey,
@@ -58,6 +53,7 @@ export function RecommendationSlot({
       logError("Ranking the owned relics", cause);
       return [];
     },
+    ["favouriteUpdated", "inventoryUpdated", "pricesUpdated"],
   );
 
   if (!trigger) {

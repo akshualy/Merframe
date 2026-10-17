@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { isRelicTier } from "@/lib/relics";
 import { cn } from "@/lib/utils";
+import { capitalize } from "@/lib/world";
 
 export type GameIconName =
   | "day"
@@ -207,7 +208,7 @@ export function PolarityIcon({
   if (!name) {
     return null;
   }
-  const label = school.charAt(0).toUpperCase() + school.slice(1);
+  const label = capitalize(school);
   return (
     <GameIcon
       name={name}

@@ -11,16 +11,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { api, reportError } from "@/lib/bridge";
+import { reportError } from "@/lib/bridge";
 import { useAppStore } from "@/stores/app-store";
 
 export function UpdateDialog() {
-  const { update, setUpdate, settings, setSettings } = useAppStore(
+  const { update, setUpdate, saveSettings } = useAppStore(
     useShallow((state) => ({
       update: state.update,
       setUpdate: state.setUpdate,
-      settings: state.settings,
-      setSettings: state.setSettings,
+      saveSettings: state.saveSettings,
     })),
   );
   const [progress, setProgress] = useState<number | null>(null);
@@ -51,18 +50,13 @@ export function UpdateDialog() {
   }, [update]);
 
   const handleMute = useCallback(async () => {
-    if (!settings) {
-      return;
-    }
-    try {
-      setSettings(
-        await api.settingsSet({ ...settings, check_for_updates: false }),
-      );
+    const failure = await saveSettings({
+      check_for_updates: false,
+    });
+    if (failure === null) {
       close();
-    } catch (error) {
-      reportError(error);
     }
-  }, [settings, setSettings, close]);
+  }, [saveSettings, close]);
 
   const installing = progress !== null;
 

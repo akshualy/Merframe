@@ -197,3 +197,11 @@ export const api = {
   prefetchImages: (names: string[]) =>
     call<ImagePath[]>("prefetch_images", { names }),
 };
+
+export async function openExternal(url: string) {
+  try {
+    await api.openUrl(url);
+  } catch (error) {
+    reportError(error);
+  }
+}

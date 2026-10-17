@@ -7,8 +7,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ChartHeader, ChartReadings } from "@/components/chart-hover";
-import { AXIS_TICK, COMPACT, GRID } from "@/lib/chart";
+import { ChartHeader, readingsTooltip } from "@/components/chart-hover";
+import { AXIS_TICK, BAR_CURSOR, COMPACT, GRID, MARGIN } from "@/lib/chart";
 import { cn } from "@/lib/utils";
 
 export interface Bar {
@@ -48,7 +48,7 @@ export function BarChart({
       />
       <div className="h-40">
         <ResponsiveContainer>
-          <Chart data={bars} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+          <Chart data={bars} margin={MARGIN}>
             <CartesianGrid vertical={false} {...GRID} />
             <XAxis
               dataKey="label"
@@ -67,19 +67,15 @@ export function BarChart({
               axisLine={false}
             />
             <Tooltip
-              cursor={{ fill: "currentColor", fillOpacity: 0.08 }}
+              cursor={BAR_CURSOR}
               isAnimationActive={false}
-              content={({ active, payload }) => {
-                const bar: Bar | undefined = payload[0]?.payload;
-                return active && bar ? (
-                  <ChartReadings
-                    label={bar.label}
-                    readings={[
-                      { key: "value", color, text: format(bar.value) },
-                    ]}
-                  />
-                ) : null;
-              }}
+              content={readingsTooltip<Bar>((bar) => [
+                {
+                  key: "value",
+                  color,
+                  text: format(bar.value),
+                },
+              ])}
             />
             <BarMark
               dataKey="value"

@@ -1,4 +1,5 @@
 import { RotateCcw } from "lucide-react";
+import { BrandBar } from "@/components/brand-bar";
 import Merframe from "@/components/icons/merframe";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
@@ -19,10 +20,7 @@ export function StartupScreen({
       role={error ? "alert" : "status"}
       aria-live={error ? "assertive" : "polite"}
     >
-      <header className="bg-card flex h-14 shrink-0 items-center gap-2 border-b px-4">
-        <Merframe className="text-primary size-7" />
-        <span className="text-lg font-bold tracking-tight">Merframe</span>
-      </header>
+      <BrandBar />
 
       <main className="flex h-full items-center justify-center gap-2 p-8">
         <div className="flex flex-col gap-2 w-full max-w-lg">

@@ -18,9 +18,16 @@ export interface SetPart {
   item: ItemSummary;
 }
 
+export interface SetEntry {
+  kind: "set";
+  row: SetRow;
+  item: ItemSummary;
+  parts: SetPart[];
+}
+
 export type InventoryEntry =
   | { kind: "part"; row: PartRow; item: ItemSummary; set: ItemSummary }
-  | { kind: "set"; row: SetRow; item: ItemSummary; parts: SetPart[] }
+  | SetEntry
   | {
       kind: "upgrade";
       row: ModRow;

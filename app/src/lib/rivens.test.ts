@@ -1,56 +1,56 @@
 import { describe, expect, it } from "vitest";
 import {
   attributeAmount,
+  attributeLabel,
   attributeRange,
   attributeText,
   attributeValue,
+  disposition,
   gradeTone,
   gradeVariant,
   rivenAuctionUrl,
 } from "@/lib/rivens";
 import type { AttributeGrade } from "@/types";
 
-const initialCombo: AttributeGrade = {
+function attribute(patch: Partial<AttributeGrade>): AttributeGrade {
+  return {
+    tag: "WeaponFireRateMod",
+    name: "Fire Rate / Attack Speed",
+    slug: null,
+    unit: null,
+    prefix: null,
+    suffix: null,
+    localization: null,
+    value: 5,
+    percentile: 0.5,
+    grade: "B",
+    multiplier: 1,
+    rolled: 5,
+    display: 5,
+    min: 4.1,
+    max: 5,
+    curse: false,
+    spliced: false,
+    desired: false,
+    ...patch,
+  };
+}
+
+const initialCombo = attribute({
   tag: "WeaponMeleeComboInitialBonusMod",
   name: "Initial combo",
-  slug: null,
-  unit: null,
-  prefix: null,
-  suffix: null,
-  localization: null,
   value: 2.2,
-  percentile: 0.5,
-  grade: "B",
-  multiplier: 1,
   rolled: 2.2,
   display: 2.2,
   min: 1,
   max: 3,
-  curse: false,
-  spliced: false,
-  desired: false,
-};
+});
 
-const attackSpeed: AttributeGrade = {
-  tag: "WeaponFireRateMod",
-  name: "Fire Rate / Attack Speed",
-  slug: null,
+const attackSpeed = attribute({
   unit: "percent",
-  prefix: null,
-  suffix: null,
-  localization: null,
-  value: 5,
   percentile: 0.91,
   grade: "A",
-  multiplier: 1,
-  rolled: 5,
-  display: 5,
-  min: 4.1,
-  max: 5,
-  curse: false,
-  spliced: false,
-  desired: false,
-};
+});
 
 describe("gradeVariant", () => {
   it("variant per letter", () => {
@@ -134,6 +134,20 @@ describe("attributeText", () => {
     expect(attributeText({ ...initialCombo, name: null })).toBe(
       "+2.2 WeaponMeleeComboInitialBonusMod",
     );
+  });
+});
+
+describe("attributeLabel", () => {
+  it("name, or the tag when the name is unknown", () => {
+    expect(attributeLabel(initialCombo)).toBe("Initial combo");
+    expect(attributeLabel(attribute({ name: null }))).toBe("WeaponFireRateMod");
+  });
+});
+
+describe("disposition", () => {
+  it("two decimals, a dash when unknown", () => {
+    expect(disposition(1.3)).toBe("1.30");
+    expect(disposition(null)).toBe("-");
   });
 });
 
