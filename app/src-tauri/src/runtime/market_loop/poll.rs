@@ -5,7 +5,7 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
 use wf_market::MarketError;
 
-use super::{MARKET_SIGNED_OUT_POLL, market_refresh, refresh_failed, sign_out};
+use super::{MARKET_SIGNED_OUT_POLL, market_refresh, refresh_failed};
 use crate::market::{MarketSnapshot, market_snapshot};
 use crate::market_session;
 use crate::runtime::{AppEvent, emit, update_status};
@@ -93,7 +93,7 @@ async fn checked_session<R: Runtime>(
         Ok(session) => session,
         Err(MarketError::Unauthorized) => {
             info!("Warframe.market rejected the stored token");
-            sign_out(app, state);
+            market_session::clear_rejected(app, state);
             return None;
         }
         Err(error) => {

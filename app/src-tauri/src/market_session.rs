@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use tauri::{AppHandle, Runtime};
+use tracing::warn;
 
 use crate::market::MarketOrders;
-use crate::runtime::update_status;
+use crate::runtime::{AppEvent, emit, update_status};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, write};
 
@@ -39,4 +40,11 @@ pub fn clear<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> anyhow::Result
         status.market_unread = 0;
     });
     cleared
+}
+
+pub fn clear_rejected<R: Runtime>(app: &AppHandle<R>, state: &AppState) {
+    if let Err(error) = clear(app, state) {
+        warn!(%error, "Clearing the stored market session failed");
+    }
+    emit(app, AppEvent::MarketSessionRejected);
 }

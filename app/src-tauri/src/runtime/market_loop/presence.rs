@@ -5,7 +5,8 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
 use wf_market::{IncomingEvent, MarketSocket, StatusSetPayload, UserStatus};
 
-use super::{MARKET_SIGNED_OUT_POLL, sign_out};
+use super::MARKET_SIGNED_OUT_POLL;
+use crate::market_session;
 use crate::runtime::{AppEvent, emit};
 use crate::state::{AppState, read, write};
 
@@ -30,7 +31,7 @@ pub(crate) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: A
             }
             Handshake::Rejected => {
                 info!("Market socket rejected the stored token");
-                sign_out(&app, &state);
+                market_session::clear_rejected(&app, &state);
             }
             Handshake::Closed => failures = failures.saturating_add(1),
         }
@@ -110,7 +111,7 @@ async fn presence_session<R: Runtime>(
                 match event? {
                     Some(IncomingEvent::AuthError) => {
                         info!("Market socket rejected the session, signing out");
-                        sign_out(app, state);
+                        market_session::clear_rejected(app, state);
                         return Ok(());
                     }
                     Some(IncomingEvent::StatusSet { payload, .. }) => {

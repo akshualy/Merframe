@@ -6,12 +6,9 @@ mod presence;
 use std::sync::Arc;
 use std::time::Duration;
 
-use tauri::{AppHandle, Runtime};
 use tracing::warn;
 use wf_market::{Auction, Order};
 
-use crate::market_session;
-use crate::runtime::{AppEvent, emit};
 use crate::state::AppState;
 
 pub use auto_close::MarketAutoClose;
@@ -22,13 +19,6 @@ pub(super) use poll::market_task;
 pub(super) use presence::market_presence_task;
 
 const MARKET_SIGNED_OUT_POLL: Duration = Duration::from_secs(30);
-
-fn sign_out<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    if let Err(error) = market_session::clear(app, state) {
-        warn!(%error, "Clearing the stored market session failed");
-    }
-    emit(app, AppEvent::MarketSessionRejected);
-}
 
 struct MarketRefresh {
     orders: Option<Vec<Order>>,

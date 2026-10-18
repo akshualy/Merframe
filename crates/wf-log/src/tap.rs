@@ -19,6 +19,13 @@ fn unterminated_tail(path: &Path) -> Result<Vec<u8>> {
     Ok(tail.split_off(head))
 }
 
+fn cut_timestamp(tail: &[u8]) -> bool {
+    !tail.is_empty()
+        && tail
+            .iter()
+            .all(|byte| byte.is_ascii_digit() || *byte == b'.')
+}
+
 #[derive(Debug, Default)]
 pub struct BufferCursor {
     previous: Vec<u8>,
@@ -31,13 +38,14 @@ impl BufferCursor {
         pending: &[u8],
         flushed_head: impl FnOnce() -> Result<Vec<u8>>,
     ) -> Result<Vec<String>> {
-        let fresh = if pending.starts_with(&self.previous) {
+        let fresh = if !self.previous.is_empty() && pending.starts_with(&self.previous) {
             &pending[self.previous.len()..]
         } else {
-            self.partial = if is_line_head(pending) {
+            let tail = flushed_head()?;
+            self.partial = if is_line_head(pending) && !cut_timestamp(&tail) {
                 Vec::new()
             } else {
-                flushed_head()?
+                tail
             };
             pending
         };
@@ -202,6 +210,43 @@ mod tests {
                     .to_owned()
             ]
         );
+    }
+
+    #[test]
+    fn fragment_in_file_discarded() {
+        let mut cursor = BufferCursor::default();
+        assert_eq!(
+            advance(&mut cursor, b"1.000 Sys [Info]: first\r\n").len(),
+            1
+        );
+        let lines = cursor
+            .advance(
+                b"51047.426 Script [Info]: Trade.lua: DBG: HudVis 0\r\n",
+                || Ok(b"51046.900 Sys [Info]: ResourceLoader 0x1 (/Lotus/Levels/x) Fou".to_vec()),
+            )
+            .unwrap();
+        assert_eq!(
+            lines,
+            vec!["51047.426 Script [Info]: Trade.lua: DBG: HudVis 0".to_owned()]
+        );
+    }
+
+    #[test]
+    fn timestamp_cut_by_flush() {
+        let mut cursor = BufferCursor::default();
+        for tail in [&b"1182"[..], b"11826."] {
+            cursor.restart();
+            let lines = cursor
+                .advance(
+                    &b"11826.308 Script [Info]: Trade.lua: DBG: HudVis 0\r\n"[tail.len()..],
+                    || Ok(tail.to_vec()),
+                )
+                .unwrap();
+            assert_eq!(
+                lines,
+                vec!["11826.308 Script [Info]: Trade.lua: DBG: HudVis 0".to_owned()]
+            );
+        }
     }
 
     #[test]
