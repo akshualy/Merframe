@@ -1,4 +1,3 @@
-use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -6,13 +5,11 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
 use wf_core::{KeptRoll, RivenRow, riven_display_name, riven_kept_roll};
 
-use super::{Kind, Marks, PendingAnswer, RivenTrigger, enabled, show, since, update_slots};
+use super::screens::PendingAnswer;
+use super::{Kind, RivenTrigger, enabled, show, update_slots};
 use crate::runtime::{self, AppEvent, blocking, emit};
 use crate::state::{AppState, lock, read};
 
-const PURCHASE_DIALOG_WINDOW: f64 = 2.0;
-const RIVEN_REPEAT: f64 = 0.4;
-const DIALOG_ANSWER_WINDOW: f64 = 300.0;
 const PENDING_TICK: Duration = Duration::from_millis(100);
 const PENDING_TICKS: usize = 400;
 const DIALOG_TICK: Duration = Duration::from_millis(100);
@@ -23,32 +20,6 @@ pub fn riven_item_type(item_path: &str) -> Option<String> {
         return None;
     }
     Some(item_path.replacen("/Lotus/StoreItems/", "/Lotus/", 1))
-}
-
-fn confirmed_answer(marks: &mut Marks, at: f64) -> Option<PendingAnswer> {
-    let (answer, armed) = marks.pending.take()?;
-    (at - armed < DIALOG_ANSWER_WINDOW).then_some(answer)
-}
-
-pub(super) fn station_closes(marks: &mut Marks, at: f64) -> bool {
-    if marks.reroll_screen.is_some_and(|opened| at > opened) {
-        marks.reroll_screen = None;
-        return true;
-    }
-    false
-}
-
-pub(super) fn riven_shows(marks: &Marks, at: f64) -> bool {
-    since(marks.purchase_dialog, at)
-        .is_some_and(|elapsed| (0.0..PURCHASE_DIALOG_WINDOW).contains(&elapsed))
-        && !since(marks.riven, at).is_some_and(|elapsed| elapsed < RIVEN_REPEAT)
-}
-
-pub(super) fn purchase_dialog_closes(marks: &mut Marks, count: u32, at: f64) -> bool {
-    let dropped = count < marks.hud_visibility;
-    marks.hud_visibility = count;
-    marks.purchase_dialog = (!dropped).then_some(at);
-    dropped
 }
 
 fn lua_read<T>(
@@ -225,11 +196,11 @@ fn riven_scans(state: &Arc<AppState>) -> bool {
     enabled(&read(&state.settings), Kind::Riven) && read(&state.status).game_detected
 }
 
-async fn linked_dialog(state: &Arc<AppState>, ticket: u64) -> Option<wf_scan::DialogRiven> {
+async fn linked_dialog(state: &Arc<AppState>, generation: u64) -> Option<wf_scan::DialogRiven> {
     for _ in 0..DIALOG_TICKS {
         let reading = Arc::clone(state);
         let found = blocking("read the riven dialog", move || dialog_read(&reading)).await?;
-        if state.overlays.riven_ticket.load(Ordering::Relaxed) != ticket {
+        if !lock(&state.overlays.screens).chat_link_pending(generation) {
             return None;
         }
         if found.is_some() {
@@ -244,7 +215,7 @@ pub(super) fn show_linked_riven<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
     item_type: String,
-    ticket: u64,
+    generation: u64,
 ) {
     if !riven_scans(state) {
         return;
@@ -252,7 +223,7 @@ pub(super) fn show_linked_riven<R: Runtime>(
     let app = app.clone();
     let owned = Arc::clone(state);
     tauri::async_runtime::spawn(async move {
-        let Some(dialog) = linked_dialog(&owned, ticket).await else {
+        let Some(dialog) = linked_dialog(&owned, generation).await else {
             debug!(item_type, "Riven dialog holds no roll");
             return;
         };
@@ -298,11 +269,10 @@ pub(super) fn show_station_selection<R: Runtime>(app: &AppHandle<R>, state: &Arc
         let Some((station, row)) = station_selection(&owned).await else {
             return;
         };
-        if lock(&owned.overlays.marks).reroll_screen.is_none() {
+        if !lock(&owned.overlays.screens).cycling.is_open() {
             return;
         }
-        if station.offered.is_none() && std::mem::take(&mut lock(&owned.overlays.marks).choice_made)
-        {
+        if station.offered.is_none() && lock(&owned.overlays.screens).cycling.riven_resolved() {
             settle_choice(&app, &owned, &station.shown);
         }
         show_riven(&app, &owned, row);
@@ -315,13 +285,13 @@ fn settle_after_choice<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     tauri::async_runtime::spawn(async move {
         for _ in 0..20 {
             tokio::time::sleep(Duration::from_millis(500)).await;
-            if !lock(&owned.overlays.marks).choice_made {
+            if !lock(&owned.overlays.screens).cycling.awaiting_riven() {
                 return;
             }
             let Some(shown) =
                 shown_roll(&owned, RivenRow::clone).filter(|shown| shown.pending.is_some())
             else {
-                lock(&owned.overlays.marks).choice_made = false;
+                lock(&owned.overlays.screens).cycling.riven_resolved();
                 return;
             };
             let Some((station, row)) = station_selection(&owned).await else {
@@ -330,7 +300,7 @@ fn settle_after_choice<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
             if station.offered.is_some() || riven_kept_roll(&shown, &station.shown).is_none() {
                 continue;
             }
-            lock(&owned.overlays.marks).choice_made = false;
+            lock(&owned.overlays.screens).cycling.riven_resolved();
             settle_choice(&app, &owned, &station.shown);
             show_riven(&app, &owned, row);
             return;
@@ -349,12 +319,12 @@ pub(super) fn arm_station_answer(state: &Arc<AppState>, at: f64) {
             Some((_, row)) => PendingAnswer::Cycle { row: Box::new(row) },
             None => return,
         };
-        lock(&owned.overlays.marks).pending = Some((answer, at));
+        lock(&owned.overlays.screens).cycling.arm(answer, at);
     });
 }
 
 pub(super) fn on_dialog_answer<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, at: f64) {
-    let answer = confirmed_answer(&mut lock(&state.overlays.marks), at);
+    let answer = lock(&state.overlays.screens).cycling.confirmed_answer(at);
     match answer {
         Some(PendingAnswer::Cycle { row }) => {
             debug!(
@@ -362,13 +332,13 @@ pub(super) fn on_dialog_answer<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSt
                 rerolls = row.rerolls,
                 "Cycle confirmed"
             );
-            lock(&state.overlays.marks).choice_made = false;
+            lock(&state.overlays.screens).cycling.riven_resolved();
             show_riven(app, state, (*row).clone());
             hold_cycled_roll(app, state, &row);
         }
         Some(PendingAnswer::KeepRoll) => {
             debug!("Roll chosen, reading station card");
-            lock(&state.overlays.marks).choice_made = true;
+            lock(&state.overlays.screens).cycling.roll_chosen();
             settle_after_choice(app, state);
         }
         None => {}
@@ -406,82 +376,5 @@ mod tests {
             None
         );
         assert_eq!(riven_item_type(""), None);
-    }
-
-    #[test]
-    fn confirmed_answer_expires() {
-        let armed = |at| {
-            let mut marks = Marks {
-                pending: Some((PendingAnswer::KeepRoll, 96.931)),
-                ..Marks::default()
-            };
-            confirmed_answer(&mut marks, at)
-        };
-        assert_eq!(armed(98.047), Some(PendingAnswer::KeepRoll));
-        assert_eq!(armed(396.9), Some(PendingAnswer::KeepRoll));
-        assert_eq!(armed(396.931), None);
-        assert_eq!(armed(1000.0), None);
-
-        let mut marks = Marks::default();
-        assert_eq!(confirmed_answer(&mut marks, 98.047), None);
-    }
-
-    #[test]
-    fn station_closes_after_open_only() {
-        let mut marks = Marks::default();
-        assert!(!station_closes(&mut marks, 51731.293));
-
-        marks.reroll_screen = Some(51731.441);
-        assert!(!station_closes(&mut marks, 51731.277));
-        assert!(marks.reroll_screen.is_some());
-        assert!(station_closes(&mut marks, 51790.0));
-        assert!(!station_closes(&mut marks, 51791.0));
-    }
-
-    #[test]
-    fn riven_shows_once_per_dialog() {
-        let mut marks = Marks::default();
-        assert!(!riven_shows(&marks, 4310.355));
-
-        marks.purchase_dialog = Some(4309.896);
-        assert!(riven_shows(&marks, 4310.355));
-        assert!(!riven_shows(&marks, 4311.9));
-
-        marks.riven = Some(4310.355);
-        assert!(!riven_shows(&marks, 4310.5));
-        assert!(riven_shows(&marks, 4310.8));
-    }
-
-    #[test]
-    fn late_dialog_line() {
-        let mut marks = Marks::default();
-
-        assert!(!purchase_dialog_closes(&mut marks, 1, 38684.285));
-        assert!(riven_shows(&marks, 38684.598));
-
-        assert!(purchase_dialog_closes(&mut marks, 0, 38687.449));
-        assert!(!riven_shows(&marks, 38684.598));
-
-        assert!(!purchase_dialog_closes(&mut marks, 1, 38688.289));
-        assert!(!riven_shows(&marks, 38684.598));
-        assert!(riven_shows(&marks, 38688.48));
-        marks.riven = Some(38688.48);
-
-        assert!(purchase_dialog_closes(&mut marks, 0, 38690.582));
-        assert!(!riven_shows(&marks, 38690.9));
-    }
-
-    #[test]
-    fn dialog_over_menu() {
-        let mut marks = Marks::default();
-        assert!(!purchase_dialog_closes(&mut marks, 2, 26962.0));
-        assert!(riven_shows(&marks, 26962.395));
-        assert!(purchase_dialog_closes(&mut marks, 1, 26980.58));
-        assert!(!riven_shows(&marks, 26980.7));
-
-        assert!(!purchase_dialog_closes(&mut marks, 1, 38259.086));
-        assert!(riven_shows(&marks, 38259.395));
-        assert!(purchase_dialog_closes(&mut marks, 0, 38267.215));
-        assert!(!riven_shows(&marks, 38267.3));
     }
 }

@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::sync::atomic::Ordering;
 
 use chrono::{DateTime, Utc};
 use tauri::{AppHandle, Runtime};
@@ -7,7 +6,8 @@ use tracing::{debug, warn};
 use wf_core::tier_name;
 use wf_worldstate::{FissureTier, RelicTier, WorldState};
 
-use super::{Kind, Marks, RecommendationTrigger, attached_game, show, since};
+use super::screens::Game;
+use super::{Kind, RecommendationTrigger, attached_game, show};
 use crate::runtime::blocking;
 use crate::state::{AppState, lock, read};
 
@@ -28,33 +28,17 @@ impl Recommendation {
     }
 }
 
-pub(super) fn recommendation_suppressed(marks: &Marks, at: f64) -> bool {
-    since(marks.console, at).is_some_and(|elapsed| elapsed <= 1.0)
-}
-
-pub(super) fn recommendation_after_relic(marks: &Marks, at: f64) -> bool {
-    since(marks.relic_rewards, at).is_some_and(|elapsed| elapsed < 23.0)
-}
-
-pub(super) fn recommendation_stays(marks: &Marks, at: f64) -> bool {
-    since(marks.recommendation, at)
-        .is_some_and(|elapsed| elapsed < 0.5 || (marks.after_relic && elapsed < 3.5))
-}
-
-pub(super) fn set_mission(marks: &mut Marks, node: Option<&str>, tier: Option<RelicTier>) {
-    marks.mission_node = node.map(str::to_owned);
-    marks.mission_tier = tier;
-}
-
 pub(super) fn suggest_mission(state: &AppState, node: &str) {
-    if lock(&state.overlays.marks).mission_node.as_deref() == Some(node) {
+    if lock(&state.overlays.screens).game.mission_node.as_deref() == Some(node) {
         return;
     }
     let tier = lock(&state.core)
         .world()
         .and_then(|world| fissure_tier_at(world, node, Utc::now()));
     debug!(node, ?tier, "Squad mission suggested");
-    set_mission(&mut lock(&state.overlays.marks), Some(node), tier);
+    lock(&state.overlays.screens)
+        .game
+        .set_mission(Some(node), tier);
 }
 
 fn fissure_tier_at(world: &WorldState, mission: &str, now: DateTime<Utc>) -> Option<RelicTier> {
@@ -69,23 +53,11 @@ fn fissure_tier_at(world: &WorldState, mission: &str, now: DateTime<Utc>) -> Opt
         })
 }
 
-pub(super) fn requiem_mission(marks: &Marks) -> bool {
-    marks.mission_tier == Some(RelicTier::Requiem)
-}
-
-pub(super) fn reward_screen_closes(marks: &Marks, at: f64) -> bool {
-    since(marks.relic_rewards, at).is_some_and(|elapsed| elapsed > 0.0)
-}
-
-fn opened_from_star_chart(marks: &Marks) -> bool {
-    marks.star_chart > marks.star_chart_hidden
-}
-
-fn recommendation_for(marks: &Marks, scanned: Option<RelicTier>) -> Recommendation {
-    if opened_from_star_chart(marks) && scanned.is_some() {
+fn recommendation_for(game: &Game, scanned: Option<RelicTier>) -> Recommendation {
+    if game.star_chart_open && scanned.is_some() {
         return Recommendation::of(scanned);
     }
-    Recommendation::of(marks.mission_tier)
+    Recommendation::of(game.mission_tier)
 }
 
 fn selected_fissure_tier(state: &AppState) -> Option<RelicTier> {
@@ -109,12 +81,12 @@ fn selected_fissure_tier(state: &AppState) -> Option<RelicTier> {
 pub(super) fn scan_recommendation<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
-    ticket: u64,
+    generation: u64,
 ) {
     let app = app.clone();
     let owned = Arc::clone(state);
     tauri::async_runtime::spawn(async move {
-        let from_star_chart = opened_from_star_chart(&lock(&owned.overlays.marks));
+        let from_star_chart = lock(&owned.overlays.screens).game.star_chart_open;
         let scanned = if from_star_chart {
             let scanning = Arc::clone(&owned);
             blocking("scan fissure picker", move || {
@@ -129,13 +101,13 @@ pub(super) fn scan_recommendation<R: Runtime>(
             debug!("No inventory yet, skipping relic recommendation");
             return;
         }
-        let recommendation = recommendation_for(&lock(&owned.overlays.marks), scanned);
+        let recommendation = recommendation_for(&lock(&owned.overlays.screens).game, scanned);
         let tier = match recommendation {
             Recommendation::Hidden => return,
             Recommendation::AnyEra => None,
             Recommendation::Era(era) => Some(era),
         };
-        if owned.overlays.recommendation_ticket.load(Ordering::Relaxed) != ticket {
+        if !lock(&owned.overlays.screens).recommendation_pending(generation) {
             return;
         }
         let (refinement, count) = {
@@ -193,116 +165,38 @@ mod tests {
     }
 
     #[test]
-    fn reward_screen_closes_after_shown() {
-        let shown = Marks {
-            relic_rewards: Some(3683.5),
-            ..Marks::default()
-        };
-        assert!(!reward_screen_closes(&shown, 3683.0));
-        assert!(reward_screen_closes(&shown, 3698.5));
-        assert!(!reward_screen_closes(&Marks::default(), 3698.5));
-    }
-
-    #[test]
     fn star_chart_vs_mission_tier() {
-        let star_chart = Marks {
-            star_chart: Some(10.0),
-            star_chart_hidden: Some(5.0),
-            mission_tier: Some(RelicTier::Neo),
-            ..Marks::default()
-        };
-        assert!(opened_from_star_chart(&star_chart));
+        let mut game = Game::default();
+        game.star_chart_open = true;
+        game.set_mission(None, Some(RelicTier::Neo));
         assert_eq!(
-            recommendation_for(&star_chart, Some(RelicTier::Lith)),
+            recommendation_for(&game, Some(RelicTier::Lith)),
             Recommendation::Era("Lith")
         );
         assert_eq!(
-            recommendation_for(&star_chart, Some(RelicTier::Omnia)),
+            recommendation_for(&game, Some(RelicTier::Omnia)),
             Recommendation::AnyEra
         );
+        assert_eq!(recommendation_for(&game, None), Recommendation::Era("Neo"));
+
+        game.star_chart_open = false;
         assert_eq!(
-            recommendation_for(&star_chart, None),
+            recommendation_for(&game, Some(RelicTier::Lith)),
             Recommendation::Era("Neo")
         );
 
-        let in_mission = Marks {
-            star_chart_hidden: Some(15.0),
-            ..star_chart.clone()
-        };
-        assert!(!opened_from_star_chart(&in_mission));
+        game.set_mission(None, None);
         assert_eq!(
-            recommendation_for(&in_mission, Some(RelicTier::Lith)),
-            Recommendation::Era("Neo")
-        );
-
-        let orbiter_without_mission = Marks {
-            mission_tier: None,
-            ..in_mission.clone()
-        };
-        assert_eq!(
-            recommendation_for(&orbiter_without_mission, Some(RelicTier::Lith)),
+            recommendation_for(&game, Some(RelicTier::Lith)),
             Recommendation::Hidden
         );
 
-        let lobby = Marks {
-            mission_tier: Some(RelicTier::Axi),
-            ..Marks::default()
-        };
-        assert!(!opened_from_star_chart(&lobby));
-        assert_eq!(recommendation_for(&lobby, None), Recommendation::Era("Axi"));
-        assert_eq!(
-            recommendation_for(&Marks::default(), None),
-            Recommendation::Hidden
-        );
+        game.set_mission(Some("SolNode1"), Some(RelicTier::Axi));
+        assert_eq!(recommendation_for(&game, None), Recommendation::Era("Axi"));
+        assert!(!game.requiem_mission());
 
-        let requiem = Marks {
-            mission_tier: Some(RelicTier::Requiem),
-            ..Marks::default()
-        };
-        assert!(requiem_mission(&requiem));
-        assert!(!requiem_mission(&lobby));
-        assert_eq!(recommendation_for(&requiem, None), Recommendation::Hidden);
-    }
-
-    #[test]
-    fn console_suppression_window() {
-        let mut marks = Marks::default();
-        assert!(!recommendation_suppressed(&marks, 100.0));
-
-        marks.console = Some(100.0);
-        assert!(recommendation_suppressed(&marks, 100.0));
-        assert!(recommendation_suppressed(&marks, 101.0));
-        assert!(!recommendation_suppressed(&marks, 101.001));
-    }
-
-    #[test]
-    fn after_relic_window() {
-        let marks = Marks {
-            relic_rewards: Some(1000.0),
-            ..Marks::default()
-        };
-        assert!(recommendation_after_relic(&marks, 1000.0));
-        assert!(recommendation_after_relic(&marks, 1022.9));
-        assert!(!recommendation_after_relic(&marks, 1023.0));
-        assert!(!recommendation_after_relic(&Marks::default(), 1000.0));
-    }
-
-    #[test]
-    fn recommendation_self_close() {
-        let mut marks = Marks {
-            recommendation: Some(200.0),
-            ..Marks::default()
-        };
-        assert!(recommendation_stays(&marks, 200.0));
-        assert!(recommendation_stays(&marks, 200.4));
-        assert!(!recommendation_stays(&marks, 200.5));
-        assert!(!recommendation_stays(&marks, 260.0));
-
-        marks.after_relic = true;
-        assert!(recommendation_stays(&marks, 200.5));
-        assert!(recommendation_stays(&marks, 203.4));
-        assert!(!recommendation_stays(&marks, 203.5));
-
-        assert!(!recommendation_stays(&Marks::default(), 203.5));
+        game.set_mission(Some("SolNode1"), Some(RelicTier::Requiem));
+        assert!(game.requiem_mission());
+        assert_eq!(recommendation_for(&game, None), Recommendation::Hidden);
     }
 }

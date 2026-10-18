@@ -19,6 +19,7 @@ use crate::state::{AppState, lock, read};
 
 mod relic;
 mod riven;
+mod screens;
 mod session;
 mod window;
 
@@ -28,14 +29,9 @@ pub use session::adopt_xwayland;
 use session::uses_windows;
 pub use session::{OverlaySupport, probe};
 
-use relic::{
-    recommendation_after_relic, recommendation_stays, recommendation_suppressed, requiem_mission,
-    reward_screen_closes, scan_recommendation, set_mission, suggest_mission,
-};
-use riven::{
-    arm_station_answer, on_dialog_answer, purchase_dialog_closes, riven_shows, show_linked_riven,
-    show_station_selection, station_closes,
-};
+use relic::{scan_recommendation, suggest_mission};
+use riven::{arm_station_answer, on_dialog_answer, show_linked_riven, show_station_selection};
+use screens::Screens;
 use window::{Bounds, Screen, bounds_for, logical, open, park, place, retire, reveal, screen_of};
 
 pub const KINDS: [Kind; 5] = [
@@ -121,10 +117,6 @@ fn window_bounds(screen: Screen, kind: Kind, settings: &Settings) -> Bounds {
         bounds_for(kind, placement_of(settings, kind), rows, screen),
         screen.scale,
     )
-}
-
-fn next_ticket(ticket: &AtomicU64) -> u64 {
-    ticket.fetch_add(1, Ordering::Relaxed) + 1
 }
 
 fn placement_of(settings: &Settings, kind: Kind) -> OverlayPlacement {
@@ -218,34 +210,6 @@ impl OverlayState {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-enum PendingAnswer {
-    Cycle { row: Box<RivenRow> },
-    KeepRoll,
-}
-
-#[derive(Debug, Clone, Default, PartialEq)]
-struct Marks {
-    relic_rewards: Option<f64>,
-    recommendation: Option<f64>,
-    console: Option<f64>,
-    after_relic: bool,
-    purchase_dialog: Option<f64>,
-    riven: Option<f64>,
-    star_chart: Option<f64>,
-    star_chart_hidden: Option<f64>,
-    mission_tier: Option<RelicTier>,
-    mission_node: Option<String>,
-    hud_visibility: u32,
-    reroll_screen: Option<f64>,
-    pending: Option<(PendingAnswer, f64)>,
-    choice_made: bool,
-}
-
-fn since(mark: Option<f64>, at: f64) -> Option<f64> {
-    mark.map(|when| at - when)
-}
-
 #[derive(Default)]
 pub struct Overlays {
     relic_picker: Mutex<wf_scan::RelicPicker>,
@@ -253,11 +217,9 @@ pub struct Overlays {
     station_script: Mutex<Option<wf_scan::LuaTable>>,
     dialog_script: Mutex<Option<wf_scan::LuaTable>>,
     state: Mutex<OverlayState>,
-    recommendation_ticket: AtomicU64,
-    riven_ticket: AtomicU64,
-    notification_ticket: AtomicU64,
+    screens: Mutex<Screens>,
+    notification_id: AtomicU64,
     notification_queue: Mutex<VecDeque<NotificationTrigger>>,
-    marks: Mutex<Marks>,
     windows: Mutex<HashMap<&'static str, WindowLife>>,
     game_monitor: Mutex<Option<MonitorRect>>,
 }
@@ -282,7 +244,7 @@ pub fn on_relic_rewards<R: Runtime>(
     relic: Option<String>,
     screen: &RewardScreen,
 ) {
-    if requiem_mission(&lock(&state.overlays.marks)) {
+    if !lock(&state.overlays.screens).reward_shows() {
         return;
     }
 
@@ -304,56 +266,53 @@ pub fn on_log_event<R: Runtime>(
     at: f64,
 ) {
     match event {
-        LogEvent::RelicRewardsShown => lock(&state.overlays.marks).relic_rewards = Some(at),
+        LogEvent::SquadRewardInfoComplete | LogEvent::RelicRewardsShown => {
+            lock(&state.overlays.screens).reward.tiles_shown(at);
+        }
         LogEvent::ConsoleOpened => {
-            lock(&state.overlays.marks).console = Some(at);
+            lock(&state.overlays.screens).game.console_opened(at);
             preload(app, state, Kind::Riven);
         }
         LogEvent::StarChartOpened => {
-            lock(&state.overlays.marks).star_chart = Some(at);
+            lock(&state.overlays.screens).game.star_chart_open = true;
             preload(app, state, Kind::RelicRecommendation);
         }
+        LogEvent::StarChartHidden => lock(&state.overlays.screens).game.star_chart_open = false,
         LogEvent::RelicRewardScreenOpened => {
             preload(app, state, Kind::RelicReward);
             preload(app, state, Kind::RelicRecommendation);
         }
-        LogEvent::StarChartHidden => lock(&state.overlays.marks).star_chart_hidden = Some(at),
-        LogEvent::MissionCleared => set_mission(&mut lock(&state.overlays.marks), None, None),
-        LogEvent::MissionSet { node, void_tier } => set_mission(
-            &mut lock(&state.overlays.marks),
+        LogEvent::MissionCleared => lock(&state.overlays.screens).game.set_mission(None, None),
+        LogEvent::MissionSet { node, void_tier } => lock(&state.overlays.screens).game.set_mission(
             Some(node),
             void_tier.as_deref().and_then(RelicTier::from_modifier),
         ),
         LogEvent::SquadMissionPending { node } => suggest_mission(state, node),
         LogEvent::RelicSelectScreenLoaded => {
-            {
-                let mut marks = lock(&state.overlays.marks);
-                if recommendation_suppressed(&marks, at) {
-                    return;
-                }
-                marks.after_relic = recommendation_after_relic(&marks, at);
-                marks.recommendation = Some(at);
+            let opened = lock(&state.overlays.screens).relic_select_loaded(at);
+            if let Some(generation) = opened {
+                scan_recommendation(app, state, generation);
             }
-            let ticket = next_ticket(&state.overlays.recommendation_ticket);
-            scan_recommendation(app, state, ticket);
         }
         LogEvent::InputMappingReset => {
-            if reward_screen_closes(&lock(&state.overlays.marks), at) {
+            let (reward_closed, recommendation_closed) = {
+                let mut screens = lock(&state.overlays.screens);
+                (
+                    screens.reward.input_reset(at),
+                    screens.recommendation.input_reset(at),
+                )
+            };
+            if reward_closed {
                 hide(app, state, Kind::RelicReward);
             }
-            let stays = recommendation_stays(&lock(&state.overlays.marks), at);
-            if !stays {
-                state
-                    .overlays
-                    .recommendation_ticket
-                    .fetch_add(1, Ordering::Relaxed);
+
+            if recommendation_closed {
                 hide(app, state, Kind::RelicRecommendation);
             }
         }
         LogEvent::PurchaseDialogHudVisibility { count } => {
-            let dropped = purchase_dialog_closes(&mut lock(&state.overlays.marks), *count, at);
-            if dropped {
-                state.overlays.riven_ticket.fetch_add(1, Ordering::Relaxed);
+            let closed = lock(&state.overlays.screens).chat_link_layers(*count, at);
+            if closed {
                 hide(app, state, Kind::Riven);
             }
         }
@@ -361,33 +320,30 @@ pub fn on_log_event<R: Runtime>(
             let Some(item_type) = riven_item_type(item_path) else {
                 return;
             };
-            {
-                let mut marks = lock(&state.overlays.marks);
-                if !riven_shows(&marks, at) {
-                    return;
-                }
-                marks.riven = Some(at);
+            let shown = lock(&state.overlays.screens).riven_line(at);
+            if let Some(generation) = shown {
+                show_linked_riven(app, state, item_type, generation);
             }
-            let ticket = next_ticket(&state.overlays.riven_ticket);
-            show_linked_riven(app, state, item_type, ticket);
         }
         LogEvent::RivenRerollScreenLoaded => {
-            lock(&state.overlays.marks).reroll_screen = Some(at);
+            lock(&state.overlays.screens).cycling.screen_loaded(at);
             show_station_selection(app, state);
         }
         LogEvent::ConfirmDialog {
             buttons: DialogButtons::YesNo,
         } => {
-            if lock(&state.overlays.marks).reroll_screen.is_some() {
+            if lock(&state.overlays.screens).cycling.is_open() {
                 arm_station_answer(state, at);
             }
         }
         LogEvent::WindowFocus { focused } => follow_game_window(app, state, *focused),
         LogEvent::GameMonitor(rect) => follow_game_monitor(app, state, *rect),
         LogEvent::DialogAnswered { accepted: true } => on_dialog_answer(app, state, at),
-        LogEvent::DialogAnswered { accepted: false } => lock(&state.overlays.marks).pending = None,
+        LogEvent::DialogAnswered { accepted: false } => {
+            lock(&state.overlays.screens).cycling.reject_answer();
+        }
         LogEvent::SceneTornDown => {
-            let closed = station_closes(&mut lock(&state.overlays.marks), at);
+            let closed = lock(&state.overlays.screens).cycling.scene_torn_down(at);
             if closed {
                 hide(app, state, Kind::Riven);
             }
@@ -410,7 +366,11 @@ pub fn notify<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, title: Stri
     if !enabled(&read(&state.settings), Kind::Notification) {
         return;
     }
-    let id = next_ticket(&state.overlays.notification_ticket);
+    let id = state
+        .overlays
+        .notification_id
+        .fetch_add(1, Ordering::Relaxed)
+        + 1;
     let idle = {
         let mut queue = lock(&state.overlays.notification_queue);
         queue.push_back(NotificationTrigger { id, title, body });
