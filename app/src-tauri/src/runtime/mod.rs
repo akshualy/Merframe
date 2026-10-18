@@ -125,7 +125,6 @@ pub async fn dispatch<R: Runtime>(
             app,
             AppEvent::CoreEvent(CoreEventEnvelope::wrap(event.clone())),
         );
-        overlay::on_core_event(app, state, &event);
         deliver(app, state, &event).await;
     }
 }
@@ -154,7 +153,8 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             )
             .await;
         }
-        CoreEvent::RelicRewardScreen { screen, .. } => {
+        CoreEvent::RelicRewardScreen { relic, screen } => {
+            overlay::on_relic_rewards(app, state, relic.clone(), screen);
             if settings.copy_relic_rewards {
                 let line = screen.chat_line();
                 if !line.is_empty()

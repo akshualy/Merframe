@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
 use tracing::{debug, info, warn};
-use wf_core::{CoreEvent, DucateringProgress, RewardScreen, RivenRow};
+use wf_core::{DucateringProgress, RewardScreen, RivenRow};
 use wf_log::{DialogButtons, Event as LogEvent, MonitorRect};
 use wf_worldstate::RelicTier;
 
@@ -276,25 +276,25 @@ impl Overlays {
     }
 }
 
-pub fn on_core_event<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &CoreEvent) {
-    if let CoreEvent::RelicRewardScreen { relic, screen } = event {
-        if requiem_mission(&lock(&state.overlays.marks)) {
-            return;
-        }
-
-        let mut screen = screen.clone();
-        if !read(&state.settings).overlays.overlay_account_balance {
-            screen.account = None;
-        }
-
-        let trigger = RewardTrigger {
-            relic: relic.clone(),
-            screen,
-        };
-        show(app, state, Kind::RelicReward, |slots| {
-            slots.reward = Some(trigger);
-        });
+pub fn on_relic_rewards<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    relic: Option<String>,
+    screen: &RewardScreen,
+) {
+    if requiem_mission(&lock(&state.overlays.marks)) {
+        return;
     }
+
+    let mut screen = screen.clone();
+    if !read(&state.settings).overlays.overlay_account_balance {
+        screen.account = None;
+    }
+
+    let trigger = RewardTrigger { relic, screen };
+    show(app, state, Kind::RelicReward, |slots| {
+        slots.reward = Some(trigger);
+    });
 }
 
 pub fn on_log_event<R: Runtime>(
