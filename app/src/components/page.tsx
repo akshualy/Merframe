@@ -3,21 +3,18 @@ import type { ComponentProps, ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Hint } from "@/components/ui/hint";
 import { Skeleton } from "@/components/ui/skeleton";
-import { type PageQuoteKey, type Quote, usePageQuote } from "@/lib/quotes";
+import { num } from "@/lib/format";
+import { type PageQuoteKey, usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 
-export function Quoted({ quote }: { quote: Quote }) {
+function PageQuote({ page }: { page: PageQuoteKey }) {
+  const quote = usePageQuote(page);
   return (
     <span>
       {`"${quote.line}"`}{" "}
       <span className="text-muted-foreground/70">{quote.speaker}</span>
     </span>
   );
-}
-
-function PageQuote({ page }: { page: PageQuoteKey }) {
-  const quote = usePageQuote(page);
-  return <Quoted quote={quote} />;
 }
 
 type Subtitle =
@@ -162,6 +159,22 @@ export function TableSkeleton({ rows = 8 }: { rows?: number }) {
         ))}
       </Surface>
     </div>
+  );
+}
+
+export function ResultCount({
+  shown,
+  total,
+  noun,
+}: {
+  shown: number;
+  total: number | undefined;
+  noun: string;
+}) {
+  return (
+    <span className="text-muted-foreground text-sm">
+      {num(shown)} of {num(total)} {noun}
+    </span>
   );
 }
 

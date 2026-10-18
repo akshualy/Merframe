@@ -2,25 +2,21 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ClearFilters, FilterGrid } from "@/components/filter-grid";
 import { FilterSegment } from "@/components/filter-segment";
 import { prefetchImages } from "@/components/item-image";
+import { OptionTabs } from "@/components/option-tabs";
 import {
   CardGrid,
   EmptyPanel,
-  ErrorNote,
   Page,
-  Quoted,
+  ResultCount,
   Section,
-  TableSkeleton,
 } from "@/components/page";
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { usePaged } from "@/hooks/use-paged";
 import { api } from "@/lib/bridge";
-import { num } from "@/lib/format";
 import {
   CATEGORIES,
-  type Category,
   choice,
   FILTERS,
   type Filters,
@@ -31,14 +27,14 @@ import {
   prune,
   withFilter,
 } from "@/lib/foundry-filters";
-import { usePageQuote } from "@/lib/quotes";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { FoundryCard } from "./card";
 import { FoundryQueue } from "./queue";
 import { FoundryTreeDialog } from "./tree-dialog";
 
+const CATEGORY_TABS = CATEGORIES.map(([value, label]) => ({ value, label }));
+
 export function FoundryPage() {
-  const quote = usePageQuote("foundry");
   const { data, error, loading } = useAsyncData("foundry_tab", api.foundryTab, [
     "inventoryUpdated",
     "pricesUpdated",
@@ -82,21 +78,16 @@ export function FoundryPage() {
     ]);
   }, [pageItems]);
 
-  if (loading && !data) {
-    return (
-      <Page title="Foundry" description={<Quoted quote={quote} />}>
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
   const activeFilters = Object.keys(filters).length;
   const groups = FILTERS.filter((group) => offered(base[group.key]));
 
   return (
-    <Page title="Foundry" description={<Quoted quote={quote} />}>
-      {error && <ErrorNote message={error} />}
-
+    <Page
+      title="Foundry"
+      quote="foundry"
+      loading={loading && !data}
+      error={error}
+    >
       {data && data.pending.length > 0 && (
         <FoundryQueue builds={data.pending} />
       )}
@@ -110,9 +101,11 @@ export function FoundryPage() {
                 onClear={() => setFilters({})}
               />
             )}
-            <span className="text-muted-foreground text-sm">
-              {num(visible.length)} of {num(data?.items.length)} items
-            </span>
+            <ResultCount
+              shown={visible.length}
+              total={data?.items.length}
+              noun="items"
+            />
             <SearchInput
               value={query}
               onValueChange={setQuery}
@@ -122,18 +115,11 @@ export function FoundryPage() {
         }
       >
         <div className="flex flex-col gap-3">
-          <Tabs
+          <OptionTabs
             value={category}
-            onValueChange={(value) => setCategory(value as Category)}
-          >
-            <TabsList>
-              {CATEGORIES.map(([key, label]) => (
-                <TabsTrigger key={key} value={key}>
-                  {label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+            options={CATEGORY_TABS}
+            onChange={setCategory}
+          />
 
           <FilterGrid>
             {groups.map((group) => {

@@ -1,34 +1,25 @@
 import { Download } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
 import { InventoryTabView } from "@/components/inventory-tab-view";
-import {
-  ErrorNote,
-  Page,
-  Quoted,
-  Section,
-  TableSkeleton,
-} from "@/components/page";
+import { Page, Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
+import { useTabParam } from "@/hooks/use-tab-param";
 import { api, reportError } from "@/lib/bridge";
 import { num } from "@/lib/format";
 import { entriesFor, inventoryFlags } from "@/lib/inventory-entries";
 import type { InventoryTabKey } from "@/lib/inventory-filters";
-import { usePageQuote } from "@/lib/quotes";
 import { notify } from "@/lib/toast";
 
 export function InventoryPage() {
-  const quote = usePageQuote("inventory");
   const { data, error, loading } = useAsyncData(
     "inventory_tab",
     api.inventoryTab,
     ["inventoryUpdated", "pricesUpdated", "favouriteUpdated", "marketUpdated"],
   );
   const [exporting, setExporting] = useState(false);
-  const [params, setParams] = useSearchParams();
-  const tab = (params.get("tab") as InventoryTabKey | null) ?? "parts";
+  const [tab, setTab] = useTabParam<InventoryTabKey>("parts");
 
   const entries = useMemo(() => entriesFor(tab, data), [tab, data]);
   const flags = useMemo(() => inventoryFlags(data), [data]);
@@ -47,34 +38,21 @@ export function InventoryPage() {
     }
   }, []);
 
-  if (loading && !data) {
-    return (
-      <Page title="Inventory" description={<Quoted quote={quote} />}>
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
   return (
     <Page
       title="Inventory"
-      description={<Quoted quote={quote} />}
+      quote="inventory"
       actions={
         <Button variant="outline" onClick={handleExport} disabled={exporting}>
           <Download className="size-4" />
           Export JSON
         </Button>
       }
+      loading={loading && !data}
+      error={error}
     >
-      {error && <ErrorNote message={error} />}
-
       <Section>
-        <Tabs
-          value={tab}
-          onValueChange={(value) =>
-            setParams({ tab: value }, { replace: true })
-          }
-        >
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="parts">
               All Parts ({num(data?.parts.length ?? 0)})

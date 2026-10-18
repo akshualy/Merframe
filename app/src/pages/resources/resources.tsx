@@ -1,29 +1,27 @@
 import { LoaderCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { Amount } from "@/components/currency";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect, FilterSingleSelect } from "@/components/filter-select";
-import { GameIcon } from "@/components/game-icon";
 import { prefetchImages } from "@/components/item-image";
 import {
   CardGrid,
   EmptyPanel,
-  ErrorNote,
   Page,
-  Quoted,
+  ResultCount,
   Section,
   Stat,
-  TableSkeleton,
 } from "@/components/page";
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { useAsyncData } from "@/hooks/use-async-data";
+import { useFilters } from "@/hooks/use-filters";
 import { usePaged } from "@/hooks/use-paged";
 import { api } from "@/lib/bridge";
 import { type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import { CATEGORIES } from "@/lib/foundry-filters";
-import { usePageQuote } from "@/lib/quotes";
 import { type ShowFilter, visibleResources } from "@/lib/resource-filters";
 import { cn } from "@/lib/utils";
 import { FoundryTreeDialog } from "@/pages/foundry/tree-dialog";
@@ -55,6 +53,12 @@ const KINDS = CATEGORIES.filter(([key]) => key !== "all").map(
 const PRIME = yesNoOptions("Prime", "Normal");
 const OWNED = yesNoOptions("Yes", "No");
 
+interface ResourceFilters {
+  kind: string | null;
+  prime: YesNo | null;
+  owned: YesNo | null;
+}
+
 const NO_DEMAND: Record<ResourceSource, Record<ResourceScope, string>> = {
   held: {
     mastery:
@@ -70,7 +74,6 @@ const NO_DEMAND: Record<ResourceSource, Record<ResourceScope, string>> = {
 };
 
 export function ResourcesPage() {
-  const quote = usePageQuote("resources");
   const { source, scope, setResourceSource, setResourceScope } =
     usePreferencesStore(
       useShallow((state) => ({
@@ -80,9 +83,12 @@ export function ResourcesPage() {
         setResourceScope: state.setResourceScope,
       })),
     );
-  const [kind, setKind] = useState<string | null>(null);
-  const [prime, setPrime] = useState<YesNo | null>(null);
-  const [owned, setOwned] = useState<YesNo | null>(null);
+  const filters = useFilters<ResourceFilters>({
+    kind: null,
+    prime: null,
+    owned: null,
+  });
+  const { kind, prime, owned } = filters.values;
   const [show, setShow] = useState<ShowFilter>("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
@@ -140,28 +146,15 @@ export function ResourcesPage() {
     ]);
   }, [pageRows, selectedRow, data?.shards]);
 
-  if (loading && !data) {
-    return (
-      <Page title="Resources" description={<Quoted quote={quote} />}>
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
   const short = data?.resources.filter((row) => row.deficit > 0).length ?? 0;
-  const activeFilters = [kind, prime, owned].filter(
-    (value) => value !== null,
-  ).length;
-  const clearFilters = () => {
-    setKind(null);
-    setPrime(null);
-    setOwned(null);
-  };
 
   return (
-    <Page title="Resources" description={<Quoted quote={quote} />}>
-      {error && <ErrorNote message={error} />}
-
+    <Page
+      title="Resources"
+      quote="resources"
+      loading={loading && !data}
+      error={error}
+    >
       {data && data.shards.length > 0 && <ArchonShards shards={data.shards} />}
 
       <div className="grid gap-4 @sm:grid-cols-3">
@@ -170,10 +163,9 @@ export function ResourcesPage() {
         <Stat
           label="Credits needed"
           value={
-            <span className="flex items-center gap-1.5">
-              <GameIcon name="credits" size={20} alt="" />
+            <Amount currency="credits" size={20}>
               {num(data?.credits)}
-            </span>
+            </Amount>
           }
         />
       </div>
@@ -191,10 +183,11 @@ export function ResourcesPage() {
                   className="text-muted-foreground size-4 animate-spin"
                 />
               )}
-              <span className="text-muted-foreground text-sm">
-                {num(resources.length)} of {num(data?.resources.length)}{" "}
-                resources
-              </span>
+              <ResultCount
+                shown={resources.length}
+                total={data?.resources.length}
+                noun="resources"
+              />
               <SearchInput
                 value={query}
                 onValueChange={setQuery}
@@ -227,32 +220,32 @@ export function ResourcesPage() {
 
             <FilterGrid
               className="border-t pt-3"
-              activeFilters={activeFilters}
-              onClear={clearFilters}
+              activeFilters={filters.active}
+              onClear={filters.clear}
             >
               <FilterSelect
                 label="Category"
                 value={kind}
                 options={KINDS}
-                onChange={setKind}
+                onChange={(value) => filters.set("kind", value)}
               />
               <FilterSelect
                 label="Type"
                 value={prime}
                 options={PRIME}
-                onChange={(value) => setPrime(value as YesNo | null)}
+                onChange={(value) => filters.set("prime", value)}
               />
               <FilterSelect
                 label="Owned"
                 value={owned}
                 options={OWNED}
-                onChange={(value) => setOwned(value as YesNo | null)}
+                onChange={(value) => filters.set("owned", value)}
               />
             </FilterGrid>
 
             {resources.length === 0 ? (
               <EmptyPanel>
-                {data?.resources.length === 0 && activeFilters === 0
+                {data?.resources.length === 0 && filters.active === 0
                   ? NO_DEMAND[source][scope]
                   : "Nothing matches these filters."}
               </EmptyPanel>

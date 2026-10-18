@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FavouriteStar } from "@/components/favourite-star";
 import { ItemImage } from "@/components/item-image";
 import { EmptyNote } from "@/components/page";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Hint } from "@/components/ui/hint";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLoaded } from "@/hooks/use-loaded";
 import { api, reportError } from "@/lib/bridge";
 import { countdown, num } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
@@ -217,38 +218,24 @@ export function FoundryTreeDialog({
   > | null;
   onClose: () => void;
 }) {
-  const [details, setDetails] = useState<CraftDetails | null>(null);
+  const loaded = useLoaded(
+    item?.unique_name ?? null,
+    api.craftTree,
+    (cause): CraftDetails => {
+      reportError(cause);
+      return { tree: [], summary: EMPTY_SUMMARY };
+    },
+  );
   const [hideCompleted, setHideCompleted] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
+  const [lastLoaded, setLastLoaded] = useState(loaded);
 
-  const uniqueName = item?.unique_name;
+  if (loaded !== null && loaded !== lastLoaded) {
+    setLastLoaded(loaded);
+    setSelected(defaultPath(loaded.tree));
+  }
 
-  useEffect(() => {
-    if (!uniqueName) {
-      return;
-    }
-    let cancelled = false;
-    setDetails(null);
-    setSelected(null);
-    async function load(uniqueName: string) {
-      try {
-        const next = await api.craftTree(uniqueName);
-        if (!cancelled) {
-          setDetails(next);
-          setSelected(defaultPath(next.tree));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setDetails({ tree: [], summary: EMPTY_SUMMARY });
-          reportError(error);
-        }
-      }
-    }
-    load(uniqueName);
-    return () => {
-      cancelled = true;
-    };
-  }, [uniqueName]);
+  const details = item === null ? lastLoaded : loaded;
 
   const selectedNode = useMemo(
     () => (details && selected ? nodeAt(details.tree, selected) : null),

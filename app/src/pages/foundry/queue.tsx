@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ItemImage, prefetchImages } from "@/components/item-image";
 import { Section } from "@/components/page";
 import { useNow } from "@/hooks/use-now";
-import { countdown, secondsUntil } from "@/lib/format";
+import { countdown, counted, secondsUntil } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { PendingBuild } from "@/types";
 
@@ -16,7 +16,7 @@ export function FoundryQueue({ builds }: { builds: PendingBuild[] }) {
   return (
     <Section
       title="In the Foundry"
-      description={`${builds.length} ${builds.length === 1 ? "build" : "builds"} queued`}
+      description={`${counted(builds.length, "build")} queued`}
     >
       <div className="flex flex-wrap gap-2">
         {builds.map((build) => {

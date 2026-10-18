@@ -8,11 +8,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { num } from "@/lib/format";
+import { counted, num } from "@/lib/format";
 import type { ShardRow } from "@/types";
 
 function ShardHolders({ shard }: { shard: ShardRow }) {
-  const label = `Equipped in ${num(shard.holders.length)} ${shard.holders.length === 1 ? "Warframe" : "Warframes"}`;
+  const label = `Equipped in ${counted(shard.holders.length, "Warframe")}`;
   return (
     <Dialog>
       <DialogTrigger className="text-muted-foreground hover:text-foreground cursor-pointer text-left text-xs transition-colors">

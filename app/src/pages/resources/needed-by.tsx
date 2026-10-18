@@ -1,7 +1,7 @@
 import { FavouriteStar } from "@/components/favourite-star";
 import { ItemImage } from "@/components/item-image";
 import { Section } from "@/components/page";
-import { num } from "@/lib/format";
+import { counted, num } from "@/lib/format";
 import type { ResourceRow } from "@/types";
 
 export function NeededBy({
@@ -14,7 +14,7 @@ export function NeededBy({
   return (
     <Section
       title="Needed By"
-      description={`${num(row.used_by.length)} ${row.used_by.length === 1 ? "item needs" : "items need"} ${row.name}`}
+      description={`${counted(row.used_by.length, "item needs", "items need")} ${row.name}`}
       className="self-start @3xl:sticky @3xl:top-4"
     >
       <ul className="flex max-h-128 flex-col gap-1 overflow-y-auto">

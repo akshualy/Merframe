@@ -1,12 +1,12 @@
 import { Archive, ExternalLink } from "lucide-react";
 import { useCallback } from "react";
 import { useNavigate } from "react-router";
-import { GameIcon } from "@/components/game-icon";
+import { Amount } from "@/components/currency";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { api, reportError } from "@/lib/bridge";
+import { openExternal } from "@/lib/bridge";
 import { num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
 import { cn } from "@/lib/utils";
@@ -21,15 +21,8 @@ function dropKey(drop: NodeDrop): string {
 }
 
 export function WikiButton({ url }: { url: string }) {
-  const handleOpen = useCallback(async () => {
-    try {
-      await api.openUrl(url);
-    } catch (error) {
-      reportError(error);
-    }
-  }, [url]);
   return (
-    <Button variant="outline" size="sm" onClick={handleOpen}>
+    <Button variant="outline" size="sm" onClick={() => openExternal(url)}>
       Wiki
       <ExternalLink className="size-3.5" />
     </Button>
@@ -120,8 +113,10 @@ function MarketButtons({
         Sell
       </Button>
       <Button variant="outline" size="sm" onClick={() => open("buy")}>
-        Buy {num(market.sell)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
+        Buy
+        <Amount currency="platinum" plain>
+          {num(market.sell)}
+        </Amount>
       </Button>
     </>
   );

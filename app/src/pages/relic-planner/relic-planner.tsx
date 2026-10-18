@@ -5,22 +5,20 @@ import { useShallow } from "zustand/react/shallow";
 import { DataTable } from "@/components/data-table";
 import { FilterField, FilterGrid } from "@/components/filter-grid";
 import { FilterSelect, FilterSingleSelect } from "@/components/filter-select";
-import {
-  ErrorNote,
-  Page,
-  Quoted,
-  Section,
-  TableSkeleton,
-} from "@/components/page";
+import { OptionTabs } from "@/components/option-tabs";
+import { Page, Section } from "@/components/page";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { useAsyncData } from "@/hooks/use-async-data";
+import { useFilters } from "@/hooks/use-filters";
 import { api } from "@/lib/bridge";
-import { ANY, type YesNo, yesNoOptions } from "@/lib/filters";
-import { num, plat } from "@/lib/format";
-import { usePageQuote } from "@/lib/quotes";
+import {
+  ANY,
+  type FilterOption,
+  plainOptions,
+  yesNoOptions,
+} from "@/lib/filters";
+import { counted, num, plat } from "@/lib/format";
 import {
   type FavouriteFilter,
   matchesRelicFilters,
@@ -43,15 +41,25 @@ import { PlannerRowDetails } from "./details";
 import { PartSources, WantedParts } from "./parts";
 
 const SQUAD_SIZES = ["1", "2", "3", "4"] as const;
-const FAVOURITE_OPTIONS = [
+const FAVOURITE_OPTIONS: FilterOption<FavouriteFilter>[] = [
   { value: "yes", label: "Favourites" },
   { value: "no", label: "Not favourites" },
   { value: "order", label: "Order first" },
 ];
 const ALL_ERAS = "all";
 
+type Choices = Pick<
+  RelicFilters,
+  | "vaulted"
+  | "itemsOwned"
+  | "setsOwned"
+  | "stacked"
+  | "refined"
+  | "tierOwned"
+  | "favourite"
+>;
+
 export function RelicPlannerPage() {
-  const quote = usePageQuote("relicPlanner");
   const { squadSize, refinement, era, setSquadSize, setRefinement, setEra } =
     usePreferencesStore(
       useShallow((state) => ({
@@ -64,13 +72,24 @@ export function RelicPlannerPage() {
       })),
     );
   const [onlyOwned, setOnlyOwned] = useState(true);
-  const [vaulted, setVaulted] = useState<YesNo | null>(null);
-  const [itemsOwned, setItemsOwned] = useState<YesNo | null>(null);
-  const [setsOwned, setSetsOwned] = useState<YesNo | null>(null);
-  const [stacked, setStacked] = useState<YesNo | null>(null);
-  const [refined, setRefined] = useState<YesNo | null>(null);
-  const [tierOwned, setTierOwned] = useState<string | null>(null);
-  const [favourite, setFavourite] = useState<FavouriteFilter | null>(null);
+  const choices = useFilters<Choices>({
+    vaulted: null,
+    itemsOwned: null,
+    setsOwned: null,
+    stacked: null,
+    refined: null,
+    tierOwned: null,
+    favourite: null,
+  });
+  const {
+    vaulted,
+    itemsOwned,
+    setsOwned,
+    stacked,
+    refined,
+    tierOwned,
+    favourite,
+  } = choices.values;
   const [wanted, setWanted] = useState<MissingPart[]>([]);
   const [selectedPart, setSelectedPart] = useState<MissingPart | null>(null);
   const wantedPanel = useRef<HTMLDivElement>(null);
@@ -103,27 +122,10 @@ export function RelicPlannerPage() {
     () => ({
       squadSize,
       refinement,
-      favourite,
-      vaulted,
-      setsOwned,
-      itemsOwned,
-      stacked,
-      refined,
-      tierOwned,
+      ...choices.values,
       wanted: wantedPaths,
     }),
-    [
-      squadSize,
-      refinement,
-      favourite,
-      vaulted,
-      setsOwned,
-      itemsOwned,
-      stacked,
-      refined,
-      tierOwned,
-      wantedPaths,
-    ],
+    [squadSize, refinement, choices.values, wantedPaths],
   );
 
   const handlePushToOverlay = useCallback(() => {
@@ -135,7 +137,10 @@ export function RelicPlannerPage() {
 
   const eras = useMemo(() => {
     const present = new Set(owned.map((plan) => plan.tier));
-    return RELIC_TIERS.filter((tier) => present.has(tier));
+    return [
+      { value: ALL_ERAS, label: "All" },
+      ...plainOptions(RELIC_TIERS.filter((tier) => present.has(tier))),
+    ];
   }, [owned]);
 
   const rows = useMemo(
@@ -192,33 +197,15 @@ export function RelicPlannerPage() {
     [squadSize, owned],
   );
 
-  if (loading && !data) {
-    return (
-      <Page title="Relic Planner" description={<Quoted quote={quote} />}>
-        <TableSkeleton />
-      </Page>
-    );
-  }
-
-  const activeFilters = [
-    vaulted,
-    itemsOwned,
-    setsOwned,
-    stacked,
-    refined,
-    tierOwned,
-    favourite,
-  ].filter((choice) => choice !== null).length;
   const traces = data?.void_traces ?? 0;
-  const counted = `${num(rows.length)} ${rows.length === 1 ? "relic" : "relics"}`;
   const summary = best
-    ? `${counted}, best is ${best.plan.relic} at ${plat(best.value.expected_plat)} platinum expected (${best.value.refinement}), ${num(traces)} Void Traces`
+    ? `${counted(rows.length, "relic")}, best is ${best.plan.relic} at ${plat(best.value.expected_plat)} platinum expected (${best.value.refinement}), ${num(traces)} Void Traces`
     : `No relic matches these filters, ${num(traces)} Void Traces`;
 
   return (
     <Page
       title="Relic Planner"
-      description={<Quoted quote={quote} />}
+      quote="relicPlanner"
       actions={
         <>
           <Button variant="outline" size="sm" onClick={handlePushToOverlay}>
@@ -240,24 +227,13 @@ export function RelicPlannerPage() {
           </Button>
         </>
       }
+      loading={loading && !data}
+      error={error}
     >
-      {error && <ErrorNote message={error} />}
-
       <Section
         title={onlyOwned ? "Owned Relics" : "Every Relic"}
         description={summary}
-        action={
-          <Tabs value={era} onValueChange={setEra}>
-            <TabsList>
-              <TabsTrigger value={ALL_ERAS}>All</TabsTrigger>
-              {eras.map((tier) => (
-                <TabsTrigger key={tier} value={tier}>
-                  {tier}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        }
+        action={<OptionTabs value={era} options={eras} onChange={setEra} />}
       >
         <DataTable
           tableId="relicPlanner"
@@ -284,25 +260,11 @@ export function RelicPlannerPage() {
             )
           }
           filters={
-            <FilterGrid
-              activeFilters={activeFilters}
-              onClear={() => {
-                setVaulted(null);
-                setItemsOwned(null);
-                setSetsOwned(null);
-                setStacked(null);
-                setRefined(null);
-                setTierOwned(null);
-                setFavourite(null);
-              }}
-            >
+            <FilterGrid activeFilters={choices.active} onClear={choices.clear}>
               <FilterSingleSelect
                 label="Squad"
                 value={String(squadSize)}
-                options={SQUAD_SIZES.map((size) => ({
-                  value: size,
-                  label: size,
-                }))}
+                options={plainOptions(SQUAD_SIZES)}
                 onChange={(size) => setSquadSize(Number(size))}
               />
               <FilterSingleSelect
@@ -310,10 +272,7 @@ export function RelicPlannerPage() {
                 value={refinement}
                 options={[
                   { value: ANY, label: "Any" },
-                  ...REFINEMENTS.map((entry) => ({
-                    value: entry,
-                    label: entry,
-                  })),
+                  ...plainOptions(REFINEMENTS),
                 ]}
                 onChange={setRefinement}
               />
@@ -321,63 +280,53 @@ export function RelicPlannerPage() {
                 label="Vault"
                 value={vaulted}
                 options={yesNoOptions("Vaulted", "Available")}
-                onChange={(next) => setVaulted(next as YesNo | null)}
+                onChange={(value) => choices.set("vaulted", value)}
               />
               <FilterSelect
                 label="Items owned"
                 value={itemsOwned}
                 options={yesNoOptions("All built or mastered", "Some missing")}
-                onChange={(next) => setItemsOwned(next as YesNo | null)}
+                onChange={(value) => choices.set("itemsOwned", value)}
               />
               <FilterSelect
                 label="Sets owned"
                 value={setsOwned}
                 options={yesNoOptions("All complete", "Incomplete")}
-                onChange={(next) => setSetsOwned(next as YesNo | null)}
+                onChange={(value) => choices.set("setsOwned", value)}
               />
               <FilterSelect
                 label="Copies"
                 value={stacked}
                 options={yesNoOptions("10 or more", "Fewer than 10")}
-                onChange={(next) => setStacked(next as YesNo | null)}
+                onChange={(value) => choices.set("stacked", value)}
               />
               <FilterSelect
                 label="Refined"
                 value={refined}
                 options={yesNoOptions("Refined copies", "Intact only")}
-                onChange={(next) => setRefined(next as YesNo | null)}
+                onChange={(value) => choices.set("refined", value)}
               />
               <FilterSelect
                 label="Tier owned"
                 value={tierOwned}
-                options={REFINEMENTS.map((entry) => ({
-                  value: entry,
-                  label: entry,
-                }))}
-                onChange={setTierOwned}
+                options={plainOptions(REFINEMENTS)}
+                onChange={(value) => choices.set("tierOwned", value)}
               />
               <FilterSelect
                 label="Favourite"
                 value={favourite}
                 options={FAVOURITE_OPTIONS}
-                onChange={(next) =>
-                  setFavourite(next as FavouriteFilter | null)
-                }
+                onChange={(value) => choices.set("favourite", value)}
               />
               <FilterField label="Relics">
-                <div className="flex h-8 items-center gap-2">
-                  <Checkbox
-                    id="onlyOwnedRelics"
-                    checked={onlyOwned}
-                    onCheckedChange={(value) => setOnlyOwned(value === true)}
-                  />
-                  <Label
-                    htmlFor="onlyOwnedRelics"
-                    className="text-xs font-normal"
-                  >
-                    Only owned
-                  </Label>
-                </div>
+                <CheckboxField
+                  id="onlyOwnedRelics"
+                  checked={onlyOwned}
+                  onChange={setOnlyOwned}
+                  className="h-8"
+                >
+                  Only owned
+                </CheckboxField>
               </FilterField>
             </FilterGrid>
           }

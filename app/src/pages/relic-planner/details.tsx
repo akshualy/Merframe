@@ -1,5 +1,5 @@
+import { Amount } from "@/components/currency";
 import { FavouriteStar } from "@/components/favourite-star";
-import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,14 +54,15 @@ function RewardRow({ view }: { view: RewardView }) {
       <span className="w-16 text-right text-xs">
         {percent(squadChance / 100, 2)}
       </span>
-      <span className="flex w-16 items-center justify-end gap-0.5 text-xs">
+      <Amount currency="platinum" plain className="w-16 justify-end text-xs">
         {num(reward.plat)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
-      </span>
-      <span className="text-primary flex w-20 items-center justify-end gap-0.5 text-xs font-medium">
+      </Amount>
+      <Amount
+        currency="platinum"
+        className="w-20 justify-end text-xs font-medium"
+      >
         {plat(share)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
-      </span>
+      </Amount>
     </li>
   );
 }
@@ -94,10 +95,9 @@ function RefinementCard({
         ))}
       </span>
       <span className="sr-only">{entry.refinement}</span>
-      <span className="flex items-center gap-0.5">
+      <Amount currency="platinum" plain>
         {plat(entry.expected_plat)}
-        <GameIcon name="platinum" size={16} alt="Platinum" />
-      </span>
+      </Amount>
       {entry.plat_per_trace !== null && (
         <span className="text-muted-foreground font-normal">
           {entry.plat_per_trace.toFixed(2)}/trace
@@ -120,16 +120,20 @@ function RelicValues({ row }: { row: PlannerRow }) {
             size="sm"
             onClick={() => openListing(market.slug, "sell")}
           >
-            Sell {num(market.sell)}
-            <GameIcon name="platinum" size={16} alt="Platinum" />
+            Sell
+            <Amount currency="platinum" plain>
+              {num(market.sell)}
+            </Amount>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => openListing(market.slug, "buy")}
           >
-            Buy {num(market.buy)}
-            <GameIcon name="platinum" size={16} alt="Platinum" />
+            Buy
+            <Amount currency="platinum" plain>
+              {num(market.buy)}
+            </Amount>
           </Button>
         </>
       )}
