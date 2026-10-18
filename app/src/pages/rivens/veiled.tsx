@@ -2,7 +2,7 @@ import { ItemImage } from "@/components/item-image";
 import { Surface } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { displayNameFromPath, num } from "@/lib/format";
+import { num } from "@/lib/format";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
 import type { VeiledGroup } from "@/types";
 
@@ -30,11 +30,11 @@ export function VeiledChallenge({ group }: { group: VeiledGroup }) {
               <ItemImage
                 imageName={riven.image_name}
                 size={26}
-                alt={riven.weapon_class ?? "Veiled riven"}
+                alt={riven.weapon_class}
               />
               <span className="flex flex-col">
                 <span className="text-xs font-medium">
-                  {riven.weapon_class ?? displayNameFromPath(riven.item_type)}
+                  {riven.weapon_class}
                 </span>
                 <Hint as="span" className="tabular-nums">
                   {riven.count > 1 && `x${num(riven.count)}`}

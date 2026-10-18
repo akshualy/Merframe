@@ -93,7 +93,7 @@ export function RivensPage() {
               searchPlaceholder="Filter rivens"
               searchValue={(row) =>
                 [
-                  row.weapon ?? "",
+                  row.weapon,
                   row.name ?? "",
                   ...row.attributes.map(attributeLabel),
                 ].join(" ")

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { openExternal } from "@/lib/bridge";
-import { displayNameFromPath, percent } from "@/lib/format";
+import { percent } from "@/lib/format";
 import {
   attributeLabel,
   attributeValue,
@@ -22,12 +22,7 @@ import { cn } from "@/lib/utils";
 import type { AttributeGrade, RivenRow } from "@/types";
 
 function rivenName(riven: RivenRow): string {
-  const parts = [riven.weapon, riven.name].filter(
-    (part): part is string => part !== null,
-  );
-  return parts.length > 0
-    ? parts.join(" ")
-    : displayNameFromPath(riven.item_type);
+  return riven.name === null ? riven.weapon : `${riven.weapon} ${riven.name}`;
 }
 
 function Attribute({ attribute }: { attribute: AttributeGrade }) {
@@ -66,7 +61,7 @@ function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
         <ItemImage
           imageName={riven.image_name}
           size={compact ? 28 : 32}
-          alt={riven.weapon ?? "Riven"}
+          alt={riven.weapon}
         />
         <div className="flex min-w-0 flex-col">
           <span className="flex items-center gap-1 text-sm font-medium">

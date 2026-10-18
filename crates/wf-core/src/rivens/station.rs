@@ -109,7 +109,7 @@ impl Grader<'_> {
             riven_type: riven_type.map(|found| found.name.clone()),
             weapon_class: riven_type.map(|found| weapon_class(&found.name)),
             name: None,
-            weapon: Some(weapon.name.clone()),
+            weapon: weapon.name.clone(),
             weapon_path: Some(weapon.game_ref.clone()),
             weapon_slug: Some(weapon.slug.clone()),
             image_name: self
@@ -196,7 +196,7 @@ mod tests {
         let row = at_station(CURRENT_ROLL, None).unwrap();
 
         assert_eq!(row.item_id, STATION_ITEM);
-        assert_eq!(row.weapon.as_deref(), Some("Nepheri"));
+        assert_eq!(row.weapon, "Nepheri");
         assert_eq!(row.weapon_slug.as_deref(), Some("nepheri"));
         assert_eq!(row.disposition, Some(1.0));
         assert_eq!(row.name.as_deref(), Some("Geli-toxidra"));
@@ -257,7 +257,7 @@ mod tests {
 
         let row = grader.at_station(STATION_ITEM, &roll, None, None).unwrap();
 
-        assert_eq!(row.weapon.as_deref(), Some("Acceltra"));
+        assert_eq!(row.weapon, "Acceltra");
         assert_eq!(row.weapon_path.as_deref(), Some(acceltra.game_ref.as_str()));
         assert_eq!(row.weapon_slug.as_deref(), Some("acceltra"));
         assert_eq!(row.item_type, acceltra.mod_type);

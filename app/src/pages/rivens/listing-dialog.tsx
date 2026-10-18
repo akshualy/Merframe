@@ -253,7 +253,7 @@ export function RivenListingDialog({
       description={
         <>
           <span>
-            {`${riven.weapon ?? "Riven"} ${riven.name ?? ""}, ${riven.rerolls} rolls`}
+            {`${riven.weapon} ${riven.name ?? ""}, ${riven.rerolls} rolls`}
           </span>
           {riven.polarity && (
             <PolarityIcon polarity={riven.polarity} size={20} />

@@ -139,7 +139,7 @@ pub struct RivenRow {
     pub riven_type: Option<String>,
     pub weapon_class: Option<String>,
     pub name: Option<String>,
-    pub weapon: Option<String>,
+    pub weapon: String,
     pub weapon_path: Option<String>,
     pub weapon_slug: Option<String>,
     pub image_name: Option<String>,
@@ -164,8 +164,8 @@ pub struct RivenRow {
 pub struct VeiledRiven {
     pub riven_id: String,
     pub item_type: String,
-    pub name: Option<String>,
-    pub weapon_class: Option<String>,
+    pub name: String,
+    pub weapon_class: String,
     pub market_slug: Option<String>,
     pub image_name: Option<String>,
     pub count: i64,
@@ -345,8 +345,6 @@ pub(crate) mod support {
     }
 
     pub(crate) fn by_weapon<'a>(rows: &'a [RivenRow], weapon: &str) -> &'a RivenRow {
-        rows.iter()
-            .find(|row| row.weapon.as_deref() == Some(weapon))
-            .unwrap()
+        rows.iter().find(|row| row.weapon == weapon).unwrap()
     }
 }

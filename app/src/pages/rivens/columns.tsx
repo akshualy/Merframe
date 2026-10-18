@@ -7,7 +7,7 @@ import { SplicedMark } from "@/components/spliced-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { displayNameFromPath, num, percent } from "@/lib/format";
+import { num, percent } from "@/lib/format";
 import {
   attributeText,
   disposition,
@@ -27,20 +27,18 @@ export function rivenColumns(
       id: "name",
       header: "Riven",
       enableHiding: false,
-      accessorFn: (row) => `${row.weapon ?? ""} ${row.name ?? ""}`.trim(),
+      accessorFn: (row) => `${row.weapon} ${row.name ?? ""}`.trim(),
       cell: ({ row }) => (
         <span className="flex items-center gap-2">
           <ItemImage
             imageName={row.original.image_name}
             size={32}
-            alt={row.original.weapon ?? "Riven"}
+            alt={row.original.weapon}
           />
           <span className="flex flex-col">
-            <span className="font-medium">
-              {row.original.weapon ?? "Unknown"}
-            </span>
+            <span className="font-medium">{row.original.weapon}</span>
             <Hint as="span">
-              {row.original.name ?? displayNameFromPath(row.original.item_type)}
+              {row.original.name ?? row.original.riven_type}
             </Hint>
           </span>
         </span>

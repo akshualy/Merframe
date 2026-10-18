@@ -21,19 +21,18 @@ impl VeiledRiven {
         challenge: Option<&RivenChallenge>,
         items: &ItemTable,
     ) -> Self {
-        let record = items.get(item_type);
-        let name = record.map(|record| record.name.clone());
+        let record = items.resolve(item_type);
         Self {
             riven_id,
             item_type: item_type.to_owned(),
-            weapon_class: name.as_deref().map(weapon_class),
-            market_slug: record.and_then(|record| record.market_slug.clone()),
-            image_name: record.and_then(|record| record.image_name.clone()),
+            name: record.name.clone(),
+            weapon_class: weapon_class(&record.name),
+            market_slug: record.market_slug.clone(),
+            image_name: record.image_name.clone(),
             count,
             progress: challenge.map_or(-1, |challenge| challenge.progress),
             required: challenge.map_or(-1, |challenge| challenge.required),
             pre_veiled: challenge.is_none(),
-            name,
         }
     }
 }
@@ -96,7 +95,7 @@ fn veiled(inventory: &Inventory, items: &ItemTable) -> Vec<VeiledGroup> {
 }
 
 pub fn display_name(row: &RivenRow) -> Option<String> {
-    Some(format!("{} {}", row.weapon.as_ref()?, row.name.as_ref()?))
+    Some(format!("{} {}", row.weapon, row.name.as_ref()?))
 }
 
 impl Grader<'_> {
@@ -163,10 +162,10 @@ impl Grader<'_> {
             item_type: upgrade.item_type.clone(),
             weapon_class: riven_type.map(|found| weapon_class(&found.name)),
             riven_type: riven_type.map(|found| found.name.clone()),
-            weapon: weapon_item
-                .map(|item| item.name.clone())
-                .or_else(|| weapon_path.map(display_name_from_path))
-                .or_else(|| mod_item.map(|item| item.name.clone())),
+            weapon: weapon_item.map_or_else(
+                || self.items.name(weapon_path.unwrap_or(&upgrade.item_type)),
+                |item| item.name.clone(),
+            ),
             weapon_path: weapon_path.map(str::to_owned),
             weapon_slug: weapon_item
                 .and_then(|item| self.items.get(&item.unique_name))
@@ -328,8 +327,8 @@ mod tests {
         assert_eq!(kills.rivens[0].required, 128);
         assert_eq!(kills.rivens[0].progress, 0);
         assert!(!kills.rivens[0].pre_veiled);
-        assert_eq!(kills.rivens[0].weapon_class.as_deref(), Some("Kitgun"));
-        assert_eq!(kills.rivens[0].name.as_deref(), Some("Kitgun Riven Mod"));
+        assert_eq!(kills.rivens[0].weapon_class, "Kitgun");
+        assert_eq!(kills.rivens[0].name, "Kitgun Riven Mod");
         assert_eq!(
             kills.rivens[0].market_slug.as_deref(),
             Some("kitgun_riven_mod_(veiled)")
@@ -359,7 +358,7 @@ mod tests {
         let classes: Vec<&str> = unrevealed
             .rivens
             .iter()
-            .filter_map(|riven| riven.weapon_class.as_deref())
+            .map(|riven| riven.weapon_class.as_str())
             .collect();
         assert_eq!(
             classes,
@@ -374,12 +373,12 @@ mod tests {
                 "Zaw",
             ]
         );
-        assert!(unrevealed.rivens.iter().all(|riven| {
-            riven
-                .name
-                .as_deref()
-                .is_some_and(|name| name.ends_with(RIVEN_MOD_SUFFIX))
-        }));
+        assert!(
+            unrevealed
+                .rivens
+                .iter()
+                .all(|riven| riven.name.ends_with(RIVEN_MOD_SUFFIX))
+        );
     }
 
     #[test]
@@ -392,7 +391,6 @@ mod tests {
                 "{} has no generated name",
                 row.item_id
             );
-            assert!(row.weapon.is_some(), "{} has no weapon", row.item_id);
             assert!(row.weapon_slug.is_some(), "{} has no slug", row.item_id);
             assert!(
                 row.riven_type.is_some(),

@@ -5,7 +5,6 @@ import {
   counted,
   dateTime,
   dayLabel,
-  displayNameFromPath,
   marketUrl,
   monthLabel,
   num,
@@ -158,30 +157,6 @@ describe("monthLabel", () => {
 
   it("with year", () => {
     expect(monthLabel("2026-03-04", true)).toBe("Mar 2026");
-  });
-});
-
-describe("displayNameFromPath", () => {
-  it("splits the camel case tail", () => {
-    expect(
-      displayNameFromPath(
-        "/Lotus/Types/Recipes/Weapons/WeaponParts/KompressaPrimeReceiver",
-      ),
-    ).toBe("Kompressa Prime Receiver");
-  });
-
-  it("drops the Component suffix", () => {
-    expect(
-      displayNameFromPath(
-        "/Lotus/Types/Recipes/WarframeRecipes/LavosPrimeSystemsComponent",
-      ),
-    ).toBe("Lavos Prime Systems");
-  });
-
-  it("bare name without slashes", () => {
-    expect(displayNameFromPath("AlternoxPrimeBlueprint")).toBe(
-      "Alternox Prime Blueprint",
-    );
   });
 });
 

@@ -123,7 +123,7 @@ mod tests {
             riven_type: None,
             weapon_class: None,
             name: None,
-            weapon: None,
+            weapon: "Rifle Riven Mod".to_owned(),
             weapon_path: None,
             listed_in_wfm: false,
             weapon_slug: None,

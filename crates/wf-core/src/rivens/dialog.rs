@@ -66,7 +66,7 @@ mod tests {
 
         assert!(row.item_id.is_empty());
         assert_eq!(row.item_type, acceltra.mod_type);
-        assert_eq!(row.weapon.as_deref(), Some("Acceltra"));
+        assert_eq!(row.weapon, "Acceltra");
         assert_eq!(row.weapon_path.as_deref(), Some(acceltra.game_ref.as_str()));
         assert_eq!(row.weapon_slug.as_deref(), Some("acceltra"));
         assert_eq!(row.weapon_class.as_deref(), Some("Rifle"));
@@ -147,7 +147,7 @@ mod tests {
         let owned = grader
             .in_dialog(&braton.mod_type, &roll, Some(&inventory))
             .unwrap();
-        assert_eq!(owned.weapon.as_deref(), Some("Braton"));
+        assert_eq!(owned.weapon, "Braton");
         assert_eq!(owned.disposition, Some(1.25));
         assert_eq!(owned.disposition_weapon.as_deref(), Some("Braton Prime"));
 

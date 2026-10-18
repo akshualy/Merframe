@@ -268,10 +268,6 @@ mod tests {
             .iter()
             .find(|reward| reward.name == "Braton Prime Stock")
             .expect("Braton Prime Stock");
-        assert_eq!(
-            braton.component.as_deref(),
-            Some(fixtures::BRATON_PRIME_STOCK)
-        );
         assert!(braton.ownership.needed_for_set);
         assert!(!braton.ownership.parent_owned);
         assert_eq!(axi.ownership.missing_items, 1);
@@ -596,7 +592,6 @@ mod tests {
             .find(|reward| reward.name == "Forma Blueprint")
             .expect("Forma Blueprint");
         assert_eq!(forma.plat, None);
-        assert_eq!(forma.component, None);
         assert!(forma.ownership.owned > 0);
         assert!(!forma.ownership.needed_for_set);
     }

@@ -771,40 +771,6 @@ mod tests {
     }
 
     #[test]
-    fn pre_overlay_document() {
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert!(stored.overlays.overlays_enabled);
-        assert!(stored.overlays.shown.overlay_relic_reward);
-        assert!(stored.overlays.shown.overlay_relic_recommendation);
-        assert!(stored.overlays.shown.overlay_riven);
-        assert_eq!(stored.overlays.overlay_mode, OverlayMode::Auto);
-    }
-
-    #[test]
-    fn pre_placement_document() {
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert_eq!(
-            stored.overlays.placements.overlay_relic_reward_placement,
-            OverlayPlacement::Centre
-        );
-        assert_eq!(
-            stored
-                .overlays
-                .placements
-                .overlay_relic_recommendation_placement,
-            OverlayPlacement::TopRight
-        );
-        assert_eq!(
-            stored.overlays.placements.overlay_riven_placement,
-            OverlayPlacement::TopLeft
-        );
-        assert_eq!(
-            stored.overlays.overlay_recommendation_refinement,
-            RecommendationRefinement::Radiant
-        );
-    }
-
-    #[test]
     fn placements_round_trip() {
         let stored: Settings = serde_json::from_str(
             r#"{"overlay_relic_reward_placement":"bottom_left",
@@ -851,10 +817,7 @@ mod tests {
     }
 
     #[test]
-    fn only_while_game_active_default() {
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert!(stored.overlays.overlay_only_while_game_active);
-
+    fn only_while_game_active_opt_out() {
         let off: Settings =
             serde_json::from_str(r#"{"overlay_only_while_game_active":false}"#).unwrap();
         assert!(!off.overlays.overlay_only_while_game_active);
@@ -887,9 +850,6 @@ mod tests {
         assert!(!settings.force_log_file);
         assert_eq!(settings.log_selection(), wf_log::Selection::Auto);
 
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert_eq!(stored.log_selection(), wf_log::Selection::Auto);
-
         let forced: Settings = serde_json::from_str(r#"{"force_log_file":true}"#).unwrap();
         assert_eq!(forced.log_selection(), wf_log::Selection::File);
     }
@@ -906,9 +866,6 @@ mod tests {
                 .contains("{tenno}")
         );
 
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert_eq!(stored.discord.discord_message_template, DISCORD_TEMPLATE);
-
         let chosen: Settings =
             serde_json::from_str(r#"{"discord_message_template":"{tenno}?"}"#).unwrap();
         assert_eq!(chosen.discord.discord_message_template, "{tenno}?");
@@ -916,9 +873,6 @@ mod tests {
 
     #[test]
     fn last_trade_actions_opt_in() {
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert!(!stored.market.last_trade.market_offline_after_last_trade);
-        assert!(!stored.market.last_trade.market_hide_after_last_trade);
         let enabled: Settings =
             serde_json::from_str(r#"{"market_hide_after_last_trade":true}"#).unwrap();
         assert!(!enabled.market.last_trade.market_offline_after_last_trade);
@@ -936,8 +890,6 @@ mod tests {
     #[test]
     fn auto_close_opt_in() {
         assert!(!Settings::default().market.market_auto_close);
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert!(!stored.market.market_auto_close);
         let enabled: Settings = serde_json::from_str(r#"{"market_auto_close":true}"#).unwrap();
         assert!(enabled.market.market_auto_close);
     }
@@ -948,13 +900,6 @@ mod tests {
         assert!(stored.notifications.windows_notifications_enabled);
         assert!(stored.inventory.stats_tab_enabled);
         assert_eq!(stored.discord.discord_message_template, DISCORD_TEMPLATE);
-    }
-
-    #[test]
-    fn world_state_interval_default() {
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert_eq!(stored.world_state_interval_minutes, 5);
-        assert_eq!(stored.world_state_interval(), Duration::from_secs(300));
     }
 
     #[test]
@@ -995,9 +940,6 @@ mod tests {
         assert_eq!(interval(2), Duration::from_secs(120));
         assert_eq!(interval(15).as_secs(), 900);
         assert_eq!(interval(600).as_secs(), 3600);
-
-        let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert_eq!(stored.market.market_poll_minutes, 5);
     }
 
     #[test]

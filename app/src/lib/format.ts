@@ -110,15 +110,6 @@ export function monthLabel(day: string, withYear: boolean): string {
   });
 }
 
-export function displayNameFromPath(path: string): string {
-  const tail = path.split("/").pop() ?? path;
-  return tail
-    .replace(/(?<!^)[A-Z]/g, (upper) => ` ${upper}`)
-    .replace(/\bComponent\b/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 export function marketUrl(slug: string): string {
   return `https://warframe.market/items/${slug}`;
 }

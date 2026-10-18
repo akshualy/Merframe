@@ -17,7 +17,6 @@
       "rewards": [
         {
           "unique_name": "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
-          "component": "/Lotus/Types/Recipes/Weapons/AlternoxPrimeBlueprint",
           "name": "Alternox Prime Blueprint",
           "image_name": "AlternoxPrime.png",
           "rarity": "Rare",
