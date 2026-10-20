@@ -23,6 +23,7 @@ import type {
   NewOrder,
   Order,
   OrderPatch,
+  OverlayKind,
   OverlayState,
   Presence,
   RelicPlan,
@@ -147,6 +148,7 @@ export const api = {
   overlayNotify: (title: string, body: string) =>
     call<void>("overlay_notify", { title, body }),
   overlayContentShrank: () => call<void>("overlay_content_shrank"),
+  overlayTest: (kind: OverlayKind) => call<void>("overlay_test", { kind }),
   rescanInventory: () => call<GameStatus>("rescan_inventory"),
   exportBundle: () => call<string | null>("export"),
   pickLogFile: () => call<string | null>("pick_log_file"),

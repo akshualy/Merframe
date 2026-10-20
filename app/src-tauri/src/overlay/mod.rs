@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, Runtime};
 use tracing::{debug, info, warn};
 use wf_core::{DucateringProgress, RewardScreen, RivenRow};
@@ -17,12 +17,14 @@ use crate::settings::{
 };
 use crate::state::{AppState, lock, read};
 
+mod preview;
 mod relic;
 mod riven;
 mod screens;
 mod session;
 mod window;
 
+pub use preview::toggle_preview;
 pub use riven::riven_item_type;
 #[cfg(target_os = "linux")]
 pub use session::adopt_xwayland;
@@ -44,7 +46,13 @@ pub const KINDS: [Kind; 5] = [
 
 const NOTIFICATION_LIFETIME: Duration = Duration::from_millis(6500);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "bindings",
+    derive(ts_rs::TS),
+    ts(export, rename = "OverlayKind")
+)]
+#[serde(rename_all = "snake_case")]
 pub enum Kind {
     RelicReward,
     RelicRecommendation,
@@ -173,6 +181,7 @@ pub struct OverlayState {
     pub riven: Option<RivenTrigger>,
     pub ducatering: Option<DucateringProgress>,
     pub notification: Option<NotificationTrigger>,
+    pub preview: Option<Kind>,
 }
 
 impl Default for OverlayState {
@@ -186,11 +195,21 @@ impl Default for OverlayState {
             riven: None,
             ducatering: None,
             notification: None,
+            preview: None,
         }
     }
 }
 
 impl OverlayState {
+    fn shows(&self, state: &AppState, only_while_game_active: bool, kind: Kind) -> bool {
+        let focused = if self.preview == Some(kind) {
+            None
+        } else {
+            state.focus.focused()
+        };
+        window_shows(only_while_game_active, focused, self.occupied(kind))
+    }
+
     fn occupied(&self, kind: Kind) -> bool {
         match kind {
             Kind::RelicReward => self.reward.is_some(),
@@ -202,6 +221,7 @@ impl OverlayState {
     }
 
     fn clear(&mut self, kind: Kind) {
+        self.preview.take_if(|preview| *preview == kind);
         match kind {
             Kind::RelicReward => self.reward = None,
             Kind::RelicRecommendation => self.recommendation = None,
@@ -250,7 +270,15 @@ pub fn on_relic_rewards<R: Runtime>(
         return;
     }
 
-    let mut screen = screen.clone();
+    show_rewards(app, state, relic, screen.clone());
+}
+
+fn show_rewards<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    relic: Option<String>,
+    mut screen: RewardScreen,
+) {
     if !read(&state.settings).overlays.overlay_account_balance {
         screen.account = None;
     }
@@ -338,7 +366,7 @@ pub fn on_log_event<R: Runtime>(
                 arm_station_answer(state, at);
             }
         }
-        LogEvent::WindowFocus { focused } => follow_game_window(app, state, *focused),
+        LogEvent::WindowFocus { .. } => follow_game_window(app, state),
         LogEvent::GameMonitor(rect) => follow_game_monitor(app, state, *rect),
         LogEvent::DialogAnswered { accepted: true } => on_dialog_answer(app, state, at),
         LogEvent::DialogAnswered { accepted: false } => {
@@ -423,25 +451,26 @@ pub fn on_inventory_updated<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState
 
 pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let screen = screen_of(app, *lock(&state.overlays.game_monitor));
-    let (wanted, only_while_game_active) = {
+    let (wanted, windowed, only_while_game_active) = {
         let settings = read(&state.settings);
         let mut slots = lock(&state.overlays.state);
         slots.opacity = settings.overlays.overlay_opacity;
         slots.ducatering_clipboard = settings.overlays.ducatering.ducatering_clipboard;
         drop(slots);
-        let windowed = windowed(state, &settings);
         (
             KINDS.map(|kind| {
                 (
-                    windowed && enabled(&settings, kind),
+                    enabled(&settings, kind),
                     window_bounds(screen, kind, &settings),
                 )
             }),
+            windowed(state, &settings),
             settings.overlays.overlay_only_while_game_active,
         )
     };
 
-    for (kind, (keep, bounds)) in KINDS.into_iter().zip(wanted) {
+    for (kind, (on, bounds)) in KINDS.into_iter().zip(wanted) {
+        let keep = windowed && on;
         match (app.get_webview_window(kind.label()), keep) {
             (Some(_), false) => {
                 lock(&state.overlays.windows).remove(kind.label());
@@ -451,13 +480,14 @@ pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
             (None, _) => {}
         }
 
-        if keep {
+        if !on {
+            hide(app, state, kind);
+        } else if keep {
             if kind.permanent() {
                 load(app, state, kind);
             }
 
-            let due = lock(&state.overlays.state).occupied(kind);
-            let shows = window_shows(only_while_game_active, state.focus.focused(), due);
+            let shows = lock(&state.overlays.state).shows(state, only_while_game_active, kind);
             settle(app, state, kind, shows);
         }
     }
@@ -506,7 +536,7 @@ fn show<R: Runtime>(
         fill(slots);
         true
     });
-    if window_shows(only_while_game_active, state.focus.focused(), windowed) {
+    if windowed && lock(&state.overlays.state).shows(state, only_while_game_active, kind) {
         surface(app, state, kind);
     }
 }
@@ -607,12 +637,13 @@ pub fn on_page_ready<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, labe
     };
     info!(label, millis = waited.as_millis(), "Overlay page ready");
     let settings = read(&state.settings);
-    let due = enabled(&settings, kind) && lock(&state.overlays.state).occupied(kind);
-    if window_shows(
-        settings.overlays.overlay_only_while_game_active,
-        state.focus.focused(),
-        due,
-    ) {
+    let shows = enabled(&settings, kind)
+        && lock(&state.overlays.state).shows(
+            state,
+            settings.overlays.overlay_only_while_game_active,
+            kind,
+        );
+    if shows {
         reveal(app, kind);
     }
 }
@@ -647,7 +678,7 @@ fn hide<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
     }
 }
 
-fn follow_game_window<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, focused: bool) {
+fn follow_game_window<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let shown = {
         let settings = read(&state.settings);
         if !windowed(state, &settings) {
@@ -657,8 +688,7 @@ fn follow_game_window<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, foc
         let only_while_game_active = settings.overlays.overlay_only_while_game_active;
         let slots = lock(&state.overlays.state);
         KINDS.map(|kind| {
-            let due = enabled(&settings, kind) && slots.occupied(kind);
-            window_shows(only_while_game_active, Some(focused), due)
+            enabled(&settings, kind) && slots.shows(state, only_while_game_active, kind)
         })
     };
 
@@ -729,6 +759,19 @@ mod tests {
             assert_eq!(window_shows(false, Some(true), due), due);
             assert_eq!(window_shows(false, Some(false), due), due);
         }
+    }
+
+    #[test]
+    fn clearing_a_slot_ends_its_preview() {
+        let mut slots = OverlayState {
+            preview: Some(Kind::Riven),
+            ..OverlayState::default()
+        };
+        slots.clear(Kind::Ducatering);
+        assert_eq!(slots.preview, Some(Kind::Riven));
+
+        slots.clear(Kind::Riven);
+        assert_eq!(slots.preview, None);
     }
 
     #[test]

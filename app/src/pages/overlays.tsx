@@ -9,14 +9,17 @@ import {
   RivenSlot,
 } from "@/components/overlay-slots";
 import { Page, Section } from "@/components/page";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PositionPicker } from "@/components/ui/position-picker";
 import { Slider } from "@/components/ui/slider";
 import { SwitchField } from "@/components/ui/switch";
+import { api, reportError } from "@/lib/bridge";
 import { cn } from "@/lib/utils";
 import { useAppStore, useSettings } from "@/stores/app-store";
 import { useOverlayStore } from "@/stores/overlay-store";
 import type {
+  OverlayKind,
   OverlayMode,
   OverlayPlacement,
   OverlaySupport,
@@ -189,15 +192,29 @@ export function OverlaysPage() {
   const riven = master && settings.overlay_riven;
   const ducatering = master && settings.overlay_ducatering;
 
-  const placement = (name: string, setting: PlacementSetting) => (
-    <PositionPicker
-      id={`${name}-placement`}
-      label="Placement"
-      value={settings[setting]}
-      options={PLACEMENTS}
-      disabled={!master}
-      onChange={(value) => saveSettings({ [setting]: value })}
-    />
+  const actions = (
+    kind: OverlayKind,
+    setting: PlacementSetting,
+    enabled: boolean,
+  ) => (
+    <div className="flex shrink-0 items-start gap-3">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={!enabled}
+        onClick={() => api.overlayTest(kind).catch(reportError)}
+      >
+        {overlays.preview === kind ? "Stop" : "Test"}
+      </Button>
+      <PositionPicker
+        id={`${kind}-placement`}
+        label="Placement"
+        value={settings[setting]}
+        options={PLACEMENTS}
+        disabled={!master}
+        onChange={(value) => saveSettings({ [setting]: value })}
+      />
+    </div>
   );
 
   return (
@@ -294,7 +311,11 @@ export function OverlaysPage() {
             />
           </CardControls>
         }
-        action={placement("reward", "overlay_relic_reward_placement")}
+        action={actions(
+          "relic_reward",
+          "overlay_relic_reward_placement",
+          reward,
+        )}
         description={
           reward ? "Shown while the reward screen is on display." : OFF
         }
@@ -344,9 +365,10 @@ export function OverlaysPage() {
             />
           </CardControls>
         }
-        action={placement(
-          "recommendation",
+        action={actions(
+          "relic_recommendation",
           "overlay_relic_recommendation_placement",
+          recommendation,
         )}
         description={
           recommendation
@@ -371,7 +393,7 @@ export function OverlaysPage() {
             onEnabled={(enabled) => saveSettings({ overlay_riven: enabled })}
           />
         }
-        action={placement("riven", "overlay_riven_placement")}
+        action={actions("riven", "overlay_riven_placement", riven)}
         description={riven ? "Shown while you inspect or cycle a riven." : OFF}
       >
         <Focused trigger={riven ? overlays.riven : null}>
@@ -408,7 +430,11 @@ export function OverlaysPage() {
             />
           </>
         }
-        action={placement("ducatering", "overlay_ducatering_placement")}
+        action={actions(
+          "ducatering",
+          "overlay_ducatering_placement",
+          ducatering,
+        )}
         description={
           ducatering
             ? "Shown while the Ducat Kiosk is open. Filter changes only apply on new Kiosk screens."

@@ -99,6 +99,7 @@ export type * from "./Order";
 export type * from "./OrderPatch";
 export type * from "./OrderRow";
 export type * from "./OrderType";
+export type * from "./OverlayKind";
 export type * from "./OverlayMode";
 export type * from "./OverlayPlacement";
 export type * from "./OverlayPlacements";

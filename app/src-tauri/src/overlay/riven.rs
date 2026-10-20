@@ -345,7 +345,7 @@ pub(super) fn on_dialog_answer<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppSt
     }
 }
 
-fn show_riven<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: RivenRow) {
+pub(super) fn show_riven<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, row: RivenRow) {
     let trigger = RivenTrigger {
         item_type: row.item_type.clone(),
         before: Some(row),

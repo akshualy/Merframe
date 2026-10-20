@@ -302,11 +302,20 @@ pub async fn test_notifications<R: Runtime>(
     } else {
         None
     };
-    if !settings.notifications.windows_notifications_enabled && webhook.is_none() {
+    let in_game = overlay::enabled(settings, overlay::Kind::Notification);
+    if !settings.notifications.windows_notifications_enabled && webhook.is_none() && !in_game {
         anyhow::bail!("No notification channels are enabled");
     }
     if settings.notifications.windows_notifications_enabled {
         show(app, APP_TITLE, "Notifications are working", settings).await?;
+    }
+    if in_game {
+        overlay::notify(
+            app,
+            state,
+            APP_TITLE.to_owned(),
+            "Notifications are working".to_owned(),
+        );
     }
     if let Some(url) = webhook {
         send_webhook(state, url, "Merframe notifications are working").await?;

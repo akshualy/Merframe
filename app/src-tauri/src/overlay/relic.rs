@@ -9,6 +9,7 @@ use wf_worldstate::{FissureTier, RelicTier, WorldState};
 use super::screens::Game;
 use super::{Kind, RecommendationTrigger, attached_game, show};
 use crate::runtime::blocking;
+use crate::settings::Settings;
 use crate::state::{AppState, lock, read};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -110,21 +111,22 @@ pub(super) fn scan_recommendation<R: Runtime>(
         if !lock(&owned.overlays.screens).recommendation_pending(generation) {
             return;
         }
-        let (refinement, count) = {
-            let settings = read(&owned.settings);
-            (
-                settings.overlays.overlay_recommendation_refinement,
-                settings.overlays.overlay_recommendation_count,
-            )
-        };
+        let trigger = recommendation_trigger(&read(&owned.settings), tier);
         show(&app, &owned, Kind::RelicRecommendation, |slots| {
-            slots.recommendation = Some(RecommendationTrigger {
-                tier,
-                refinement,
-                count,
-            });
+            slots.recommendation = Some(trigger);
         });
     });
+}
+
+pub(super) fn recommendation_trigger(
+    settings: &Settings,
+    tier: Option<&'static str>,
+) -> RecommendationTrigger {
+    RecommendationTrigger {
+        tier,
+        refinement: settings.overlays.overlay_recommendation_refinement,
+        count: settings.overlays.overlay_recommendation_count,
+    }
 }
 
 #[cfg(test)]
