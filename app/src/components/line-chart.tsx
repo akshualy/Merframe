@@ -78,7 +78,7 @@ export function LineChart({
         <ResponsiveContainer>
           <Chart data={points} syncId={label} margin={MARGIN}>
             <CartesianGrid vertical={false} {...GRID} />
-            <XAxis dataKey="label" hide />
+            <XAxis dataKey="label" scale="band" hide />
             <YAxis
               width={AXIS_WIDTH}
               domain={["dataMin", "dataMax"]}

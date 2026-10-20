@@ -18,10 +18,8 @@ function sinceMs(timeframe: Timeframe): number | undefined {
   if (timeframe === "all") {
     return undefined;
   }
-  if (timeframe === "today") {
-    return new Date().setHours(0, 0, 0, 0);
-  }
-  return Date.now() - Number(timeframe) * DAY_MS;
+  const days = timeframe === "today" ? 1 : Number(timeframe);
+  return new Date().setUTCHours(0, 0, 0, 0) - (days - 1) * DAY_MS;
 }
 
 function useTimeframe(card: TimeframeCard): Timeframe {
