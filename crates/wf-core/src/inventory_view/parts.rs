@@ -2,10 +2,9 @@ use std::collections::{BTreeMap, HashSet};
 
 use wf_data::{Component, Item};
 
-use super::misc::is_landing_craft_part;
 use super::{ItemIndex, ItemSummary, PartRow, SetComponent, SetLink, SetRow};
 use crate::catalog::{Stock, names_a_prime};
-use crate::identity::{ItemKind, ItemRecord, ItemTable, Variant};
+use crate::identity::{ItemKind, ItemRecord, ItemTable, Variant, is_landing_craft_part};
 use crate::prices::Prices;
 use crate::view::View;
 
@@ -64,10 +63,10 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
         .into_iter()
         .filter_map(|(unique_name, held)| {
             let record = items.lookup(unique_name)?;
-            let ItemKind::Part { set, tradable, .. } = record.kind else {
+            let ItemKind::Part { set, .. } = record.kind else {
                 return None;
             };
-            if !tradable {
+            if !record.tradable() {
                 return None;
             }
 
@@ -89,7 +88,7 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
                 prices: Prices::of(prices, part.market_slug.as_deref()),
                 set: SetLink {
                     item: index.add(ItemSummary::from(set)),
-                    complete: set_is_complete(&account.stock, item),
+                    complete: set_is_complete(items, &account.stock, item),
                 },
                 status: account.status(item),
             })
@@ -99,15 +98,19 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
     rows
 }
 
-fn set_parts(item: &Item) -> impl Iterator<Item = &Component> {
+fn set_parts<'a>(items: &'a ItemTable, item: &'a Item) -> impl Iterator<Item = &'a Component> {
     let prime = names_a_prime(&item.name);
     item.components.iter().flatten().filter(move |component| {
-        crate::catalog::is_part(component) && (component.tradable || prime)
+        crate::catalog::is_part(component)
+            && (prime
+                || items
+                    .part(item, component)
+                    .is_some_and(ItemRecord::tradable))
     })
 }
 
-fn set_is_complete(stock: &Stock, item: &Item) -> bool {
-    let mut parts = set_parts(item).peekable();
+fn set_is_complete(items: &ItemTable, stock: &Stock, item: &Item) -> bool {
+    let mut parts = set_parts(items, item).peekable();
     parts.peek().is_some()
         && parts
             .all(|component| stock.count(&component.unique_name) >= i64::from(component.item_count))
@@ -130,7 +133,7 @@ pub(crate) fn held_parts<'a>(
     item: &'a Item,
     stock: &Stock,
 ) -> Vec<HeldPart<'a>> {
-    set_parts(item)
+    set_parts(items, item)
         .filter_map(|component| {
             Some(HeldPart {
                 record: items.part(item, component)?,
@@ -227,6 +230,7 @@ mod tests {
         self, BRATON_PRIME, BRATON_PRIME_BARREL, BRATON_PRIME_STOCK, FERRITE, PRIME_PARTS,
         TRINITY_PRIME_SYSTEMS_BLUEPRINT, drop_entries, entries, inventory_with, push_counted,
     };
+    use crate::identity::blueprint_of;
     use crate::inventory_view::tab;
     use crate::listings::MarketListings;
     use crate::view::Fixture;
@@ -352,6 +356,32 @@ mod tests {
             .unwrap();
         assert_eq!(index[barrel.item].name, "Braton Prime Barrel");
         assert!(!barrel.enough);
+    }
+
+    #[test]
+    fn landing_craft_set() {
+        const MANTIS_AVIONICS: &str =
+            "/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysStarChartComponent";
+        const MANTIS_ENGINES: &str =
+            "/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysPowerCoreComponent";
+        let catalog = fixtures::landing_craft_catalog();
+        let avionics_blueprint = blueprint_of(MANTIS_AVIONICS).unwrap();
+        let engines_blueprint = blueprint_of(MANTIS_ENGINES).unwrap();
+        let stocked = priced(
+            catalog,
+            fixtures::inventory_owning(&[(&avionics_blueprint, 2), (&engines_blueprint, 1)]),
+        );
+        let (rows, index) = stocked.rows(parts);
+        assert_eq!(rows.len(), 2);
+        assert_eq!(index[rows[0].item].name, "Mantis Avionics");
+        assert_eq!(index[rows[0].set.item].name, "Mantis");
+        assert!(rows[0].set.complete);
+
+        let (sets, index) = stocked.rows(sets);
+        assert_eq!(sets.len(), 1);
+        assert_eq!(sets[0].total_parts, 2);
+        assert!(sets[0].complete);
+        assert_eq!(index[sets[0].item].name, "Mantis");
     }
 
     #[test]

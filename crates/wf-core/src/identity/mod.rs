@@ -18,8 +18,12 @@ use crate::inventory_view::ItemSummary;
 
 pub use listing::market_name;
 pub(crate) use listing::traded_as;
+use naming::held_names;
 pub use naming::market_slug;
-pub(crate) use naming::{blueprint_of, component_of, part_identity, part_market_slug};
+pub(crate) use naming::{
+    ambassador_blueprint, blueprint_of, component_of, is_landing_craft_part, part_identity,
+    part_market_slug, part_tradable,
+};
 
 pub(crate) const OUBLIETTE_KEY: &str = "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey";
 pub(crate) const LEGENDARY_CORE: &str = "/Lotus/Upgrades/Mods/Fusers/LegendaryModFuser";
@@ -89,16 +93,6 @@ pub(crate) fn is_riven(unique_name: &str) -> bool {
     unique_name.contains(RIVEN_MARKER)
 }
 
-pub(crate) fn ambassador_blueprint(unique_name: &str) -> Option<String> {
-    if !unique_name.contains("CrpArSniper") || unique_name.contains("Blueprint") {
-        return None;
-    }
-    Some(format!(
-        "{}Blueprint",
-        unique_name.replace("CrpArSniper", "Ambassador")
-    ))
-}
-
 fn starter_original(unique_name: &str) -> Option<String> {
     let (parent, leaf) = unique_name.strip_suffix("Beginner")?.rsplit_once('/')?;
     Some(format!("{}/{leaf}", parent.strip_suffix("/Beginner")?))
@@ -116,7 +110,9 @@ pub enum Variant {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ItemKind {
-    Item,
+    Item {
+        tradable: bool,
+    },
     Upgrade {
         rarity: Option<Rarity>,
         max_rank: Option<u32>,
@@ -208,6 +204,13 @@ impl ItemRecord {
                 unique_name: unique_name.to_owned(),
                 ..self.clone()
             })
+        }
+    }
+
+    pub(crate) fn tradable(&self) -> bool {
+        match self.kind {
+            ItemKind::Item { tradable } | ItemKind::Part { tradable, .. } => tradable,
+            _ => false,
         }
     }
 
@@ -331,7 +334,10 @@ impl ItemTable {
         {
             return self.insert(upgrade_record(&item.unique_name, item, ""));
         }
-        self.insert(ItemRecord::of(item, ItemKind::Item).vaulted(item))
+        let kind = ItemKind::Item {
+            tradable: item.tradable,
+        };
+        self.insert(ItemRecord::of(item, kind).vaulted(item))
     }
 
     fn add_parts(&mut self, catalog: &Catalog, item: &Item, base: ItemRef) {
@@ -356,7 +362,7 @@ impl ItemTable {
                         ItemKind::Part {
                             set,
                             ducats: component.ducats,
-                            tradable: component.tradable,
+                            tradable: part_tradable(component),
                         },
                     )
                     .slugged(part_market_slug(item, component))
@@ -406,7 +412,9 @@ impl ItemTable {
                         &unique_name,
                         format!("{} ({grade})", item.name),
                         image_name,
-                        ItemKind::Item,
+                        ItemKind::Item {
+                            tradable: item.tradable,
+                        },
                     )
                 };
                 self.insert(record);
@@ -498,15 +506,6 @@ impl ItemTable {
     pub fn by_game_ref(&self, game_ref: &str) -> Option<&ItemRecord> {
         self.by_game_ref.get(game_ref).map(|&item| &self[item])
     }
-}
-
-fn held_names(component: &str) -> impl Iterator<Item = String> {
-    [
-        Some(format!("{component}Blueprint")),
-        blueprint_of(component),
-    ]
-    .into_iter()
-    .flatten()
 }
 
 fn upgrade_record(unique_name: &str, item: &Item, suffix: &str) -> ItemRecord {

@@ -13,11 +13,22 @@ use super::{NodeDrop, NodeMarket, OwnedRelic};
 const WIKI: &str = "https://wiki.warframe.com/w/";
 const OWNED_RELIC_ROWS: usize = 5;
 
+/// Corrected Wiki URL for where the WFCD link is missing and the name fallback is something else.
+const WIKI_PAGES: [(&str, &str); 1] = [(
+    "/Lotus/Types/Items/Ships/NoraShip",
+    "Nightwave_(Landing_Craft)",
+)];
+
 pub(super) fn wiki_url(catalog: &Catalog, unique_name: &str) -> Option<String> {
     let item = catalog.item(unique_name)?;
-    Some(match &item.wikia_url {
-        Some(url) => url.replace("https://warframe.fandom.com/wiki/", WIKI),
-        None => format!("{WIKI}{}", item.name.replace(' ', "_")),
+    let page = WIKI_PAGES
+        .iter()
+        .find(|(disambiguated, _)| *disambiguated == unique_name)
+        .map(|(_, page)| *page);
+    Some(match (page, &item.wikia_url) {
+        (Some(page), _) => format!("{WIKI}{page}"),
+        (None, Some(url)) => url.replace("https://warframe.fandom.com/wiki/", WIKI),
+        (None, None) => format!("{WIKI}{}", item.name.replace(' ', "_")),
     })
 }
 
@@ -120,16 +131,15 @@ pub(super) fn node_market(
     parent: &Item,
     component: &Component,
 ) -> Option<NodeMarket> {
-    if !component.tradable {
-        return None;
-    }
-
     let record = if is_part(component) {
         items.part(parent, component)
     } else {
         items.get(&component.unique_name)
     };
-    let slug = record?.market_slug.clone()?;
+    let slug = record
+        .filter(|record| record.tradable())?
+        .market_slug
+        .clone()?;
     let sell = prices.plat(&slug)?;
     Some(NodeMarket { slug, sell })
 }
@@ -223,6 +233,15 @@ mod tests {
             Some("https://wiki.warframe.com/w/Excalibur")
         );
         assert_eq!(wiki_url(&catalog, "/Lotus/Nope"), None);
+
+        assert_eq!(
+            wiki_url(
+                &fixtures::landing_craft_catalog(),
+                "/Lotus/Types/Items/Ships/NoraShip"
+            )
+            .as_deref(),
+            Some("https://wiki.warframe.com/w/Nightwave_(Landing_Craft)")
+        );
 
         let fandom = fixtures::ITEMS.replace(WIKI, "https://warframe.fandom.com/wiki/");
         let moved = Catalog::from_json(&fandom, fixtures::RELICS, fixtures::COMPONENTS).unwrap();

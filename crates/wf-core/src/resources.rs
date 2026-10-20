@@ -260,7 +260,7 @@ fn selected(item: &FoundryItem, held: &HashSet<&str>, query: &ResourceQuery) -> 
         return false;
     }
     let in_scope = match query.scope {
-        ResourceScope::Mastery => !item.progress.owned && !item.mastered,
+        ResourceScope::Mastery => !item.progress.owned && item.mastered == Some(false),
         ResourceScope::All => true,
         ResourceScope::Starred => item.favourite,
     };
@@ -461,6 +461,19 @@ mod tests {
         assert_eq!(names(&starred), ["Excalibur"]);
         assert!(row(&starred, OROKIN_CELL).used_by[0].favourite);
         assert_eq!(row(&starred, OROKIN_CELL).required, 1);
+    }
+
+    #[test]
+    fn landing_craft_outside_mastery_scope() {
+        let catalog = fixtures::landing_craft_catalog();
+        let fixture = Fixture::new(catalog, fixtures::inventory());
+        let scoped = |scope| resources(&fixture, ResourceSource::Craftable, scope);
+
+        assert!(names(&scoped(ResourceScope::Mastery)).is_empty());
+        assert_eq!(
+            names(&scoped(ResourceScope::All)),
+            ["Mantis", "Nightwave", "Xiphos"]
+        );
     }
 
     #[test]

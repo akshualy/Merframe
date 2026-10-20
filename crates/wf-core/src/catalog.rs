@@ -291,6 +291,49 @@ pub mod fixtures {
         Catalog::from_json(items_json, RELICS, "[]").unwrap()
     }
 
+    pub fn landing_craft_catalog() -> Catalog {
+        Catalog::from_json(
+            r#"[
+              {"uniqueName":"/Lotus/Types/Items/Ships/InsectShip","name":"Mantis",
+               "category":"Misc","type":"Orbiter","tradable":false,"imageName":"Mantis.png",
+               "components":[
+                 {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysStarChartComponent","itemCount":1},
+                 {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysPowerCoreComponent","itemCount":1},
+                 {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysBlueprint","itemCount":1},
+                 {"uniqueName":"/Lotus/Types/Items/MiscItems/OrokinCell","itemCount":1}
+               ]},
+              {"uniqueName":"/Lotus/Types/Items/Ships/GyroscopeShip","name":"Xiphos",
+               "category":"Misc","type":"Orbiter","tradable":false,"imageName":"Xiphos.png",
+               "components":[
+                 {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Gyroscope/GyroscopeFuselageComponent","itemCount":1},
+                 {"uniqueName":"/Lotus/Types/Items/MiscItems/OrokinCell","itemCount":1}
+               ]},
+              {"uniqueName":"/Lotus/Types/Items/Ships/NoraShip","name":"Nightwave",
+               "category":"Misc","type":"Orbiter","tradable":false,"imageName":"Nightwave.png",
+               "components":[
+                 {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/NightwaveShip/NoraShipFuselageComponent","itemCount":1},
+                 {"uniqueName":"/Lotus/Types/Items/MiscItems/OrokinCell","itemCount":1}
+               ]},
+              {"uniqueName":"/Lotus/Types/Items/MiscItems/OrokinCell","name":"Orokin Cell",
+               "category":"Misc","type":"Resource","tradable":false}
+            ]"#,
+            RELICS,
+            r#"[
+              {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysStarChartComponent",
+               "name":"Avionics","tradable":false},
+              {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysPowerCoreComponent",
+               "name":"Engines","tradable":false},
+              {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Mantys/MantysBlueprint",
+               "name":"Blueprint","tradable":false},
+              {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/Gyroscope/GyroscopeFuselageComponent",
+               "name":"Fuselage","tradable":false},
+              {"uniqueName":"/Lotus/Types/Recipes/LandingCraftRecipes/NightwaveShip/NoraShipFuselageComponent",
+               "name":"Fuselage","tradable":false}
+            ]"#,
+        )
+        .unwrap()
+    }
+
     pub fn catalog_with(items_json: &str, extra_json: &str) -> Catalog {
         let mut merged: Vec<Value> = serde_json::from_str(items_json).unwrap();
         let extra: Vec<Value> = serde_json::from_str(extra_json).unwrap();

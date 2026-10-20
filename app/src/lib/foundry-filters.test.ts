@@ -74,6 +74,12 @@ describe("foundryMatches", () => {
 });
 
 describe("facets", () => {
+  it("landing craft can not be mastered", () => {
+    const counts = facets(inCategory(items, "landing_craft"), {});
+    expect(counts.prime).toEqual({ yes: 0, no: 1, na: 0 });
+    expect(counts.mastered).toEqual({ yes: 0, no: 0, na: 1 });
+  });
+
   it("counts per filter", () => {
     const counts = facets(warframes, {});
     expect(counts.prime).toEqual({ yes: 2, no: 2, na: 0 });

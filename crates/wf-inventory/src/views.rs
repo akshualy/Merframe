@@ -56,6 +56,7 @@ impl Inventory {
 
     pub fn owned_item_types(&self) -> HashSet<&str> {
         self.equipment()
+            .chain(&self.ships)
             .map(|item| item.item_type.as_str())
             .collect()
     }
@@ -305,8 +306,9 @@ pub(crate) mod tests {
         assert!(owned.contains("/Lotus/Powersuits/Trinity/TrinityPrime"));
         assert!(owned.contains("/Lotus/Types/Sentinels/SentinelWeapons/Gremlin"));
         assert!(owned.contains("/Lotus/Types/Vehicles/Hoverboard/HoverboardSuit"));
+        assert!(owned.contains("/Lotus/Types/Items/Ships/BlueSkyShip"));
         assert!(!owned.contains("/Lotus/Types/Items/MiscItems/Ferrite"));
-        assert!(owned.len() <= inv.equipment().count());
+        assert!(owned.len() <= inv.equipment().count() + inv.ships.len());
     }
 
     #[test]

@@ -28,10 +28,42 @@ pub(crate) fn part_market_slug(item: &Item, component: &Component) -> String {
     }
 }
 
+const LANDING_CRAFT_RECIPES: &str = "/Lotus/Types/Recipes/LandingCraftRecipes/";
+
+pub(crate) fn is_landing_craft_part(unique_name: &str) -> bool {
+    unique_name.starts_with(LANDING_CRAFT_RECIPES)
+}
+
+/// WFCD flags every landing craft part untradable, but the Avionics, Engines and Fuselage
+/// blueprints of every landing craft are listed on warframe.market.
+pub(crate) fn part_tradable(component: &Component) -> bool {
+    component.tradable
+        || (is_landing_craft_part(&component.unique_name) && component.name != "Blueprint")
+}
+
 pub(crate) fn blueprint_of(component: &str) -> Option<String> {
     component
         .strip_suffix("Component")
         .map(|base| format!("{base}Blueprint"))
+}
+
+pub(crate) fn ambassador_blueprint(unique_name: &str) -> Option<String> {
+    if !unique_name.contains("CrpArSniper") || unique_name.contains("Blueprint") {
+        return None;
+    }
+    Some(format!(
+        "{}Blueprint",
+        unique_name.replace("CrpArSniper", "Ambassador")
+    ))
+}
+
+pub(crate) fn held_names(component: &str) -> impl Iterator<Item = String> {
+    [
+        Some(format!("{component}Blueprint")),
+        blueprint_of(component),
+    ]
+    .into_iter()
+    .flatten()
 }
 
 pub(crate) fn component_of(blueprint: &str) -> Option<String> {
@@ -79,5 +111,28 @@ mod tests {
             market_slug("Zephyr Prime  Blueprint"),
             "zephyr_prime_blueprint"
         );
+    }
+
+    #[test]
+    fn landing_craft_parts_trade() {
+        let untraded = |unique_name: &str, name: &str| Component {
+            unique_name: unique_name.to_owned(),
+            name: name.to_owned(),
+            item_count: 1,
+            tradable: false,
+            ducats: None,
+            drops: None,
+            image_name: None,
+        };
+        let parallax = "/Lotus/Types/Recipes/LandingCraftRecipes/ZarimanShip/";
+        assert!(part_tradable(&untraded(
+            &format!("{parallax}ZarimanShipAvionicsComponent"),
+            "Avionics"
+        )));
+        assert!(!part_tradable(&untraded(
+            &format!("{parallax}ZarimanShipBlueprint"),
+            "Blueprint"
+        )));
+        assert!(!part_tradable(&untraded(TRINITY_PRIME_SYSTEMS, "Systems")));
     }
 }

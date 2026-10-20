@@ -321,6 +321,8 @@ pub struct Inventory {
     #[serde(default, deserialize_with = "typed_entries")]
     pub crew_ship_harnesses: Vec<EquipmentItem>,
     #[serde(default, deserialize_with = "typed_entries")]
+    pub ships: Vec<EquipmentItem>,
+    #[serde(default, deserialize_with = "typed_entries")]
     pub misc_items: Vec<CountedItem>,
     #[serde(default, deserialize_with = "typed_entries")]
     pub recipes: Vec<CountedItem>,

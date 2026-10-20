@@ -11,6 +11,7 @@ export const CATEGORIES = [
   ["modular", "Modular"],
   ["arch", "Arch"],
   ["companion", "Companion"],
+  ["landing_craft", "Landing Craft"],
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number][0];

@@ -347,6 +347,32 @@
           "owned_relics": []
         }
       ]
+    },
+    {
+      "unique_name": "/Lotus/Test/Mantis",
+      "name": "Mantis",
+      "kind": "landing_craft",
+      "type_name": "Orbiter",
+      "image_name": null,
+      "wiki_url": null,
+      "prime": null,
+      "mastered": null,
+      "progress": {
+        "owned": true,
+        "pending": false,
+        "ready_to_build": true
+      },
+      "crafts_into": null,
+      "mastery": {
+        "required": null,
+        "met": true
+      },
+      "incarnon": null,
+      "helminth": null,
+      "archon_shards": null,
+      "favourite": false,
+      "any_favourite": false,
+      "components": []
     }
   ]
 }

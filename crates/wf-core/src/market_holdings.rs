@@ -48,10 +48,10 @@ impl<'a> View<'a> {
                 print.dominant_traits.personality == unique_name
             }),
             ItemKind::Part { .. } => self.blueprints(unique_name),
-            ItemKind::Item | ItemKind::Other if unique_name.starts_with(RECIPE_PREFIX) => {
+            ItemKind::Item { .. } | ItemKind::Other if unique_name.starts_with(RECIPE_PREFIX) => {
                 self.blueprints(unique_name)
             }
-            ItemKind::Item | ItemKind::Other => self.misc(record, listed_name),
+            ItemKind::Item { .. } | ItemKind::Other => self.misc(record, listed_name),
         }
     }
 

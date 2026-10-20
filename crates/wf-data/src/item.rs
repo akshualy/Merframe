@@ -158,6 +158,12 @@ impl Item {
         self.product_category.as_deref() == Some("MechSuits")
     }
 
+    /// WFCD types the Liset, Railjack and Skaut as "Orbiter", just like the other landing crafts.
+    /// Only the foundry tab ones have components.
+    pub fn is_landing_craft(&self) -> bool {
+        self.item_type == "Orbiter" && self.components.is_some()
+    }
+
     pub fn is_archwing(&self) -> bool {
         self.product_category.as_deref() == Some("SpaceSuits")
     }

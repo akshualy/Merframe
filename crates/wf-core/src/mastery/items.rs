@@ -46,6 +46,10 @@ pub(super) fn group_of(item: &Item) -> MasteryGroup {
 }
 
 pub(crate) fn kind_of(item: &Item) -> &'static str {
+    if item.is_landing_craft() {
+        return "landing_craft";
+    }
+
     match group_of(item) {
         MasteryGroup::Warframes => {
             if item.is_archwing() {

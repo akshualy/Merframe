@@ -70,10 +70,6 @@ fn is_scene(item_type: &str) -> bool {
     item_type.starts_with("/Lotus/Types/Items/MiscItems/PhotoboothTile")
 }
 
-pub(super) fn is_landing_craft_part(item_type: &str) -> bool {
-    item_type.contains("/Lotus/Types/Recipes/LandingCraftRecipes/")
-}
-
 fn is_oubliette_key(item_type: &str) -> bool {
     item_type == OUBLIETTE_KEY
 }
@@ -93,10 +89,7 @@ fn is_tradable_misc(catalog: &Catalog, items: &ItemTable, unique_name: &str) -> 
     if is_emote(unique_name) {
         return is_syndicate_emote(unique_name);
     }
-    if unique_name.contains("ModFuser")
-        || is_oubliette_key(unique_name)
-        || is_landing_craft_part(unique_name)
-    {
+    if unique_name.contains("ModFuser") || is_oubliette_key(unique_name) {
         return true;
     }
     if let Some(item) = misc_source_item(catalog, unique_name) {
@@ -105,10 +98,7 @@ fn is_tradable_misc(catalog: &Catalog, items: &ItemTable, unique_name: &str) -> 
         }
         return item.tradable || is_scene(unique_name);
     }
-    if let Some((_, component)) = catalog.component(unique_name) {
-        return component.tradable;
-    }
-    is_scene(unique_name)
+    items.get(unique_name).is_some_and(ItemRecord::tradable) || is_scene(unique_name)
 }
 
 pub(super) fn is_spare_weapon_stock(item_type: &str) -> bool {

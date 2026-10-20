@@ -142,7 +142,7 @@ pub struct FoundryItem {
     pub image_name: Option<String>,
     pub wiki_url: Option<String>,
     pub prime: Option<Prime>,
-    pub mastered: bool,
+    pub mastered: Option<bool>,
     pub progress: Progress,
     pub crafts_into: Option<Vec<String>>,
     pub mastery: MasteryGate,

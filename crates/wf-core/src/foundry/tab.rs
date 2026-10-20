@@ -88,8 +88,10 @@ pub(crate) fn items(
                 })
         })
         .collect();
+    let landing_craft = catalog.items().filter(|item| item.is_landing_craft());
     let mut rows: Vec<FoundryItem> =
         masterable(catalog, includes_founders(inventory, include_founders))
+            .chain(landing_craft)
             .map(|item| {
                 let components = foundry_components(view, item);
                 let pending_here = components
@@ -112,7 +114,7 @@ pub(crate) fn items(
                             vault,
                             resurgence: resurgence.contains(item.unique_name.as_str()),
                         }),
-                    mastered: account.mastered(item),
+                    mastered: item.masterable().then(|| account.mastered(item)),
                     progress: Progress {
                         owned,
                         pending: pending_here,
@@ -434,7 +436,7 @@ mod tests {
 
         let trinity = rows.iter().find(|row| row.name == "Trinity Prime").unwrap();
         assert!(trinity.progress.owned);
-        assert!(trinity.mastered);
+        assert_eq!(trinity.mastered, Some(true));
         assert!(trinity.prime.is_some());
 
         let tree = details(&fixture.view(), &excalibur.unique_name)
@@ -482,6 +484,28 @@ mod tests {
         let braton = row("Braton Prime");
         assert_eq!(braton.helminth, None);
         assert_eq!(braton.archon_shards, None);
+    }
+
+    #[test]
+    fn landing_craft_rows() {
+        let catalog = fixtures::landing_craft_catalog();
+        let rows = foundry_rows(&Fixture::new(catalog, fixtures::inventory()));
+        let names: Vec<&str> = rows.iter().map(|row| row.name.as_str()).collect();
+        assert_eq!(names, vec!["Mantis", "Nightwave", "Xiphos"]);
+
+        let mantis = &rows[0];
+        assert_eq!(mantis.kind, "landing_craft");
+        assert!(mantis.progress.owned);
+        assert_eq!(mantis.mastered, None);
+        assert_eq!(mantis.prime, None);
+        assert_eq!(mantis.mastery.required, None);
+        assert_eq!(mantis.components[0].name, "Mantis Avionics");
+        assert_eq!(mantis.components[0].owned, 5);
+        assert_eq!(mantis.components[2].name, "Mantis Blueprint");
+
+        let xiphos = &rows[2];
+        assert!(!xiphos.progress.owned);
+        assert!(!xiphos.progress.ready_to_build);
     }
 
     #[test]
@@ -576,36 +600,26 @@ mod tests {
         assert!(!row(&fresh, BOAR).mastery.met);
     }
 
+    fn resurgent(rows: &[FoundryItem], unique_name: &str) -> bool {
+        row(rows, unique_name)
+            .prime
+            .is_some_and(|prime| prime.resurgence)
+    }
+
     #[test]
     fn varzia_resurgence() {
         let fixture = foundry_fixture();
         let world = world_state();
 
         let trading = items(&fixture.view(), Some(&world), None, at(VARZIA_TRADING_MS));
-        assert!(
-            row(&trading, BANSHEE_PRIME)
-                .prime
-                .is_some_and(|prime| prime.resurgence)
-        );
-        assert!(
-            !row(&trading, DUAL_KAMAS)
-                .prime
-                .is_some_and(|prime| prime.resurgence)
-        );
+        assert!(resurgent(&trading, BANSHEE_PRIME));
+        assert!(!resurgent(&trading, DUAL_KAMAS));
 
         let gone = items(&fixture.view(), Some(&world), None, at(1_790_877_600_000));
-        assert!(
-            !row(&gone, BANSHEE_PRIME)
-                .prime
-                .is_some_and(|prime| prime.resurgence)
-        );
+        assert!(!resurgent(&gone, BANSHEE_PRIME));
 
         let offline = items(&fixture.view(), None, None, at(VARZIA_TRADING_MS));
-        assert!(
-            !row(&offline, BANSHEE_PRIME)
-                .prime
-                .is_some_and(|prime| prime.resurgence)
-        );
+        assert!(!resurgent(&offline, BANSHEE_PRIME));
     }
 
     #[test]
