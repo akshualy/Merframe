@@ -5,4 +5,4 @@ import type { RecommendationTrigger } from "./RecommendationTrigger";
 import type { RewardTrigger } from "./RewardTrigger";
 import type { RivenTrigger } from "./RivenTrigger";
 
-export type OverlayState = { seq: number, opacity: number, reward: RewardTrigger | null, recommendation: RecommendationTrigger | null, riven: RivenTrigger | null, ducatering: DucateringProgress | null, notification: NotificationTrigger | null, };
+export type OverlayState = { seq: number, opacity: number, ducatering_clipboard: boolean, reward: RewardTrigger | null, recommendation: RecommendationTrigger | null, riven: RivenTrigger | null, ducatering: DucateringProgress | null, notification: NotificationTrigger | null, };

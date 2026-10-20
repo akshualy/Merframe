@@ -121,7 +121,11 @@ export function OverlayWindow() {
           element={
             overlays.ducatering && (
               <OverlayFrame opacity={overlays.opacity}>
-                <DucateringSlot trigger={overlays.ducatering} compact />
+                <DucateringSlot
+                  trigger={overlays.ducatering}
+                  clipboard={overlays.ducatering_clipboard}
+                  compact
+                />
               </OverlayFrame>
             )
           }

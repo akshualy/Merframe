@@ -51,7 +51,11 @@ fn step_ducatering<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kiosk:
         DucateringStep::Waiting => {}
         DucateringStep::Search { position, name } => {
             debug!(position, "Ducatering moved");
-            if let Err(error) = app.clipboard().write_text(name) {
+            let clipboard = read(&state.settings)
+                .overlays
+                .ducatering
+                .ducatering_clipboard;
+            if clipboard && let Err(error) = app.clipboard().write_text(name) {
                 warn!(%error, "Item name not copied to the clipboard");
             }
         }

@@ -29,6 +29,20 @@ const EMPTY_COPY = {
   description: "No parts match the Ducatering filters.",
 };
 
+function copy(
+  count: number,
+  state: DucateringProgress["state"]["state"],
+  clipboard: boolean,
+) {
+  if (count === 0) {
+    return EMPTY_COPY;
+  }
+  if (state === "searching" && !clipboard) {
+    return { ...COPY.searching, description: null };
+  }
+  return COPY[state];
+}
+
 function Prices({ entry, size }: { entry: DucateringEntry; size: number }) {
   return (
     <span className="flex shrink-0 flex-col items-end text-xs">
@@ -44,17 +58,18 @@ function Prices({ entry, size }: { entry: DucateringEntry; size: number }) {
 
 export function DucateringOverlay({
   progress,
+  clipboard,
   compact = false,
 }: {
   progress: DucateringProgress;
+  clipboard: boolean;
   compact?: boolean;
 }) {
   const { state, items, sold, ducats } = progress;
   const done = state.state === "finished" ? items.length : state.position;
   const current = state.state === "searching" ? items[state.position] : null;
   const soldCount = sold.reduce((sum, sale) => sum + sale.count, 0);
-  const { title, description } =
-    items.length === 0 ? EMPTY_COPY : COPY[state.state];
+  const { title, description } = copy(items.length, state.state, clipboard);
   const list = useRef<HTMLUListElement>(null);
   useEffect(() => {
     const entry = list.current?.children[done];
@@ -67,7 +82,9 @@ export function DucateringOverlay({
       {compact && (
         <div className="flex flex-col">
           <span className="font-semibold">{title}</span>
-          <span className="text-muted-foreground text-xs">{description}</span>
+          {description && (
+            <span className="text-muted-foreground text-xs">{description}</span>
+          )}
         </div>
       )}
       {current && (
@@ -83,10 +100,10 @@ export function DucateringOverlay({
                 compact ? "text-base" : "text-xl",
               )}
             >
-              {current.item.name}
+              {num(current.count)}x {current.item.name}
             </span>
-            <span className="text-muted-foreground flex items-center gap-1 text-sm tabular-nums">
-              Add {num(current.count)} for
+            <span className="text-muted-foreground flex items-center gap-1 text-sm">
+              For
               <Amount currency="ducats" plain>
                 {num(current.count * current.ducats)}
               </Amount>
@@ -114,10 +131,7 @@ export function DucateringOverlay({
           >
             <ItemImage imageName={entry.item.image_name} size={28} />
             <span className="min-w-0 flex-1 truncate text-sm">
-              {entry.item.name}
-            </span>
-            <span className="text-muted-foreground text-xs tabular-nums">
-              {num(entry.count)}
+              {num(entry.count)}x {entry.item.name}
             </span>
             <Prices entry={entry} size={12} />
           </li>

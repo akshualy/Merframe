@@ -167,6 +167,7 @@ pub struct NotificationTrigger {
 pub struct OverlayState {
     pub seq: u64,
     pub opacity: u8,
+    pub ducatering_clipboard: bool,
     pub reward: Option<RewardTrigger>,
     pub recommendation: Option<RecommendationTrigger>,
     pub riven: Option<RivenTrigger>,
@@ -179,6 +180,7 @@ impl Default for OverlayState {
         Self {
             seq: 0,
             opacity: OVERLAY_OPACITY_DEFAULT,
+            ducatering_clipboard: true,
             reward: None,
             recommendation: None,
             riven: None,
@@ -423,7 +425,10 @@ pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let screen = screen_of(app, *lock(&state.overlays.game_monitor));
     let (wanted, only_while_game_active) = {
         let settings = read(&state.settings);
-        lock(&state.overlays.state).opacity = settings.overlays.overlay_opacity;
+        let mut slots = lock(&state.overlays.state);
+        slots.opacity = settings.overlays.overlay_opacity;
+        slots.ducatering_clipboard = settings.overlays.ducatering.ducatering_clipboard;
+        drop(slots);
         let windowed = windowed(state, &settings);
         (
             KINDS.map(|kind| {

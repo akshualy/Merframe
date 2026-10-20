@@ -390,7 +390,17 @@ export function OverlaysPage() {
               onEnabled={(enabled) =>
                 saveSettings({ overlay_ducatering: enabled })
               }
-            />
+            >
+              <SwitchField
+                id="ducatering-clipboard"
+                label="Copy names to the clipboard"
+                checked={settings.ducatering_clipboard}
+                disabled={!master}
+                onChange={(checked) =>
+                  saveSettings({ ducatering_clipboard: checked })
+                }
+              />
+            </CardControls>
             <DucateringFilters
               settings={settings}
               disabled={!master}
@@ -406,7 +416,10 @@ export function OverlaysPage() {
         }
       >
         <Focused trigger={ducatering ? overlays.ducatering : null}>
-          <DucateringSlot trigger={ducatering ? overlays.ducatering : null} />
+          <DucateringSlot
+            trigger={ducatering ? overlays.ducatering : null}
+            clipboard={settings.ducatering_clipboard}
+          />
         </Focused>
       </Section>
     </Page>

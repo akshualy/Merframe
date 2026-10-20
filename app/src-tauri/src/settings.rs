@@ -204,6 +204,7 @@ pub struct OverlaySettings {
 pub struct DucateringSettings {
     pub overlay_ducatering: bool,
     pub overlay_ducatering_placement: OverlayPlacement,
+    pub ducatering_clipboard: bool,
     pub ducatering_most_ducats_first: bool,
     pub ducatering_max_plat: u32,
     pub ducatering_hidden: Vec<DucateringHidden>,
@@ -339,6 +340,7 @@ impl Default for DucateringSettings {
         Self {
             overlay_ducatering: true,
             overlay_ducatering_placement: OverlayPlacement::TopRight,
+            ducatering_clipboard: true,
             ducatering_most_ducats_first: true,
             ducatering_max_plat: 10,
             ducatering_hidden: Vec::new(),
@@ -601,6 +603,7 @@ mod tests {
             settings.overlays.ducatering.overlay_ducatering_placement,
             OverlayPlacement::TopRight
         );
+        assert!(settings.overlays.ducatering.ducatering_clipboard);
         assert!(settings.overlays.ducatering.ducatering_most_ducats_first);
         assert_eq!(settings.overlays.ducatering.ducatering_max_plat, 10);
         assert!(settings.overlays.ducatering.ducatering_hidden.is_empty());

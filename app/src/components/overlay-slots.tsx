@@ -121,9 +121,11 @@ export function RivenSlot({
 
 export function DucateringSlot({
   trigger,
+  clipboard,
   compact = false,
 }: {
   trigger: DucateringProgress | null;
+  clipboard: boolean;
   compact?: boolean;
 }) {
   if (!trigger) {
@@ -133,5 +135,11 @@ export function DucateringSlot({
       </EmptyNote>
     );
   }
-  return <DucateringOverlay progress={trigger} compact={compact} />;
+  return (
+    <DucateringOverlay
+      progress={trigger}
+      clipboard={clipboard}
+      compact={compact}
+    />
+  );
 }

@@ -4,6 +4,7 @@ import type { OverlayState } from "@/types";
 const IDLE: OverlayState = {
   seq: 0,
   opacity: 100,
+  ducatering_clipboard: true,
   reward: null,
   recommendation: null,
   riven: null,
