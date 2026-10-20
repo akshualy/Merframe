@@ -8,6 +8,7 @@ import type {
   ResourceScope,
   ResourceSource,
   Timeframe,
+  TimeframeCard,
 } from "@/types";
 
 interface PreferencesState {
@@ -15,7 +16,7 @@ interface PreferencesState {
   refinement: string;
   era: string;
   fissurePath: FissurePath;
-  timeframe: Timeframe;
+  timeframes: Record<TimeframeCard, Timeframe>;
   foundryCategory: Category;
   resourceSource: ResourceSource;
   resourceScope: ResourceScope;
@@ -26,7 +27,7 @@ interface PreferencesState {
   setRefinement: (refinement: string) => void;
   setEra: (era: string) => void;
   setFissurePath: (fissurePath: FissurePath) => void;
-  setTimeframe: (timeframe: Timeframe) => void;
+  setTimeframe: (card: TimeframeCard, timeframe: Timeframe) => void;
   setFoundryCategory: (foundryCategory: Category) => void;
   setResourceSource: (resourceSource: ResourceSource) => void;
   setResourceScope: (resourceScope: ResourceScope) => void;
@@ -54,6 +55,14 @@ function legacyHiddenColumns(): Record<string, string[]> {
 
 export const DEFAULT_SQUAD_SIZE = 4;
 
+const DEFAULT_TIMEFRAMES: Record<TimeframeCard, Timeframe> = {
+  history: "7",
+  changes: "today",
+  relics: "today",
+  trades: "today",
+  tradeHistory: "30",
+};
+
 const legacySquadSize = readStored("merframe.relicPlanner.squadSize");
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -63,7 +72,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       refinement: legacy("merframe.relicPlanner.refinement", ANY),
       era: legacy("merframe.relicPlanner.era", "all"),
       fissurePath: legacy<FissurePath>("merframe.world.fissurePath", "normal"),
-      timeframe: legacy<Timeframe>("merframe.stats.timeframe", "30"),
+      timeframes: DEFAULT_TIMEFRAMES,
       foundryCategory: legacy<Category>(
         "merframe.foundry.category",
         "warframe",
@@ -77,7 +86,10 @@ export const usePreferencesStore = create<PreferencesState>()(
       setRefinement: (refinement) => set({ refinement }),
       setEra: (era) => set({ era }),
       setFissurePath: (fissurePath) => set({ fissurePath }),
-      setTimeframe: (timeframe) => set({ timeframe }),
+      setTimeframe: (card, timeframe) =>
+        set((state) => ({
+          timeframes: { ...state.timeframes, [card]: timeframe },
+        })),
       setFoundryCategory: (foundryCategory) => set({ foundryCategory }),
       setResourceSource: (resourceSource) => set({ resourceSource }),
       setResourceScope: (resourceScope) => set({ resourceScope }),
@@ -95,7 +107,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         refinement: state.refinement,
         era: state.era,
         fissurePath: state.fissurePath,
-        timeframe: state.timeframe,
+        timeframes: state.timeframes,
         foundryCategory: state.foundryCategory,
         resourceSource: state.resourceSource,
         resourceScope: state.resourceScope,
@@ -103,6 +115,14 @@ export const usePreferencesStore = create<PreferencesState>()(
         pageSize: state.pageSize,
         gridPageSize: state.gridPageSize,
       }),
+      merge: (persisted, current) => {
+        const stored = persisted as Partial<PreferencesState>;
+        return {
+          ...current,
+          ...stored,
+          timeframes: { ...current.timeframes, ...stored.timeframes },
+        };
+      },
     },
   ),
 );

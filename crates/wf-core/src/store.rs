@@ -330,20 +330,22 @@ impl Store {
         Ok(())
     }
 
-    pub fn deltas(&self, to: SnapshotId) -> Result<Vec<StoredDelta>> {
-        let mut statement = self.connection.prepare(
-            "SELECT item_type, category, delta FROM deltas WHERE to_snapshot = ?1 ORDER BY id",
-        )?;
-        let deltas = statement
-            .query_map(params![to.0], |row| {
+    pub fn deltas(&self, range: TimeRange) -> Result<Vec<StoredDelta>> {
+        self.in_range(
+            "SELECT d.item_type, d.category, SUM(d.delta) AS total FROM deltas d \
+             JOIN snapshots s ON s.id = d.to_snapshot \
+             WHERE s.taken_at >= ?1 AND s.taken_at <= ?2 \
+             GROUP BY d.item_type, d.category HAVING total != 0 \
+             ORDER BY d.category, d.item_type",
+            range,
+            |row| {
                 Ok(StoredDelta {
                     item_type: row.get(0)?,
                     category: row.get(1)?,
                     delta: row.get(2)?,
                 })
-            })?
-            .collect::<rusqlite::Result<Vec<StoredDelta>>>()?;
-        Ok(deltas)
+            },
+        )
     }
 
     pub fn record_trade(
@@ -621,25 +623,40 @@ mod tests {
     }
 
     #[test]
-    fn deltas_per_snapshot_pair() {
+    fn deltas_summed_over_range() {
         let store = Store::in_memory().unwrap();
         let inventory = fixtures::inventory();
         let first = store.record_snapshot(&inventory, at(1_000_000)).unwrap();
         let changed = Inventory::parse(&synced("6a9eeb1f000000000000c002")).unwrap();
         let second = store.record_snapshot(&changed, at(2_000_000)).unwrap();
+        let again = Inventory::parse(&synced("6a9eeb1f000000000000c003")).unwrap();
+        let third = store.record_snapshot(&again, at(3_000_000)).unwrap();
 
-        let deltas = vec![delta::ItemDelta {
+        let ferrite = |before, after| delta::ItemDelta {
             item_type: String::from(FERRITE),
             category: String::from("MiscItems"),
-            before: 10,
-            after: 25,
-        }];
-        store.record_deltas(first, second, &deltas).unwrap();
-        let stored = store.deltas(second).unwrap();
-        assert_eq!(stored.len(), 1);
-        assert_eq!(stored[0].delta, 15);
-        assert_eq!(stored[0].category, "MiscItems");
-        assert!(store.deltas(first).unwrap().is_empty());
+            before,
+            after,
+        };
+        store
+            .record_deltas(first, second, &[ferrite(10, 25)])
+            .unwrap();
+        store
+            .record_deltas(second, third, &[ferrite(25, 20)])
+            .unwrap();
+
+        let all = store.deltas(TimeRange::all()).unwrap();
+        assert_eq!(all.len(), 1);
+        assert_eq!(all[0].delta, 10);
+        assert_eq!(all[0].category, "MiscItems");
+        let latest = store.deltas(TimeRange::since(at(3_000_000))).unwrap();
+        assert_eq!(latest[0].delta, -5);
+        assert!(
+            store
+                .deltas(TimeRange::since(at(4_000_000)))
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[test]

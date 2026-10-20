@@ -1,9 +1,9 @@
 use chrono::Utc;
 use tauri::{AppHandle, Runtime};
 use wf_core::{
-    ComparedStat, CraftDetails, FoundryTab, InventoryTab, MasteryOptions, MasteryOrdering,
-    MasteryTab, RelicPlan, RelicPlannerTab, RelicSource, ResourceQuery, ResourcesTab,
-    RivenComparables, RivensTab, StatsTab,
+    ComparedStat, CraftDetails, DeltaRow, FoundryTab, InventoryTab, MasteryOptions,
+    MasteryOrdering, MasteryTab, OpeningRow, RelicPlan, RelicPlannerTab, RelicSource,
+    ResourceQuery, ResourcesTab, RivenComparables, RivensTab, StatsTab, StoredTrade,
 };
 
 use super::{Shared, compute, ready, since};
@@ -113,6 +113,33 @@ pub async fn riven_comparables(
 pub async fn stats_tab(state: Shared<'_>, since_ms: Option<i64>) -> CommandResult<StatsTab> {
     let state = ready(&state).await?;
     Ok(lock(&state.core).stats_tab(since(since_ms), Utc::now())?)
+}
+
+#[tauri::command]
+pub async fn stats_deltas(
+    state: Shared<'_>,
+    since_ms: Option<i64>,
+) -> CommandResult<Vec<DeltaRow>> {
+    let state = ready(&state).await?;
+    Ok(lock(&state.core).stats_deltas(since(since_ms))?)
+}
+
+#[tauri::command]
+pub async fn stats_openings(
+    state: Shared<'_>,
+    since_ms: Option<i64>,
+) -> CommandResult<Vec<OpeningRow>> {
+    let state = ready(&state).await?;
+    Ok(lock(&state.core).relic_openings(since(since_ms))?)
+}
+
+#[tauri::command]
+pub async fn stats_trades(
+    state: Shared<'_>,
+    since_ms: Option<i64>,
+) -> CommandResult<Vec<StoredTrade>> {
+    let state = ready(&state).await?;
+    Ok(lock(&state.core).store().trades(since(since_ms))?)
 }
 
 #[tauri::command]

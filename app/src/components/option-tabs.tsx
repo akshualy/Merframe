@@ -10,7 +10,11 @@ export function OptionTabs<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <Tabs value={value} onValueChange={(next) => onChange(next as T)}>
+    <Tabs
+      className="shrink-0"
+      value={value}
+      onValueChange={(next) => onChange(next as T)}
+    >
       <TabsList>
         {options.map((option) => (
           <TabsTrigger key={option.value} value={option.value}>

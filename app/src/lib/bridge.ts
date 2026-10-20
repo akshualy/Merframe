@@ -7,6 +7,7 @@ import type {
   CommandError,
   ComparedStat,
   CraftDetails,
+  DeltaRow,
   FoundryTab,
   GameStatus,
   ImagePath,
@@ -21,6 +22,7 @@ import type {
   MasteryOrdering,
   MasteryTab,
   NewOrder,
+  OpeningRow,
   Order,
   OrderPatch,
   OverlayKind,
@@ -35,6 +37,7 @@ import type {
   RivensTab,
   Settings,
   StatsTab,
+  StoredTrade,
   Trade,
   TradeAnalytics,
   UserStatus,
@@ -94,6 +97,10 @@ export function logError(context: string, error: unknown) {
   console.error(`${context}: ${errorMessage(error)}`, error);
 }
 
+function since(sinceMs?: number): Args {
+  return { sinceMs: sinceMs ?? null };
+}
+
 export const api = {
   inventoryTab: () => call<InventoryTab>("inventory_tab"),
   foundryTab: () => call<FoundryTab>("foundry_tab"),
@@ -122,12 +129,17 @@ export const api = {
   rivensTab: () => call<RivensTab>("rivens_tab"),
   rivenComparables: (weaponSlug: string, shown: ComparedStat[]) =>
     call<RivenComparables | null>("riven_comparables", { weaponSlug, shown }),
-  statsTab: (sinceMs?: number) =>
-    call<StatsTab>("stats_tab", { sinceMs: sinceMs ?? null }),
+  statsTab: (sinceMs?: number) => call<StatsTab>("stats_tab", since(sinceMs)),
+  statsDeltas: (sinceMs?: number) =>
+    call<DeltaRow[]>("stats_deltas", since(sinceMs)),
+  statsOpenings: (sinceMs?: number) =>
+    call<OpeningRow[]>("stats_openings", since(sinceMs)),
+  statsTrades: (sinceMs?: number) =>
+    call<StoredTrade[]>("stats_trades", since(sinceMs)),
   marketMovers: (window: MarketWindow) =>
     call<MarketMover[]>("market_movers", { window }),
   tradeAnalytics: (sinceMs?: number) =>
-    call<TradeAnalytics>("trade_analytics", { sinceMs: sinceMs ?? null }),
+    call<TradeAnalytics>("trade_analytics", since(sinceMs)),
   recordTrade: (atMs: number, partner: string | null, trade: Trade) =>
     call<number>("record_trade", { atMs, partner, trade }),
   updateTrade: (

@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Ellipsis } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { Section } from "@/components/page";
 import { TradeDialog, type TradeEntry } from "@/components/trade-dialog";
@@ -56,10 +56,12 @@ export function TradesSection({
   trades,
   tableId,
   description,
+  filter,
 }: {
   trades: StoredTrade[];
   tableId: string;
   description?: string;
+  filter?: ReactNode;
 }) {
   const [editing, setEditing] = useState<Editing | null>(null);
 
@@ -189,13 +191,16 @@ export function TradesSection({
       title="Trades"
       description={description}
       action={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setEditing({ kind: "new" })}
-        >
-          Record Trade
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {filter}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setEditing({ kind: "new" })}
+          >
+            Record Trade
+          </Button>
+        </div>
       }
     >
       <DataTable
@@ -205,7 +210,7 @@ export function TradesSection({
         searchPlaceholder="Filter trades"
         initialSorting={[{ id: "at", desc: true }]}
         rowKey={(row) => String(row.id)}
-        emptyMessage="No trades recorded yet."
+        emptyMessage="No trades in this window."
       />
       {(editing?.kind === "new" || editing?.kind === "edit") && (
         <TradeDialog

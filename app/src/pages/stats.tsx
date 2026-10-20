@@ -1,18 +1,16 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { type Bar, BarChart } from "@/components/bar-chart";
 import { DataTable } from "@/components/data-table";
 import { type Day, DayStrip } from "@/components/day-strip";
 import { LineChart, type Point } from "@/components/line-chart";
 import { Page, Section, Stat } from "@/components/page";
-import { sinceMs, TimeframeTabs } from "@/components/timeframe-tabs";
+import { TimeframeTabs, useTimeframeData } from "@/components/timeframe-tabs";
 import { TradesSection } from "@/components/trades-section";
-import { useAsyncData } from "@/hooks/use-async-data";
 import { api } from "@/lib/bridge";
 import { changeTone, signed } from "@/lib/chart";
 import { dateTime, dayLabel, num, percent, spansYears } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { usePreferencesStore } from "@/stores/preferences-store";
 import type { DailyCount, DeltaRow, OpeningRow, StatPoint } from "@/types";
 
 function fullDate(iso: string): string {
@@ -55,13 +53,17 @@ const DELTA_COLUMNS: ColumnDef<DeltaRow>[] = [
 ];
 
 export function StatsPage() {
-  const timeframe = usePreferencesStore((state) => state.timeframe);
-  const load = useCallback(() => api.statsTab(sinceMs(timeframe)), [timeframe]);
-  const { data, error, loading } = useAsyncData(
-    `stats_tab:${timeframe}`,
-    load,
-    ["inventoryUpdated", "tradesUpdated"],
-  );
+  const { data, error, loading } = useTimeframeData("history", api.statsTab, [
+    "inventoryUpdated",
+    "tradesUpdated",
+  ]);
+  const deltas = useTimeframeData("changes", api.statsDeltas, [
+    "inventoryUpdated",
+  ]);
+  const openings = useTimeframeData("relics", api.statsOpenings, [
+    "inventoryUpdated",
+  ]);
+  const trades = useTimeframeData("trades", api.statsTrades, ["tradesUpdated"]);
 
   const points = data?.series ?? [];
   const summary = data?.summary ?? null;
@@ -152,10 +154,6 @@ export function StatsPage() {
     [days, withYear],
   );
 
-  const tradePlat = (data?.trades ?? []).reduce(
-    (sum, entry) => sum + entry.trade.plat,
-    0,
-  );
   const bestRelicDay = Math.max(0, ...dayBars.relics.map((bar) => bar.value));
 
   const firstDay = days.at(0);
@@ -171,9 +169,8 @@ export function StatsPage() {
     <Page
       title="Stats"
       quote="stats"
-      actions={<TimeframeTabs />}
       loading={loading && !data}
-      error={error}
+      error={error ?? deltas.error ?? openings.error ?? trades.error}
     >
       <div className="grid gap-4 @sm:grid-cols-2 @3xl:grid-cols-4">
         <Stat
@@ -196,19 +193,20 @@ export function StatsPage() {
         />
         <Stat
           label="Relics opened"
-          value={num(data?.relic_openings.length ?? 0)}
+          value={num(data?.relics_opened ?? 0)}
           hint={`Best day ${num(bestRelicDay)}`}
         />
         <Stat
           label="Trades"
-          value={num(data?.trades.length ?? 0)}
-          hint={`${num(tradePlat)} platinum across them`}
+          value={num(data?.trade_count ?? 0)}
+          hint={`${num(data?.trade_plat ?? 0)} platinum across them`}
         />
       </div>
 
       <Section
         title="History"
         description={`One point per UTC day. ${num(playedDays)} of ${num(days.length)} days have data, ${windowLabel}.`}
+        action={<TimeframeTabs card="history" />}
       >
         <div className="grid gap-6 @lg:grid-cols-2 @5xl:grid-cols-3">
           {metrics.map((metric) => (
@@ -242,34 +240,42 @@ export function StatsPage() {
       </Section>
 
       <div className="grid gap-4 @5xl:grid-cols-2">
-        <Section title="Latest Delta">
+        <Section
+          title="Inventory Changes"
+          action={<TimeframeTabs card="changes" />}
+        >
           <DataTable
             tableId="statsDeltas"
             columns={DELTA_COLUMNS}
-            data={data?.latest_deltas ?? []}
+            data={deltas.data ?? []}
             searchPlaceholder="Filter changes"
             initialSorting={[{ id: "delta", desc: true }]}
             rowKey={(row) => row.item_type}
-            emptyMessage="No changes since the previous snapshot."
+            emptyMessage="No inventory changes in this window."
           />
         </Section>
         <Section
           title="Relic Openings"
           description="Shows what your own relic dropped, not the reward you picked."
+          action={<TimeframeTabs card="relics" />}
         >
           <DataTable
             tableId="statsOpenings"
             columns={OPENING_COLUMNS}
-            data={data?.relic_openings ?? []}
+            data={openings.data ?? []}
             searchPlaceholder="Filter openings"
             initialSorting={[{ id: "at", desc: true }]}
             rowKey={(row) => String(row.id)}
-            emptyMessage="No relic openings recorded yet."
+            emptyMessage="No relic openings in this window."
           />
         </Section>
       </div>
 
-      <TradesSection tableId="statsTrades" trades={data?.trades ?? []} />
+      <TradesSection
+        tableId="statsTrades"
+        trades={trades.data ?? []}
+        filter={<TimeframeTabs card="trades" />}
+      />
     </Page>
   );
 }

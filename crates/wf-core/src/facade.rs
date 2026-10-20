@@ -28,7 +28,7 @@ use crate::relic_planner::{self, MissingPart, RelicPlan, RelicSource, RewardScre
 use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
 use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
-use crate::store::{Snapshot, StatPoint, Store, StoredTrade, TimeRange};
+use crate::store::{Snapshot, StatPoint, Store, TimeRange};
 use crate::trade::{Trade, player_name};
 use crate::view::View;
 
@@ -46,12 +46,12 @@ pub struct RelicPlannerTab {
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct StatsTab {
     pub series: Vec<StatPoint>,
-    pub trades: Vec<StoredTrade>,
-    pub relic_openings: Vec<OpeningRow>,
-    pub latest_deltas: Vec<DeltaRow>,
     pub relics_per_day: Vec<DailyCount>,
     pub trades_per_day: Vec<DailyCount>,
     pub days_played: Vec<DailyCount>,
+    pub relics_opened: usize,
+    pub trade_count: usize,
+    pub trade_plat: i64,
     pub summary: Option<StatsSummary>,
 }
 
@@ -509,17 +509,13 @@ impl Core {
     }
 
     pub fn stats_tab(&self, range: TimeRange, now: DateTime<Utc>) -> Result<StatsTab> {
-        let latest_deltas = match &self.latest_snapshot {
-            Some(snapshot) => stats::delta_rows(&self.items, self.store.deltas(snapshot.id)?),
-            None => Vec::new(),
-        };
         let series = stats::daily_series(&self.store.stats_series(range)?);
         let trades = self.store.trades(range)?;
-        let relic_openings = stats::opening_rows(&self.items, self.store.relic_openings(range)?);
+        let openings = self.store.relic_openings(range)?;
         let earliest = [
             series.first().map(|point| point.at),
             trades.first().map(|trade| trade.at),
-            relic_openings.first().map(|opening| opening.at),
+            openings.first().map(|opening| opening.at),
         ]
         .into_iter()
         .flatten()
@@ -530,18 +526,26 @@ impl Core {
             .as_ref()
             .map(|account| stats::summary(account, &self.catalog, &series));
         Ok(StatsTab {
-            relics_per_day: stats::daily_counts(
-                relic_openings.iter().map(|opening| opening.at),
-                span,
-            ),
+            relics_per_day: stats::daily_counts(openings.iter().map(|opening| opening.at), span),
             trades_per_day: stats::daily_counts(trades.iter().map(|trade| trade.at), span),
             days_played: stats::daily_counts(series.iter().map(|point| point.at), span),
             series,
-            trades,
-            relic_openings,
-            latest_deltas,
+            relics_opened: openings.len(),
+            trade_count: trades.len(),
+            trade_plat: trades.iter().map(|trade| trade.trade.plat).sum(),
             summary,
         })
+    }
+
+    pub fn stats_deltas(&self, range: TimeRange) -> Result<Vec<DeltaRow>> {
+        Ok(stats::delta_rows(&self.items, self.store.deltas(range)?))
+    }
+
+    pub fn relic_openings(&self, range: TimeRange) -> Result<Vec<OpeningRow>> {
+        Ok(stats::opening_rows(
+            &self.items,
+            self.store.relic_openings(range)?,
+        ))
     }
 
     pub fn export(&self, dir: &Path, now: DateTime<Utc>) -> Result<()> {
@@ -673,7 +677,7 @@ mod tests {
             .unwrap();
         let stats = core.stats_tab(TimeRange::all(), Utc::now()).unwrap();
         assert_eq!(stats.series.len(), 1);
-        assert!(stats.latest_deltas.is_empty());
+        assert!(core.stats_deltas(TimeRange::all()).unwrap().is_empty());
     }
 
     #[test]
@@ -721,7 +725,7 @@ mod tests {
         assert!(reader.inventory_tab().is_some());
         let stats = reader.stats_tab(TimeRange::all(), Utc::now()).unwrap();
         assert_eq!(stats.series.len(), 1);
-        assert!(stats.latest_deltas.is_empty());
+        assert!(reader.stats_deltas(TimeRange::all()).unwrap().is_empty());
         drop(reader);
         std::fs::remove_dir_all(&dir).unwrap();
     }
@@ -752,8 +756,9 @@ mod tests {
         }
         let stats = core.stats_tab(TimeRange::all(), Utc::now()).unwrap();
         assert_eq!(stats.series.len(), 2);
-        assert_eq!(stats.latest_deltas.len(), 1);
-        assert_eq!(stats.latest_deltas[0].delta, 148);
+        let deltas = core.stats_deltas(TimeRange::all()).unwrap();
+        assert_eq!(deltas.len(), 1);
+        assert_eq!(deltas[0].delta, 148);
     }
 
     #[test]
@@ -942,10 +947,7 @@ mod tests {
             .unwrap();
         assert_eq!(events.len(), 1);
 
-        let stats = core
-            .stats_tab(TimeRange::all(), now + chrono::TimeDelta::days(2))
-            .unwrap();
-        assert!(stats.relic_openings.is_empty());
+        assert!(core.relic_openings(TimeRange::all()).unwrap().is_empty());
     }
 
     #[test]
@@ -1017,11 +1019,13 @@ mod tests {
         let stats = core
             .stats_tab(TimeRange::all(), now + chrono::TimeDelta::days(2))
             .unwrap();
-        assert_eq!(stats.trades.len(), 1);
-        assert_eq!(stats.trades[0].trade.plat, 90);
-        assert_eq!(stats.relic_openings.len(), 1);
-        assert_eq!(stats.relic_openings[0].relic, "Axi A21");
-        assert_eq!(stats.relic_openings[0].player_count, 1);
+        assert_eq!(stats.trade_count, 1);
+        assert_eq!(stats.trade_plat, 90);
+        assert_eq!(stats.relics_opened, 1);
+        let openings = core.relic_openings(TimeRange::all()).unwrap();
+        assert_eq!(openings.len(), 1);
+        assert_eq!(openings[0].relic, "Axi A21");
+        assert_eq!(openings[0].player_count, 1);
         assert_eq!(
             stats
                 .trades_per_day
