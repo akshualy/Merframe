@@ -12,6 +12,8 @@ import type {
   RivenComparables,
 } from "@/types";
 
+const MISSING_RETRY_MS = 30_000;
+
 function comparedStats(attributes: AttributeGrade[]): ComparedStat[] {
   return attributes.flatMap((attribute) =>
     attribute.slug === null
@@ -97,6 +99,7 @@ export function RivenListings({
 
   useEffect(() => {
     let cancelled = false;
+    let retry: ReturnType<typeof setTimeout> | undefined;
     async function load() {
       try {
         const next = await api.rivenComparables(
@@ -109,6 +112,8 @@ export function RivenListings({
         setMissing(next === null);
         if (next) {
           setFound(next);
+        } else {
+          retry = setTimeout(load, MISSING_RETRY_MS);
         }
       } catch (error) {
         logError("Loading the riven listings", error);
@@ -117,6 +122,7 @@ export function RivenListings({
     load();
     return () => {
       cancelled = true;
+      clearTimeout(retry);
     };
   }, [weaponSlug, attributes]);
 

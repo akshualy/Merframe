@@ -284,7 +284,13 @@ export function MarketPanel() {
     >
       <div className="flex h-14 shrink-0 items-center justify-between border-b px-4">
         <span className="text-foreground font-bold">warframe.market</span>
-        <Button variant="ghost" size="icon" onClick={hide} title="Close">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={hide}
+          aria-label="Close"
+          title="Close"
+        >
           <X className="size-4" />
         </Button>
       </div>
@@ -305,6 +311,7 @@ export function MarketPanel() {
                 variant="ghost"
                 size="icon"
                 onClick={() => openExternal(marketUrl(selected.slug))}
+                aria-label="Open on warframe.market"
                 title="Open on warframe.market"
               >
                 <ExternalLink className="size-4" />

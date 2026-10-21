@@ -1,21 +1,35 @@
-import { MoonIcon, SunIcon } from "lucide-react";
+import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
 
+type Step = { next: string; label: string; Icon: typeof SunIcon };
+
+const SYSTEM: Step = {
+  next: "dark",
+  label: "Theme follows the system",
+  Icon: MonitorIcon,
+};
+const CYCLE: Record<string, Step> = {
+  dark: { next: "light", label: "Dark theme", Icon: MoonIcon },
+  light: { next: "system", label: "Light theme", Icon: SunIcon },
+  system: SYSTEM,
+};
+
 export function ModeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme = "system", setTheme } = useTheme();
+  const current = CYCLE[theme] ?? SYSTEM;
 
   return (
     <Button
       variant="outline"
       size="icon"
       className="rounded-full"
-      onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
+      aria-label={current.label}
+      title={current.label}
+      onClick={() => setTheme(current.next)}
     >
-      <SunIcon className="size-4 scale-100 transition-transform dark:scale-0" />
-      <MoonIcon className="absolute size-4 scale-0 transition-transform dark:scale-100" />
-      <span className="sr-only">Toggle theme</span>
+      <current.Icon className="size-4" />
     </Button>
   );
 }

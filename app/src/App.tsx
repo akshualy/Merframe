@@ -10,6 +10,7 @@ import { StartupScreen } from "@/components/startup-screen";
 import { StatusBar } from "@/components/status-bar";
 import { Toaster } from "@/components/ui/sonner";
 import { UpdateDialog } from "@/components/update-dialog";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { useLatestAttempt } from "@/hooks/use-latest-attempt";
 import { api, logError } from "@/lib/bridge";
 import { useAppStore, useSettings } from "@/stores/app-store";
@@ -125,8 +126,9 @@ function MainWindow() {
 function Shell() {
   const settings = useSettings();
   const setUpdate = useAppStore((state) => state.setUpdate);
-  const checkForUpdates = settings.check_for_updates;
+  useDisplayPreferences(settings);
 
+  const checkForUpdates = settings.check_for_updates;
   useEffect(() => {
     if (!checkForUpdates) {
       return;

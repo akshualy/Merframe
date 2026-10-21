@@ -13,7 +13,7 @@ use wf_worldstate::RelicTier;
 
 use crate::runtime::{self, AppEvent, emit};
 use crate::settings::{
-    OVERLAY_OPACITY_DEFAULT, OverlayPlacement, RecommendationRefinement, Settings,
+    Motion, OVERLAY_OPACITY_DEFAULT, OverlayPlacement, RecommendationRefinement, Settings, TextSize,
 };
 use crate::state::{AppState, lock, read};
 
@@ -34,7 +34,7 @@ pub use session::{OverlaySupport, probe};
 use relic::{scan_recommendation, suggest_mission};
 use riven::{arm_station_answer, on_dialog_answer, show_linked_riven, show_station_selection};
 use screens::Screens;
-use window::{Bounds, Screen, bounds_for, logical, open, park, place, retire, reveal, screen_of};
+use window::{open, park, place, retire, reveal, screen_of, window_bounds};
 
 pub const KINDS: [Kind; 5] = [
     Kind::RelicReward,
@@ -119,14 +119,6 @@ fn windowed(state: &AppState, settings: &Settings) -> bool {
     )
 }
 
-fn window_bounds(screen: Screen, kind: Kind, settings: &Settings) -> Bounds {
-    let rows = settings.overlays.overlay_recommendation_count;
-    logical(
-        bounds_for(kind, placement_of(settings, kind), rows, screen),
-        screen.scale,
-    )
-}
-
 fn placement_of(settings: &Settings, kind: Kind) -> OverlayPlacement {
     let placements = &settings.overlays.placements;
     match kind {
@@ -175,6 +167,8 @@ pub struct NotificationTrigger {
 pub struct OverlayState {
     pub seq: u64,
     pub opacity: u8,
+    pub text_size: TextSize,
+    pub motion: Motion,
     pub ducatering_clipboard: bool,
     pub reward: Option<RewardTrigger>,
     pub recommendation: Option<RecommendationTrigger>,
@@ -189,6 +183,8 @@ impl Default for OverlayState {
         Self {
             seq: 0,
             opacity: OVERLAY_OPACITY_DEFAULT,
+            text_size: TextSize::default(),
+            motion: Motion::default(),
             ducatering_clipboard: true,
             reward: None,
             recommendation: None,
@@ -455,6 +451,8 @@ pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
         let settings = read(&state.settings);
         let mut slots = lock(&state.overlays.state);
         slots.opacity = settings.overlays.overlay_opacity;
+        slots.text_size = settings.text_size;
+        slots.motion = settings.motion;
         slots.ducatering_clipboard = settings.overlays.ducatering.ducatering_clipboard;
         drop(slots);
         (

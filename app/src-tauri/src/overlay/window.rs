@@ -7,8 +7,8 @@ use tauri::{
 use tracing::{debug, warn};
 use wf_log::MonitorRect;
 
-use super::Kind;
-use crate::settings::OverlayPlacement;
+use super::{Kind, placement_of};
+use crate::settings::{OverlayPlacement, Settings, TextSize};
 
 const MARGIN: f64 = 20.0;
 
@@ -70,23 +70,38 @@ pub(super) fn logical(bounds: Bounds, scale: f64) -> Bounds {
     }
 }
 
+pub(super) fn window_bounds(screen: Screen, kind: Kind, settings: &Settings) -> Bounds {
+    let rows = settings.overlays.overlay_recommendation_count;
+    logical(
+        bounds_for(
+            kind,
+            placement_of(settings, kind),
+            rows,
+            settings.text_size,
+            screen,
+        ),
+        screen.scale,
+    )
+}
+
 pub(super) fn bounds_for(
     kind: Kind,
     placement: OverlayPlacement,
     rows: u8,
+    text_size: TextSize,
     screen: Screen,
 ) -> Bounds {
     let scale = screen.height / 1080.0;
+    let text = text_size.factor();
     let (width, height) = match kind {
-        Kind::RelicReward => ((1000.0 * scale).round(), 295.0),
-        Kind::RelicRecommendation => (480.0, 60.0 + 30.0 * f64::from(rows)),
-        Kind::Riven => (
-            700.0,
-            (900.0 * scale).min(screen.height - 2.0 * MARGIN).round(),
-        ),
-        Kind::Ducatering => (420.0, 460.0),
-        Kind::Notification => (380.0, 100.0),
+        Kind::RelicReward => (1000.0 * scale * text, 295.0 * text),
+        Kind::RelicRecommendation => (480.0 * text, (60.0 + 30.0 * f64::from(rows)) * text),
+        Kind::Riven => (700.0 * text, 900.0 * scale * text),
+        Kind::Ducatering => (420.0 * text, 460.0 * text),
+        Kind::Notification => (380.0 * text, 100.0 * text),
     };
+    let width = width.round();
+    let height = height.min(screen.height - 2.0 * MARGIN).round();
     let middle = (screen.width / 2.0 - width / 2.0).round();
     let right = (screen.width - width - MARGIN).round();
     let bottom = (screen.height - height - MARGIN).round();
@@ -251,8 +266,7 @@ fn bypass_window_manager<R: Runtime>(window: &tauri::WebviewWindow<R>, kind: Kin
 #[allow(clippy::float_cmp, reason = "bounds are rounded to whole pixels")]
 mod tests {
     use super::*;
-    use crate::overlay::{Kind, placement_of};
-    use crate::settings::{OverlayPlacement, RECOMMENDATION_COUNT_DEFAULT, Settings};
+    use crate::settings::RECOMMENDATION_COUNT_DEFAULT;
 
     const FULL_HD: Screen = Screen {
         x: 0.0,
@@ -263,6 +277,36 @@ mod tests {
     };
 
     #[test]
+    fn text_size_grows_the_window_in_place() {
+        let medium = bounds_for(
+            Kind::Ducatering,
+            OverlayPlacement::BottomRight,
+            RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Medium,
+            FULL_HD,
+        );
+        assert_eq!(
+            medium,
+            Bounds {
+                width: 473.0,
+                height: 518.0,
+                x: 1427.0,
+                y: 542.0,
+            }
+        );
+
+        let large = bounds_for(
+            Kind::Riven,
+            OverlayPlacement::Centre,
+            RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Large,
+            FULL_HD,
+        );
+        assert_eq!(large.width, 875.0);
+        assert_eq!(large.height, FULL_HD.height - 2.0 * MARGIN);
+    }
+
+    #[test]
     fn game_pixels_at_every_scale() {
         for scale in [1.0, 1.25, 1.5, 1.75, 2.0] {
             let screen = Screen { scale, ..FULL_HD };
@@ -270,6 +314,7 @@ mod tests {
                 Kind::RelicRecommendation,
                 OverlayPlacement::TopRight,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 screen,
             );
             assert_eq!(
@@ -291,6 +336,7 @@ mod tests {
                     Kind::RelicRecommendation,
                     OverlayPlacement::TopRight,
                     RECOMMENDATION_COUNT_DEFAULT,
+                    TextSize::Small,
                     Screen {
                         scale: 1.25,
                         ..FULL_HD
@@ -317,6 +363,7 @@ mod tests {
             Kind::RelicRecommendation,
             OverlayPlacement::TopRight,
             RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Small,
             compositor_upscales_xwayland,
         );
         assert_eq!(
@@ -341,6 +388,7 @@ mod tests {
             Kind::RelicRecommendation,
             OverlayPlacement::TopRight,
             RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Small,
             xwayland_carries_the_scaling_factor,
         );
         assert_eq!(
@@ -369,6 +417,7 @@ mod tests {
             Kind::RelicReward,
             OverlayPlacement::Centre,
             RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Small,
             FULL_HD,
         );
         assert_eq!(
@@ -385,6 +434,7 @@ mod tests {
             Kind::RelicReward,
             OverlayPlacement::Centre,
             RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Small,
             Screen {
                 x: 0.0,
                 y: 0.0,
@@ -408,6 +458,7 @@ mod tests {
                 Kind::Notification,
                 placement_of(&settings, Kind::Notification),
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 FULL_HD,
             );
             assert_eq!((bounds.width, bounds.height), (380.0, 100.0));
@@ -441,6 +492,7 @@ mod tests {
                 Kind::RelicRecommendation,
                 OverlayPlacement::TopRight,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 FULL_HD
             ),
             Bounds {
@@ -455,6 +507,7 @@ mod tests {
                 Kind::Riven,
                 OverlayPlacement::TopLeft,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 FULL_HD
             ),
             Bounds {
@@ -469,6 +522,7 @@ mod tests {
                 Kind::Riven,
                 OverlayPlacement::TopLeft,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 Screen {
                     x: 0.0,
                     y: 0.0,
@@ -489,6 +543,7 @@ mod tests {
                 Kind::RelicRecommendation,
                 placement,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 FULL_HD,
             );
             assert_eq!(bounds.width, 480.0);
@@ -506,6 +561,7 @@ mod tests {
                 Kind::Riven,
                 placement,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 FULL_HD,
             );
             assert_eq!(bounds.width, 700.0);
@@ -523,6 +579,7 @@ mod tests {
                 Kind::RelicReward,
                 placement,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 FULL_HD,
             );
             assert_eq!(bounds.width, 1000.0);
@@ -550,6 +607,7 @@ mod tests {
                 Kind::RelicRecommendation,
                 OverlayPlacement::BottomRight,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 screen
             ),
             Bounds {
@@ -564,6 +622,7 @@ mod tests {
                 Kind::Riven,
                 OverlayPlacement::TopRight,
                 RECOMMENDATION_COUNT_DEFAULT,
+                TextSize::Small,
                 screen
             ),
             Bounds {
@@ -588,6 +647,7 @@ mod tests {
             Kind::Riven,
             OverlayPlacement::TopLeft,
             RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Small,
             second_monitor,
         );
         assert_eq!((top_left.x, top_left.y), (1940.0, -340.0));
@@ -595,6 +655,7 @@ mod tests {
             Kind::Riven,
             OverlayPlacement::BottomRight,
             RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Small,
             second_monitor,
         );
         assert_eq!((bottom_right.width, bottom_right.height), (700.0, 1200.0));
@@ -603,6 +664,7 @@ mod tests {
             Kind::RelicReward,
             OverlayPlacement::Centre,
             RECOMMENDATION_COUNT_DEFAULT,
+            TextSize::Small,
             second_monitor,
         );
         assert_eq!((centre.x, centre.y), (2519.0, 480.0));

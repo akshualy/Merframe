@@ -120,6 +120,7 @@ export function InventoryTabView({
         <Button
           variant="outline"
           size="icon"
+          aria-label={descending(filters) ? "Largest first" : "Smallest first"}
           title={descending(filters) ? "Largest first" : "Smallest first"}
           onClick={() => update({ preferHighest: !filters.preferHighest })}
         >

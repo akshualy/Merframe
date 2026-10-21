@@ -29,7 +29,7 @@ function ResourceCardInner({
       <ItemImage imageName={row.image_name} size={48} alt={row.name} />
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate">{row.name}</span>
+          <span className="line-clamp-2">{row.name}</span>
           {short ? (
             <span className="text-warning shrink-0 text-xs tabular-nums">
               Short {num(row.deficit)}

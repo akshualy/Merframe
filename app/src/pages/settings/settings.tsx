@@ -7,6 +7,7 @@ import { notify } from "@/lib/toast";
 import { useAppStore, useSettings } from "@/stores/app-store";
 import type { Settings } from "@/types";
 import { PricesAndData, StatsTabSetting } from "./data";
+import { DisplaySetting } from "./display";
 import { FissureAlerts } from "./fissures";
 import { NotificationChannels } from "./notifications";
 import { CycleTimers } from "./timers";
@@ -88,6 +89,7 @@ export function SettingsPage() {
       </div>
       <PricesAndData draft={draft} patch={patch} />
       <StatsTabSetting draft={draft} patch={patch} />
+      <DisplaySetting draft={draft} patch={patch} />
     </Page>
   );
 }

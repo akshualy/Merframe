@@ -31,6 +31,7 @@ export function SearchInput({
       {value && (
         <button
           type="button"
+          aria-label="Clear"
           title="Clear"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onValueChange("")}

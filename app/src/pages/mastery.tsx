@@ -126,7 +126,9 @@ function RouteCard({
           )}
         />
         <span className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-medium">{route.label}</span>
+          <span className="line-clamp-2 text-sm font-medium">
+            {route.label}
+          </span>
           <Hint as="span">{counted(route.count, route.unit)}</Hint>
         </span>
         <span className="text-primary text-sm font-bold">
@@ -140,7 +142,7 @@ function RouteCard({
               key={memberKeys[index]}
               className="grid grid-cols-[1fr_auto] items-baseline gap-3 py-0.5 text-xs"
             >
-              <span className="min-w-0 truncate">
+              <span className="line-clamp-2 min-w-0">
                 {member.name}
                 {member.detail && (
                   <span className="text-muted-foreground">
@@ -337,7 +339,7 @@ export function MasteryPage() {
                         size="small"
                       />
                     )}
-                    <span className="truncate text-sm font-medium">
+                    <span className="line-clamp-2 text-sm font-medium">
                       {item.name}
                     </span>
                   </span>

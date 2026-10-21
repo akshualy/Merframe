@@ -240,7 +240,7 @@ function ItemCardInner({
         <div className="flex items-start justify-between gap-2">
           <span className="flex min-w-0 items-center gap-1.5">
             <span
-              className="truncate text-sm leading-tight font-semibold"
+              className="line-clamp-2 text-sm leading-tight font-semibold"
               title={item.name}
             >
               {item.name}

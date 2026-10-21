@@ -18,9 +18,9 @@
   --primary-foreground: oklch(0.985 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(1 0 0);
-  --muted-foreground: oklch(0.631 0.028 107.211);
+  --muted-foreground: oklch(0.52 0.028 107.211);
   --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.54 0.245 27.325);
   --warning: oklch(0.505 0.115 47);
   --vaulted: oklch(0.485 0.072 292);
   --input: oklch(0.568 0.032 246.826);
@@ -144,6 +144,18 @@
       ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas,
       monospace;
   }
+  html {
+    font-size: 16px;
+  }
+  html[data-text-size="small"] {
+    font-size: 16px;
+  }
+  html[data-text-size="medium"] {
+    font-size: 18px;
+  }
+  html[data-text-size="large"] {
+    font-size: 20px;
+  }
   html,
   body,
   #root {
@@ -174,4 +186,12 @@
     background: color-mix(in oklch, var(--muted-foreground) 60%, transparent);
     background-clip: content-box;
   }
+}
+
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms;
+  animation-iteration-count: 1;
+  transition-duration: 0.01ms;
 }

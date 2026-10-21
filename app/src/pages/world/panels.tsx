@@ -65,7 +65,7 @@ export function InfoRow({
         <span className="flex min-w-0 items-center gap-1.5">
           <span
             className={cn(
-              "text-muted-foreground truncate",
+              "text-muted-foreground line-clamp-2",
               owned === false && "text-foreground",
             )}
           >
