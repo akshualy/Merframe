@@ -1,0 +1,685 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FeedEvent",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/FeedStatus"
+        },
+        "event": {
+          "type": "string",
+          "const": "status"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/FeedInventory"
+        },
+        "event": {
+          "type": "string",
+          "const": "inventory_updated"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "properties": {
+            "relic": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "screen": {
+              "$ref": "#/$defs/RewardScreen"
+            }
+          },
+          "required": [
+            "screen"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "const": "relic_reward_screen"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "properties": {
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "trade": {
+              "$ref": "#/$defs/Trade"
+            }
+          },
+          "required": [
+            "at",
+            "trade"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "const": "trade_completed"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "properties": {
+            "fissure": {
+              "$ref": "#/$defs/FissureInfo"
+            }
+          },
+          "required": [
+            "fissure"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "const": "fissure_alert"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "properties": {
+            "ends_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": {
+              "type": "string"
+            },
+            "next_state": {
+              "type": "string"
+            },
+            "remaining_secs": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "required": [
+            "name",
+            "next_state",
+            "ends_at",
+            "remaining_secs"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "const": "timer_alert"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "trades_updated"
+        }
+      },
+      "required": [
+        "event"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "world_state_updated"
+        }
+      },
+      "required": [
+        "event"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "riven_data_updated"
+        }
+      },
+      "required": [
+        "event"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "prices_updated"
+        }
+      },
+      "required": [
+        "event"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "favourite_updated"
+        }
+      },
+      "required": [
+        "event"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/MarketAutoClose"
+        },
+        "event": {
+          "type": "string",
+          "const": "market_auto_closed"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    }
+  ],
+  "$defs": {
+    "AccountBalance": {
+      "type": "object",
+      "properties": {
+        "ducats": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "plat": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "plat",
+        "ducats"
+      ]
+    },
+    "AutoCloseKind": {
+      "type": "string",
+      "enum": [
+        "auction",
+        "sell",
+        "buy"
+      ]
+    },
+    "FeedInventory": {
+      "type": "object",
+      "properties": {
+        "changes": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "credits": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "ducats": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "endo": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "mr": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "plat": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "mr",
+        "plat",
+        "credits",
+        "endo",
+        "ducats",
+        "changes"
+      ]
+    },
+    "FeedStatus": {
+      "type": "object",
+      "properties": {
+        "game_detected": {
+          "type": "boolean"
+        },
+        "last_sync_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "log_attached": {
+          "type": "boolean"
+        },
+        "scanning": {
+          "type": "boolean"
+        },
+        "trades_remaining": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "world_state_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "game_detected",
+        "scanning",
+        "log_attached"
+      ]
+    },
+    "FissureInfo": {
+      "type": "object",
+      "properties": {
+        "expiry": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "faction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "is_storm": {
+          "type": "boolean"
+        },
+        "levels": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
+            }
+          ]
+        },
+        "mission_name": {
+          "type": "string"
+        },
+        "mission_type": {
+          "type": "string"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "node_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planet": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "remaining_secs": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "steel_path": {
+          "type": "boolean"
+        },
+        "tier": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "node_id",
+        "mission_type",
+        "mission_name",
+        "tier",
+        "steel_path",
+        "is_storm",
+        "expiry",
+        "remaining_secs"
+      ]
+    },
+    "ItemSummary": {
+      "type": "object",
+      "properties": {
+        "ducats": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "image_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "market_slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "prime": {
+          "type": "boolean"
+        },
+        "unique_name": {
+          "type": "string"
+        },
+        "vault": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VaultStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "unique_name",
+        "name",
+        "prime"
+      ]
+    },
+    "MarketAutoClose": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AutoCloseKind"
+        },
+        "quantity": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "item",
+        "quantity",
+        "kind"
+      ]
+    },
+    "RankedComponent": {
+      "type": "object",
+      "properties": {
+        "enough": {
+          "type": "boolean"
+        },
+        "favourite": {
+          "type": "boolean"
+        },
+        "item": {
+          "$ref": "#/$defs/ItemSummary"
+        },
+        "needed": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "owned": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "this_reward": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "item",
+        "needed",
+        "enough",
+        "this_reward",
+        "favourite"
+      ]
+    },
+    "RankedReward": {
+      "type": "object",
+      "properties": {
+        "best": {
+          "type": "boolean"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RankedComponent"
+          }
+        },
+        "favourite": {
+          "type": "boolean"
+        },
+        "item": {
+          "$ref": "#/$defs/ItemSummary"
+        },
+        "ownership": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RewardOwnership"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "plat": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "set_plat": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        }
+      },
+      "required": [
+        "item",
+        "favourite",
+        "best",
+        "components"
+      ]
+    },
+    "RewardOwnership": {
+      "type": "object",
+      "properties": {
+        "needed": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "needed_for_set": {
+          "type": "boolean"
+        },
+        "owned": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "parent_owned": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "owned",
+        "needed",
+        "needed_for_set",
+        "parent_owned"
+      ]
+    },
+    "RewardScreen": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AccountBalance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ranked": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RankedReward"
+          }
+        }
+      },
+      "required": [
+        "ranked"
+      ]
+    },
+    "Trade": {
+      "type": "object",
+      "properties": {
+        "offered": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TradeItem"
+          }
+        },
+        "plat": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "received": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TradeItem"
+          }
+        }
+      },
+      "required": [
+        "offered",
+        "received",
+        "plat"
+      ]
+    },
+    "TradeItem": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rank": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "count"
+      ]
+    },
+    "VaultStatus": {
+      "type": "string",
+      "enum": [
+        "vaulted",
+        "available",
+        "unknown"
+      ]
+    }
+  }
+}

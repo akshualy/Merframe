@@ -114,6 +114,22 @@ pub struct GameStatus {
     pub market_unread: u32,
     pub trades_remaining: Option<u32>,
     pub overlay_support: OverlaySupport,
+    pub event_feed: EventFeedStatus,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(tag = "state", rename_all = "snake_case")]
+pub enum EventFeedStatus {
+    #[default]
+    Off,
+    Listening {
+        port: u16,
+    },
+    Failed {
+        port: u16,
+        cause: String,
+    },
 }
 
 impl GameStatus {

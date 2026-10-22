@@ -23,6 +23,7 @@ pub(crate) use upgrades::{UpgradeKind, arcanes, mods, upgrade_kind};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ItemSummary {
     pub unique_name: String,
     pub name: String,

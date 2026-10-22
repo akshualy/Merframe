@@ -15,6 +15,7 @@ use super::rewards::{RewardOwnership, favourite_part, favourite_reward};
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RankedReward {
     pub item: ItemSummary,
     pub plat: Option<f64>,
@@ -27,6 +28,7 @@ pub struct RankedReward {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RankedComponent {
     pub item: ItemSummary,
     pub owned: Option<i64>,
@@ -38,6 +40,7 @@ pub struct RankedComponent {
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RewardScreen {
     pub ranked: Vec<RankedReward>,
     pub account: Option<AccountBalance>,
@@ -59,6 +62,7 @@ impl RewardScreen {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AccountBalance {
     pub plat: i64,
     pub ducats: i64,

@@ -9,6 +9,7 @@ use tauri_plugin_opener::OpenerExt;
 
 use super::{Shared, ready};
 use crate::error::{CommandError, CommandResult};
+use crate::event_feed::EventFeed;
 use crate::overlay;
 use crate::runtime;
 use crate::settings::{self, Settings};
@@ -129,10 +130,12 @@ pub async fn settings_set<R: Runtime>(
     settings: Settings,
 ) -> CommandResult<Settings> {
     let state = ready(&state).await?;
+    settings.event_feed.check()?;
     settings::save(&app, &settings)?;
     lock(&state.core).set_alert_settings(settings.alerts.clone());
     *write(&state.settings) = settings.clone();
     overlay::apply_from(&app, &state);
+    app.state::<EventFeed>().configure(settings.event_feed);
     Ok(settings)
 }
 

@@ -14,6 +14,7 @@ use crate::trade::Trade;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct FissureInfo {
     pub node_id: String,
     pub node_name: Option<&'static str>,

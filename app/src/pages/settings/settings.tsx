@@ -8,6 +8,7 @@ import { useAppStore, useSettings } from "@/stores/app-store";
 import type { Settings } from "@/types";
 import { PricesAndData, StatsTabSetting } from "./data";
 import { DisplaySetting } from "./display";
+import { EventFeed } from "./feed";
 import { FissureAlerts } from "./fissures";
 import { NotificationChannels } from "./notifications";
 import { CycleTimers } from "./timers";
@@ -90,6 +91,7 @@ export function SettingsPage() {
       <PricesAndData draft={draft} patch={patch} />
       <StatsTabSetting draft={draft} patch={patch} />
       <DisplaySetting draft={draft} patch={patch} />
+      <EventFeed draft={draft} patch={patch} />
     </Page>
   );
 }

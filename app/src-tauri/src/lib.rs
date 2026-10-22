@@ -3,6 +3,7 @@ mod auctions;
 pub mod commands;
 pub mod envelope;
 pub mod error;
+pub mod event_feed;
 mod focus;
 pub mod images;
 pub mod market;
@@ -23,6 +24,7 @@ use tauri::{Manager, Runtime, Url};
 use tracing::{error, warn};
 use tracing_subscriber::fmt::writer::MakeWriterExt;
 
+use crate::event_feed::EventFeed;
 use crate::state::{AppState, AppStateCell};
 
 pub fn closes_app(label: &str) -> bool {
@@ -212,6 +214,7 @@ pub fn run() {
                 "Overlay backend chosen"
             );
             app.manage(AppStateCell::new());
+            app.manage(EventFeed::default());
             tauri::async_runtime::spawn(publish_state(app.handle().clone()));
             Ok(())
         });

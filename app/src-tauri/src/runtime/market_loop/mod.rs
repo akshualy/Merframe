@@ -12,8 +12,7 @@ use wf_market::{Auction, Order};
 use crate::state::AppState;
 
 pub use auto_close::MarketAutoClose;
-pub(super) use auto_close::auto_close;
-pub(crate) use auto_close::trade_side;
+pub(crate) use auto_close::{auto_close, trade_side};
 pub(super) use last_trade::last_trade_done;
 pub(super) use poll::market_task;
 pub(super) use presence::market_presence_task;

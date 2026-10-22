@@ -137,6 +137,41 @@ pub struct Settings {
     pub log_file_path: Option<PathBuf>,
     pub text_size: TextSize,
     pub motion: Motion,
+    #[serde(flatten)]
+    pub event_feed: EventFeedSettings,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(default)]
+pub struct EventFeedSettings {
+    pub event_feed_enabled: bool,
+    pub event_feed_port: u16,
+}
+
+impl EventFeedSettings {
+    pub const PORT_MIN: u16 = 1024;
+
+    pub fn port(self) -> Option<u16> {
+        self.event_feed_enabled.then_some(self.event_feed_port)
+    }
+
+    pub fn check(self) -> anyhow::Result<()> {
+        if self.event_feed_enabled && self.event_feed_port < Self::PORT_MIN {
+            anyhow::bail!("The event feed port has to be {} or higher", Self::PORT_MIN);
+        }
+
+        Ok(())
+    }
+}
+
+impl Default for EventFeedSettings {
+    fn default() -> Self {
+        Self {
+            event_feed_enabled: false,
+            event_feed_port: 28005,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -282,6 +317,7 @@ impl Default for Settings {
             log_file_path: None,
             text_size: TextSize::default(),
             motion: Motion::default(),
+            event_feed: EventFeedSettings::default(),
         }
     }
 }
@@ -679,6 +715,10 @@ mod tests {
         assert_eq!(settings.market.market_trader_status, TraderStatus::Ingame);
         assert_eq!(settings.market.market_trader_locale.as_deref(), Some("en"));
         assert_eq!(settings.log_file_path, None);
+        assert!(!settings.event_feed.event_feed_enabled);
+        assert_eq!(settings.event_feed.event_feed_port, 28005);
+        assert_eq!(settings.event_feed.port(), None);
+        assert!(settings.event_feed.check().is_ok());
         assert_eq!(
             settings.trader_reach(),
             Reach {
@@ -690,6 +730,21 @@ mod tests {
         assert!(settings.alerts.fissure_filters.is_empty());
         assert_eq!(settings.alerts.timers, TimerAlerts::default());
         assert_eq!(settings.alerts.timer_lead_secs, 180);
+    }
+
+    #[test]
+    fn event_feed_port_below_the_user_range_is_rejected() {
+        let low = EventFeedSettings {
+            event_feed_enabled: true,
+            event_feed_port: 80,
+        };
+        assert!(low.check().is_err());
+
+        let off = EventFeedSettings {
+            event_feed_enabled: false,
+            ..low
+        };
+        assert!(off.check().is_ok());
     }
 
     #[test]

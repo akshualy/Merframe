@@ -8,6 +8,7 @@ use crate::rivens::traded_riven_name;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct TradeItem {
     pub name: String,
     pub count: i64,
@@ -16,6 +17,7 @@ pub struct TradeItem {
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Trade {
     pub offered: Vec<TradeItem>,
     pub received: Vec<TradeItem>,

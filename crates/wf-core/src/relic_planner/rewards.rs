@@ -10,6 +10,7 @@ use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RewardOwnership {
     pub owned: i64,
     pub needed: u32,
