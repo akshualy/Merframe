@@ -2545,7 +2545,7 @@ dependencies = [
 
 [[package]]
 name = "merframe"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -5853,7 +5853,7 @@ checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 
 [[package]]
 name = "wf-core"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "flate2",
@@ -5874,7 +5874,7 @@ dependencies = [
 
 [[package]]
 name = "wf-data"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "futures-util",
  "reqwest",
@@ -5888,7 +5888,7 @@ dependencies = [
 
 [[package]]
 name = "wf-inventory"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "serde",
@@ -5900,7 +5900,7 @@ dependencies = [
 
 [[package]]
 name = "wf-log"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "async-stream",
  "futures-core",
@@ -5919,7 +5919,7 @@ dependencies = [
 
 [[package]]
 name = "wf-market"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "futures-util",
@@ -5934,7 +5934,7 @@ dependencies = [
 
 [[package]]
 name = "wf-mem"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "thiserror 2.0.21",
  "windows-sys 0.60.2",
@@ -5942,7 +5942,7 @@ dependencies = [
 
 [[package]]
 name = "wf-mongo"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "serde",
@@ -5952,7 +5952,7 @@ dependencies = [
 
 [[package]]
 name = "wf-scan"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "memchr",
  "serde",
@@ -5964,7 +5964,7 @@ dependencies = [
 
 [[package]]
 name = "wf-worldstate"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "reqwest",
