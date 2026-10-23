@@ -3,4 +3,4 @@ import type { AttributeGrade } from "./AttributeGrade";
 import type { GoodRollView } from "./GoodRollView";
 import type { Polarity } from "./Polarity";
 
-export type PendingRoll = { name: string | null, rerolls: number, polarity: Polarity | null, grade: number, grade_letter: string, attributes: Array<AttributeGrade>, good_roll: GoodRollView | null, };
+export type PendingRoll = { name: string | null, rerolls: number, polarity: Polarity | null, grade: number, grade_letter: string, attributes: Array<AttributeGrade>, splices: Array<string>, good_roll: GoodRollView | null, };

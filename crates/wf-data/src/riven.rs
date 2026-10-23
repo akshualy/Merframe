@@ -8,25 +8,123 @@ const ROLL_MIN: f64 = 0.9;
 const ROLL_MAX: f64 = 1.1;
 pub const MAX_RANK: u32 = 8;
 
-pub const SPLICED_TAGS: [&str; 18] = [
-    "WeaponWeakpointDamage",
-    "WeaponWeakpointCriticalChance",
-    "WeaponAmmoEfficiency",
-    "WeaponMagazineReloadHolstered",
-    "WeaponStatusDamage",
-    "WeaponMeleeHeavyAttackDamageMod",
-    "WeaponMeleeHeavyAttackChargeMod",
-    "WeaponMeleeSlamDamageMod",
-    "WeaponMeleeParryAngleMod",
-    "WeaponGasDamageMod",
-    "WeaponCorrosiveDamageMod",
-    "WeaponViralDamageMod",
-    "WeaponRadiationDamageMod",
-    "WeaponBlastDamageMod",
-    "WeaponMagneticDamageMod",
-    "WeaponFactionDamageOrokin",
-    "WeaponFactionDamageTechrot",
-    "WeaponFactionDamageScaldra",
+const SPLICE_RECIPES: [(&str, [&str; 2]); 26] = [
+    (
+        "WeaponWeakpointDamage",
+        ["WeaponDamageAmountMod", "WeaponZoomFovMod"],
+    ),
+    (
+        "WeaponWeakpointDamage",
+        ["WeaponDamageAmountMod", "WeaponFireIterationsMod"],
+    ),
+    (
+        "WeaponWeakpointCriticalChance",
+        ["WeaponCritChanceMod", "WeaponZoomFovMod"],
+    ),
+    (
+        "WeaponWeakpointCriticalChance",
+        ["WeaponCritChanceMod", "WeaponFireIterationsMod"],
+    ),
+    (
+        "WeaponAmmoEfficiency",
+        ["WeaponClipMaxMod", "WeaponReloadSpeedMod"],
+    ),
+    (
+        "WeaponAmmoEfficiency",
+        ["WeaponRecoilReductionMod", "WeaponAmmoMaxMod"],
+    ),
+    (
+        "WeaponMagazineReloadHolstered",
+        ["WeaponAmmoMaxMod", "WeaponReloadSpeedMod"],
+    ),
+    (
+        "WeaponMagazineReloadHolstered",
+        ["WeaponAmmoMaxMod", "WeaponClipMaxMod"],
+    ),
+    (
+        "WeaponStatusDamage",
+        ["WeaponDamageAmountMod", "WeaponStunChanceMod"],
+    ),
+    (
+        "WeaponStatusDamage",
+        ["WeaponMeleeDamageMod", "WeaponStunChanceMod"],
+    ),
+    (
+        "WeaponGasDamageMod",
+        ["WeaponToxinDamageMod", "WeaponFireDamageMod"],
+    ),
+    (
+        "WeaponCorrosiveDamageMod",
+        ["WeaponToxinDamageMod", "WeaponElectricityDamageMod"],
+    ),
+    (
+        "WeaponViralDamageMod",
+        ["WeaponToxinDamageMod", "WeaponFreezeDamageMod"],
+    ),
+    (
+        "WeaponRadiationDamageMod",
+        ["WeaponFireDamageMod", "WeaponElectricityDamageMod"],
+    ),
+    (
+        "WeaponBlastDamageMod",
+        ["WeaponFireDamageMod", "WeaponFreezeDamageMod"],
+    ),
+    (
+        "WeaponMagneticDamageMod",
+        ["WeaponElectricityDamageMod", "WeaponFreezeDamageMod"],
+    ),
+    (
+        "WeaponFactionDamageOrokin",
+        ["WeaponFactionDamageGrineer", "WeaponFactionDamageCorpus"],
+    ),
+    (
+        "WeaponFactionDamageTechrot",
+        ["WeaponFactionDamageCorpus", "WeaponFactionDamageInfested"],
+    ),
+    (
+        "WeaponFactionDamageScaldra",
+        ["WeaponFactionDamageInfested", "WeaponFactionDamageGrineer"],
+    ),
+    (
+        "WeaponFactionDamageOrokin",
+        [
+            "WeaponMeleeFactionDamageGrineer",
+            "WeaponMeleeFactionDamageCorpus",
+        ],
+    ),
+    (
+        "WeaponFactionDamageTechrot",
+        [
+            "WeaponMeleeFactionDamageCorpus",
+            "WeaponMeleeFactionDamageInfested",
+        ],
+    ),
+    (
+        "WeaponFactionDamageScaldra",
+        [
+            "WeaponMeleeFactionDamageInfested",
+            "WeaponMeleeFactionDamageGrineer",
+        ],
+    ),
+    (
+        "WeaponMeleeHeavyAttackDamageMod",
+        [
+            "WeaponMeleeComboEfficiencyMod",
+            "WeaponMeleeComboBonusOnHitMod",
+        ],
+    ),
+    (
+        "WeaponMeleeHeavyAttackChargeMod",
+        ["WeaponMeleeComboEfficiencyMod", "ComboDurationMod"],
+    ),
+    (
+        "WeaponMeleeParryAngleMod",
+        ["WeaponFireRateMod", "WeaponMeleeRangeIncMod"],
+    ),
+    (
+        "WeaponMeleeSlamDamageMod",
+        ["WeaponMeleeDamageMod", "WeaponFireRateMod"],
+    ),
 ];
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -132,6 +230,22 @@ pub struct RivenType {
     pub stats: HashMap<String, RivenStat>,
 }
 
+impl RivenType {
+    pub fn splice_results(&self, held: &[&str]) -> Vec<&RivenStat> {
+        let mut found: Vec<&RivenStat> = Vec::new();
+        for (result, ingredients) in SPLICE_RECIPES {
+            let complete = ingredients.iter().all(|tag| held.contains(tag));
+            if !complete || found.iter().any(|stat| stat.tag == result) {
+                continue;
+            }
+
+            found.extend(self.stats.get(result));
+        }
+
+        found
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct RivenData {
     types: HashMap<String, RivenType>,
@@ -156,7 +270,9 @@ impl RivenData {
                                 base_value: first.value,
                                 localization: first.loc_tag.clone().unwrap_or_default(),
                                 reversed: first.reverse_value_symbol,
-                                spliced: SPLICED_TAGS.contains(&entry.tag.as_str()),
+                                spliced: SPLICE_RECIPES
+                                    .iter()
+                                    .any(|(result, _)| *result == entry.tag),
                             },
                         ))
                     })
@@ -291,20 +407,58 @@ mod tests {
 
         let weakpoint = data.stat(RIFLE, "WeaponWeakpointDamage").unwrap();
         assert_eq!(weakpoint.name(), "Weak Point Damage");
-        assert_eq!(
-            SPLICED_TAGS
+        let spliced = |riven_type: &str| {
+            data.riven_type(riven_type)
+                .unwrap()
+                .stats
+                .values()
+                .filter(|stat| stat.spliced)
+                .count()
+        };
+        assert_eq!(spliced(RIFLE), 14);
+        assert_eq!(spliced(MELEE), 14);
+    }
+
+    #[test]
+    fn splices_from_held_stats() {
+        let data = data();
+        let rifle = data.riven_type(RIFLE).unwrap();
+        let names = |tags: &[&str]| -> Vec<String> {
+            rifle
+                .splice_results(tags)
                 .iter()
-                .filter(|tag| data.stat(RIFLE, tag).is_some())
-                .count(),
-            14
+                .map(|stat| stat.name())
+                .collect()
+        };
+        assert_eq!(
+            names(&[
+                "WeaponDamageAmountMod",
+                "WeaponFireIterationsMod",
+                "WeaponZoomFovMod"
+            ]),
+            ["Weak Point Damage"]
         );
         assert_eq!(
-            SPLICED_TAGS
-                .iter()
-                .filter(|tag| data.stat(MELEE, tag).is_some())
-                .count(),
-            14
+            names(&[
+                "WeaponToxinDamageMod",
+                "WeaponFireDamageMod",
+                "WeaponFreezeDamageMod"
+            ]),
+            ["Gas", "Viral", "Blast"]
         );
+        assert!(names(&["WeaponCritChanceMod", "WeaponDamageAmountMod"]).is_empty());
+
+        let melee = data.riven_type(MELEE).unwrap();
+        let slam: Vec<&str> = melee
+            .splice_results(&[
+                "WeaponMeleeDamageMod",
+                "WeaponFireRateMod",
+                "WeaponStunChanceMod",
+            ])
+            .iter()
+            .map(|stat| stat.tag.as_str())
+            .collect();
+        assert_eq!(slam, ["WeaponStatusDamage", "WeaponMeleeSlamDamageMod"]);
     }
 
     #[test]

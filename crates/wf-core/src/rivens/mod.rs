@@ -117,6 +117,22 @@ impl<'a> Grader<'a> {
             None => modifier.name(),
         })
     }
+
+    fn open_splice_names(&self, riven_type: &RivenType, graded: &[AttributeGrade]) -> Vec<String> {
+        if graded.iter().any(|attribute| attribute.spliced) {
+            return Vec::new();
+        }
+
+        let tags: Vec<&str> = graded
+            .iter()
+            .map(|attribute| attribute.tag.as_str())
+            .collect();
+        riven_type
+            .splice_results(&tags)
+            .into_iter()
+            .filter_map(|stat| self.stat_name(riven_type, &stat.tag))
+            .collect()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -128,6 +144,7 @@ pub struct PendingRoll {
     pub grade: f64,
     pub grade_letter: &'static str,
     pub attributes: Vec<AttributeGrade>,
+    pub splices: Vec<String>,
     pub good_roll: Option<GoodRollView>,
 }
 
@@ -153,6 +170,7 @@ pub struct RivenRow {
     pub grade: f64,
     pub grade_letter: &'static str,
     pub attributes: Vec<AttributeGrade>,
+    pub splices: Vec<String>,
     pub good_roll: Option<GoodRollView>,
     pub listed_in_wfm: bool,
     pub unlisted_stat: Option<String>,

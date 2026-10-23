@@ -63,10 +63,6 @@ export function attributeText(attribute: AttributeGrade): string {
     : `${value} ${name}`;
 }
 
-export function disposition(value: number | null): string {
-  return value === null ? "-" : value.toFixed(2);
-}
-
 export function rivenAuctionUrl(weaponSlug: string): string {
   const query = new URLSearchParams({
     type: "riven",

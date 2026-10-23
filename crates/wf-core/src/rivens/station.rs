@@ -126,6 +126,7 @@ impl Grader<'_> {
             grade: 0.0,
             grade_letter: "D",
             attributes: Vec::new(),
+            splices: Vec::new(),
             good_roll: None,
             listed_in_wfm: false,
             unlisted_stat: None,

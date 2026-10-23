@@ -5,7 +5,6 @@ import {
   attributeRange,
   attributeText,
   attributeValue,
-  disposition,
   gradeTone,
   gradeVariant,
   rivenAuctionUrl,
@@ -141,13 +140,6 @@ describe("attributeLabel", () => {
   it("name, or the tag when the name is unknown", () => {
     expect(attributeLabel(initialCombo)).toBe("Initial combo");
     expect(attributeLabel(attribute({ name: null }))).toBe("WeaponFireRateMod");
-  });
-});
-
-describe("disposition", () => {
-  it("two decimals, a dash when unknown", () => {
-    expect(disposition(1.3)).toBe("1.30");
-    expect(disposition(null)).toBe("-");
   });
 });
 
