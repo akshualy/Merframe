@@ -1,13 +1,15 @@
 import { ExternalLink, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
+import { Amount } from "@/components/currency";
 import { ItemImage } from "@/components/item-image";
+import { ItemSearch } from "@/components/market-item-search";
 import { OrderList } from "@/components/market-order-list";
 import { SelectField } from "@/components/option-select";
 import { EmptyNote } from "@/components/page";
-import { SearchInput } from "@/components/search-input";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Hint } from "@/components/ui/hint";
@@ -15,17 +17,18 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLatestAttempt } from "@/hooks/use-latest-attempt";
 import { api, openExternal, reportError } from "@/lib/bridge";
-import { marketUrl } from "@/lib/format";
+import { marketUrl, num } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/world";
 import { useAppStore } from "@/stores/app-store";
 import { useMarketItemsStore } from "@/stores/market-items-store";
+import { useMarketListingsStore } from "@/stores/market-listings-store";
 import {
   type ListingStars,
   useMarketPanelStore,
 } from "@/stores/market-panel-store";
-import type { ItemListings, MarketItem, OrderType } from "@/types";
+import type { ItemListings, MarketItem, OrderRow, OrderType } from "@/types";
 
 function NumberField({
   id,
@@ -58,73 +61,40 @@ function defaultSubtype(item: MarketItem, wanted: string | null) {
   return subtypes.includes("revealed") ? "revealed" : (subtypes[0] ?? "");
 }
 
-function ItemSearch({ onPick }: { onPick: (item: MarketItem) => void }) {
-  const items = useMarketItemsStore((state) => state.items);
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-
-  const matches = useMemo(() => {
-    const search = query.trim().toLowerCase();
-    if (!search) {
-      return [];
-    }
-    return items
-      .filter((item) => item.name.toLowerCase().includes(search))
-      .sort(
-        (a, b) =>
-          Number(b.name.toLowerCase() === search) -
-          Number(a.name.toLowerCase() === search),
-      )
-      .slice(0, 20);
-  }, [items, query]);
-
+function ownOrder(
+  rows: OrderRow[],
+  item: MarketItem,
+  side: OrderType,
+  rank: string,
+  subtype: string,
+) {
+  const wantedRank = item.max_rank == null ? null : Number.parseInt(rank, 10);
+  const wantedSubtype = (item.subtypes ?? []).length > 0 ? subtype : null;
   return (
-    <div className="relative">
-      <SearchInput
-        value={query}
-        onValueChange={(next) => {
-          setQuery(next);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(query.trim().length > 0)}
-        onBlur={() => setOpen(false)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            setOpen(false);
-          }
-        }}
-        placeholder="Search warframe.market items"
-        className="w-full"
-      />
-      {open && matches.length > 0 && (
-        <ul
-          onMouseDown={(e) => e.preventDefault()}
-          className="bg-popover absolute top-full z-20 mt-1 max-h-80 w-full overflow-y-auto rounded-md border shadow-md"
-        >
-          {matches.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setOpen(false);
-                  onPick(item);
-                }}
-                className="hover:bg-secondary flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-sm"
-              >
-                <ItemImage
-                  imageName={item.image_name}
-                  size={24}
-                  alt={item.name}
-                />
-                <span className="truncate">{item.name}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    rows.find(
+      (row) =>
+        row.item_id === item.id &&
+        row.order_type === side &&
+        row.rank === wantedRank &&
+        row.subtype === wantedSubtype,
+    ) ?? null
   );
+}
+
+function orderAmounts(platinum: string, quantity: string) {
+  const plat = Number.parseInt(platinum, 10);
+  const count = Number.parseInt(quantity, 10);
+
+  if (!Number.isFinite(plat) || plat <= 0) {
+    toast.error("A platinum price is required");
+    return null;
+  }
+  if (!Number.isFinite(count) || count <= 0) {
+    toast.error("A quantity of at least 1 is required");
+    return null;
+  }
+
+  return { plat, count };
 }
 
 export function MarketPanel() {
@@ -137,6 +107,7 @@ export function MarketPanel() {
     })),
   );
   const items = useMarketItemsStore((state) => state.bySlug);
+  const rows = useMarketListingsStore((state) => state.orders.rows);
   const signedIn = useAppStore((state) => state.status?.market_account) != null;
   const navigate = useNavigate();
   const [selected, setSelected] = useState<MarketItem | null>(null);
@@ -150,6 +121,8 @@ export function MarketPanel() {
   const [cyanStars, setCyanStars] = useState("0");
   const [side, setSide] = useState<OrderType>("sell");
   const [posting, setPosting] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [prefilled, setPrefilled] = useState<string | null>(null);
   const { attempt } = useLatestAttempt();
 
   const isMod = selected?.max_rank != null;
@@ -157,6 +130,17 @@ export function MarketPanel() {
   const hasSubtypes = subtypes.length > 0;
   const hasAmberStars = selected?.max_amber_stars != null;
   const hasCyanStars = selected?.max_cyan_stars != null;
+  const existing = selected
+    ? ownOrder(rows, selected, side, rank, subtype)
+    : null;
+  const sideLabel = side === "sell" ? "Sell" : "Buy";
+  const busy = posting || updating;
+
+  if (existing && existing.id !== prefilled) {
+    setPrefilled(existing.id);
+    setPlatinum(String(existing.platinum));
+    setQuantity(String(existing.quantity));
+  }
 
   const handlePick = useCallback(
     async (
@@ -166,16 +150,33 @@ export function MarketPanel() {
       subtype: string | null = null,
       stars: ListingStars | null = null,
     ) => {
+      const chosenRank = String(rank ?? 0);
+      const chosenSubtype = defaultSubtype(item, subtype);
       setSelected(item);
       setLoadingOrders(true);
       setSide(side);
-      setRank(String(rank ?? 0));
-      setSubtype(defaultSubtype(item, subtype));
+      setRank(chosenRank);
+      setSubtype(chosenSubtype);
       setAmberStars(String(stars?.amber ?? 0));
       setCyanStars(String(stars?.cyan ?? 0));
+      setPrefilled(null);
+      setPlatinum("");
+      setQuantity("1");
+
       await attempt(() => api.marketItemOrders(item.slug), {
         loaded: (next) => {
           setListings(next);
+          const own = ownOrder(
+            useMarketListingsStore.getState().orders.rows,
+            item,
+            side,
+            chosenRank,
+            chosenSubtype,
+          );
+          if (own) {
+            return;
+          }
+
           const lowest = next.sell[0]?.platinum;
           setPlatinum(lowest === undefined ? "" : String(Math.max(1, lowest)));
         },
@@ -213,19 +214,15 @@ export function MarketPanel() {
       navigate("/market");
       return;
     }
-    const plat = Number.parseInt(platinum, 10);
-    const count = Number.parseInt(quantity, 10);
+    const amounts = orderAmounts(platinum, quantity);
+    if (!amounts) {
+      return;
+    }
+
+    const { plat, count } = amounts;
     const modRank = Number.parseInt(rank, 10);
     const amber = Number.parseInt(amberStars, 10);
     const cyan = Number.parseInt(cyanStars, 10);
-    if (!Number.isFinite(plat) || plat <= 0) {
-      toast.error("A platinum price is required");
-      return;
-    }
-    if (!Number.isFinite(count) || count <= 0) {
-      toast.error("A quantity of at least 1 is required");
-      return;
-    }
     if (hasSubtypes && !subtype) {
       toast.error("A type is required for this item");
       return;
@@ -245,9 +242,7 @@ export function MarketPanel() {
           hasAmberStars && Number.isFinite(amber) ? amber : undefined,
         cyan_stars: hasCyanStars && Number.isFinite(cyan) ? cyan : undefined,
       });
-      notify.success(
-        `${side === "sell" ? "Sell" : "Buy"} order posted for ${selected.name}`,
-      );
+      notify.success(`${sideLabel} order posted for ${selected.name}`);
       setSelected(null);
       setListings(null);
       setQuantity("1");
@@ -266,12 +261,37 @@ export function MarketPanel() {
     amberStars,
     cyanStars,
     side,
+    sideLabel,
     isMod,
     hasSubtypes,
     subtype,
     hasAmberStars,
     hasCyanStars,
   ]);
+
+  const handleUpdate = useCallback(async () => {
+    if (!existing || !selected) {
+      return;
+    }
+
+    const amounts = orderAmounts(platinum, quantity);
+    if (!amounts) {
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      await api.marketUpdateOrder(existing.id, {
+        platinum: amounts.plat,
+        quantity: amounts.count,
+      });
+      notify.success(`${sideLabel} order updated for ${selected.name}`);
+    } catch (error) {
+      reportError(error);
+    } finally {
+      setUpdating(false);
+    }
+  }, [existing, selected, platinum, quantity, sideLabel]);
 
   const lowestSell = listings?.sell[0]?.platinum ?? null;
 
@@ -354,6 +374,20 @@ export function MarketPanel() {
       </div>
       {selected && (
         <div className="flex shrink-0 flex-col gap-2 border-t p-4">
+          {existing && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="flex flex-1 items-center gap-1">
+                You're {side === "sell" ? "selling" : "buying"} this for
+                <Amount currency="platinum" plain>
+                  {num(existing.platinum)}
+                </Amount>
+                , {num(existing.quantity)} listed.
+              </span>
+              <Badge variant={existing.visible ? "accent" : "muted"}>
+                {existing.visible ? "visible" : "hidden"}
+              </Badge>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <NumberField
               id="order-platinum"
@@ -404,9 +438,21 @@ export function MarketPanel() {
               />
             )}
           </div>
-          <Button onClick={handlePost} disabled={posting}>
-            Post {side === "sell" ? "Sell" : "Buy"} Order
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            {existing && (
+              <Button onClick={handleUpdate} disabled={busy}>
+                Update Order
+              </Button>
+            )}
+            <Button
+              variant={existing ? "outline" : "default"}
+              onClick={handlePost}
+              disabled={busy}
+              className={cn(!existing && "col-span-2")}
+            >
+              {existing ? "Post New Order" : `Post ${sideLabel} Order`}
+            </Button>
+          </div>
         </div>
       )}
     </aside>

@@ -175,26 +175,41 @@ pub async fn market_post_order<R: Runtime>(
             }
         })?;
 
-    let orders = state.market().orders_my().await?;
-    let snapshot = market::market_snapshot(&state, Some(&orders), None).await;
-    runtime::emit(&app, AppEvent::MarketUpdated(snapshot));
+    publish_orders(&app, &state).await;
 
     Ok(posted)
 }
 
 #[tauri::command]
-pub async fn market_update_order(
+pub async fn market_update_order<R: Runtime>(
+    app: AppHandle<R>,
     state: Shared<'_>,
     id: String,
     patch: OrderPatch,
 ) -> CommandResult<Order> {
     let state = ready(&state).await?;
+
     let body = UpdateOrderRequest {
         platinum: patch.platinum,
         quantity: patch.quantity,
         visible: patch.visible,
     };
-    Ok(state.market().update_order(&id, &body).await?)
+    let updated = state.market().update_order(&id, &body).await?;
+    publish_orders(&app, &state).await;
+
+    Ok(updated)
+}
+
+async fn publish_orders<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    let orders = match state.market().orders_my().await {
+        Ok(orders) => orders,
+        Err(error) => {
+            tracing::warn!(error = %error.brief(), "Order refresh after a write failed");
+            return;
+        }
+    };
+    let snapshot = market::market_snapshot(state, Some(&orders), None).await;
+    runtime::emit(app, AppEvent::MarketUpdated(snapshot));
 }
 
 #[tauri::command]
