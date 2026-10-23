@@ -4,16 +4,14 @@ import { PolarityIcon } from "@/components/game-icon";
 import { GoodRollAttribution, GoodRollBlock } from "@/components/good-roll";
 import { ItemImage, prefetchImages } from "@/components/item-image";
 import { RivenListings } from "@/components/riven-listings";
-import { SplicedMark } from "@/components/spliced-mark";
+import { SplicedMark, SpliceOptions } from "@/components/spliced-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Hint } from "@/components/ui/hint";
 import { openExternal } from "@/lib/bridge";
 import { percent } from "@/lib/format";
 import {
   attributeLabel,
   attributeValue,
-  disposition,
   gradeTone,
   gradeVariant,
   rivenAuctionUrl,
@@ -70,14 +68,6 @@ function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
               <PolarityIcon polarity={riven.polarity} size={16} />
             )}
           </span>
-          {riven.disposition !== null && (
-            <Hint as="span">
-              Dispo x{disposition(riven.disposition)}
-              {riven.disposition_weapon
-                ? ` on ${riven.disposition_weapon}`
-                : ""}
-            </Hint>
-          )}
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Badge variant={gradeVariant(riven.grade_letter)}>
@@ -91,6 +81,7 @@ function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
           <Attribute key={attribute.tag} attribute={attribute} />
         ))}
       </div>
+      <SpliceOptions splices={riven.splices} />
       {riven.good_roll && (
         <GoodRollBlock view={riven.good_roll} className="border-t pt-1.5" />
       )}

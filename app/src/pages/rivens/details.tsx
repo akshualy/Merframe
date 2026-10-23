@@ -1,6 +1,6 @@
 import { GoodRollBlock } from "@/components/good-roll";
 import { RivenListings } from "@/components/riven-listings";
-import { SplicedMark } from "@/components/spliced-mark";
+import { SplicedMark, SpliceOptions } from "@/components/spliced-mark";
 import { Hint } from "@/components/ui/hint";
 import { percent } from "@/lib/format";
 import {
@@ -47,6 +47,7 @@ export function RivenDetails({ riven }: { riven: RivenRow }) {
           );
         })}
       </div>
+      <SpliceOptions splices={riven.splices} />
       {riven.good_roll && <GoodRollBlock view={riven.good_roll} />}
       {riven.weapon_slug && (
         <RivenListings

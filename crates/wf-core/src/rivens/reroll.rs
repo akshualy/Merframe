@@ -40,6 +40,8 @@ impl Grader<'_> {
             grade,
             grade_letter: roll_grade(grade),
             good_roll: good.map(|good| self.good_roll(good, &graded, riven_type)),
+            splices: riven_type
+                .map_or_else(Vec::new, |found| self.open_splice_names(found, &graded)),
             attributes: graded,
         }
     }
@@ -66,6 +68,7 @@ impl RivenRow {
             grade_letter: roll.grade_letter,
             unlisted_stat: unlisted_stat(&roll.attributes),
             attributes: roll.attributes,
+            splices: roll.splices,
             good_roll: roll.good_roll,
             pending: None,
             ..self
@@ -188,5 +191,31 @@ mod tests {
         let grader = fixture.grader();
         assert!(grader.cycled(row, "{", PENDING_ROLL).is_none());
         assert!(grader.cycled(row, CURRENT_ROLL, "").is_none());
+    }
+
+    #[test]
+    fn splice_options_until_spliced() {
+        let tab = riven_tab();
+        let row = by_weapon(&tab.unveiled, "Nepheri");
+        let fixture = fixture();
+        let grader = fixture.grader();
+        let weapon = row.weapon_path.as_deref().unwrap();
+        let elements = rolled(
+            weapon,
+            &["WeaponToxinDamageMod", "WeaponFireDamageMod"],
+            Some("WeaponFreezeDamageMod"),
+        );
+        let open = grader.cycled(row, &elements, &elements).unwrap();
+        assert_eq!(open.splices, ["Gas", "Viral", "Blast"]);
+        assert_eq!(open.pending.unwrap().splices, ["Gas", "Viral", "Blast"]);
+
+        let spliced = rolled(
+            weapon,
+            &["WeaponToxinDamageMod", "WeaponGasDamageMod"],
+            Some("WeaponFreezeDamageMod"),
+        );
+        let held = grader.cycled(row, &spliced, &elements).unwrap();
+        assert!(held.splices.is_empty());
+        assert!(held.attributes.iter().any(|attribute| attribute.spliced));
     }
 }

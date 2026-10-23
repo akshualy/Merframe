@@ -138,6 +138,7 @@ mod tests {
             grade: 0.0,
             grade_letter: "D",
             attributes: Vec::new(),
+            splices: Vec::new(),
             good_roll: None,
             unlisted_stat: None,
             pending: None,
