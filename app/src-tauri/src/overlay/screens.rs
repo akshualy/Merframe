@@ -96,16 +96,13 @@ impl Screens {
 
 #[derive(Debug, Default)]
 pub(super) struct Game {
-    pub(super) mission_node: Option<String>,
     pub(super) mission_tier: Option<RelicTier>,
-    pub(super) star_chart_open: bool,
     console: Option<f64>,
     hud_layers: u32,
 }
 
 impl Game {
-    pub(super) fn set_mission(&mut self, node: Option<&str>, tier: Option<RelicTier>) {
-        self.mission_node = node.map(str::to_owned);
+    pub(super) fn set_mission(&mut self, tier: Option<RelicTier>) {
         self.mission_tier = tier;
     }
 
@@ -329,9 +326,7 @@ mod tests {
         assert!(screens.reward.input_reset(8486.407));
         assert!(!screens.reward_shows());
 
-        screens
-            .game
-            .set_mission(Some("SolNode1"), Some(RelicTier::Requiem));
+        screens.game.set_mission(Some(RelicTier::Requiem));
         screens.reward.tiles_shown(8600.0);
         assert!(!screens.reward_shows());
     }

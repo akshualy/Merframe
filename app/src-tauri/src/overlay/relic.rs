@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use chrono::{DateTime, Utc};
 use tauri::{AppHandle, Runtime};
-use tracing::{debug, warn};
+use tracing::debug;
 use wf_core::tier_name;
-use wf_worldstate::{FissureTier, RelicTier, WorldState};
+use wf_scan::RelicScreen;
+use wf_worldstate::RelicTier;
 
 use super::screens::Game;
-use super::{Kind, RecommendationTrigger, attached_game, show};
+use super::{Kind, RecommendationTrigger, lua_read, show};
 use crate::runtime::blocking;
 use crate::settings::Settings;
 use crate::state::{AppState, lock, read};
@@ -29,54 +29,19 @@ impl Recommendation {
     }
 }
 
-pub(super) fn suggest_mission(state: &AppState, node: &str) {
-    if lock(&state.overlays.screens).game.mission_node.as_deref() == Some(node) {
-        return;
+fn recommendation_for(game: &Game, screen: Option<RelicScreen>) -> Recommendation {
+    match screen {
+        Some(RelicScreen::Era(era)) => Recommendation::of(RelicTier::from_modifier(era)),
+        Some(RelicScreen::AnyEra) => Recommendation::AnyEra,
+        Some(RelicScreen::Orbiter) => Recommendation::Hidden,
+        None => Recommendation::of(game.mission_tier),
     }
-    let tier = lock(&state.core)
-        .world()
-        .and_then(|world| fissure_tier_at(world, node, Utc::now()));
-    debug!(node, ?tier, "Squad mission suggested");
-    lock(&state.overlays.screens)
-        .game
-        .set_mission(Some(node), tier);
 }
 
-fn fissure_tier_at(world: &WorldState, mission: &str, now: DateTime<Utc>) -> Option<RelicTier> {
-    let node = mission.split('_').next()?;
-    world
-        .fissures(now)
-        .into_iter()
-        .find(|fissure| fissure.node_id == node)
-        .and_then(|fissure| match fissure.tier {
-            FissureTier::Relic(tier) => Some(tier),
-            FissureTier::Unknown(_) => None,
-        })
-}
-
-fn recommendation_for(game: &Game, scanned: Option<RelicTier>) -> Recommendation {
-    if game.star_chart_open && scanned.is_some() {
-        return Recommendation::of(scanned);
-    }
-    Recommendation::of(game.mission_tier)
-}
-
-fn selected_fissure_tier(state: &AppState) -> Option<RelicTier> {
-    let reader = attached_game(state)?;
-    let found = lock(&state.overlays.relic_picker).find(reader.as_ref());
-    let picked = match found {
-        Ok(picked) => picked?,
-        Err(error) => {
-            warn!(%error, "Fissure picker read failed");
-            return None;
-        }
-    };
-    debug!(
-        node = picked.node,
-        tier = picked.void_tier,
-        "Fissure selected on star chart"
-    );
-    RelicTier::from_modifier(picked.void_tier)
+fn read_relic_screen(state: &Arc<AppState>) -> Option<RelicScreen> {
+    let screen = lua_read(state, wf_scan::relic_screen);
+    debug!(?screen, "Relic screen read");
+    screen
 }
 
 pub(super) fn scan_recommendation<R: Runtime>(
@@ -87,22 +52,16 @@ pub(super) fn scan_recommendation<R: Runtime>(
     let app = app.clone();
     let owned = Arc::clone(state);
     tauri::async_runtime::spawn(async move {
-        let from_star_chart = lock(&owned.overlays.screens).game.star_chart_open;
-        let scanned = if from_star_chart {
-            let scanning = Arc::clone(&owned);
-            blocking("scan fissure picker", move || {
-                selected_fissure_tier(&scanning)
-            })
+        let scanning = Arc::clone(&owned);
+        let screen = blocking("read relic screen", move || read_relic_screen(&scanning))
             .await
-            .flatten()
-        } else {
-            None
-        };
+            .flatten();
+
         if lock(&owned.core).inventory().is_none() {
             debug!("No inventory yet, skipping relic recommendation");
             return;
         }
-        let recommendation = recommendation_for(&lock(&owned.overlays.screens).game, scanned);
+        let recommendation = recommendation_for(&lock(&owned.overlays.screens).game, screen);
         let tier = match recommendation {
             Recommendation::Hidden => return,
             Recommendation::AnyEra => None,
@@ -146,58 +105,31 @@ mod tests {
     }
 
     #[test]
-    fn fissure_tier_of_suggested_mission() {
-        let world =
-            WorldState::parse(include_str!("../../../../fixtures/worldState.json")).unwrap();
-        let now = DateTime::<Utc>::from_timestamp_millis(1_788_804_000_000).unwrap();
-        assert_eq!(
-            fissure_tier_at(&world, "SolNode215_ActiveMission", now),
-            Some(RelicTier::Neo)
-        );
-        assert_eq!(
-            fissure_tier_at(&world, "SolNode403_Hard", now),
-            Some(RelicTier::Axi)
-        );
-        assert_eq!(fissure_tier_at(&world, "IceBladeHUB_HUB", now), None);
-        let expired = DateTime::<Utc>::from_timestamp_millis(1_800_000_000_000).unwrap();
-        assert_eq!(
-            fissure_tier_at(&world, "SolNode215_ActiveMission", expired),
-            None
-        );
-    }
-
-    #[test]
-    fn star_chart_vs_mission_tier() {
+    fn screen_over_mission_tier() {
         let mut game = Game::default();
-        game.star_chart_open = true;
-        game.set_mission(None, Some(RelicTier::Neo));
+        game.set_mission(Some(RelicTier::Neo));
         assert_eq!(
-            recommendation_for(&game, Some(RelicTier::Lith)),
+            recommendation_for(&game, Some(RelicScreen::Era("VoidT1"))),
             Recommendation::Era("Lith")
         );
         assert_eq!(
-            recommendation_for(&game, Some(RelicTier::Omnia)),
+            recommendation_for(&game, Some(RelicScreen::Era("VoidT5"))),
+            Recommendation::Hidden
+        );
+        assert_eq!(
+            recommendation_for(&game, Some(RelicScreen::AnyEra)),
             Recommendation::AnyEra
+        );
+        assert_eq!(
+            recommendation_for(&game, Some(RelicScreen::Orbiter)),
+            Recommendation::Hidden
         );
         assert_eq!(recommendation_for(&game, None), Recommendation::Era("Neo"));
 
-        game.star_chart_open = false;
-        assert_eq!(
-            recommendation_for(&game, Some(RelicTier::Lith)),
-            Recommendation::Era("Neo")
-        );
+        game.set_mission(None);
+        assert_eq!(recommendation_for(&game, None), Recommendation::Hidden);
 
-        game.set_mission(None, None);
-        assert_eq!(
-            recommendation_for(&game, Some(RelicTier::Lith)),
-            Recommendation::Hidden
-        );
-
-        game.set_mission(Some("SolNode1"), Some(RelicTier::Axi));
-        assert_eq!(recommendation_for(&game, None), Recommendation::Era("Axi"));
-        assert!(!game.requiem_mission());
-
-        game.set_mission(Some("SolNode1"), Some(RelicTier::Requiem));
+        game.set_mission(Some(RelicTier::Requiem));
         assert!(game.requiem_mission());
         assert_eq!(recommendation_for(&game, None), Recommendation::Hidden);
     }

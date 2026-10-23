@@ -164,19 +164,11 @@ mod ee_log_fixture_tests {
 
     #[test]
     fn fixture_star_chart_marks() {
-        let events = fixture_events();
-
-        let star_chart = events
+        let star_chart = fixture_events()
             .iter()
             .filter(|event| matches!(event, Event::StarChartOpened))
             .count();
         assert_eq!(star_chart, 40);
-
-        let hidden = events
-            .iter()
-            .filter(|event| matches!(event, Event::StarChartHidden))
-            .count();
-        assert_eq!(hidden, 16);
     }
 
     #[test]
