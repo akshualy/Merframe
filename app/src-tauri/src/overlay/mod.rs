@@ -31,7 +31,7 @@ pub use session::adopt_xwayland;
 use session::uses_windows;
 pub use session::{OverlaySupport, probe};
 
-use relic::{scan_recommendation, suggest_mission};
+use relic::scan_recommendation;
 use riven::{arm_station_answer, on_dialog_answer, show_linked_riven, show_station_selection};
 use screens::Screens;
 use window::{open, park, place, retire, reveal, screen_of, window_bounds};
@@ -230,7 +230,6 @@ impl OverlayState {
 
 #[derive(Default)]
 pub struct Overlays {
-    relic_picker: Mutex<wf_scan::RelicPicker>,
     game: Mutex<Option<runtime::Attached>>,
     station_script: Mutex<Option<wf_scan::LuaTable>>,
     dialog_script: Mutex<Option<wf_scan::LuaTable>>,
@@ -299,21 +298,15 @@ pub fn on_log_event<R: Runtime>(
             lock(&state.overlays.screens).game.console_opened(at);
             preload(app, state, Kind::Riven);
         }
-        LogEvent::StarChartOpened => {
-            lock(&state.overlays.screens).game.star_chart_open = true;
-            preload(app, state, Kind::RelicRecommendation);
-        }
-        LogEvent::StarChartHidden => lock(&state.overlays.screens).game.star_chart_open = false,
+        LogEvent::StarChartOpened => preload(app, state, Kind::RelicRecommendation),
         LogEvent::RelicRewardScreenOpened => {
             preload(app, state, Kind::RelicReward);
             preload(app, state, Kind::RelicRecommendation);
         }
-        LogEvent::MissionCleared => lock(&state.overlays.screens).game.set_mission(None, None),
-        LogEvent::MissionSet { node, void_tier } => lock(&state.overlays.screens).game.set_mission(
-            Some(node),
-            void_tier.as_deref().and_then(RelicTier::from_modifier),
-        ),
-        LogEvent::SquadMissionPending { node } => suggest_mission(state, node),
+        LogEvent::MissionCleared => lock(&state.overlays.screens).game.set_mission(None),
+        LogEvent::MissionSet { void_tier, .. } => lock(&state.overlays.screens)
+            .game
+            .set_mission(void_tier.as_deref().and_then(RelicTier::from_modifier)),
         LogEvent::RelicSelectScreenLoaded => {
             let opened = lock(&state.overlays.screens).relic_select_loaded(at);
             if let Some(generation) = opened {
@@ -378,14 +371,24 @@ pub fn on_log_event<R: Runtime>(
     }
 }
 
-fn attached_game(state: &AppState) -> Option<Box<dyn wf_mem::MemoryReader>> {
-    match runtime::open_game(state) {
-        Ok((_, reader)) => Some(reader),
-        Err(error) => {
-            debug!(?error, "Game process memory is not readable");
-            None
+fn lua_read<T>(
+    state: &Arc<AppState>,
+    screen: impl FnOnce(&(dyn wf_mem::MemoryReader + 'static), &wf_scan::LuaState) -> Option<T>,
+) -> Option<T> {
+    let mut game = lock(&state.overlays.game);
+    let attached = match runtime::reattach(state, game.take()) {
+        Ok(attached) => game.insert(attached),
+        Err(_) if read(&state.status).pid.is_none() => {
+            debug!("Screen not read, the game is not running");
+            return None;
         }
-    }
+        Err(error) => {
+            warn!(?error, "Screen not read from game memory");
+            return None;
+        }
+    };
+
+    screen(attached.reader.as_ref(), &attached.lua)
 }
 
 pub fn notify<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, title: String, body: String) {

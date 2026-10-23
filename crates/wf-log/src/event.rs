@@ -12,7 +12,6 @@ pub enum Event {
     },
     LoggingIn,
     MissionSet {
-        node: String,
         void_tier: Option<String>,
     },
     MissionStart {
@@ -33,11 +32,7 @@ pub enum Event {
     RelicRewardsShown,
     RelicSelectScreenLoaded,
     StarChartOpened,
-    StarChartHidden,
     MissionCleared,
-    SquadMissionPending {
-        node: String,
-    },
     TradeScreen {
         visible: bool,
     },
@@ -103,9 +98,7 @@ impl Event {
             Self::RelicRewardsShown => "RelicRewardsShown",
             Self::RelicSelectScreenLoaded => "RelicSelectScreenLoaded",
             Self::StarChartOpened => "StarChartOpened",
-            Self::StarChartHidden => "StarChartHidden",
             Self::MissionCleared => "MissionCleared",
-            Self::SquadMissionPending { .. } => "SquadMissionPending",
             Self::TradeScreen { .. } => "TradeScreen",
             Self::DucatKiosk { .. } => "DucatKiosk",
             Self::DucatSale => "DucatSale",
@@ -150,7 +143,6 @@ static MONITOR_INFO: LazyLock<Regex> =
 
 #[derive(Deserialize)]
 struct MissionSetWire {
-    name: String,
     #[serde(rename = "voidTier")]
     void_tier: Option<String>,
 }
@@ -162,7 +154,6 @@ fn mission_set(message: &str) -> Option<Event> {
     }
     let wire: MissionSetWire = serde_json::from_str(json_part).ok()?;
     Some(Event::MissionSet {
-        node: wire.name,
         void_tier: wire.void_tier,
     })
 }
@@ -244,9 +235,6 @@ fn interface_state(message: &str) -> Option<Event> {
     {
         return Some(Event::StarChartOpened);
     }
-    if message == "MapRedux.lua: DBG: HudVis 0" {
-        return Some(Event::StarChartHidden);
-    }
     None
 }
 
@@ -302,11 +290,6 @@ pub fn classify(line: &LogLine) -> Option<Event> {
     }
     if message.starts_with("Set squad mission: ") {
         return mission_set(message);
-    }
-    if let Some(node) = message.strip_prefix("ThemedSquadOverlay.lua: Pending mission: ") {
-        return Some(Event::SquadMissionPending {
-            node: node.to_owned(),
-        });
     }
     if message.contains("Lobby::Host_StartMatch: launching level for") {
         return host_start_match_path(message).map(|level_path| Event::MissionStart { level_path });
@@ -409,21 +392,7 @@ mod tests {
         assert_eq!(
             event,
             Some(Event::MissionSet {
-                node: "SolNode14_ActiveMission".to_owned(),
                 void_tier: Some("VoidT1".to_owned()),
-            })
-        );
-    }
-
-    #[test]
-    fn squad_mission_pending() {
-        let event = classify(&line(
-            "ThemedSquadOverlay.lua: Pending mission: SolNode232_ActiveMission",
-        ));
-        assert_eq!(
-            event,
-            Some(Event::SquadMissionPending {
-                node: "SolNode232_ActiveMission".to_owned(),
             })
         );
     }
@@ -704,11 +673,7 @@ mod tests {
             )),
             Some(Event::StarChartOpened)
         );
-        assert_eq!(
-            classify(&line("MapRedux.lua: DBG: HudVis 0")),
-            Some(Event::StarChartHidden)
-        );
-        assert_eq!(classify(&line("MapRedux.lua: DBG: HudVis 1")), None);
+        assert_eq!(classify(&line("MapRedux.lua: DBG: HudVis 0")), None);
         assert_eq!(
             classify(&line("Created /Lotus/Interface/RadialSolarMapLite.swf")),
             None
@@ -820,10 +785,6 @@ mod tests {
             Some(Event::PurchaseDialogHudVisibility { count: 1 })
         );
         assert_eq!(classify(&line("HudRedux.lua: DBG: HudVis 1")), None);
-        assert_eq!(
-            classify(&line("MapRedux.lua: DBG: HudVis 0")),
-            Some(Event::StarChartHidden)
-        );
     }
 
     #[test]

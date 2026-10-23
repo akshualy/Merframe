@@ -27,7 +27,7 @@ use feeds::{price_task, world_state_task};
 use game::{ducatering_task, inventory_task, kiosk_task, log_task, process_task, trade_task};
 use market_loop::{auto_close, last_trade_done, market_presence_task, market_task};
 
-pub(crate) use attach::{Attached, open_game, reattach};
+pub(crate) use attach::{Attached, reattach};
 pub use game::acquire;
 pub(crate) use market_loop::trade_side;
 

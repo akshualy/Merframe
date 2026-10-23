@@ -1,13 +1,13 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 
 use tauri::{AppHandle, Runtime};
-use tracing::{debug, warn};
+use tracing::debug;
 use wf_core::{KeptRoll, RivenRow, riven_display_name, riven_kept_roll};
 
 use super::screens::PendingAnswer;
-use super::{Kind, RivenTrigger, enabled, show, update_slots};
-use crate::runtime::{self, AppEvent, blocking, emit};
+use super::{Kind, RivenTrigger, enabled, lua_read, show, update_slots};
+use crate::runtime::{AppEvent, blocking, emit};
 use crate::state::{AppState, lock, read};
 
 const PENDING_TICK: Duration = Duration::from_millis(100);
@@ -22,45 +22,16 @@ pub fn riven_item_type(item_path: &str) -> Option<String> {
     Some(item_path.replacen("/Lotus/StoreItems/", "/Lotus/", 1))
 }
 
-fn lua_read<T>(
-    state: &Arc<AppState>,
-    script: &Mutex<Option<wf_scan::LuaTable>>,
-    read: impl FnOnce(
-        &(dyn wf_mem::MemoryReader + 'static),
-        &wf_scan::LuaState,
-        &mut Option<wf_scan::LuaTable>,
-    ) -> Option<T>,
-) -> Option<T> {
-    let mut game = lock(&state.overlays.game);
-    let attached = match runtime::reattach(state, game.take()) {
-        Ok(attached) => game.insert(attached),
-        Err(_) if crate::state::read(&state.status).pid.is_none() => {
-            debug!("Riven screen not read, the game is not running");
-            return None;
-        }
-        Err(error) => {
-            warn!(?error, "Riven screen not read from game memory");
-            return None;
-        }
-    };
-
-    read(attached.reader.as_ref(), &attached.lua, &mut lock(script))
-}
-
 fn station_read(state: &Arc<AppState>) -> Option<wf_scan::StationRiven> {
-    lua_read(
-        state,
-        &state.overlays.station_script,
-        wf_scan::StationRiven::read,
-    )
+    lua_read(state, |reader, lua| {
+        wf_scan::StationRiven::read(reader, lua, &mut lock(&state.overlays.station_script))
+    })
 }
 
 fn dialog_read(state: &Arc<AppState>) -> Option<wf_scan::DialogRiven> {
-    lua_read(
-        state,
-        &state.overlays.dialog_script,
-        wf_scan::DialogRiven::read,
-    )
+    lua_read(state, |reader, lua| {
+        wf_scan::DialogRiven::read(reader, lua, &mut lock(&state.overlays.dialog_script))
+    })
 }
 
 fn cycled_roll(state: &Arc<AppState>, row: &RivenRow) -> Option<RivenRow> {
