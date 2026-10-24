@@ -123,6 +123,30 @@
         "data": {
           "type": "object",
           "properties": {
+            "reward": {
+              "$ref": "#/$defs/WorldRewardAlert"
+            }
+          },
+          "required": [
+            "reward"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "const": "world_reward_alert"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "properties": {
             "ends_at": {
               "type": "string",
               "format": "date-time"
@@ -679,6 +703,70 @@
         "vaulted",
         "available",
         "unknown"
+      ]
+    },
+    "WorldRewardAlert": {
+      "type": "object",
+      "properties": {
+        "expiry": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "image_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mission": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requirement": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "side": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/WorldRewardSource"
+        }
+      },
+      "required": [
+        "key",
+        "source",
+        "label"
+      ]
+    },
+    "WorldRewardSource": {
+      "type": "string",
+      "enum": [
+        "Invasion",
+        "Alert",
+        "Event"
       ]
     }
   }

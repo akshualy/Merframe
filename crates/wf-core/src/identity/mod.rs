@@ -240,6 +240,32 @@ pub struct ItemTable {
     catalogued: usize,
 }
 
+const INVASION_WEAPONS: [&str; 7] = [
+    "DeraVandal",
+    "GrineerCombatKnife",
+    "KarakWraith",
+    "LatronWraith",
+    "SnipetronVandal",
+    "StrunWraith",
+    "TwinVipersWraith",
+];
+
+pub(crate) fn is_weapon_or_part(unique_name: &str) -> bool {
+    unique_name.starts_with("/Lotus/Types/Recipes/Weapons/")
+        || unique_name.starts_with("/Lotus/Weapons/")
+}
+
+pub(crate) fn is_invasion_weapon_part(unique_name: &str) -> bool {
+    unique_name
+        .strip_prefix("/Lotus/Types/Recipes/Weapons/")
+        .map(|rest| rest.strip_prefix("WeaponParts/").unwrap_or(rest))
+        .is_some_and(|tail| {
+            INVASION_WEAPONS
+                .iter()
+                .any(|weapon| tail.starts_with(weapon))
+        })
+}
+
 impl Index<ItemRef> for ItemTable {
     type Output = ItemRecord;
 
@@ -466,6 +492,21 @@ impl ItemTable {
             .find(|part| part.unique_name == component.unique_name)
     }
 
+    pub fn invasion_weapon_parts(&self) -> Vec<&ItemRecord> {
+        let mut parts: Vec<&ItemRecord> = self
+            .by_unique_name
+            .iter()
+            .filter(|(unique_name, _)| is_invasion_weapon_part(unique_name))
+            .map(|(_, &item)| &self[item])
+            .collect();
+        parts.sort_by(|a, b| {
+            a.name
+                .cmp(&b.name)
+                .then_with(|| a.unique_name.cmp(&b.unique_name))
+        });
+        parts
+    }
+
     pub fn lookup(&self, item_type: &str) -> Option<&ItemRecord> {
         let unique_name = store_item_to_type(item_type);
         self.get(&unique_name)
@@ -530,6 +571,22 @@ fn upgrade_record(unique_name: &str, item: &Item, suffix: &str) -> ItemRecord {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn invasion_weapon_parts_by_stem() {
+        assert!(is_invasion_weapon_part(
+            "/Lotus/Types/Recipes/Weapons/WeaponParts/DeraVandalBarrel"
+        ));
+        assert!(is_invasion_weapon_part(
+            "/Lotus/Types/Recipes/Weapons/GrineerCombatKnifeSortieBlueprint"
+        ));
+        assert!(!is_invasion_weapon_part(
+            "/Lotus/Types/Recipes/Weapons/WeaponParts/DetronBarrel"
+        ));
+        assert!(!is_invasion_weapon_part(
+            "/Lotus/Types/Recipes/Weapons/BratonPrimeBlueprint"
+        ));
+    }
     use crate::catalog::fixtures::{
         self, BRATON_PRIME, BRATON_PRIME_BARREL, TRINITY_PRIME_SYSTEMS,
         TRINITY_PRIME_SYSTEMS_BLUEPRINT, market_item,

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
 import { Amount } from "@/components/currency";
 import { ItemImage } from "@/components/item-image";
-import { ItemSearch } from "@/components/market-item-search";
+import { ItemSearch } from "@/components/item-search";
 import { OrderList } from "@/components/market-order-list";
 import { SelectField } from "@/components/option-select";
 import { EmptyNote } from "@/components/page";
@@ -107,6 +107,7 @@ export function MarketPanel() {
     })),
   );
   const items = useMarketItemsStore((state) => state.bySlug);
+  const searchable = useMarketItemsStore((state) => state.items);
   const rows = useMarketListingsStore((state) => state.orders.rows);
   const signedIn = useAppStore((state) => state.status?.market_account) != null;
   const navigate = useNavigate();
@@ -315,7 +316,11 @@ export function MarketPanel() {
         </Button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-        <ItemSearch onPick={handlePick} />
+        <ItemSearch
+          items={searchable}
+          placeholder="Search warframe.market items"
+          onPick={handlePick}
+        />
         {selected ? (
           <>
             <div className="flex items-center gap-2">

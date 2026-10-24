@@ -30,6 +30,7 @@ const IN_GAME_TOASTS: { value: InGameToast; label: string }[] = [
   { value: "inventory", label: "Inventory changes" },
   { value: "trade", label: "Completed trades" },
   { value: "fissure", label: "Fissure alerts" },
+  { value: "reward", label: "Reward alerts" },
   { value: "timer", label: "Timer alerts" },
   { value: "market_close", label: "Closed orders and auctions" },
 ];
@@ -199,6 +200,12 @@ export function NotificationChannels({
             onChange={(checked) => patch({ discord_fissure_alerts: checked })}
           >
             Mirror fissure alerts to Discord
+          </SwitchRow>
+          <SwitchRow
+            checked={draft.discord_reward_alerts}
+            onChange={(checked) => patch({ discord_reward_alerts: checked })}
+          >
+            Mirror reward alerts to Discord
           </SwitchRow>
           <SwitchRow
             checked={draft.discord_timer_alerts}

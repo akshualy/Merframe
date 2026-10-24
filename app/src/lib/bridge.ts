@@ -11,6 +11,7 @@ import type {
   FoundryTab,
   GameStatus,
   ImagePath,
+  InvasionWeaponPart,
   InventoryTab,
   ItemListings,
   ListingChoices,
@@ -203,6 +204,8 @@ export const api = {
   marketSetAuctionsVisibility: (visible: boolean) =>
     call<void>("market_set_auctions_visibility", { visible }),
   worldstate: () => call<WorldStateView>("worldstate"),
+  invasionWeaponParts: () =>
+    call<InvasionWeaponPart[]>("invasion_weapon_parts"),
   openUrl: (url: string) => call<void>("open_url", { url }),
   appLogFile: () => call<string>("app_log_file"),
   openDataFolder: () => call<void>("open_data_folder"),

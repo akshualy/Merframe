@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::Arc;
 
@@ -15,7 +15,9 @@ use crate::comparables::{self, ComparedStat, RivenComparables};
 use crate::delta;
 use crate::ducatering::{self, Ducatering, DucateringFilter};
 use crate::error::Result;
-use crate::events::{self, AlertSettings, CoreEvent, Engine, ScannedRewards, ScannedTrade};
+use crate::events::{
+    self, AlertSettings, CoreEvent, Engine, ScannedRewards, ScannedTrade, WorldRewardAlert,
+};
 use crate::export::{ExportBundle, export};
 use crate::favourites::Favourites;
 use crate::foundry::{self, FoundryTab};
@@ -70,6 +72,12 @@ pub struct Core {
     favourites: Favourites,
     pending_rerolls: HashMap<String, String>,
     listings: MarketListings,
+}
+
+fn unmastered<'a>(account: Option<&Account>, catalog: &'a Catalog) -> HashSet<&'a str> {
+    account.map_or_else(HashSet::new, |account| {
+        mastery::unmastered_types(account, catalog)
+    })
 }
 
 impl Core {
@@ -190,9 +198,28 @@ impl Core {
     }
 
     pub fn ingest_world_state(&mut self, world: WorldState, now: DateTime<Utc>) -> Vec<CoreEvent> {
-        let events = self.engine.handle_world_state(&world, now);
+        let unmastered = unmastered(self.account.as_ref(), &self.catalog);
+        let events = self
+            .engine
+            .handle_world_state(&world, &self.items, &unmastered, now);
         self.world = Some(world);
         events
+    }
+
+    pub fn world_reward_alerts(&self, now: DateTime<Utc>) -> Vec<WorldRewardAlert> {
+        self.world.as_ref().map_or_else(Vec::new, |world| {
+            events::world_reward_alerts(
+                world,
+                &self.items,
+                &unmastered(self.account.as_ref(), &self.catalog),
+                &self.engine.settings().rewards,
+                now,
+            )
+        })
+    }
+
+    pub fn invasion_weapon_parts(&self) -> Vec<&ItemRecord> {
+        self.items.invasion_weapon_parts()
     }
 
     pub fn world(&self) -> Option<&WorldState> {
@@ -203,7 +230,9 @@ impl Core {
         let Some(world) = self.world.as_ref() else {
             return Vec::new();
         };
-        self.engine.handle_world_state(world, now)
+        let unmastered = unmastered(self.account.as_ref(), &self.catalog);
+        self.engine
+            .handle_world_state(world, &self.items, &unmastered, now)
     }
 
     pub fn handle_log_event(
@@ -1056,6 +1085,7 @@ mod tests {
             }],
             timers: TimerAlerts::from_iter([CyclePhase::EarthDay, CyclePhase::EarthNight]),
             timer_lead_secs: 86_400,
+            ..AlertSettings::default()
         });
         let world_state = WorldState::parse(fixtures::WORLD_STATE).expect("world state");
         let early = at(1_788_801_669_000);

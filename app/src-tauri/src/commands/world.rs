@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use wf_core::{Catalog, Core, ItemTable};
+use wf_core::{Catalog, Core, ItemTable, WorldRewardAlert};
 use wf_data::store_item_to_type;
 use wf_worldstate::{
     ArchonHunt, BaroStatus, Circuit, DailyDeal, Fissure, MarketSale, NightwaveSeason, Sortie,
@@ -27,7 +27,16 @@ pub struct WorldStateView {
     pub circuit: Option<Circuit>,
     pub prime_resurgence: Option<PrimeResurgence>,
     pub nightwave: Option<NightwaveSeason>,
+    pub world_reward_alerts: Vec<WorldRewardAlert>,
     pub fetched_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct InvasionWeaponPart {
+    pub unique_name: String,
+    pub name: String,
+    pub image_name: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -260,6 +269,7 @@ impl WorldStateView {
                 circuit: None,
                 prime_resurgence: None,
                 nightwave: None,
+                world_reward_alerts: Vec::new(),
                 fetched_at,
             };
         };
@@ -281,9 +291,25 @@ impl WorldStateView {
                 .varzia(now)
                 .map(|varzia| prime_resurgence(core, varzia)),
             nightwave: world.season(now),
+            world_reward_alerts: core.world_reward_alerts(now),
             fetched_at,
         }
     }
+}
+
+#[tauri::command]
+pub async fn invasion_weapon_parts(state: Shared<'_>) -> CommandResult<Vec<InvasionWeaponPart>> {
+    let state = ready(&state).await?;
+    let parts = lock(&state.core)
+        .invasion_weapon_parts()
+        .into_iter()
+        .map(|record| InvasionWeaponPart {
+            unique_name: record.unique_name.clone(),
+            name: record.name.clone(),
+            image_name: record.image_name.clone(),
+        })
+        .collect();
+    Ok(parts)
 }
 
 #[tauri::command]

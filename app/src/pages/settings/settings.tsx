@@ -11,6 +11,7 @@ import { DisplaySetting } from "./display";
 import { EventFeed } from "./feed";
 import { FissureAlerts } from "./fissures";
 import { NotificationChannels } from "./notifications";
+import { WorldRewardAlertSettings } from "./rewards";
 import { CycleTimers } from "./timers";
 
 export function SettingsPage() {
@@ -87,6 +88,7 @@ export function SettingsPage() {
       <div className="grid items-start gap-6 @7xl:grid-cols-2">
         <FissureAlerts draft={draft} patchAlerts={patchAlerts} />
         <CycleTimers draft={draft} patchAlerts={patchAlerts} />
+        <WorldRewardAlertSettings draft={draft} patchAlerts={patchAlerts} />
       </div>
       <PricesAndData draft={draft} patch={patch} />
       <StatsTabSetting draft={draft} patch={patch} />

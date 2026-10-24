@@ -11,7 +11,7 @@ use super::{Shared, ready};
 use crate::error::{CommandError, CommandResult};
 use crate::event_feed::EventFeed;
 use crate::overlay;
-use crate::runtime;
+use crate::runtime::{self, AppEvent};
 use crate::settings::{self, Settings};
 use crate::state::{GameStatus, LOG_FILE, lock, read, write};
 
@@ -133,7 +133,13 @@ pub async fn settings_set<R: Runtime>(
     settings.event_feed.check()?;
     settings::save(&app, &settings)?;
     lock(&state.core).set_alert_settings(settings.alerts.clone());
-    *write(&state.settings) = settings.clone();
+    let choices_changed = std::mem::replace(&mut *write(&state.settings), settings.clone())
+        .alerts
+        .rewards
+        != settings.alerts.rewards;
+    if choices_changed {
+        runtime::emit(&app, AppEvent::WorldStateUpdated);
+    }
     overlay::apply_from(&app, &state);
     app.state::<EventFeed>().configure(settings.event_feed);
     Ok(settings)
