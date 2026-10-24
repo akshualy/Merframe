@@ -23,6 +23,7 @@ import {
 import { TimerChip } from "./timers";
 
 const PATH_FILTERS: { value: FissurePath; label: string }[] = [
+  { value: "baseline", label: "Normal + Steel Path" },
   { value: "normal", label: "Normal" },
   { value: "hard", label: "Steel Path" },
   { value: "storm", label: "Void Storms" },
@@ -55,6 +56,7 @@ export function WorldPage() {
 
   const shown: Record<FissurePath, (fissure: Fissure) => boolean> = {
     all: () => true,
+    baseline: (fissure) => !fissure.is_storm,
     normal: (fissure) => !fissure.steel_path && !fissure.is_storm,
     hard: (fissure) => fissure.steel_path,
     storm: (fissure) => fissure.is_storm,

@@ -11,6 +11,7 @@ const ANY: &str = "all";
 pub enum FissureSubtype {
     #[default]
     All,
+    NormalOrSteelPath,
     Normal,
     SteelPath,
     VoidStorm,
@@ -20,6 +21,7 @@ impl FissureSubtype {
     pub fn matches(self, fissure: &Fissure) -> bool {
         match self {
             Self::All => true,
+            Self::NormalOrSteelPath => !fissure.is_storm,
             Self::Normal => !fissure.steel_path && !fissure.is_storm,
             Self::SteelPath => fissure.steel_path,
             Self::VoidStorm => fissure.is_storm,
@@ -334,6 +336,8 @@ mod tests {
         assert!(!row(FissureSubtype::Normal).matches(&survival));
         assert!(!row(FissureSubtype::SteelPath).matches(&survival));
         assert!(row(FissureSubtype::Normal).matches(&sample()));
+        assert!(!row(FissureSubtype::NormalOrSteelPath).matches(&survival));
+        assert!(row(FissureSubtype::NormalOrSteelPath).matches(&sample()));
     }
 
     #[test]

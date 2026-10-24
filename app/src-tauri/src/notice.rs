@@ -91,9 +91,6 @@ impl Notice {
         if fissure.steel_path {
             body.push_str(", Steel Path");
         }
-        if fissure.is_storm {
-            body.push_str(", Void Storm");
-        }
         let _ = write!(body, ", {} left", countdown(fissure.remaining_secs));
         Self {
             title: format!("New {} {kind} - {node}", fissure.tier),
@@ -199,10 +196,7 @@ mod tests {
             ..fissure()
         });
         assert_eq!(storm.title, "New Lith Void Storm - Hellas (Mars)");
-        assert_eq!(
-            storm.body,
-            "Extermination - Grineer, Void Storm, 1h 30m left"
-        );
+        assert_eq!(storm.body, "Extermination - Grineer, 1h 30m left");
     }
 
     #[test]
