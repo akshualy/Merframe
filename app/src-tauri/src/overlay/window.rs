@@ -207,7 +207,7 @@ pub(super) fn open<R: Runtime>(app: &AppHandle<R>, kind: Kind, bounds: Bounds, s
     .focusable(false)
     .resizable(cfg!(target_os = "linux"))
     .shadow(false)
-    .visible(true)
+    .visible(false)
     .build();
     match built {
         Ok(window) => {
@@ -219,39 +219,42 @@ pub(super) fn open<R: Runtime>(app: &AppHandle<R>, kind: Kind, bounds: Bounds, s
                     "Webview zoom to game pixels failed",
                 );
             }
-            if let Err(error) = window.set_ignore_cursor_events(true) {
-                warn!(
-                    label = kind.label(),
-                    %error,
-                    "Click through unsupported on this platform"
-                );
-            }
-            if let Err(error) = window.hide() {
-                warn!(
-                    label = kind.label(),
-                    %error,
-                    "New overlay window hide failed",
-                );
-            }
+
             #[cfg(target_os = "linux")]
             bypass_window_manager(&window, kind);
+            #[cfg(not(target_os = "linux"))]
+            click_through(&window, kind);
         }
         Err(error) => warn!(label = kind.label(), %error, "Overlay window build failed"),
     }
 }
 
+fn click_through<R: Runtime>(window: &WebviewWindow<R>, kind: Kind) {
+    if let Err(error) = window.set_ignore_cursor_events(true) {
+        warn!(
+            label = kind.label(),
+            %error,
+            "Overlay click through failed"
+        );
+    }
+}
+
+/// Sets override-redirect before the first map so the window manager never manages the window;
+/// the GTK window is realised here because both the flag and tao's click-through input shape
+/// need its X11 window.
 #[cfg(target_os = "linux")]
-fn bypass_window_manager<R: Runtime>(window: &tauri::WebviewWindow<R>, kind: Kind) {
+fn bypass_window_manager<R: Runtime>(window: &WebviewWindow<R>, kind: Kind) {
     let owned = window.clone();
     let queued = window.run_on_main_thread(move || {
         use gtk::prelude::WidgetExt;
-        if let Some(surface) = owned
-            .gtk_window()
-            .ok()
-            .and_then(|gtk_window| gtk_window.window())
-        {
-            surface.set_override_redirect(true);
+        if let Ok(gtk_window) = owned.gtk_window() {
+            gtk_window.realize();
+            if let Some(surface) = gtk_window.window() {
+                surface.set_override_redirect(true);
+            }
         }
+
+        click_through(&owned, kind);
     });
     if let Err(error) = queued {
         warn!(
