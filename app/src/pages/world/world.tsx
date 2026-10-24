@@ -20,6 +20,7 @@ import {
   ResurgencePanel,
   SortiePanel,
 } from "./panels";
+import { WorldRewardAlertsPanel } from "./rewards";
 import { TimerChip } from "./timers";
 
 const PATH_FILTERS: { value: FissurePath; label: string }[] = [
@@ -112,6 +113,10 @@ export function WorldPage() {
         <div className="flex flex-col gap-4">
           {!baroPresent && baroPanel}
           <ResetsPanel sortie={sortie} now={now} />
+          <WorldRewardAlertsPanel
+            rewards={data?.world_reward_alerts ?? []}
+            now={now}
+          />
           <DarvoPanel deals={data?.daily_deals ?? []} now={now} />
           <CircuitPanel circuit={data?.circuit ?? null} now={now} />
           <SortiePanel sortie={sortie} now={now} />

@@ -36,6 +36,7 @@ fn kind(event: &CoreEvent) -> &'static str {
         CoreEvent::TradeCompleted { .. } => "trade-completed",
         CoreEvent::NewConversation { .. } => "new-conversation",
         CoreEvent::FissureAlert { .. } => "fissure-alert",
+        CoreEvent::WorldRewardAlert { .. } => "world-reward-alert",
         CoreEvent::TimerAlert { .. } => "timer-alert",
     }
 }

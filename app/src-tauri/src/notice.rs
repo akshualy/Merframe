@@ -1,7 +1,8 @@
 use std::fmt::Write as _;
 
 use serde::Serialize;
-use wf_core::{CoreEvent, FissureInfo, InventorySummary};
+use wf_core::{CoreEvent, FissureInfo, InventorySummary, WorldRewardAlert, thousands};
+use wf_worldstate::WorldRewardSource;
 
 use crate::settings::InGameToast;
 
@@ -33,6 +34,7 @@ impl Notice {
             }
             CoreEvent::NewConversation { player, .. } => Some(Self::conversation(player)),
             CoreEvent::FissureAlert { fissure } => Some(Self::fissure(fissure)),
+            CoreEvent::WorldRewardAlert { reward } => Some(Self::reward(reward)),
             CoreEvent::TimerAlert {
                 name,
                 next_state,
@@ -100,6 +102,35 @@ impl Notice {
         }
     }
 
+    pub fn reward(reward: &WorldRewardAlert) -> Self {
+        let source = match reward.source {
+            WorldRewardSource::Invasion => "Invasion",
+            WorldRewardSource::Alert => "Alert",
+            WorldRewardSource::Event => "Event",
+        };
+        let title = format!("{source} reward: {}", reward.label);
+        let place = reward
+            .mission
+            .iter()
+            .map(String::as_str)
+            .chain(reward.location.as_deref())
+            .chain(reward.side.as_deref())
+            .collect::<Vec<&str>>()
+            .join(", ");
+        let body = [place.as_str()]
+            .into_iter()
+            .chain(reward.requirement.as_deref())
+            .filter(|part| !part.is_empty())
+            .collect::<Vec<&str>>()
+            .join(". ");
+        Self {
+            title,
+            body,
+            tone: Tone::Warning,
+            in_game: Some(InGameToast::Reward),
+        }
+    }
+
     pub fn timer(name: &str, next_state: &str, remaining_secs: i64) -> Self {
         Self {
             title: format!("{name} turns {next_state}"),
@@ -131,21 +162,6 @@ pub fn countdown(seconds: i64) -> String {
     } else {
         format!("{rest}s")
     }
-}
-
-fn thousands(value: i64) -> String {
-    let digits = value.unsigned_abs().to_string();
-    let mut out = String::with_capacity(digits.len() + digits.len() / 3 + 1);
-    if value < 0 {
-        out.push('-');
-    }
-    for (index, digit) in digits.chars().enumerate() {
-        if index > 0 && (digits.len() - index).is_multiple_of(3) {
-            out.push(',');
-        }
-        out.push(digit);
-    }
-    out
 }
 
 #[cfg(test)]
@@ -250,10 +266,37 @@ mod tests {
     }
 
     #[test]
-    fn thousands_separators() {
-        assert_eq!(thousands(0), "0");
-        assert_eq!(thousands(999), "999");
-        assert_eq!(thousands(1000), "1,000");
-        assert_eq!(thousands(-1_234_567), "-1,234,567");
+    fn reward_notice() {
+        let invasion = WorldRewardAlert {
+            key: String::from("invasion/6a9e1976d7b7cca80208e4d9@1000/attacker#catalyst"),
+            source: WorldRewardSource::Invasion,
+            label: String::from("Orokin Catalyst Blueprint"),
+            image_name: None,
+            location: Some(String::from("Pallas (Ceres)")),
+            mission: Some(String::from("Extermination")),
+            side: Some(String::from("Support Corpus")),
+            requirement: Some(String::from("Run 3 missions for this side")),
+            expiry: None,
+        };
+        let notice = Notice::reward(&invasion);
+        assert_eq!(notice.title, "Invasion reward: Orokin Catalyst Blueprint");
+        assert_eq!(
+            notice.body,
+            "Extermination, Pallas (Ceres), Support Corpus. Run 3 missions for this side"
+        );
+        assert_eq!(notice.in_game, Some(InGameToast::Reward));
+
+        let event = WorldRewardAlert {
+            source: WorldRewardSource::Event,
+            label: String::from("3 x Orokin Catalyst Blueprint"),
+            location: None,
+            mission: None,
+            side: None,
+            requirement: Some(String::from("Event goal 40,000")),
+            ..invasion
+        };
+        let notice = Notice::reward(&event);
+        assert_eq!(notice.title, "Event reward: 3 x Orokin Catalyst Blueprint");
+        assert_eq!(notice.body, "Event goal 40,000");
     }
 }

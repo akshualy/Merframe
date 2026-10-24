@@ -20,6 +20,7 @@ mod resources;
 mod rivens;
 mod stats;
 mod store;
+mod text;
 mod trade;
 mod view;
 
@@ -33,7 +34,8 @@ pub use ducatering::{
 pub use error::{CoreError, Result};
 pub use events::{
     AlertSettings, CoreEvent, CyclePhase, FissureFilter, FissureInfo, FissureSubtype,
-    InventorySummary, ScannedRewards, ScannedTrade, ScannedTradeItem, TimerAlerts, tier_name,
+    InventorySummary, ScannedRewards, ScannedTrade, ScannedTradeItem, TimerAlerts,
+    WorldRewardAlert, WorldRewardAlertChoices, WorldRewardAlertGroup, tier_name,
 };
 pub use facade::{Core, RelicPlannerTab, StatsTab};
 pub use favourites::Favourites;
@@ -74,4 +76,5 @@ pub use stats::{
 pub use store::{
     RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
 };
+pub use text::thousands;
 pub use trade::{Trade, TradeItem, relic_refinement, traded_set};

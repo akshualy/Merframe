@@ -1,5 +1,6 @@
 mod alerts;
 mod engine;
+mod rewards;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -8,6 +9,8 @@ pub use alerts::{
     AlertSettings, CyclePhase, FissureFilter, FissureSubtype, TimerAlerts, tier_name,
 };
 pub(crate) use engine::{Engine, inventory_events};
+pub(crate) use rewards::world_reward_alerts;
+pub use rewards::{WorldRewardAlert, WorldRewardAlertChoices, WorldRewardAlertGroup};
 
 use crate::relic_planner::RewardScreen;
 use crate::trade::Trade;
@@ -83,6 +86,9 @@ pub enum CoreEvent {
     FissureAlert {
         fissure: FissureInfo,
     },
+    WorldRewardAlert {
+        reward: WorldRewardAlert,
+    },
     TimerAlert {
         name: String,
         next_state: String,
@@ -99,6 +105,7 @@ impl CoreEvent {
             Self::TradeCompleted { .. } => "TradeCompleted",
             Self::NewConversation { .. } => "NewConversation",
             Self::FissureAlert { .. } => "FissureAlert",
+            Self::WorldRewardAlert { .. } => "WorldRewardAlert",
             Self::TimerAlert { .. } => "TimerAlert",
         }
     }

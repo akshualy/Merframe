@@ -17,7 +17,7 @@ use tokio::net::TcpListener;
 use tokio::sync::{broadcast, watch};
 use tokio_stream::wrappers::BroadcastStream;
 use tracing::{debug, info, warn};
-use wf_core::{CoreEvent, FissureInfo, InventorySummary, RewardScreen, Trade};
+use wf_core::{CoreEvent, FissureInfo, InventorySummary, RewardScreen, Trade, WorldRewardAlert};
 
 use crate::runtime::{AppEvent, MarketAutoClose, update_status};
 use crate::settings::EventFeedSettings;
@@ -90,6 +90,9 @@ pub enum FeedEvent {
     FissureAlert {
         fissure: FissureInfo,
     },
+    WorldRewardAlert {
+        reward: WorldRewardAlert,
+    },
     TimerAlert {
         name: String,
         next_state: String,
@@ -136,6 +139,9 @@ impl FeedEvent {
             }),
             CoreEvent::FissureAlert { fissure } => Some(Self::FissureAlert {
                 fissure: fissure.clone(),
+            }),
+            CoreEvent::WorldRewardAlert { reward } => Some(Self::WorldRewardAlert {
+                reward: reward.clone(),
             }),
             CoreEvent::TimerAlert {
                 name,

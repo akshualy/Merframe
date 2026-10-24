@@ -12,6 +12,7 @@ mod manifest;
 mod mission_types;
 mod nodes;
 mod prime;
+mod rewards;
 mod season;
 mod sortie;
 mod syndicate;
@@ -37,6 +38,7 @@ pub use nodes::{
     node_mastery_xp, node_name,
 };
 pub use prime::{PrimeAccessAvailability, Varzia, VarziaItem};
+pub use rewards::{WorldRewardOffer, WorldRewardSource};
 pub use season::{ChallengeKind, NightwaveChallenge, NightwaveSeason};
 pub use sortie::{Sortie, SortieMission};
 pub use void_trader::BaroStatus;
@@ -50,6 +52,7 @@ use daily_deal::RawDailyDeal;
 use fissure::{ActiveMission, VoidStorm};
 use flash_sale::RawFlashSale;
 use prime::{PrimeVaultTrader, RawPrimeAccessAvailability};
+use rewards::{RawAlert, RawGoal, RawInvasion};
 use season::SeasonInfo;
 use sortie::RawSortie;
 use syndicate::SyndicateMission;
@@ -82,6 +85,12 @@ struct RawWorldState {
     syndicate_missions: Vec<SyndicateMission>,
     #[serde(default)]
     endless_xp_schedule: Vec<EndlessXpWeek>,
+    #[serde(default)]
+    invasions: Vec<RawInvasion>,
+    #[serde(default)]
+    alerts: Vec<RawAlert>,
+    #[serde(default)]
+    goals: Vec<RawGoal>,
 }
 
 #[derive(Debug, Clone)]
@@ -136,6 +145,10 @@ impl WorldState {
 
     pub fn circuit(&self, now: DateTime<Utc>) -> Option<Circuit> {
         circuit::current_circuit(&self.raw.endless_xp_schedule, now)
+    }
+
+    pub fn world_reward_offers(&self, now: DateTime<Utc>) -> Vec<WorldRewardOffer> {
+        rewards::world_reward_offers(&self.raw.invasions, &self.raw.alerts, &self.raw.goals, now)
     }
 
     pub fn prime_access_availability(&self) -> Option<PrimeAccessAvailability> {

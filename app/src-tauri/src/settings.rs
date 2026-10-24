@@ -181,6 +181,7 @@ pub enum InGameToast {
     Inventory,
     Trade,
     Fissure,
+    Reward,
     Timer,
     MarketClose,
 }
@@ -212,8 +213,23 @@ pub struct DiscordSettings {
     pub discord_notifications_enabled: bool,
     pub discord_webhook: Option<String>,
     pub discord_message_template: String,
+    #[serde(flatten)]
+    pub mirrored: DiscordMirroredAlerts,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(default)]
+pub struct DiscordMirroredAlerts {
     pub discord_fissure_alerts: bool,
+    pub discord_reward_alerts: bool,
     pub discord_timer_alerts: bool,
+}
+
+impl DiscordMirroredAlerts {
+    pub fn any(self) -> bool {
+        self.discord_fissure_alerts || self.discord_reward_alerts || self.discord_timer_alerts
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -352,8 +368,7 @@ impl Default for DiscordSettings {
             discord_notifications_enabled: false,
             discord_webhook: None,
             discord_message_template: DISCORD_TEMPLATE.to_owned(),
-            discord_fissure_alerts: false,
-            discord_timer_alerts: false,
+            mirrored: DiscordMirroredAlerts::default(),
         }
     }
 }
@@ -714,8 +729,7 @@ mod tests {
         assert!(settings.overlays.overlay_account_balance);
         assert!(!settings.copy_relic_rewards);
         assert!(settings.check_for_updates);
-        assert!(!settings.discord.discord_fissure_alerts);
-        assert!(!settings.discord.discord_timer_alerts);
+        assert!(!settings.discord.mirrored.any());
         assert_eq!(settings.market.market_trader_status, TraderStatus::Ingame);
         assert_eq!(settings.market.market_trader_locale.as_deref(), Some("en"));
         assert_eq!(settings.log_file_path, None);

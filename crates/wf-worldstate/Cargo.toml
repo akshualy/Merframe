@@ -14,6 +14,7 @@ wf-mongo = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true, optional = true }
 ts-rs = { workspace = true, optional = true }
+schemars = { workspace = true, optional = true }
 
 [build-dependencies]
 serde = { workspace = true }
@@ -22,6 +23,7 @@ serde_json = { workspace = true }
 [features]
 bindings = ["dep:ts-rs"]
 fetch = ["dep:reqwest"]
+schema = ["dep:schemars"]
 
 [lints]
 workspace = true

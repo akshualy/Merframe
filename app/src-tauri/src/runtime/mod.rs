@@ -185,12 +185,12 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             }
         }
         CoreEvent::FissureAlert { fissure } => {
-            let notice = Notice::fissure(fissure);
-            let message = settings
-                .discord
-                .discord_fissure_alerts
-                .then(|| notice.webhook_message());
-            alert(app, state, &settings, &notice, message).await;
+            let mirrored = settings.discord.mirrored.discord_fissure_alerts;
+            world_alert(app, state, &settings, &Notice::fissure(fissure), mirrored).await;
+        }
+        CoreEvent::WorldRewardAlert { reward } => {
+            let mirrored = settings.discord.mirrored.discord_reward_alerts;
+            world_alert(app, state, &settings, &Notice::reward(reward), mirrored).await;
         }
         CoreEvent::TimerAlert {
             name,
@@ -198,15 +198,23 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             remaining_secs,
             ..
         } => {
+            let mirrored = settings.discord.mirrored.discord_timer_alerts;
             let notice = Notice::timer(name, next_state, *remaining_secs);
-            let message = settings
-                .discord
-                .discord_timer_alerts
-                .then(|| notice.webhook_message());
-            alert(app, state, &settings, &notice, message).await;
+            world_alert(app, state, &settings, &notice, mirrored).await;
         }
         CoreEvent::InventoryUpdated(_) => {}
     }
+}
+
+async fn world_alert<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    settings: &Settings,
+    notice: &Notice,
+    mirrored: bool,
+) {
+    let message = mirrored.then(|| notice.webhook_message());
+    alert(app, state, settings, notice, message).await;
 }
 
 fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
@@ -289,10 +297,7 @@ pub async fn test_notifications<R: Runtime>(
     settings: &Settings,
 ) -> anyhow::Result<()> {
     let discord = &settings.discord;
-    let webhook = if discord.discord_notifications_enabled
-        || discord.discord_fissure_alerts
-        || discord.discord_timer_alerts
-    {
+    let webhook = if discord.discord_notifications_enabled || discord.mirrored.any() {
         Some(
             settings
                 .discord

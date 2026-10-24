@@ -1,11 +1,21 @@
 import { useMemo, useState } from "react";
 import { ItemImage } from "@/components/item-image";
 import { SearchInput } from "@/components/search-input";
-import { useMarketItemsStore } from "@/stores/market-items-store";
-import type { MarketItem } from "@/types";
 
-export function ItemSearch({ onPick }: { onPick: (item: MarketItem) => void }) {
-  const items = useMarketItemsStore((state) => state.items);
+interface Searchable {
+  name: string;
+  image_name: string | null;
+}
+
+export function ItemSearch<T extends Searchable>({
+  items,
+  placeholder,
+  onPick,
+}: {
+  items: readonly T[];
+  placeholder: string;
+  onPick: (item: T) => void;
+}) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -39,7 +49,7 @@ export function ItemSearch({ onPick }: { onPick: (item: MarketItem) => void }) {
             setOpen(false);
           }
         }}
-        placeholder="Search warframe.market items"
+        placeholder={placeholder}
         className="w-full"
       />
       {open && matches.length > 0 && (
@@ -48,7 +58,7 @@ export function ItemSearch({ onPick }: { onPick: (item: MarketItem) => void }) {
           className="bg-popover absolute top-full z-20 mt-1 max-h-80 w-full overflow-y-auto rounded-md border shadow-md"
         >
           {matches.map((item) => (
-            <li key={item.id}>
+            <li key={item.name}>
               <button
                 type="button"
                 onClick={() => {

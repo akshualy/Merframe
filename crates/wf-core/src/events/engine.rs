@@ -1,13 +1,15 @@
 use std::collections::{HashMap, HashSet};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeDelta, Utc};
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
 use wf_worldstate::{WorldState, node_info};
 
 use super::alerts::{AlertSettings, fissure_planet};
+use super::rewards::world_reward_alerts;
 use super::{CoreEvent, FissureInfo, InventorySummary};
 use crate::catalog::DUCATS_ITEM;
+use crate::identity::ItemTable;
 use crate::trade::player_name;
 
 fn conversation_player(channel: &str) -> Option<String> {
@@ -21,6 +23,7 @@ pub(crate) struct Engine {
     world_state_polled: bool,
     announced_fissures: HashMap<String, DateTime<Utc>>,
     announced_timers: HashMap<String, DateTime<Utc>>,
+    announced_rewards: HashMap<String, DateTime<Utc>>,
     seen_channels: HashMap<String, DateTime<Utc>>,
 }
 
@@ -35,6 +38,7 @@ struct RewardScreenState {
 const ANNOUNCED_CAP: usize = 250;
 const STEEL_PATH_LEVEL_OFFSET: u32 = 100;
 const ANNOUNCED_MAX_AGE_SECS: i64 = 3 * 60 * 60;
+const INVASION_MEMORY_DAYS: i64 = 30;
 
 fn remember(seen: &mut HashMap<String, DateTime<Utc>>, key: String, now: DateTime<Utc>) -> bool {
     let unseen = seen.insert(key, now).is_none();
@@ -66,12 +70,17 @@ impl Engine {
             world_state_polled: false,
             announced_fissures: HashMap::new(),
             announced_timers: HashMap::new(),
+            announced_rewards: HashMap::new(),
             seen_channels: HashMap::new(),
         }
     }
 
     pub fn set_settings(&mut self, settings: AlertSettings) {
         self.settings = settings;
+    }
+
+    pub fn settings(&self) -> &AlertSettings {
+        &self.settings
     }
 
     pub fn handle_log_event(&mut self, event: &LogEvent, now: DateTime<Utc>) -> Vec<CoreEvent> {
@@ -93,7 +102,13 @@ impl Engine {
         }
     }
 
-    pub fn handle_world_state(&mut self, world: &WorldState, now: DateTime<Utc>) -> Vec<CoreEvent> {
+    pub fn handle_world_state(
+        &mut self,
+        world: &WorldState,
+        items: &ItemTable,
+        unmastered: &HashSet<&str>,
+        now: DateTime<Utc>,
+    ) -> Vec<CoreEvent> {
         let mut events = Vec::new();
         let first_poll = !self.world_state_polled;
         self.world_state_polled = true;
@@ -142,6 +157,25 @@ impl Engine {
                 ends_at: timer.ends,
                 remaining_secs,
             });
+        }
+
+        self.announced_rewards.retain(|_, until| *until > now);
+        if !self.settings.reward_notifications_enabled {
+            return events;
+        }
+
+        for reward in world_reward_alerts(world, items, unmastered, &self.settings.rewards, now) {
+            let until = reward
+                .expiry
+                .unwrap_or_else(|| now + TimeDelta::days(INVASION_MEMORY_DAYS));
+            let unseen = self
+                .announced_rewards
+                .insert(reward.key.clone(), until)
+                .is_none();
+            if first_poll || !unseen {
+                continue;
+            }
+            events.push(CoreEvent::WorldRewardAlert { reward });
         }
         events
     }
@@ -224,9 +258,19 @@ mod tests {
             }],
             ..AlertSettings::default()
         });
-        engine.handle_world_state(&world(), at(EARLY_POLL_MILLIS));
+        engine.handle_world_state(
+            &world(),
+            &ItemTable::default(),
+            &HashSet::new(),
+            at(EARLY_POLL_MILLIS),
+        );
         let alerts: Vec<FissureInfo> = engine
-            .handle_world_state(&world(), at(POLL_MILLIS))
+            .handle_world_state(
+                &world(),
+                &ItemTable::default(),
+                &HashSet::new(),
+                at(POLL_MILLIS),
+            )
             .into_iter()
             .filter_map(|event| match event {
                 CoreEvent::FissureAlert { fissure } => Some(fissure),
@@ -397,12 +441,22 @@ mod tests {
         let world = world();
         assert!(
             engine
-                .handle_world_state(&world, at(EARLY_POLL_MILLIS))
+                .handle_world_state(
+                    &world,
+                    &ItemTable::default(),
+                    &HashSet::new(),
+                    at(EARLY_POLL_MILLIS)
+                )
                 .is_empty()
         );
         assert!(
             engine
-                .handle_world_state(&world, at(POLL_MILLIS))
+                .handle_world_state(
+                    &world,
+                    &ItemTable::default(),
+                    &HashSet::new(),
+                    at(POLL_MILLIS)
+                )
                 .is_empty()
         );
     }
@@ -413,12 +467,22 @@ mod tests {
         let mut engine = Engine::new(matching_settings());
         assert!(
             engine
-                .handle_world_state(&world, at(POLL_MILLIS))
+                .handle_world_state(
+                    &world,
+                    &ItemTable::default(),
+                    &HashSet::new(),
+                    at(POLL_MILLIS)
+                )
                 .is_empty()
         );
         assert!(
             engine
-                .handle_world_state(&world, at(POLL_MILLIS))
+                .handle_world_state(
+                    &world,
+                    &ItemTable::default(),
+                    &HashSet::new(),
+                    at(POLL_MILLIS)
+                )
                 .is_empty()
         );
     }
@@ -429,10 +493,20 @@ mod tests {
         let mut engine = Engine::new(matching_settings());
         assert!(
             engine
-                .handle_world_state(&world, at(EARLY_POLL_MILLIS))
+                .handle_world_state(
+                    &world,
+                    &ItemTable::default(),
+                    &HashSet::new(),
+                    at(EARLY_POLL_MILLIS)
+                )
                 .is_empty()
         );
-        let events = engine.handle_world_state(&world, at(POLL_MILLIS));
+        let events = engine.handle_world_state(
+            &world,
+            &ItemTable::default(),
+            &HashSet::new(),
+            at(POLL_MILLIS),
+        );
         assert!(!events.is_empty());
         for event in &events {
             match event {
@@ -445,7 +519,12 @@ mod tests {
         }
         assert!(
             engine
-                .handle_world_state(&world, at(POLL_MILLIS))
+                .handle_world_state(
+                    &world,
+                    &ItemTable::default(),
+                    &HashSet::new(),
+                    at(POLL_MILLIS)
+                )
                 .is_empty()
         );
     }
@@ -463,8 +542,18 @@ mod tests {
             ..AlertSettings::default()
         };
         let mut engine = Engine::new(settings);
-        engine.handle_world_state(&world, at(EARLY_POLL_MILLIS));
-        let events = engine.handle_world_state(&world, at(POLL_MILLIS));
+        engine.handle_world_state(
+            &world,
+            &ItemTable::default(),
+            &HashSet::new(),
+            at(EARLY_POLL_MILLIS),
+        );
+        let events = engine.handle_world_state(
+            &world,
+            &ItemTable::default(),
+            &HashSet::new(),
+            at(POLL_MILLIS),
+        );
         assert!(!events.is_empty());
         for event in &events {
             match event {
@@ -493,7 +582,7 @@ mod tests {
         };
         let mut engine = Engine::new(settings);
         let now = at(POLL_MILLIS);
-        let events = engine.handle_world_state(&world, now);
+        let events = engine.handle_world_state(&world, &ItemTable::default(), &HashSet::new(), now);
         assert_eq!(events.len(), 1);
         match &events[0] {
             CoreEvent::TimerAlert {
@@ -508,7 +597,11 @@ mod tests {
             }
             other => panic!("unexpected event {other:?}"),
         }
-        assert!(engine.handle_world_state(&world, now).is_empty());
+        assert!(
+            engine
+                .handle_world_state(&world, &ItemTable::default(), &HashSet::new(), now)
+                .is_empty()
+        );
     }
 
     #[test]
@@ -521,7 +614,12 @@ mod tests {
         let mut engine = Engine::new(settings);
         assert!(
             engine
-                .handle_world_state(&world, at(POLL_MILLIS))
+                .handle_world_state(
+                    &world,
+                    &ItemTable::default(),
+                    &HashSet::new(),
+                    at(POLL_MILLIS)
+                )
                 .is_empty()
         );
         assert!(!TimerAlerts::default().enabled("Duviri", "joy"));
@@ -554,7 +652,7 @@ mod tests {
         };
         assert!(
             Engine::new(leaving)
-                .handle_world_state(&world, now)
+                .handle_world_state(&world, &ItemTable::default(), &HashSet::new(), now)
                 .is_empty()
         );
 
@@ -565,7 +663,12 @@ mod tests {
             timer_lead_secs: 86_400,
             ..AlertSettings::default()
         };
-        let events = Engine::new(arriving).handle_world_state(&world, now);
+        let events = Engine::new(arriving).handle_world_state(
+            &world,
+            &ItemTable::default(),
+            &HashSet::new(),
+            now,
+        );
         assert_eq!(events.len(), 1);
         match &events[0] {
             CoreEvent::TimerAlert {
@@ -576,6 +679,55 @@ mod tests {
             }
             other => panic!("unexpected event {other:?}"),
         }
+    }
+
+    const REWARD_WORLD: &str = r#"{"Invasions":[{
+        "_id":{"$oid":"6a9e1976d7b7cca80208e4d9"},"Faction":"FC_CORPUS","DefenderFaction":"FC_GRINEER",
+        "Node":"SolNode131","Completed":false,
+        "AttackerReward":{"countedItems":[{"ItemType":"/Lotus/Types/Items/MiscItems/OrokinCatalyst","ItemCount":1}]},
+        "DefenderReward":{"countedItems":[{"ItemType":"/Lotus/Types/Items/Research/EnergyComponent","ItemCount":3}]},
+        "Activation":{"$date":{"$numberLong":"1000"}}}]}"#;
+
+    fn reward_alerts(engine: &mut Engine, world: &str, now_ms: i64) -> Vec<String> {
+        let world = WorldState::parse(world).unwrap();
+        engine
+            .handle_world_state(&world, &ItemTable::default(), &HashSet::new(), at(now_ms))
+            .into_iter()
+            .filter_map(|event| match event {
+                CoreEvent::WorldRewardAlert { reward } => Some(reward.label),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn chosen_reward_announced_once() {
+        let mut engine = Engine::new(AlertSettings {
+            reward_notifications_enabled: true,
+            ..AlertSettings::default()
+        });
+        assert!(reward_alerts(&mut engine, "{}", 2000).is_empty());
+        assert_eq!(
+            reward_alerts(&mut engine, REWARD_WORLD, 3000),
+            vec!["Orokin Catalyst"]
+        );
+        assert!(reward_alerts(&mut engine, REWARD_WORLD, 4000).is_empty());
+    }
+
+    #[test]
+    fn rewards_announced_once_switched_on() {
+        let mut engine = Engine::new(AlertSettings::default());
+        assert!(reward_alerts(&mut engine, "{}", 2000).is_empty());
+        assert!(reward_alerts(&mut engine, REWARD_WORLD, 3000).is_empty());
+
+        engine.set_settings(AlertSettings {
+            reward_notifications_enabled: true,
+            ..AlertSettings::default()
+        });
+        assert_eq!(
+            reward_alerts(&mut engine, REWARD_WORLD, 4000),
+            vec!["Orokin Catalyst"]
+        );
     }
 
     #[test]

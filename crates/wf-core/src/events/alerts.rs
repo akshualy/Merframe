@@ -3,6 +3,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 use wf_worldstate::{Fissure, RelicTier, mission_type_name, node_and_planet};
 
+use super::rewards::WorldRewardAlertChoices;
+
 const ANY: &str = "all";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -202,6 +204,8 @@ pub struct AlertSettings {
     pub fissure_filters: Vec<FissureFilter>,
     pub timers: TimerAlerts,
     pub timer_lead_secs: i64,
+    pub reward_notifications_enabled: bool,
+    pub rewards: WorldRewardAlertChoices,
 }
 
 impl Default for AlertSettings {
@@ -211,6 +215,8 @@ impl Default for AlertSettings {
             fissure_filters: Vec::new(),
             timers: TimerAlerts::default(),
             timer_lead_secs: 180,
+            reward_notifications_enabled: false,
+            rewards: WorldRewardAlertChoices::default(),
         }
     }
 }
@@ -462,6 +468,13 @@ mod tests {
                 CyclePhase::ZarimanGrineer,
             ]),
             timer_lead_secs: 300,
+            reward_notifications_enabled: true,
+            rewards: WorldRewardAlertChoices {
+                weapon_parts: vec![
+                    "/Lotus/Types/Recipes/Weapons/WeaponParts/DeraVandalBarrel".to_owned(),
+                ],
+                ..WorldRewardAlertChoices::default()
+            },
         };
         let json = serde_json::to_string(&settings).unwrap();
         assert!(json.contains(r#""subtype":"steelPath""#));

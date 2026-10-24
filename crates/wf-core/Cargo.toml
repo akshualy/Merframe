@@ -24,7 +24,7 @@ wf-worldstate = { workspace = true }
 
 [features]
 bindings = ["dep:ts-rs", "wf-data/bindings", "wf-market/bindings", "wf-worldstate/bindings"]
-schema = ["dep:schemars"]
+schema = ["dep:schemars", "wf-worldstate/schema"]
 
 [lints]
 workspace = true
