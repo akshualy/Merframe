@@ -16,7 +16,7 @@ Merframe displays information about:
  - warframe.market analytics
  - Stats
 
-In-game overlays are available on Windows, X11 and XWayland (This includes Wayland since Proton uses XWayland).
+In-game overlays are available on Windows, X11 and XWayland (This includes Wayland and Hyprland since Proton uses XWayland).
 
 Big Warframe script updates (usually big content drops) will break the overlays until Merframe is updated as well. Changes in data structures from content we get from Warframe Community Developers (WFCD) may break the app. Please create an issue if either of these go unnoticed for a day.
 
