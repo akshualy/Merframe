@@ -71,7 +71,10 @@ export const usePreferencesStore = create<PreferencesState>()(
       squadSize: legacySquadSize ? Number(legacySquadSize) : DEFAULT_SQUAD_SIZE,
       refinement: legacy("merframe.relicPlanner.refinement", ANY),
       era: legacy("merframe.relicPlanner.era", "all"),
-      fissurePath: legacy<FissurePath>("merframe.world.fissurePath", "normal"),
+      fissurePath: legacy<FissurePath>(
+        "merframe.world.fissurePath",
+        "baseline",
+      ),
       timeframes: DEFAULT_TIMEFRAMES,
       foundryCategory: legacy<Category>(
         "merframe.foundry.category",

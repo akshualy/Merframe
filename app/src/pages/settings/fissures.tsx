@@ -63,6 +63,7 @@ const LOCATIONS: FilterOption[] = [
 ];
 
 const SUBTYPES: FilterOption<FissureSubtype>[] = [
+  { value: "normalOrSteelPath", label: "Normal + Steel Path" },
   { value: "normal", label: "Normal" },
   { value: "steelPath", label: "Steel Path" },
   { value: "voidStorm", label: "Void Storm" },

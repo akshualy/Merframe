@@ -5,7 +5,7 @@ import { Hint } from "@/components/ui/hint";
 import { counted, secondsUntil } from "@/lib/format";
 import { isRelicTier, RELIC_TIERS } from "@/lib/relics";
 import { cn } from "@/lib/utils";
-import { nodeLabel, timeLeft } from "@/lib/world";
+import { endingSoon, nodeLabel, timeLeft } from "@/lib/world";
 import type { Fissure } from "@/types";
 
 function FissureRow({ fissure, now }: { fissure: Fissure; now: number }) {
@@ -23,8 +23,8 @@ function FissureRow({ fissure, now }: { fissure: Fissure; now: number }) {
       {fissure.is_storm && <Badge variant="secondary">Void Storm</Badge>}
       <span
         className={cn(
-          "w-20 shrink-0 text-right font-mono text-sm tabular-nums",
-          remaining < 5 * 60 ? "text-warning" : "text-accent",
+          "w-20 shrink-0 text-right font-mono text-sm",
+          endingSoon(remaining) ? "text-warning" : "text-accent",
         )}
       >
         {timeLeft(remaining)}
