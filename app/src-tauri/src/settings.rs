@@ -225,6 +225,8 @@ pub struct MarketSettings {
     #[serde(flatten)]
     pub last_trade: LastTradeSettings,
     pub take_rank_into_account: bool,
+    pub market_price_check: bool,
+    pub market_price_tolerance: u32,
     pub market_trader_status: TraderStatus,
     pub market_trader_locale: Option<String>,
     pub set_part_click: OrderType,
@@ -363,6 +365,8 @@ impl Default for MarketSettings {
             market_auto_close: false,
             last_trade: LastTradeSettings::default(),
             take_rank_into_account: true,
+            market_price_check: true,
+            market_price_tolerance: 10,
             market_trader_status: TraderStatus::Ingame,
             market_trader_locale: Some("en".to_owned()),
             set_part_click: OrderType::Sell,
@@ -763,6 +767,7 @@ mod tests {
                 "notification_only_background":false,
                 "world_state_interval_minutes":7,"market_poll_minutes":10,"market_auto_close":true,
                 "take_rank_into_account":false,"set_part_click":"buy",
+                "market_price_check":false,"market_price_tolerance":25,
                 "include_founders_items":false,"include_forma_ranks":false,
                 "stats_tab_enabled":false,"overlays_enabled":true,
                 "overlay_relic_reward":false,"overlay_relic_recommendation":true,"overlay_riven":false,
@@ -790,6 +795,8 @@ mod tests {
         assert_eq!(stored.market.market_poll_minutes, 10);
         assert!(stored.market.market_auto_close);
         assert!(!stored.market.take_rank_into_account);
+        assert!(!stored.market.market_price_check);
+        assert_eq!(stored.market.market_price_tolerance, 25);
         assert_eq!(stored.market.set_part_click, OrderType::Buy);
         assert_eq!(stored.world_state_interval_minutes, 7);
         assert_eq!(stored.inventory.include_founders_items, Some(false));

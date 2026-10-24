@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Dash } from "@/components/ui/dash";
 import { Hint } from "@/components/ui/hint";
 import { cn } from "@/lib/utils";
 import type { AlternativeMatch, GoodRollView, StatMatch } from "@/types";
@@ -64,7 +65,7 @@ function OrRule() {
 
 export function GoodRollMarker({ view }: { view: GoodRollView | null }) {
   if (!view) {
-    return <span className="text-muted-foreground">-</span>;
+    return <Dash />;
   }
   return (
     <Badge variant={view.matches ? "accent" : "muted"}>

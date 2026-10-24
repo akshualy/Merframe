@@ -2,5 +2,6 @@
 import type { Lowest } from "./Lowest";
 import type { MarketCategory } from "./MarketCategory";
 import type { OrderType } from "./OrderType";
+import type { Pricing } from "./Pricing";
 
-export type OrderRow = { id: string, order_type: OrderType, item_id: string, item: number, category: MarketCategory, platinum: number, quantity: number, per_trade: number | null, rank: number | null, subtype: string | null, visible: boolean, updated_at: string, owned: number, show_warning: boolean, lowest: Lowest | null, };
+export type OrderRow = { id: string, order_type: OrderType, item_id: string, item: number, category: MarketCategory, platinum: number, quantity: number, per_trade: number | null, rank: number | null, subtype: string | null, visible: boolean, updated_at: string, owned: number, show_warning: boolean, lowest: Lowest | null, pricing: Pricing | null, };

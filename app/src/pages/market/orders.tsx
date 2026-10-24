@@ -7,6 +7,7 @@ import { FilterSelect } from "@/components/filter-select";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dash } from "@/components/ui/dash";
 import {
   Dialog,
   DialogContent,
@@ -24,12 +25,15 @@ import { itemAt } from "@/lib/arrays";
 import { api } from "@/lib/bridge";
 import type { FilterOption, YesNo } from "@/lib/filters";
 import { dateTime, num } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { useSettings } from "@/stores/app-store";
 import type {
   ItemSummary,
   MarketCategory,
   MarketOrders,
   OrderRow,
   OrderType,
+  Pricing,
 } from "@/types";
 import { ListingToolbar, RowActions, VisibleBadge } from "./listing-controls";
 
@@ -52,16 +56,41 @@ const MISSING: FilterOption<YesNo>[] = [
   { value: "no", label: "Fully stocked" },
 ];
 
+const PRICING_MARKS: Record<Pricing, { label: string; tone: string }> = {
+  overpriced: { label: "Overpriced", tone: "text-warning" },
+  underpriced: { label: "Underpriced", tone: "text-vaulted" },
+};
+
+const PRICING: FilterOption<Pricing>[] = (
+  Object.keys(PRICING_MARKS) as Pricing[]
+).map((value) => ({ value, label: PRICING_MARKS[value].label }));
+
 interface OrderFilters {
   category: MarketCategory | null;
   side: OrderType | null;
   missing: YesNo | null;
+  pricing: Pricing | null;
 }
 
 interface ListedOrder {
   order: OrderRow;
   item: ItemSummary;
 }
+
+const PRICING_COLUMN: ColumnDef<ListedOrder> = {
+  id: "pricing",
+  accessorFn: ({ order }) => order.pricing,
+  header: "Pricing",
+  cell: ({ row }) => {
+    const { pricing } = row.original.order;
+    if (pricing === null) {
+      return <Dash />;
+    }
+
+    const mark = PRICING_MARKS[pricing];
+    return <span className={cn("font-medium", mark.tone)}>{mark.label}</span>;
+  },
+};
 
 function detail(order: OrderRow) {
   if (order.rank !== null) {
@@ -84,13 +113,15 @@ export function OrdersTable({
   runMarketAction: (promise: Promise<unknown>, message: string) => void;
 }) {
   const { items, rows } = orders;
+  const priceCheck = useSettings().market_price_check;
   const [confirming, setConfirming] = useState<"fix" | "remove" | null>(null);
   const filters = useFilters<OrderFilters>({
     category: null,
     side: null,
     missing: null,
+    pricing: null,
   });
-  const { category, side, missing } = filters.values;
+  const { category, side, missing, pricing } = filters.values;
 
   const entries = useMemo(
     () => rows.map((order) => ({ order, item: itemAt(items, order.item) })),
@@ -112,9 +143,12 @@ export function OrdersTable({
         if (missing === "no" && order.show_warning) {
           return false;
         }
+        if (pricing && order.pricing !== pricing) {
+          return false;
+        }
         return true;
       }),
-    [entries, category, side, missing],
+    [entries, category, side, missing, pricing],
   );
 
   const columns = useMemo<ColumnDef<ListedOrder>[]>(
@@ -182,7 +216,7 @@ export function OrdersTable({
         cell: ({ row }) => {
           const { lowest } = row.original.order;
           return lowest === null ? (
-            <span className="text-muted-foreground">-</span>
+            <Dash />
           ) : (
             <span>
               {num(lowest.plat)}
@@ -191,6 +225,7 @@ export function OrdersTable({
           );
         },
       },
+      ...(priceCheck ? [PRICING_COLUMN] : []),
       {
         id: "quantity",
         accessorFn: ({ order }) => order.quantity,
@@ -237,6 +272,8 @@ export function OrdersTable({
         cell: ({ row }) => {
           const { order, item } = row.original;
           const slug = item.market_slug;
+          const priceToMatch =
+            priceCheck && order.pricing !== null ? order.lowest : null;
           return (
             <RowActions label="Order actions">
               {slug && (
@@ -259,6 +296,20 @@ export function OrdersTable({
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
+              {priceToMatch && (
+                <DropdownMenuItem
+                  onSelect={() =>
+                    runMarketAction(
+                      api.marketUpdateOrder(order.id, {
+                        platinum: priceToMatch.plat,
+                      }),
+                      "Price set to the lowest",
+                    )
+                  }
+                >
+                  Set price to the lowest ({num(priceToMatch.plat)})
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onSelect={() =>
                   runMarketAction(
@@ -310,7 +361,7 @@ export function OrdersTable({
         },
       },
     ],
-    [onCompare, runMarketAction],
+    [onCompare, priceCheck, runMarketAction],
   );
 
   const missingCount = rows.filter((row) => row.show_warning).length;
@@ -366,7 +417,7 @@ export function OrdersTable({
         tableId="marketOrders"
         columns={columns}
         data={filteredEntries}
-        resetKey={JSON.stringify([category, side, missing])}
+        resetKey={JSON.stringify([category, side, missing, pricing])}
         searchPlaceholder="Filter orders"
         searchValue={({ item }) => item.name}
         initialSorting={[{ id: "updated_at", desc: true }]}
@@ -415,6 +466,14 @@ export function OrdersTable({
               options={MISSING}
               onChange={(value) => filters.set("missing", value)}
             />
+            {priceCheck && (
+              <FilterSelect
+                label="Pricing"
+                value={pricing}
+                options={PRICING}
+                onChange={(value) => filters.set("pricing", value)}
+              />
+            )}
           </FilterGrid>
         }
       />
