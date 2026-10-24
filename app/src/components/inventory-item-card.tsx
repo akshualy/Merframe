@@ -6,6 +6,7 @@ import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { ArcaneImage, ItemImage } from "@/components/item-image";
 import { Button } from "@/components/ui/button";
+import { Dash } from "@/components/ui/dash";
 import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
 import { num } from "@/lib/format";
@@ -57,7 +58,7 @@ function RankedPlat({
           ))}
       </Hint>
       {value === null ? (
-        <span className="text-muted-foreground">-</span>
+        <Dash />
       ) : (
         <Amount
           currency="platinum"

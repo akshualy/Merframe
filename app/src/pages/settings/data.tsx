@@ -9,7 +9,7 @@ import { dateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import type { OrderType, Settings, TraderStatus } from "@/types";
-import { CheckboxRow, MinutesSlider, type Patch, SwitchRow } from "./row";
+import { CheckboxRow, type Patch, SliderRow, SwitchRow } from "./row";
 
 const TRADER_STATUS: { value: TraderStatus; label: string }[] = [
   { value: "ingame", label: "In game" },
@@ -69,20 +69,22 @@ export function PricesAndData({
     <Section title="Prices and Data">
       <div className="grid gap-x-8 gap-y-6 @3xl:grid-cols-2">
         <div className="flex flex-col gap-4">
-          <MinutesSlider
+          <SliderRow
             id="market-poll"
             label="warframe.market refresh"
             value={draft.market_poll_minutes}
+            unit="min"
             min={2}
             max={60}
             step={1}
             onChange={(minutes) => patch({ market_poll_minutes: minutes })}
             hint="Your orders and riven auctions. The market tab refreshes every minute."
           />
-          <MinutesSlider
+          <SliderRow
             id="worldstate"
             label="World state refresh"
             value={draft.world_state_interval_minutes}
+            unit="min"
             min={5}
             max={10}
             step={1}
@@ -163,6 +165,25 @@ export function PricesAndData({
           >
             Take the mod rank into account for the missing items check
           </CheckboxRow>
+          <SwitchRow
+            checked={draft.market_price_check}
+            onChange={(checked) => patch({ market_price_check: checked })}
+            hint="Marks a sell order that is above or below the lowest price for the item. Mods and arcanes are only checked at rank 0 or max rank."
+          >
+            Check order prices against the market
+          </SwitchRow>
+          <SliderRow
+            id="price-tolerance"
+            label="Price tolerance"
+            value={draft.market_price_tolerance}
+            unit="%"
+            min={0}
+            max={50}
+            step={1}
+            disabled={!draft.market_price_check}
+            onChange={(percent) => patch({ market_price_tolerance: percent })}
+            hint="How far from the lowest price an order can be before it's marked, in percent."
+          />
         </div>
         <div className="flex flex-col gap-2 @3xl:col-span-2">
           <span className="text-sm font-medium">EE.log</span>

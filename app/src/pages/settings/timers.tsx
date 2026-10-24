@@ -1,6 +1,6 @@
 import { Section } from "@/components/page";
 import type { CyclePhase, Settings } from "@/types";
-import { CheckboxRow, MinutesSlider, type PatchAlerts } from "./row";
+import { CheckboxRow, type PatchAlerts, SliderRow } from "./row";
 
 const TIMERS: {
   world: string;
@@ -92,11 +92,12 @@ export function CycleTimers({
             </div>
           ))}
         </div>
-        <MinutesSlider
+        <SliderRow
           className="max-w-64"
           id="lead"
           label="Notify ahead of the phase"
           value={Math.round(draft.alerts.timer_lead_secs / 60)}
+          unit="min"
           min={1}
           max={30}
           step={1}

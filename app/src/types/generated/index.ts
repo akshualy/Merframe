@@ -120,6 +120,7 @@ export type * from "./PerTrace";
 export type * from "./Polarity";
 export type * from "./Presence";
 export type * from "./Prices";
+export type * from "./Pricing";
 export type * from "./Prime";
 export type * from "./PrimeResurgence";
 export type * from "./Progress";

@@ -7,6 +7,7 @@ use serde::Serialize;
 use wf_core::{Core, ItemRecord, ItemSummary, ItemTable, MarketListings, PriceSource, market_name};
 use wf_market::{Auction, Item, Order, OrderType, UserStatus};
 
+use crate::settings::MarketSettings;
 use crate::state::{AppState, lock, read, write};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -173,6 +174,7 @@ pub struct OrderRow {
     pub owned: i64,
     pub show_warning: bool,
     pub lowest: Option<Lowest>,
+    pub pricing: Option<Pricing>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
@@ -181,6 +183,36 @@ pub struct OrderRow {
 pub enum Lowest {
     AtRank { plat: f64 },
     RankZero { plat: f64 },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(rename_all = "snake_case")]
+pub enum Pricing {
+    Overpriced,
+    Underpriced,
+}
+
+impl Pricing {
+    fn of(order: &Order, lowest: Option<Lowest>, settings: &MarketSettings) -> Option<Self> {
+        let Some(Lowest::AtRank { plat }) = lowest else {
+            return None;
+        };
+
+        if order.order_type != OrderType::Sell || order.subtype.is_some() {
+            return None;
+        }
+
+        let tolerance = plat * f64::from(settings.market_price_tolerance) / 100.0;
+        let platinum = f64::from(order.platinum);
+        if platinum > plat + tolerance {
+            Some(Self::Overpriced)
+        } else if platinum < plat - tolerance {
+            Some(Self::Underpriced)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
@@ -218,14 +250,14 @@ pub fn order_row(
     record: &ItemRecord,
     core: &Core,
     prices: &dyn PriceSource,
-    take_rank_into_account: bool,
+    settings: &MarketSettings,
 ) -> OrderRow {
     let category = MarketCategory::of(item);
     let name = market_name(item);
     let rank = order.rank.unwrap_or(0);
 
     let counted_rank = match category {
-        MarketCategory::Mods => take_rank_into_account.then_some(rank),
+        MarketCategory::Mods => settings.take_rank_into_account.then_some(rank),
         MarketCategory::Arcanes => Some(rank),
         _ => None,
     };
@@ -246,6 +278,7 @@ pub fn order_row(
             .map(|plat| Lowest::RankZero { plat }),
         None => prices.plat(&item.slug).map(|plat| Lowest::AtRank { plat }),
     };
+    let pricing = Pricing::of(order, lowest, settings);
 
     OrderRow {
         id: order.id.clone(),
@@ -263,6 +296,7 @@ pub fn order_row(
         owned,
         show_warning,
         lowest,
+        pricing,
     }
 }
 
@@ -311,7 +345,7 @@ impl Listings {
 
 pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<MarketOrders> {
     let items = market_items(state).await?;
-    let take_rank_into_account = read(&state.settings).market.take_rank_into_account;
+    let settings = read(&state.settings).market.clone();
     let core = lock(&state.core);
 
     let mut index = IndexSet::new();
@@ -322,14 +356,7 @@ pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Marke
             let record = core.items().by_market_id(&order.item_id)?;
             Some(OrderRow {
                 item: index.insert_full(order_summary(item, record)).0,
-                ..order_row(
-                    order,
-                    item,
-                    record,
-                    &core,
-                    state.prices.as_ref(),
-                    take_rank_into_account,
-                )
+                ..order_row(order, item, record, &core, state.prices.as_ref(), &settings)
             })
         })
         .collect();
@@ -537,6 +564,16 @@ mod tests {
         }
 
         fn row(&self, wanted: &Order, take_rank_into_account: bool) -> OrderRow {
+            self.row_with(
+                wanted,
+                &MarketSettings {
+                    take_rank_into_account,
+                    ..MarketSettings::default()
+                },
+            )
+        }
+
+        fn row_with(&self, wanted: &Order, settings: &MarketSettings) -> OrderRow {
             let item = self.items.get(&wanted.item_id).unwrap();
             order_row(
                 wanted,
@@ -544,7 +581,7 @@ mod tests {
                 self.core.items().by_market_id(&item.id).unwrap(),
                 &self.core,
                 &TestPrices,
-                take_rank_into_account,
+                settings,
             )
         }
 
@@ -732,7 +769,7 @@ mod tests {
             record,
             &core,
             &TestPrices,
-            true,
+            &MarketSettings::default(),
         );
         assert_eq!(row.owned, 0);
         assert!(row.show_warning);
@@ -823,6 +860,55 @@ mod tests {
             serde_json::to_value(lowest(5)).unwrap(),
             json!({ "from": "rank_zero", "plat": 120.0 })
         );
+    }
+
+    #[test]
+    fn sell_price_against_lowest() {
+        let market = Market::new();
+        let pricing = |platinum, rank| {
+            let mut wanted = order("primed_continuity", 1, Some(rank));
+            wanted.platinum = platinum;
+            market.row(&wanted, true).pricing
+        };
+        assert_eq!(pricing(133, 0), Some(Pricing::Overpriced));
+        assert_eq!(pricing(132, 0), None);
+        assert_eq!(pricing(108, 0), None);
+        assert_eq!(pricing(107, 0), Some(Pricing::Underpriced));
+        assert_eq!(pricing(400, 10), Some(Pricing::Overpriced));
+        assert_eq!(pricing(400, 5), None);
+    }
+
+    #[test]
+    fn price_tolerance_setting() {
+        let market = Market::new();
+        let mut wanted = order("primed_continuity", 1, None);
+        wanted.platinum = 121;
+        let settings = MarketSettings {
+            market_price_tolerance: 0,
+            ..MarketSettings::default()
+        };
+        assert_eq!(
+            market.row_with(&wanted, &settings).pricing,
+            Some(Pricing::Overpriced)
+        );
+    }
+
+    #[test]
+    fn refinement_not_priced() {
+        let market = Market::new();
+        let mut wanted = order("primed_continuity", 1, None);
+        wanted.platinum = 400;
+        wanted.subtype = Some("radiant".to_owned());
+        assert_eq!(market.row(&wanted, true).pricing, None);
+    }
+
+    #[test]
+    fn buy_order_not_priced() {
+        let market = Market::new();
+        let mut wanted = order("primed_continuity", 1, None);
+        wanted.order_type = OrderType::Buy;
+        wanted.platinum = 500;
+        assert_eq!(market.row(&wanted, true).pricing, None);
     }
 
     #[test]

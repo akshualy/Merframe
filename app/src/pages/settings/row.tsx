@@ -85,14 +85,16 @@ export function SwitchRow({
   );
 }
 
-export function MinutesSlider({
+export function SliderRow({
   className,
   id,
   label,
   value,
+  unit,
   min,
   max,
   step,
+  disabled,
   onChange,
   hint,
 }: {
@@ -100,18 +102,20 @@ export function MinutesSlider({
   id: string;
   label: string;
   value: number;
+  unit: "min" | "%";
   min: number;
   max: number;
   step: number;
-  onChange: (minutes: number) => void;
+  disabled?: boolean;
+  onChange: (value: number) => void;
   hint?: string;
 }) {
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-baseline justify-between gap-3">
         <Label htmlFor={id}>{label}</Label>
-        <span className="text-muted-foreground text-sm tabular-nums">
-          {value} min
+        <span className="text-muted-foreground text-sm">
+          {unit === "%" ? `${value}%` : `${value} ${unit}`}
         </span>
       </div>
       <Slider
@@ -120,7 +124,8 @@ export function MinutesSlider({
         max={max}
         step={step}
         value={[value]}
-        onValueChange={([minutes = value]) => onChange(minutes)}
+        disabled={disabled}
+        onValueChange={([next = value]) => onChange(next)}
       />
       {hint && <Hint>{hint}</Hint>}
     </div>

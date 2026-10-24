@@ -2,4 +2,4 @@
 import type { OrderType } from "./OrderType";
 import type { TraderStatus } from "./TraderStatus";
 
-export type MarketSettings = { market_poll_minutes: number, market_auto_close: boolean, take_rank_into_account: boolean, market_trader_status: TraderStatus, market_trader_locale: string | null, set_part_click: OrderType, market_offline_after_last_trade: boolean, market_hide_after_last_trade: boolean, market_hide_auctions_after_last_trade: boolean, };
+export type MarketSettings = { market_poll_minutes: number, market_auto_close: boolean, take_rank_into_account: boolean, market_price_check: boolean, market_price_tolerance: number, market_trader_status: TraderStatus, market_trader_locale: string | null, set_part_click: OrderType, market_offline_after_last_trade: boolean, market_hide_after_last_trade: boolean, market_hide_auctions_after_last_trade: boolean, };
