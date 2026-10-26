@@ -9,17 +9,16 @@ import { TimeframeTabs, useTimeframeData } from "@/components/timeframe-tabs";
 import { TradesSection } from "@/components/trades-section";
 import { api } from "@/lib/bridge";
 import { changeTone, signed } from "@/lib/chart";
-import { dateTime, dayLabel, num, percent, spansYears } from "@/lib/format";
+import {
+  dateTime,
+  dayLabel,
+  fullDate,
+  num,
+  percent,
+  spansYears,
+} from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { DailyCount, DeltaRow, OpeningRow, StatPoint } from "@/types";
-
-function fullDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 const OPENING_COLUMNS: ColumnDef<OpeningRow>[] = [
   {

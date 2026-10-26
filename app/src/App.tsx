@@ -52,6 +52,11 @@ const ResourcesPage = lazy(() =>
 const RivensPage = lazy(() =>
   import("@/pages/rivens/rivens").then((m) => ({ default: m.RivensPage })),
 );
+const ArbitrationsPage = lazy(() =>
+  import("@/pages/arbitrations/arbitrations").then((m) => ({
+    default: m.ArbitrationsPage,
+  })),
+);
 const SettingsPage = lazy(() =>
   import("@/pages/settings/settings").then((m) => ({
     default: m.SettingsPage,
@@ -151,6 +156,7 @@ function Shell() {
               <Routes>
                 <Route path="/" element={<Navigate to="/world" replace />} />
                 <Route path="/world" element={<WorldPage />} />
+                <Route path="/arbitrations" element={<ArbitrationsPage />} />
                 <Route path="/foundry" element={<FoundryPage />} />
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/relics" element={<RelicPlannerPage />} />

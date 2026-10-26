@@ -19,6 +19,7 @@ export type GameIconName =
   | "duviri-fear"
   | "baro"
   | "sortie"
+  | "arbitration"
   | "archon"
   | "archon-amar"
   | "archon-boreal"
@@ -68,6 +69,7 @@ const MONOCHROME: ReadonlySet<GameIconName> = new Set([
   "cold",
   "baro",
   "sortie",
+  "arbitration",
   "archon",
   "archon-amar",
   "archon-boreal",

@@ -1,3 +1,4 @@
+mod arbitration;
 mod archon;
 mod circuit;
 mod cycles;
@@ -19,13 +20,17 @@ mod syndicate;
 mod void_trader;
 mod window;
 
+pub use arbitration::{
+    ARBITRATION_FORECAST_URL, ARBITRATION_TIERS_URL, ArbitrationForecast, ArbitrationForecastHour,
+    ArbitrationNode, ArbitrationTier, ArbitrationTiers, arbitration_node,
+};
 pub use archon::{ArchonHunt, ArchonMission};
 pub use circuit::Circuit;
 pub use cycles::Timer;
 pub use daily_deal::DailyDeal;
 pub use error::{Result, WorldStateError};
 #[cfg(feature = "fetch")]
-pub use fetch::{fetch, fetch_body};
+pub use fetch::{fetch, fetch_text};
 
 pub const WORLD_STATE_URL: &str = "https://api.warframe.com/cdn/worldState.php";
 pub use fissure::{Fissure, FissureTier, RelicTier};

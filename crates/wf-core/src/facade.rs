@@ -7,7 +7,7 @@ use serde::Serialize;
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
 use wf_market::{RivenData, WeaponAuctions};
-use wf_worldstate::WorldState;
+use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState};
 
 use crate::account::Account;
 use crate::catalog::{Catalog, REQUIEM_MARKER};
@@ -16,7 +16,8 @@ use crate::delta;
 use crate::ducatering::{self, Ducatering, DucateringFilter};
 use crate::error::Result;
 use crate::events::{
-    self, AlertSettings, CoreEvent, Engine, ScannedRewards, ScannedTrade, WorldRewardAlert,
+    self, AlertSettings, ArbitrationOutlook, ArbitrationSchedule, CoreEvent, Engine,
+    ScannedRewards, ScannedTrade, WorldRewardAlert,
 };
 use crate::export::{ExportBundle, export};
 use crate::favourites::Favourites;
@@ -57,6 +58,12 @@ pub struct StatsTab {
     pub summary: Option<StatsSummary>,
 }
 
+struct LoadedArbitrationForecast {
+    forecast: ArbitrationForecast,
+    tiers: ArbitrationTiers,
+    fetched_at: DateTime<Utc>,
+}
+
 pub struct Core {
     store: Store,
     catalog: Catalog,
@@ -65,6 +72,7 @@ pub struct Core {
     engine: Engine,
     account: Option<Account>,
     world: Option<WorldState>,
+    arbitrations: Option<LoadedArbitrationForecast>,
     riven_data: Option<RivenData>,
     latest_snapshot: Option<Snapshot>,
     own_relic_reward: Option<String>,
@@ -96,6 +104,7 @@ impl Core {
             engine: Engine::new(alerts),
             account: None,
             world: None,
+            arbitrations: None,
             riven_data: None,
             latest_snapshot: None,
             own_relic_reward: None,
@@ -204,6 +213,32 @@ impl Core {
             .handle_world_state(&world, &self.items, &unmastered, now);
         self.world = Some(world);
         events
+    }
+
+    pub fn set_arbitration_forecast(
+        &mut self,
+        forecast: ArbitrationForecast,
+        tiers: ArbitrationTiers,
+        fetched_at: DateTime<Utc>,
+    ) {
+        self.arbitrations = Some(LoadedArbitrationForecast {
+            forecast,
+            tiers,
+            fetched_at,
+        });
+    }
+
+    pub fn arbitration_forecast_fetched_at(&self) -> Option<DateTime<Utc>> {
+        self.arbitrations.as_ref().map(|loaded| loaded.fetched_at)
+    }
+
+    pub fn arbitration_schedule(&self, now: DateTime<Utc>) -> Option<ArbitrationSchedule> {
+        let loaded = self.arbitrations.as_ref()?;
+        ArbitrationOutlook {
+            forecast: &loaded.forecast,
+            tiers: &loaded.tiers,
+        }
+        .schedule(now)
     }
 
     pub fn world_reward_alerts(&self, now: DateTime<Utc>) -> Vec<WorldRewardAlert> {
