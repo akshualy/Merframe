@@ -178,6 +178,28 @@ export function ResultCount({
   );
 }
 
+export function FramedList({
+  header,
+  children,
+  className,
+}: {
+  header: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "bg-background overflow-hidden rounded-xl border",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-2 border-b px-3 py-2">{header}</div>
+      <ul className="divide-y">{children}</ul>
+    </div>
+  );
+}
+
 export function EmptyNote({ children }: { children: ReactNode }) {
   return <p className="text-muted-foreground text-sm">{children}</p>;
 }

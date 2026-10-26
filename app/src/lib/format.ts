@@ -89,6 +89,21 @@ export function dateTime(iso: string): string {
   });
 }
 
+export function fullDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function timeOfDay(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function spansYears(days: string[]): boolean {
   return new Set(days.map((day) => day.slice(0, 4))).size > 1;
 }

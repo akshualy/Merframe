@@ -1,14 +1,18 @@
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
 
 use anyhow::Context;
-use chrono::Utc;
+use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
-use wf_core::CoreEvent;
+use wf_core::{Core, CoreEvent};
 use wf_market::{Etagged, PriceTable, RivenData, bulk_prices, bulk_riven_data};
-use wf_worldstate::WorldState;
+use wf_worldstate::{
+    ARBITRATION_FORECAST_URL, ARBITRATION_TIERS_URL, ArbitrationForecast, ArbitrationTiers,
+    WorldState, fetch_text,
+};
 
 use super::{AppEvent, RIVEN_DATA_KEY, dispatch, emit, emit_status, try_blocking};
 use crate::market;
@@ -17,6 +21,11 @@ use crate::state::{AppState, lock, read, write};
 const PRICE_RETRY: Duration = Duration::from_secs(60);
 const PRICE_INTERVAL: Duration = Duration::from_mins(15);
 const RIVEN_INTERVAL: Duration = Duration::from_hours(24);
+const ARBITRATION_FORECAST_KEY: &str = "arbitration_forecast";
+const ARBITRATION_INTERVAL: TimeDelta = TimeDelta::hours(6);
+const ARBITRATION_TIERS_MAX_AGE: TimeDelta = TimeDelta::days(7);
+const ARBITRATION_RETRY_CAP: Duration = Duration::from_hours(1);
+const ARBITRATION_RETRY_STEPS: u32 = 6;
 
 #[derive(Serialize, Deserialize)]
 struct StoredRivenData {
@@ -46,7 +55,7 @@ async fn refresh_world_state<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
 ) -> anyhow::Result<Vec<CoreEvent>> {
-    let body = wf_worldstate::fetch_body(&state.http)
+    let body = fetch_text(&state.http, wf_worldstate::WORLD_STATE_URL)
         .await
         .context("Requesting the world state")?;
     let now = Utc::now();
@@ -55,6 +64,151 @@ async fn refresh_world_state<R: Runtime>(
     let events = lock(&state.core).ingest_world_state(world, now);
     emit(app, AppEvent::WorldStateUpdated);
     Ok(events)
+}
+
+#[derive(Serialize, Deserialize)]
+struct StoredArbitrationForecast {
+    schedule: String,
+    fetched_at: DateTime<Utc>,
+    tiers: Option<String>,
+    tiers_fetched_at: Option<DateTime<Utc>>,
+}
+
+impl StoredArbitrationForecast {
+    fn load_into(&self, core: &mut Core, now: DateTime<Utc>) -> anyhow::Result<()> {
+        let forecast = ArbitrationForecast::parse(&self.schedule)
+            .context("Parsing the arbitration forecast")?;
+        let tiers_current = self
+            .tiers_fetched_at
+            .is_some_and(|at| now.signed_duration_since(at) <= ARBITRATION_TIERS_MAX_AGE);
+        let tiers = match self.tiers.as_deref().filter(|_| tiers_current) {
+            Some(text) => ArbitrationTiers::parse(text).context("Parsing the arbitration tiers")?,
+            None => ArbitrationTiers::default(),
+        };
+        info!(
+            hours = forecast.hours(),
+            nodes = forecast.unique_node_ids().len(),
+            tiers = tiers.len(),
+            fetched_at = %self.fetched_at,
+            "Arbitration forecast loaded"
+        );
+        core.set_arbitration_forecast(forecast, tiers, self.fetched_at);
+        Ok(())
+    }
+}
+
+pub(super) async fn arbitration_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+    let mut stored = stored_arbitration_forecast(&state).await;
+    let mut failures: u32 = 0;
+    loop {
+        let now = Utc::now();
+        let due = stored.as_ref().is_none_or(|stored| {
+            now.signed_duration_since(stored.fetched_at) >= ARBITRATION_INTERVAL
+        });
+        if due {
+            match refresh_arbitration_forecast(&app, &state, stored.as_ref()).await {
+                Ok(fresh) => {
+                    failures = 0;
+                    stored = Some(fresh);
+                }
+                Err(error) => {
+                    failures = (failures + 1).min(ARBITRATION_RETRY_STEPS);
+                    warn!(?error, "Arbitration forecast not refreshed");
+                }
+            }
+            state
+                .arbitration_refresh_failed
+                .store(failures > 0, Ordering::Relaxed);
+        }
+
+        let wait = if failures > 0 {
+            Duration::from_mins(1 << (failures - 1)).min(ARBITRATION_RETRY_CAP)
+        } else {
+            let next =
+                stored.as_ref().map_or(now, |stored| stored.fetched_at) + ARBITRATION_INTERVAL;
+            next.signed_duration_since(Utc::now())
+                .to_std()
+                .unwrap_or(Duration::ZERO)
+                .max(Duration::from_mins(1))
+        };
+        tokio::time::sleep(wait).await;
+    }
+}
+
+async fn stored_arbitration_forecast(state: &Arc<AppState>) -> Option<StoredArbitrationForecast> {
+    let owned = Arc::clone(state);
+    let loaded = try_blocking(move || {
+        let core = lock(&owned.core);
+        let stored = core
+            .store()
+            .setting::<StoredArbitrationForecast>(ARBITRATION_FORECAST_KEY)
+            .context("Reading the stored arbitration forecast")?;
+        drop(core);
+        Ok(stored)
+    })
+    .await;
+    let stored = match loaded {
+        Ok(Some(stored)) => stored,
+        Ok(None) => {
+            debug!("No stored arbitration forecast yet");
+            return None;
+        }
+        Err(error) => {
+            warn!(?error, "Stored arbitration forecast unreadable");
+            return None;
+        }
+    };
+    let loaded = stored.load_into(&mut lock(&state.core), Utc::now());
+    match loaded {
+        Ok(()) => Some(stored),
+        Err(error) => {
+            warn!(?error, "Stored arbitration forecast unusable");
+            None
+        }
+    }
+}
+
+async fn refresh_arbitration_forecast<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    previous: Option<&StoredArbitrationForecast>,
+) -> anyhow::Result<StoredArbitrationForecast> {
+    let schedule = fetch_text(&state.http, ARBITRATION_FORECAST_URL)
+        .await
+        .context("Requesting the arbitration forecast")?;
+    let forecast =
+        ArbitrationForecast::parse(&schedule).context("Parsing the arbitration forecast")?;
+    let now = Utc::now();
+    if forecast.starts() > now || forecast.ends() <= now + TimeDelta::hours(1) {
+        anyhow::bail!("The arbitration forecast does not cover the next hour");
+    }
+
+    let fetched_tiers = fetch_text(&state.http, ARBITRATION_TIERS_URL)
+        .await
+        .and_then(|text| ArbitrationTiers::parse(&text).map(|_| text));
+    let tiers = match fetched_tiers {
+        Ok(text) => Some((text, now)),
+        Err(error) => {
+            warn!(%error, "Arbitration tiers not refreshed, keeping the stored ones");
+            previous.and_then(|previous| previous.tiers.clone().zip(previous.tiers_fetched_at))
+        }
+    };
+    let stored = StoredArbitrationForecast {
+        schedule,
+        fetched_at: now,
+        tiers: tiers.as_ref().map(|(text, _)| text.clone()),
+        tiers_fetched_at: tiers.map(|(_, at)| at),
+    };
+
+    let mut core = lock(&state.core);
+    stored.load_into(&mut core, now)?;
+    if let Err(error) = core.store().set_setting(ARBITRATION_FORECAST_KEY, &stored) {
+        warn!(%error, "Arbitration forecast store write failed");
+    }
+    drop(core);
+
+    emit(app, AppEvent::WorldStateUpdated);
+    Ok(stored)
 }
 
 pub(super) async fn price_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {

@@ -170,6 +170,7 @@ fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
         commands::market::market_set_auctions_visibility,
         commands::world::worldstate,
         commands::world::invasion_weapon_parts,
+        commands::world::arbitrations,
         commands::app::open_url,
         commands::app::app_log_file,
         commands::app::open_data_folder,

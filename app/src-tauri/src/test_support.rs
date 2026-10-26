@@ -5,6 +5,8 @@ use chrono::{DateTime, Utc};
 use wf_core::{AlertSettings, Catalog, Core, PriceCache, Store};
 use wf_market::{Item, ItemLocalization, Order, OrderType};
 
+pub(crate) const ARBITRATIONS: &str = include_str!("../../../fixtures/arbitrations.txt");
+
 pub(crate) fn moment() -> DateTime<Utc> {
     DateTime::from_timestamp(1_757_410_800, 0).unwrap()
 }

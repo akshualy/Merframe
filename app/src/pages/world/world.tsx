@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import type { Fissure, FissurePath } from "@/types";
+import { WorldArbitrationCard } from "./arbitrations";
 import { FissuresByTier } from "./fissures";
 import { MarketSalesPanel } from "./market-sales";
 import {
@@ -84,6 +85,7 @@ export function WorldPage() {
           {data.timers.map((timer) => (
             <TimerChip key={timer.name} timer={timer} now={now} />
           ))}
+          <WorldArbitrationCard now={now} />
         </CardGrid>
       ) : (
         <EmptyNote>The world state has not been fetched yet.</EmptyNote>

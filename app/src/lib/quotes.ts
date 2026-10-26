@@ -50,6 +50,28 @@ export const QUOTES = {
       speaker: "Grandmother",
     },
   ],
+  arbitrations: [
+    {
+      line: "Fight this Arbitration as any mortal creature would. There are no second chances.",
+      speaker: "Arbiters of Hexis",
+    },
+    {
+      line: "Only under the shadow of death will your true potential shine.",
+      speaker: "Arbiters of Hexis",
+    },
+    {
+      line: "For this Arbitration, we bestow upon you the gift of mortality.",
+      speaker: "Arbiters of Hexis",
+    },
+    {
+      line: "May you live until you die.",
+      speaker: "Arbiters of Hexis",
+    },
+    {
+      line: "Have you survived Arbitration? Honors await you.",
+      speaker: "Arbiters of Hexis",
+    },
+  ],
   foundry: [
     {
       line: "Operator? Ordis has been interfacing with the Foundry's AI Precepts. You could say we forged a new connection.",
