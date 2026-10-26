@@ -8,7 +8,7 @@ use wf_market::{IncomingEvent, MarketSocket, StatusSetPayload, UserStatus};
 use super::MARKET_SIGNED_OUT_POLL;
 use crate::market_session;
 use crate::runtime::{AppEvent, emit};
-use crate::state::{AppState, read, write};
+use crate::state::{AppState, USER_AGENT, read, write};
 
 pub(crate) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut failures: u32 = 0;
@@ -67,7 +67,7 @@ async fn handshake(token: String) -> Handshake {
 }
 
 async fn authenticated(token: String) -> wf_market::Result<Handshake> {
-    let mut socket = MarketSocket::connect().await?;
+    let mut socket = MarketSocket::connect(USER_AGENT).await?;
     socket.authenticate(token).await?;
 
     loop {

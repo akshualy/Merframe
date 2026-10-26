@@ -53,11 +53,11 @@ pub struct MarketSocket {
 }
 
 impl MarketSocket {
-    pub async fn connect() -> Result<Self> {
+    pub async fn connect(user_agent: &'static str) -> Result<Self> {
         let mut request = "wss://ws.warframe.market/socket".into_client_request()?;
-        request
-            .headers_mut()
-            .insert("Sec-WebSocket-Protocol", HeaderValue::from_static("wfm"));
+        let headers = request.headers_mut();
+        headers.insert("Sec-WebSocket-Protocol", HeaderValue::from_static("wfm"));
+        headers.insert("User-Agent", HeaderValue::from_static(user_agent));
         let (stream, _response) = connect_async(request).await?;
         Ok(Self { stream })
     }

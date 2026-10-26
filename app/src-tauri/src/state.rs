@@ -210,6 +210,12 @@ async fn load_catalog(dir: &Path, http: &reqwest::Client) -> anyhow::Result<Cata
     Ok(catalog)
 }
 
+pub(crate) const USER_AGENT: &str = concat!(
+    "Merframe/",
+    env!("CARGO_PKG_VERSION"),
+    " (+https://yareli.net/merframe)"
+);
+
 impl AppState {
     pub async fn build<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Self> {
         let data_dir = data_dir(app)?;
@@ -218,11 +224,7 @@ impl AppState {
             .with_context(|| format!("Creating {}", data_dir.display()))?;
 
         let http = reqwest::Client::builder()
-            .user_agent(concat!(
-                "Merframe/",
-                env!("CARGO_PKG_VERSION"),
-                " (+https://yareli.net/merframe)"
-            ))
+            .user_agent(USER_AGENT)
             .connect_timeout(Duration::from_secs(10))
             .read_timeout(Duration::from_secs(30))
             .build()
