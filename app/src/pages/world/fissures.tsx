@@ -1,5 +1,5 @@
 import { RelicTierIcon } from "@/components/game-icon";
-import { EmptyNote } from "@/components/page";
+import { EmptyNote, FramedList } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Hint } from "@/components/ui/hint";
 import { counted, secondsUntil } from "@/lib/format";
@@ -59,25 +59,24 @@ export function FissuresByTier({
   return (
     <div className="grid items-start gap-3 @5xl:grid-cols-2">
       {grouped.map(([tier, list]) => (
-        <div
+        <FramedList
           key={tier}
-          className="bg-background overflow-hidden rounded-xl border"
+          header={
+            <>
+              <RelicTierIcon tier={tier} size={22} />
+              {isRelicTier(tier) && <Badge variant="secondary">{tier}</Badge>}
+              <Hint as="span">{counted(list.length, "fissure")}</Hint>
+            </>
+          }
         >
-          <div className="flex items-center gap-2 border-b px-3 py-2">
-            <RelicTierIcon tier={tier} size={22} />
-            {isRelicTier(tier) && <Badge variant="secondary">{tier}</Badge>}
-            <Hint as="span">{counted(list.length, "fissure")}</Hint>
-          </div>
-          <ul className="divide-y">
-            {list.map((fissure) => (
-              <FissureRow
-                key={`${fissure.node_id}-${fissure.expiry}-${fissure.steel_path}`}
-                fissure={fissure}
-                now={now}
-              />
-            ))}
-          </ul>
-        </div>
+          {list.map((fissure) => (
+            <FissureRow
+              key={`${fissure.node_id}-${fissure.expiry}-${fissure.steel_path}`}
+              fissure={fissure}
+              now={now}
+            />
+          ))}
+        </FramedList>
       ))}
     </div>
   );

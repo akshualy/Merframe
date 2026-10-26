@@ -16,11 +16,13 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router";
 import { BrandBar } from "@/components/brand-bar";
+import { GameIcon, type GameIconName } from "@/components/game-icon";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/stores/app-store";
 
 const NAV = [
   { to: "/world", label: "World", icon: Globe },
+  { to: "/arbitrations", label: "Arbitrations", icon: "arbitration" },
   { to: "/foundry", label: "Foundry", icon: Hammer },
   { to: "/inventory", label: "Inventory", icon: Boxes },
   { to: "/relics", label: "Relic Planner", icon: Package },
@@ -45,7 +47,7 @@ function Item({
 }: {
   to: string;
   label: string;
-  icon: LucideIcon;
+  icon: LucideIcon | GameIconName;
 }) {
   return (
     <NavLink
@@ -57,7 +59,11 @@ function Item({
         )
       }
     >
-      <Icon className="size-4 shrink-0" />
+      {typeof Icon === "string" ? (
+        <GameIcon name={Icon} size={16} alt="" className="shrink-0" />
+      ) : (
+        <Icon className="size-4 shrink-0" />
+      )}
       <span className="truncate">{label}</span>
     </NavLink>
   );

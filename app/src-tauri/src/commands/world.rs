@@ -1,8 +1,11 @@
 use std::collections::HashMap;
+use std::sync::atomic::Ordering;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use wf_core::{Catalog, Core, ItemTable, WorldRewardAlert};
+use wf_core::{
+    ARBITRATION_FORECAST_TRUSTED, ArbitrationSchedule, Catalog, Core, ItemTable, WorldRewardAlert,
+};
 use wf_data::store_item_to_type;
 use wf_worldstate::{
     ArchonHunt, BaroStatus, Circuit, DailyDeal, Fissure, MarketSale, NightwaveSeason, Sortie,
@@ -29,6 +32,44 @@ pub struct WorldStateView {
     pub nightwave: Option<NightwaveSeason>,
     pub world_reward_alerts: Vec<WorldRewardAlert>,
     pub fetched_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(rename_all = "snake_case")]
+pub enum ArbitrationForecastStatus {
+    Fresh,
+    Cached,
+    Stale,
+    Unavailable,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct ArbitrationDashboard {
+    pub status: ArbitrationForecastStatus,
+    pub fetched_at: Option<DateTime<Utc>>,
+    pub schedule: Option<ArbitrationSchedule>,
+}
+
+impl ArbitrationDashboard {
+    pub fn build(core: &Core, refresh_failed: bool, now: DateTime<Utc>) -> Self {
+        let schedule = core.arbitration_schedule(now);
+        let fetched_at = core.arbitration_forecast_fetched_at();
+        let status = match fetched_at.filter(|_| schedule.is_some()) {
+            None => ArbitrationForecastStatus::Unavailable,
+            Some(at) if now.signed_duration_since(at) > ARBITRATION_FORECAST_TRUSTED => {
+                ArbitrationForecastStatus::Stale
+            }
+            Some(_) if refresh_failed => ArbitrationForecastStatus::Cached,
+            Some(_) => ArbitrationForecastStatus::Fresh,
+        };
+        Self {
+            status,
+            fetched_at,
+            schedule,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -313,6 +354,17 @@ pub async fn invasion_weapon_parts(state: Shared<'_>) -> CommandResult<Vec<Invas
 }
 
 #[tauri::command]
+pub async fn arbitrations(state: Shared<'_>) -> CommandResult<ArbitrationDashboard> {
+    let state = ready(&state).await?;
+    let refresh_failed = state.arbitration_refresh_failed.load(Ordering::Relaxed);
+    Ok(ArbitrationDashboard::build(
+        &lock(&state.core),
+        refresh_failed,
+        Utc::now(),
+    ))
+}
+
+#[tauri::command]
 pub async fn worldstate(state: Shared<'_>) -> CommandResult<WorldStateView> {
     let state = ready(&state).await?;
     let fetched_at = read(&state.status).world_state_at;
@@ -325,12 +377,12 @@ pub async fn worldstate(state: Shared<'_>) -> CommandResult<WorldStateView> {
 
 #[cfg(test)]
 mod tests {
-    use chrono::DateTime;
+    use chrono::{DateTime, TimeDelta};
     use wf_core::Catalog;
-    use wf_worldstate::WorldState;
+    use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState};
 
     use super::*;
-    use crate::test_support::{core_with, empty_catalog};
+    use crate::test_support::{ARBITRATIONS, core_with, empty_catalog};
 
     const FIXTURE: &str = include_str!("../../../../fixtures/worldState.json");
     const INVENTORY: &str = include_str!("../../../../fixtures/inventory.json");
@@ -568,6 +620,30 @@ mod tests {
         assert_eq!(nightwave.season, 18);
         assert_eq!(nightwave.name, "Intermission 16");
         assert_eq!(nightwave.challenges.len(), 10);
+    }
+
+    #[test]
+    fn arbitration_dashboard_status() {
+        let forecast = ArbitrationForecast::parse(ARBITRATIONS).unwrap();
+        let fetched_at = DateTime::from_timestamp_millis(1_727_884_800_000).unwrap();
+        let mut core = core_with(empty_catalog());
+        let unavailable = ArbitrationDashboard::build(&core, false, fetched_at);
+        assert_eq!(unavailable.status, ArbitrationForecastStatus::Unavailable);
+        assert!(unavailable.schedule.is_none());
+
+        core.set_arbitration_forecast(forecast, ArbitrationTiers::default(), fetched_at);
+        let fresh = ArbitrationDashboard::build(&core, false, fetched_at);
+        assert_eq!(fresh.status, ArbitrationForecastStatus::Fresh);
+        assert_eq!(fresh.fetched_at, Some(fetched_at));
+        assert_eq!(fresh.schedule.unwrap().slots.len(), 48);
+        let cached = ArbitrationDashboard::build(&core, true, fetched_at);
+        assert_eq!(cached.status, ArbitrationForecastStatus::Cached);
+        let day_later = fetched_at + TimeDelta::hours(25);
+        let stale = ArbitrationDashboard::build(&core, false, day_later);
+        assert_eq!(stale.status, ArbitrationForecastStatus::Stale);
+        let after_the_end = fetched_at + TimeDelta::hours(48);
+        let ended = ArbitrationDashboard::build(&core, false, after_the_end);
+        assert_eq!(ended.status, ArbitrationForecastStatus::Unavailable);
     }
 
     #[test]

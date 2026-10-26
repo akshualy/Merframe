@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import type {
   AppEvent,
+  ArbitrationDashboard,
   Auction,
   CommandError,
   ComparedStat,
@@ -204,6 +205,7 @@ export const api = {
   marketSetAuctionsVisibility: (visible: boolean) =>
     call<void>("market_set_auctions_visibility", { visible }),
   worldstate: () => call<WorldStateView>("worldstate"),
+  arbitrations: () => call<ArbitrationDashboard>("arbitrations"),
   invasionWeaponParts: () =>
     call<InvasionWeaponPart[]>("invasion_weapon_parts"),
   openUrl: (url: string) => call<void>("open_url", { url }),

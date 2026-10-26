@@ -33,9 +33,10 @@ pub use ducatering::{
 };
 pub use error::{CoreError, Result};
 pub use events::{
-    AlertSettings, CoreEvent, CyclePhase, FissureFilter, FissureInfo, FissureSubtype,
-    InventorySummary, ScannedRewards, ScannedTrade, ScannedTradeItem, TimerAlerts,
-    WorldRewardAlert, WorldRewardAlertChoices, WorldRewardAlertGroup, tier_name,
+    ARBITRATION_FORECAST_TRUSTED, AlertSettings, ArbitrationSchedule, ArbitrationSlot, CoreEvent,
+    CyclePhase, FissureFilter, FissureInfo, FissureSubtype, InventorySummary, ScannedRewards,
+    ScannedTrade, ScannedTradeItem, TimerAlerts, WorldRewardAlert, WorldRewardAlertChoices,
+    WorldRewardAlertGroup, tier_name,
 };
 pub use facade::{Core, RelicPlannerTab, StatsTab};
 pub use favourites::Favourites;
