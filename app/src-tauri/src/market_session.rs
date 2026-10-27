@@ -2,8 +2,9 @@ use std::sync::Arc;
 
 use tauri::{AppHandle, Runtime};
 use tracing::warn;
+use wf_market::UserStatus;
 
-use crate::market::MarketOrders;
+use crate::market::{MarketOrders, MarketPresenceChoice, Presence};
 use crate::runtime::{AppEvent, emit, update_status};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, write};
@@ -38,7 +39,34 @@ pub fn clear<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> anyhow::Result
         status.market_account = None;
         status.market_unread = 0;
     });
-    settings::set_token(app, None).and(settings::set_account(app, None))
+    set_live(app, state, None);
+    settings::set_token(app, None)
+        .and(settings::set_account(app, None))
+        .and(set_presence(app, state, MarketPresenceChoice::default()).map(|_| ()))
+}
+
+pub fn set_live<R: Runtime>(app: &AppHandle<R>, state: &AppState, live: Option<UserStatus>) {
+    let mut guard = write(&state.market_presence);
+    guard.live = live;
+    let presence = *guard;
+    drop(guard);
+
+    emit(app, AppEvent::MarketPresence(presence));
+}
+
+pub fn set_presence<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &AppState,
+    choice: MarketPresenceChoice,
+) -> anyhow::Result<Presence> {
+    let mut guard = write(&state.market_presence);
+    guard.choice = choice;
+    let presence = *guard;
+    drop(guard);
+
+    state.market_presence_wake.notify_one();
+    emit(app, AppEvent::MarketPresence(presence));
+    settings::set_presence(app, choice).map(|()| presence)
 }
 
 pub fn clear_rejected<R: Runtime>(app: &AppHandle<R>, state: &AppState) {

@@ -7,8 +7,7 @@ use wf_market::{IncomingEvent, MarketSocket, StatusSetPayload, UserStatus};
 
 use super::MARKET_SIGNED_OUT_POLL;
 use crate::market_session;
-use crate::runtime::{AppEvent, emit};
-use crate::state::{AppState, USER_AGENT, read, write};
+use crate::state::{AppState, USER_AGENT, read};
 
 pub(crate) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     let mut failures: u32 = 0;
@@ -27,7 +26,7 @@ pub(crate) async fn market_presence_task<R: Runtime>(app: AppHandle<R>, state: A
                 if let Err(error) = presence_session(&app, &state, &mut socket).await {
                     warn!(%error, "Market socket dropped");
                 }
-                write(&state.market_presence).live = None;
+                market_session::set_live(&app, &state, None);
             }
             Handshake::Rejected => {
                 info!("Market socket rejected the stored token");
@@ -116,9 +115,7 @@ async fn presence_session<R: Runtime>(
                     }
                     Some(IncomingEvent::StatusSet { payload, .. }) => {
                         reported = Some(payload.status);
-                        let mut presence = write(&state.market_presence);
-                        presence.live = reported;
-                        emit(app, AppEvent::MarketPresence(*presence));
+                        market_session::set_live(app, state, reported);
                     }
                     Some(_) => {}
                     None => return Ok(()),
@@ -137,7 +134,7 @@ async fn presence_session<R: Runtime>(
 
 fn wanted_presence(state: &Arc<AppState>) -> Option<UserStatus> {
     let detected = read(&state.status).game_detected;
-    read(&state.market_presence).wanted(detected)
+    read(&state.market_presence).choice.wanted(detected)
 }
 
 #[cfg(test)]

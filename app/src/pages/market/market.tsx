@@ -26,7 +26,7 @@ import { useMarketPanelStore } from "@/stores/market-panel-store";
 import { AuctionsTable } from "./auctions";
 import { LoginCard } from "./login-card";
 import { OrdersTable } from "./orders";
-import { PresenceControl } from "./presence";
+import { LiveStatusBadge, PresenceControl } from "./presence";
 
 type MarketTab = "orders" | "auctions";
 
@@ -197,7 +197,12 @@ export function MarketPage() {
   return (
     <Page
       title="warframe.market"
-      description={`Signed in as ${account.ingame_name}`}
+      description={
+        <span className="flex items-center gap-2">
+          Signed in as {account.ingame_name}
+          <LiveStatusBadge />
+        </span>
+      }
       actions={
         <>
           <PresenceControl />

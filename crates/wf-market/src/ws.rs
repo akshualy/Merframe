@@ -38,7 +38,7 @@ pub struct StatusSetEventPayload {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "route")]
 pub enum IncomingEvent {
-    #[serde(rename = "@wfm|event/status/set")]
+    #[serde(rename = "@wfm|event/status/set", alias = "@wfm|cmd/status/set:ok")]
     StatusSet { payload: StatusSetEventPayload },
     #[serde(rename = "@wfm|cmd/auth/signIn:ok")]
     AuthOk,
@@ -123,6 +123,11 @@ mod tests {
             serde_json::from_str::<IncomingEvent>(r#"{"route":"@wfm|event/status/set","payload":{"status":"ingame","statusSetAt":"2026-09-07T18:55:39Z","statusUntil":null,"activity":null}}"#)
                 .unwrap(),
             IncomingEvent::StatusSet { payload } if payload.status == UserStatus::Ingame
+        ));
+        assert!(matches!(
+            serde_json::from_str::<IncomingEvent>(r#"{"route":"@wfm|cmd/status/set:ok","payload":{"status":"online","statusSetAt":"2026-10-27T15:43:09Z"},"meta":{"stream":"status:0","revision":2}}"#)
+                .unwrap(),
+            IncomingEvent::StatusSet { payload } if payload.status == UserStatus::Online
         ));
         assert!(matches!(
             serde_json::from_str::<IncomingEvent>(

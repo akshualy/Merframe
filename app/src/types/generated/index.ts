@@ -81,6 +81,7 @@ export type * from "./MarketItem";
 export type * from "./MarketMover";
 export type * from "./MarketOffer";
 export type * from "./MarketOrders";
+export type * from "./MarketPresenceChoice";
 export type * from "./MarketSettings";
 export type * from "./MarketSnapshot";
 export type * from "./MarketWindow";
