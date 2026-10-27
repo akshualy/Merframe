@@ -6,17 +6,17 @@ use tauri::{AppHandle, Runtime};
 use wf_core::{ListingChoices, market_name, riven_listing_payload, riven_listing_update};
 use wf_market::{
     Auction, CreateOrderRequest, ItemListings, Order, OrderType, UpdateAuctionRequest,
-    UpdateOrderRequest, UserStatus, order_rejection,
+    UpdateOrderRequest, order_rejection,
 };
 
 use super::{Shared, ready};
 
 use crate::error::{CommandError, CommandResult};
-use crate::market::{self, MarketItems, MarketOrders, Presence};
+use crate::market::{self, MarketItems, MarketOrders, MarketPresenceChoice, Presence};
 use crate::market_session;
 use crate::runtime::{self, AppEvent};
 use crate::settings::MarketAccount;
-use crate::state::{AppState, lock, read, write};
+use crate::state::{AppState, lock, read};
 
 fn unlisted_items() -> CommandError {
     CommandError::from("The warframe.market item list is not loaded")
@@ -381,21 +381,13 @@ pub async fn market_presence(state: Shared<'_>) -> CommandResult<Presence> {
 }
 
 #[tauri::command]
-pub async fn market_set_presence(
+pub async fn market_set_presence<R: Runtime>(
+    app: AppHandle<R>,
     state: Shared<'_>,
-    status: Option<UserStatus>,
-    auto: bool,
+    choice: MarketPresenceChoice,
 ) -> CommandResult<Presence> {
     let state = ready(&state).await?;
-
-    let mut guard = write(&state.market_presence);
-    guard.status = status;
-    guard.auto = auto;
-    let presence = *guard;
-    drop(guard);
-
-    state.market_presence_wake.notify_one();
-    Ok(presence)
+    Ok(market_session::set_presence(&app, &state, choice)?)
 }
 
 #[tauri::command]

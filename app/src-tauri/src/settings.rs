@@ -10,11 +10,14 @@ use tauri_plugin_store::{Store, StoreExt};
 use wf_core::{AlertSettings, DucateringFilter, DucateringHidden, MasteryOptions, MasteryOrdering};
 use wf_market::{OrderType, Reach, Session, TraderStatus};
 
+use crate::market::MarketPresenceChoice;
+
 pub const STORE_FILE: &str = "merframe.json";
 const TOKEN_FILE: &str = "market_token";
 const SETTINGS_KEY: &str = "settings";
 const LEGACY_TOKEN_KEY: &str = "market_token";
 const ACCOUNT_KEY: &str = "market_account";
+const PRESENCE_KEY: &str = "market_presence";
 
 pub const DISCORD_TEMPLATE: &str = "{tenno} started a conversation with you in Warframe.";
 
@@ -654,6 +657,19 @@ pub fn set_account<R: Runtime>(
         .transpose()
         .context("Serializing the market account")?;
     put(app, ACCOUNT_KEY, value)
+}
+
+pub fn presence<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<MarketPresenceChoice> {
+    let choice = stored(app, PRESENCE_KEY, "Stored market presence is not readable")?;
+    Ok(choice.unwrap_or_default())
+}
+
+pub fn set_presence<R: Runtime>(
+    app: &AppHandle<R>,
+    choice: MarketPresenceChoice,
+) -> anyhow::Result<()> {
+    let value = serde_json::to_value(choice).context("Serializing the market presence")?;
+    put(app, PRESENCE_KEY, Some(value))
 }
 
 #[cfg(test)]

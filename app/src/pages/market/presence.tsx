@@ -1,15 +1,33 @@
 import { useEffect } from "react";
 import { OptionSelect } from "@/components/option-select";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api, logError, reportError } from "@/lib/bridge";
 import { usePresenceStore } from "@/stores/presence-store";
-import type { Presence, UserStatus } from "@/types";
+import type { MarketPresenceChoice, UserStatus } from "@/types";
 
-const OPTIONS: { value: UserStatus; label: string }[] = [
-  { value: "invisible", label: "Offline" },
-  { value: "online", label: "Online" },
-  { value: "ingame", label: "In game" },
-];
+const STATUS_LABELS: Record<UserStatus, string> = {
+  offline: "Offline",
+  invisible: "Offline",
+  online: "Online",
+  ingame: "In game",
+};
+
+const OPTIONS = (["invisible", "online", "ingame"] as UserStatus[]).map(
+  (value) => ({ value, label: STATUS_LABELS[value] }),
+);
+
+export function LiveStatusBadge() {
+  const live = usePresenceStore((state) => state.presence.live);
+  if (live === null) {
+    return <Badge variant="muted">Status unknown</Badge>;
+  }
+
+  const online = live === "online" || live === "ingame";
+  return (
+    <Badge variant={online ? "accent" : "muted"}>{STATUS_LABELS[live]}</Badge>
+  );
+}
 
 export function PresenceControl() {
   const presence = usePresenceStore((state) => state.presence);
@@ -26,10 +44,9 @@ export function PresenceControl() {
     load();
   }, [setPresence]);
 
-  const push = async (next: Presence) => {
-    setPresence(next);
+  const choose = async (choice: MarketPresenceChoice) => {
     try {
-      await api.marketSetPresence(next.status, next.auto);
+      await api.marketSetPresence(choice);
     } catch (error) {
       reportError(error);
     }
@@ -41,17 +58,17 @@ export function PresenceControl() {
         <Checkbox
           checked={presence.auto}
           onCheckedChange={(checked) =>
-            push({ ...presence, auto: checked === true })
+            choose({ status: presence.status, auto: checked === true })
           }
         />
         Follow the game
       </label>
       <OptionSelect
         label="warframe.market status"
-        value={presence.live ?? presence.status}
+        value={presence.status}
         options={OPTIONS}
         anyLabel="Status untouched"
-        onChange={(status) => push({ ...presence, status })}
+        onChange={(status) => choose({ status, auto: presence.auto })}
         size="sm"
         disabled={presence.auto}
       />
