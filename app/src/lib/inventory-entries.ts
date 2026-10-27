@@ -220,7 +220,12 @@ export function hasOrder(
   entry: InventoryEntry,
   flags: InventoryFlags,
 ): boolean {
-  return flags.selling.has(entry.row.item) || flags.buying.has(entry.row.item);
+  const listed = (item: number) =>
+    flags.selling.has(item) || flags.buying.has(item);
+  return (
+    listed(entry.row.item) ||
+    (entry.kind === "part" && listed(entry.row.set.item))
+  );
 }
 
 export function equippedLabel(holders: ModHolder[]): string | null {

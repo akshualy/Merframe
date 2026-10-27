@@ -260,7 +260,10 @@ describe("keeps", () => {
     expect(keeps(serration, favourite, flags)).toBe(true);
     expect(keeps(barrel, favourite, flags)).toBe(false);
     const ordered = { ...filters, yesNo: { orderPlaced: "yes" as const } };
-    expect(keeps(barrel, ordered, flags)).toBe(false);
+    expect(keeps(barrel, ordered, flags)).toBe(true);
+    const unordered = { ...filters, yesNo: { orderPlaced: "no" as const } };
+    expect(keeps(barrel, unordered, flags)).toBe(false);
+    expect(keeps(serration, unordered, flags)).toBe(true);
     expect(keeps(barrel, { ...filters, minPlat: 5 }, flags)).toBe(true);
     expect(keeps(barrel, { ...filters, minPlat: 10 }, flags)).toBe(false);
   });
