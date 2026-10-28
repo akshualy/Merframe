@@ -1,6 +1,7 @@
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SwitchField } from "@/components/ui/switch";
+import { toggled } from "@/lib/filters";
 import type { DucateringHidden, Settings } from "@/types";
 
 const HIDDEN: { value: DucateringHidden; label: string }[] = [
@@ -48,9 +49,7 @@ export function DucateringFilters({
     settings.ducatering_hidden.includes("complete_sets");
   const setHidden = (kind: DucateringHidden, hidden: boolean) =>
     update({
-      ducatering_hidden: hidden
-        ? [...settings.ducatering_hidden, kind]
-        : settings.ducatering_hidden.filter((entry) => entry !== kind),
+      ducatering_hidden: toggled(settings.ducatering_hidden, kind, hidden),
     });
   return (
     <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2">

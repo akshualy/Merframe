@@ -1,11 +1,13 @@
 import { Save, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router";
 import { Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { api, reportError } from "@/lib/bridge";
 import { notify } from "@/lib/toast";
 import { useAppStore, useSettings } from "@/stores/app-store";
 import type { Settings } from "@/types";
+import { ArbitrationAlertSettingsSection } from "./arbitrations";
 import { PricesAndData, StatsTabSetting } from "./data";
 import { DisplaySetting } from "./display";
 import { EventFeed } from "./feed";
@@ -23,6 +25,15 @@ export function SettingsPage() {
   useEffect(() => {
     setDraft(stored);
   }, [stored]);
+
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash) {
+      document
+        .getElementById(hash.slice(1))
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [hash]);
 
   const patch = useCallback(
     (next: Partial<Settings>) =>
@@ -89,6 +100,10 @@ export function SettingsPage() {
         <FissureAlerts draft={draft} patchAlerts={patchAlerts} />
         <CycleTimers draft={draft} patchAlerts={patchAlerts} />
         <WorldRewardAlertSettings draft={draft} patchAlerts={patchAlerts} />
+        <ArbitrationAlertSettingsSection
+          draft={draft}
+          patchAlerts={patchAlerts}
+        />
       </div>
       <PricesAndData draft={draft} patch={patch} />
       <StatsTabSetting draft={draft} patch={patch} />

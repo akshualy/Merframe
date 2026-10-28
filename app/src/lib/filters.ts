@@ -34,6 +34,16 @@ export function withYesNo<K extends string>(
   return next;
 }
 
+export function toggled<T>(
+  list: readonly T[],
+  value: T,
+  on: boolean = !list.includes(value),
+): T[] {
+  return on
+    ? [...list.filter((kept) => kept !== value), value]
+    : list.filter((kept) => kept !== value);
+}
+
 export interface FilterOption<T extends string = string> {
   value: T;
   label: string;

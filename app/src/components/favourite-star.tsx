@@ -1,8 +1,7 @@
 import { Star } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { MarkToggle } from "@/components/mark-toggle";
 import { api, reportError } from "@/lib/bridge";
-import { cn } from "@/lib/utils";
 
 export function FavouriteStar({
   uniqueName,
@@ -33,27 +32,14 @@ export function FavouriteStar({
   );
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
+    <MarkToggle
+      icon={Star}
+      pressed={favourite}
+      label={favourite ? "Unfavourite" : "Favourite"}
       disabled={busy}
-      aria-label={favourite ? "Unfavourite" : "Favourite"}
-      aria-pressed={favourite}
-      title={favourite ? "Unfavourite" : "Favourite"}
-      className={cn(
-        "shrink-0 hover:bg-transparent dark:hover:bg-transparent",
-        size === "small" ? "size-6" : "size-7",
-        favourite
-          ? "text-accent hover:text-accent"
-          : "text-muted-foreground/50 hover:text-accent",
-        className,
-      )}
+      size={size}
+      className={className}
       onClick={handleToggle}
-    >
-      <Star
-        className={size === "small" ? "size-3.5" : "size-4"}
-        fill={favourite ? "currentColor" : "none"}
-      />
-    </Button>
+    />
   );
 }

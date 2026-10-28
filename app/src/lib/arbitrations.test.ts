@@ -6,11 +6,14 @@ import {
   dayName,
   groupByDay,
   liveSlots,
+  nextMatch,
   nextSlot,
   nodeValues,
+  personalMatch,
   slotMission,
   slotPlace,
   slotSearchText,
+  upcomingSlot,
 } from "./arbitrations";
 
 const HOUR = 3_600_000;
@@ -25,6 +28,9 @@ function slot(
     id: `${starts / 1000}:SolNode64`,
     starts: new Date(starts).toISOString(),
     ends: new Date(starts + HOUR).toISOString(),
+    favourite: false,
+    matches: true,
+    reminder: false,
     node_id: "SolNode64",
     node: "Umbriel",
     planet: "Uranus",
@@ -35,12 +41,15 @@ function slot(
   };
 }
 
-function schedule(slots: ArbitrationSlot[]): ArbitrationSchedule {
-  return { slots, nodes: [] };
+function schedule(
+  slots: ArbitrationSlot[],
+  has_match_rules = false,
+): ArbitrationSchedule {
+  return { slots, nodes: [], has_match_rules };
 }
 
 describe("slot selection", () => {
-  const slots = [slot(0), slot(1), slot(2)];
+  const slots = [slot(0), slot(1, { matches: false }), slot(2)];
   const now = FIRST + 30 * 60_000;
 
   test("live, current and next", () => {
@@ -52,6 +61,25 @@ describe("slot selection", () => {
     expect(nextSlot(slots, now)?.id).toBe(slots[1]?.id);
     expect(nextSlot(slots, FIRST + 2 * HOUR)).toBeNull();
   });
+
+  test("next match needs rules and skips non-matching hours", () => {
+    expect(nextMatch(schedule(slots), now)).toBeNull();
+    expect(nextMatch(schedule(slots, true), now)?.id).toBe(slots[2]?.id);
+    expect(nextMatch(schedule([slot(0)], true), now)).toBeNull();
+    expect(upcomingSlot(schedule(slots), now)).toEqual({
+      slot: slots[1],
+      label: "Next",
+    });
+    expect(upcomingSlot(schedule(slots, true), now)).toEqual({
+      slot: slots[2],
+      label: "Next match",
+    });
+    expect(upcomingSlot(schedule([slot(0), slot(1)], true), now)).toEqual({
+      slot: slot(1),
+      label: "Next",
+    });
+    expect(upcomingSlot(null, now)).toBeNull();
+  });
 });
 
 test("node values are distinct and sorted", () => {
@@ -62,6 +90,14 @@ test("node values are distinct and sorted", () => {
     { ...slot(0), planet: "Uranus" },
   ];
   expect(nodeValues(nodes, "planet")).toEqual(["Mars", "Uranus"]);
+});
+
+test("personal filters read the slot marks", () => {
+  const marked = slot(0, { favourite: true, reminder: true, matches: false });
+  expect(personalMatch(marked, null)).toBe(true);
+  expect(personalMatch(marked, "favourites")).toBe(true);
+  expect(personalMatch(marked, "reminders")).toBe(true);
+  expect(personalMatch(marked, "matches")).toBe(false);
 });
 
 test("labels and search text", () => {

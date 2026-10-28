@@ -1,12 +1,15 @@
-import { type LucideIcon, Timer } from "lucide-react";
+import { Bell, type LucideIcon, Star, Timer } from "lucide-react";
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router";
 import { GameIcon } from "@/components/game-icon";
+import { MarkToggle } from "@/components/mark-toggle";
 import { EmptyNote, FramedList, Surface } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
 import {
+  ARBITRATION_SETTINGS_PATH,
   type ArbitrationDay,
   slotMission,
   slotPlace,
@@ -38,7 +41,72 @@ export function TierBadge({ tier }: { tier: ArbitrationTier }) {
   );
 }
 
-function HeroHeading({
+export interface SlotMarks {
+  busy: boolean;
+  reminderAllowed: boolean;
+  onFavourite: (nodeId: string) => void;
+  onReminder: (slot: ArbitrationSlot) => void;
+}
+
+function StarButton({
+  slot,
+  marks,
+}: {
+  slot: ArbitrationSlot;
+  marks: SlotMarks;
+}) {
+  return (
+    <MarkToggle
+      icon={Star}
+      pressed={slot.favourite}
+      label={slot.favourite ? "Remove favourite node" : "Favourite this node"}
+      disabled={marks.busy}
+      onClick={() => marks.onFavourite(slot.node_id)}
+    />
+  );
+}
+
+function bellLabel(
+  slot: ArbitrationSlot,
+  marks: SlotMarks,
+  started: boolean,
+): string {
+  if (started) {
+    return "This rotation has already started";
+  }
+
+  if (slot.reminder) {
+    return "Remove reminder";
+  }
+
+  return marks.reminderAllowed
+    ? "Remind me about this rotation"
+    : "Turn on a notification channel in Settings first";
+}
+
+function BellButton({
+  slot,
+  marks,
+  started,
+}: {
+  slot: ArbitrationSlot;
+  marks: SlotMarks;
+  started: boolean;
+}) {
+  const disabled =
+    marks.busy || started || (!marks.reminderAllowed && !slot.reminder);
+  return (
+    <MarkToggle
+      icon={Bell}
+      pressed={slot.reminder}
+      label={bellLabel(slot, marks, started)}
+      disabled={disabled}
+      onClick={() => marks.onReminder(slot)}
+    />
+  );
+}
+
+export function HeroHeading({
   icon: Icon,
   label,
   children,
@@ -67,18 +135,21 @@ function HeroCard({
   label,
   slot,
   empty,
+  mark,
   children,
 }: {
   icon: LucideIcon | "arbitration";
   label: string;
   slot: ArbitrationSlot | null;
   empty: { title: string; note: string };
+  mark?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <Surface className="gap-1 px-4 py-3">
       <HeroHeading icon={icon} label={label}>
         {slot && <TierBadge tier={slot.tier} />}
+        {mark}
       </HeroHeading>
       {slot ? (
         <>
@@ -120,14 +191,21 @@ function Countdown({ label, seconds }: { label: string; seconds: number }) {
 export function HeroCards({
   current,
   next,
+  match,
+  hasMatchRules,
   now,
+  marks,
 }: {
   current: ArbitrationSlot | null;
   next: ArbitrationSlot | null;
+  match: ArbitrationSlot | null;
+  hasMatchRules: boolean;
   now: number;
+  marks: SlotMarks;
 }) {
+  const navigate = useNavigate();
   return (
-    <div className="grid gap-3 @lg:grid-cols-2">
+    <div className="grid gap-3 @3xl:grid-cols-3">
       <HeroCard
         icon="arbitration"
         label="Current rotation"
@@ -136,6 +214,7 @@ export function HeroCards({
           title: "No current forecast",
           note: "The schedule refreshes on its own.",
         }}
+        mark={current && <StarButton slot={current} marks={marks} />}
       >
         {current && (
           <>
@@ -155,6 +234,7 @@ export function HeroCards({
           title: "Next hour unknown",
           note: "The forecast has no later rotation.",
         }}
+        mark={next && <BellButton slot={next} marks={marks} started={false} />}
       >
         {next && (
           <span className="flex flex-col">
@@ -165,11 +245,53 @@ export function HeroCards({
           </span>
         )}
       </HeroCard>
+      <HeroCard
+        icon={Star}
+        label="Next match"
+        slot={match}
+        empty={
+          hasMatchRules
+            ? {
+                title: "No matching rotation",
+                note: "Nothing in the next seven days matches your Arbitration filters.",
+              }
+            : {
+                title: "No filters active",
+                note: "Turn on matching Arbitration alerts and pick mission types, planets, factions, tiers or nodes under Settings.",
+              }
+        }
+      >
+        <div className="flex items-end justify-between gap-3">
+          {match ? (
+            <Countdown
+              label={`Starts at ${timeOfDay(match.starts)}`}
+              seconds={secondsUntil(match.starts, now)}
+            />
+          ) : (
+            <span />
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(ARBITRATION_SETTINGS_PATH)}
+          >
+            Edit filters
+          </Button>
+        </div>
+      </HeroCard>
     </div>
   );
 }
 
-function SlotRow({ slot, now }: { slot: ArbitrationSlot; now: number }) {
+function SlotRow({
+  slot,
+  now,
+  marks,
+}: {
+  slot: ArbitrationSlot;
+  now: number;
+  marks: SlotMarks;
+}) {
   const started = new Date(slot.starts).getTime() <= now;
   return (
     <li
@@ -196,6 +318,8 @@ function SlotRow({ slot, now }: { slot: ArbitrationSlot; now: number }) {
       <Hint as="span" className="hidden w-24 shrink-0 @md:block">
         {slot.faction ?? "Unknown faction"}
       </Hint>
+      <StarButton slot={slot} marks={marks} />
+      <BellButton slot={slot} marks={marks} started={started} />
     </li>
   );
 }
@@ -204,11 +328,13 @@ export function DayList({
   days,
   total,
   now,
+  marks,
   onClear,
 }: {
   days: ArbitrationDay[];
   total: number;
   now: number;
+  marks: SlotMarks;
   onClear: () => void;
 }) {
   if (total === 0) {
@@ -239,7 +365,7 @@ export function DayList({
           }
         >
           {day.slots.map((slot) => (
-            <SlotRow key={slot.id} slot={slot} now={now} />
+            <SlotRow key={slot.id} slot={slot} now={now} marks={marks} />
           ))}
         </FramedList>
       ))}

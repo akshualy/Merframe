@@ -7,7 +7,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 #[cfg(not(target_os = "linux"))]
 use tauri_plugin_notification::NotificationExt;
 use tracing::{debug, error, info, warn};
-use wf_core::CoreEvent;
+use wf_core::{ArbitrationAlert, CoreEvent};
 
 use crate::envelope::CoreEventEnvelope;
 use crate::event_feed::{self, EventFeed};
@@ -15,7 +15,7 @@ use crate::market::{MarketSnapshot, Presence};
 use crate::notice::Notice;
 use crate::overlay::{self, OverlayState};
 pub use crate::runtime::market_loop::MarketAutoClose;
-use crate::settings::Settings;
+use crate::settings::{self, DiscordMirroredAlert, Settings};
 use crate::state::{AppState, GameStatus, InventorySource, lock, read, write};
 
 mod attach;
@@ -38,6 +38,7 @@ pub enum AppEvent {
     CoreEvent(CoreEventEnvelope),
     StatusUpdated(GameStatus),
     InventoryUpdated(GameStatus),
+    SettingsUpdated(Box<Settings>),
     TradesUpdated,
     WorldStateUpdated,
     RivenDataUpdated,
@@ -136,25 +137,7 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
     let settings = read(&state.settings).clone();
     match event {
         CoreEvent::NewConversation { player, .. } => {
-            if state
-                .focus
-                .suppresses(settings.notifications.notification_only_background)
-            {
-                return;
-            }
-
-            let discord = &settings.discord;
-            let message = discord
-                .discord_notifications_enabled
-                .then(|| discord.discord_message_template.replace("{tenno}", player));
-            alert(
-                app,
-                state,
-                &settings,
-                &Notice::conversation(player),
-                message,
-            )
-            .await;
+            conversation_alert(app, state, &settings, player).await;
         }
         CoreEvent::RelicRewardScreen { relic, screen } => {
             overlay::on_relic_rewards(app, state, relic.clone(), screen);
@@ -186,12 +169,22 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             }
         }
         CoreEvent::FissureAlert { fissure } => {
-            let mirrored = settings.discord.mirrored.discord_fissure_alerts;
-            world_alert(app, state, &settings, &Notice::fissure(fissure), mirrored).await;
+            let notice = Notice::fissure(fissure);
+            world_alert(
+                app,
+                state,
+                &settings,
+                &notice,
+                DiscordMirroredAlert::Fissure,
+            )
+            .await;
         }
         CoreEvent::WorldRewardAlert { reward } => {
-            let mirrored = settings.discord.mirrored.discord_reward_alerts;
-            world_alert(app, state, &settings, &Notice::reward(reward), mirrored).await;
+            let notice = Notice::reward(reward);
+            world_alert(app, state, &settings, &notice, DiscordMirroredAlert::Reward).await;
+        }
+        CoreEvent::ArbitrationAlert { alert } => {
+            arbitration_alert(app, state, &settings, alert).await;
         }
         CoreEvent::TimerAlert {
             name,
@@ -199,9 +192,8 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             remaining_secs,
             ..
         } => {
-            let mirrored = settings.discord.mirrored.discord_timer_alerts;
             let notice = Notice::timer(name, next_state, *remaining_secs);
-            world_alert(app, state, &settings, &notice, mirrored).await;
+            world_alert(app, state, &settings, &notice, DiscordMirroredAlert::Timer).await;
         }
         CoreEvent::InventoryUpdated(_) => {}
     }
@@ -212,10 +204,68 @@ async fn world_alert<R: Runtime>(
     state: &Arc<AppState>,
     settings: &Settings,
     notice: &Notice,
-    mirrored: bool,
+    kind: DiscordMirroredAlert,
 ) {
-    let message = mirrored.then(|| notice.webhook_message());
+    let message = settings
+        .discord
+        .mirrored
+        .mirrors(kind)
+        .then(|| notice.webhook_message());
     alert(app, state, settings, notice, message).await;
+}
+
+async fn conversation_alert<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    settings: &Settings,
+    player: &str,
+) {
+    if state
+        .focus
+        .suppresses(settings.notifications.notification_only_background)
+    {
+        return;
+    }
+
+    let discord = &settings.discord;
+    let message = discord
+        .mirrored
+        .mirrors(DiscordMirroredAlert::Conversation)
+        .then(|| discord.discord_message_template.replace("{tenno}", player));
+    alert(app, state, settings, &Notice::conversation(player), message).await;
+}
+
+async fn arbitration_alert<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    settings: &Settings,
+    alert: &ArbitrationAlert,
+) {
+    if alert.reminder {
+        forget_arbitration_reminder(app, state, &alert.slot.id);
+    }
+
+    let notice = Notice::arbitration(alert);
+    world_alert(
+        app,
+        state,
+        settings,
+        &notice,
+        DiscordMirroredAlert::Arbitration,
+    )
+    .await;
+}
+
+fn forget_arbitration_reminder<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, id: &str) {
+    let mut updated = read(&state.settings).clone();
+    if !updated.alerts.arbitrations.reminders.remove(id) {
+        return;
+    }
+
+    if let Err(error) = settings::apply(app, state, &updated) {
+        warn!(%error, "Settings not saved after the arbitration reminder fired");
+    }
+    emit(app, AppEvent::SettingsUpdated(Box::new(updated)));
 }
 
 fn count_trade<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
@@ -252,7 +302,7 @@ async fn alert<R: Runtime>(
     }
 
     if let Some(message) = webhook {
-        post_webhook(state, settings.discord.discord_webhook.as_deref(), message).await;
+        post_webhook(state, settings.discord.webhook(), message).await;
     }
 }
 
@@ -298,13 +348,10 @@ pub async fn test_notifications<R: Runtime>(
     settings: &Settings,
 ) -> anyhow::Result<()> {
     let discord = &settings.discord;
-    let webhook = if discord.discord_notifications_enabled || discord.mirrored.any() {
+    let webhook = if discord.mirrored.any() {
         Some(
-            settings
-                .discord
-                .discord_webhook
-                .as_deref()
-                .filter(|url| !url.is_empty())
+            discord
+                .webhook()
                 .context("The Discord webhook URL is empty")?,
         )
     } else {
@@ -332,7 +379,7 @@ pub async fn test_notifications<R: Runtime>(
 }
 
 async fn post_webhook(state: &Arc<AppState>, url: Option<&str>, message: String) {
-    let Some(url) = url.filter(|url| !url.is_empty()) else {
+    let Some(url) = url else {
         return;
     };
     if let Err(error) = send_webhook(state, url, &message).await {

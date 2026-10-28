@@ -13,8 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PositionPicker } from "@/components/ui/position-picker";
 import { api, reportError } from "@/lib/bridge";
+import { toggled } from "@/lib/filters";
 import { notify } from "@/lib/toast";
-import type { InGameToast, Settings, ToastPosition } from "@/types";
+import type {
+  DiscordMirroredAlert,
+  InGameToast,
+  Settings,
+  ToastPosition,
+} from "@/types";
 import { CheckboxRow, type Patch, SwitchRow } from "./row";
 
 const TOAST_POSITIONS: { value: ToastPosition; label: string }[] = [
@@ -26,11 +32,20 @@ const TOAST_POSITIONS: { value: ToastPosition; label: string }[] = [
   { value: "bottom_right", label: "Bottom right" },
 ];
 
+const DISCORD_MIRRORED: { value: DiscordMirroredAlert; label: string }[] = [
+  { value: "conversation", label: "New conversations" },
+  { value: "fissure", label: "Fissure alerts" },
+  { value: "reward", label: "Reward alerts" },
+  { value: "arbitration", label: "Arbitration alerts" },
+  { value: "timer", label: "Cycle timers" },
+];
+
 const IN_GAME_TOASTS: { value: InGameToast; label: string }[] = [
   { value: "inventory", label: "Inventory changes" },
   { value: "trade", label: "Completed trades" },
   { value: "fissure", label: "Fissure alerts" },
   { value: "reward", label: "Reward alerts" },
+  { value: "arbitration", label: "Arbitration alerts" },
   { value: "timer", label: "Timer alerts" },
   { value: "market_close", label: "Closed orders and auctions" },
 ];
@@ -128,11 +143,11 @@ export function NotificationChannels({
                   checked={!draft.toasts_in_game_muted.includes(value)}
                   onCheckedChange={(checked) =>
                     patch({
-                      toasts_in_game_muted: checked
-                        ? draft.toasts_in_game_muted.filter(
-                            (muted) => muted !== value,
-                          )
-                        : [...draft.toasts_in_game_muted, value],
+                      toasts_in_game_muted: toggled(
+                        draft.toasts_in_game_muted,
+                        value,
+                        !checked,
+                      ),
                     })
                   }
                   onSelect={(event) => event.preventDefault()}
@@ -188,31 +203,31 @@ export function NotificationChannels({
         </div>
         <div className="flex flex-col gap-4">
           <SwitchRow
-            checked={draft.discord_notifications_enabled}
-            onChange={(checked) =>
-              patch({ discord_notifications_enabled: checked })
-            }
+            checked={draft.discord_mirror_enabled}
+            onChange={(checked) => patch({ discord_mirror_enabled: checked })}
           >
-            Mirror new conversations to Discord
+            Mirror to Discord
           </SwitchRow>
-          <SwitchRow
-            checked={draft.discord_fissure_alerts}
-            onChange={(checked) => patch({ discord_fissure_alerts: checked })}
-          >
-            Mirror fissure alerts to Discord
-          </SwitchRow>
-          <SwitchRow
-            checked={draft.discord_reward_alerts}
-            onChange={(checked) => patch({ discord_reward_alerts: checked })}
-          >
-            Mirror reward alerts to Discord
-          </SwitchRow>
-          <SwitchRow
-            checked={draft.discord_timer_alerts}
-            onChange={(checked) => patch({ discord_timer_alerts: checked })}
-          >
-            Mirror cycle timers to Discord
-          </SwitchRow>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {DISCORD_MIRRORED.map(({ value, label }) => (
+              <CheckboxRow
+                key={value}
+                checked={draft.discord_mirrored_alerts.includes(value)}
+                disabled={!draft.discord_mirror_enabled}
+                onChange={(checked) =>
+                  patch({
+                    discord_mirrored_alerts: toggled(
+                      draft.discord_mirrored_alerts,
+                      value,
+                      checked,
+                    ),
+                  })
+                }
+              >
+                {label}
+              </CheckboxRow>
+            ))}
+          </div>
           <Field id="webhook" label="Discord webhook URL">
             <Input
               id="webhook"

@@ -1,7 +1,9 @@
 use std::fmt::Write as _;
 
 use serde::Serialize;
-use wf_core::{CoreEvent, FissureInfo, InventorySummary, WorldRewardAlert, thousands};
+use wf_core::{
+    ArbitrationAlert, CoreEvent, FissureInfo, InventorySummary, WorldRewardAlert, thousands,
+};
 use wf_worldstate::WorldRewardSource;
 
 use crate::settings::InGameToast;
@@ -35,6 +37,7 @@ impl Notice {
             CoreEvent::NewConversation { player, .. } => Some(Self::conversation(player)),
             CoreEvent::FissureAlert { fissure } => Some(Self::fissure(fissure)),
             CoreEvent::WorldRewardAlert { reward } => Some(Self::reward(reward)),
+            CoreEvent::ArbitrationAlert { alert } => Some(Self::arbitration(alert)),
             CoreEvent::TimerAlert {
                 name,
                 next_state,
@@ -131,6 +134,30 @@ impl Notice {
         }
     }
 
+    pub fn arbitration(alert: &ArbitrationAlert) -> Self {
+        let node = &alert.slot.node;
+        let mission = node.mission_type.unwrap_or("Unknown mission");
+        let title = if alert.at_start {
+            format!("Arbitration now: {mission}")
+        } else {
+            format!("Arbitration in {} min: {mission}", alert.minutes_ahead)
+        };
+        let mut body = node.node.clone();
+        if let Some(planet) = node.planet {
+            let _ = write!(body, " ({planet})");
+        }
+        if let Some(faction) = node.faction {
+            let _ = write!(body, ", {faction}");
+        }
+        let _ = write!(body, ", tier {}, forecast by browse.wf", node.tier.label());
+        Self {
+            title,
+            body,
+            tone: Tone::Warning,
+            in_game: Some(InGameToast::Arbitration),
+        }
+    }
+
     pub fn timer(name: &str, next_state: &str, remaining_secs: i64) -> Self {
         Self {
             title: format!("{name} turns {next_state}"),
@@ -167,6 +194,8 @@ pub fn countdown(seconds: i64) -> String {
 #[cfg(test)]
 mod tests {
     use chrono::DateTime;
+    use wf_core::ArbitrationSlot;
+    use wf_worldstate::{ArbitrationNode, ArbitrationTier};
 
     use super::*;
 
@@ -254,6 +283,57 @@ mod tests {
             Notice::trade(120, Some("Tenno")).body,
             "120 plat with Tenno"
         );
+    }
+
+    #[test]
+    fn arbitration_notice() {
+        let umbriel = ArbitrationSlot {
+            id: String::from("1727892000:SolNode64"),
+            node: ArbitrationNode {
+                node_id: String::from("SolNode64"),
+                node: String::from("Umbriel"),
+                planet: Some("Uranus"),
+                mission_type: Some("Interception"),
+                faction: Some("Grineer"),
+                tier: ArbitrationTier::S,
+            },
+            starts: DateTime::UNIX_EPOCH,
+            ends: DateTime::UNIX_EPOCH,
+            favourite: false,
+            matches: true,
+            reminder: false,
+        };
+        let ahead = Notice::arbitration(&ArbitrationAlert {
+            slot: umbriel.clone(),
+            at_start: false,
+            minutes_ahead: 10,
+            reminder: false,
+        });
+        assert_eq!(ahead.title, "Arbitration in 10 min: Interception");
+        assert_eq!(
+            ahead.body,
+            "Umbriel (Uranus), Grineer, tier S, forecast by browse.wf"
+        );
+        assert_eq!(ahead.in_game, Some(InGameToast::Arbitration));
+
+        let unknown = Notice::arbitration(&ArbitrationAlert {
+            slot: ArbitrationSlot {
+                node: ArbitrationNode {
+                    node_id: String::from("SolNode99999"),
+                    node: String::from("SolNode99999"),
+                    planet: None,
+                    mission_type: None,
+                    faction: None,
+                    tier: ArbitrationTier::F,
+                },
+                ..umbriel
+            },
+            at_start: true,
+            minutes_ahead: 0,
+            reminder: true,
+        });
+        assert_eq!(unknown.title, "Arbitration now: Unknown mission");
+        assert_eq!(unknown.body, "SolNode99999, tier F, forecast by browse.wf");
     }
 
     #[test]

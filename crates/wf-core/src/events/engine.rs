@@ -3,9 +3,10 @@ use std::collections::{HashMap, HashSet};
 use chrono::{DateTime, TimeDelta, Utc};
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
-use wf_worldstate::{WorldState, node_info};
+use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState, node_info};
 
 use super::alerts::{AlertSettings, fissure_planet};
+use super::arbitrations::{ARBITRATION_FORECAST_TRUSTED, ArbitrationOutlook};
 use super::rewards::world_reward_alerts;
 use super::{CoreEvent, FissureInfo, InventorySummary};
 use crate::catalog::DUCATS_ITEM;
@@ -24,6 +25,7 @@ pub(crate) struct Engine {
     announced_fissures: HashMap<String, DateTime<Utc>>,
     announced_timers: HashMap<String, DateTime<Utc>>,
     announced_rewards: HashMap<String, DateTime<Utc>>,
+    announced_arbitrations: HashMap<String, DateTime<Utc>>,
     seen_channels: HashMap<String, DateTime<Utc>>,
 }
 
@@ -71,6 +73,7 @@ impl Engine {
             announced_fissures: HashMap::new(),
             announced_timers: HashMap::new(),
             announced_rewards: HashMap::new(),
+            announced_arbitrations: HashMap::new(),
             seen_channels: HashMap::new(),
         }
     }
@@ -178,6 +181,30 @@ impl Engine {
             events.push(CoreEvent::WorldRewardAlert { reward });
         }
         events
+    }
+
+    pub fn handle_arbitrations(
+        &mut self,
+        forecast: &ArbitrationForecast,
+        tiers: &ArbitrationTiers,
+        fetched_at: DateTime<Utc>,
+        now: DateTime<Utc>,
+    ) -> Vec<CoreEvent> {
+        if now.signed_duration_since(fetched_at) > ARBITRATION_FORECAST_TRUSTED {
+            return Vec::new();
+        }
+
+        let outlook = ArbitrationOutlook {
+            forecast,
+            tiers,
+            settings: &self.settings.arbitrations,
+        };
+        outlook
+            .due_alerts(now)
+            .into_iter()
+            .filter(|alert| remember(&mut self.announced_arbitrations, alert.key(), now))
+            .map(|alert| CoreEvent::ArbitrationAlert { alert })
+            .collect()
     }
 
     pub fn reward_screen_generation(&self) -> u64 {

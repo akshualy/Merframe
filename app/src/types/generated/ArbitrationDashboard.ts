@@ -2,4 +2,4 @@
 import type { ArbitrationForecastStatus } from "./ArbitrationForecastStatus";
 import type { ArbitrationSchedule } from "./ArbitrationSchedule";
 
-export type ArbitrationDashboard = { status: ArbitrationForecastStatus, fetched_at: string | null, schedule: ArbitrationSchedule | null, };
+export type ArbitrationDashboard = { status: ArbitrationForecastStatus, fetched_at: string | null, schedule: ArbitrationSchedule | null, notifications_available: boolean, };

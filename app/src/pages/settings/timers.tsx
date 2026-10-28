@@ -1,4 +1,5 @@
 import { Section } from "@/components/page";
+import { toggled } from "@/lib/filters";
 import type { CyclePhase, Settings } from "@/types";
 import { CheckboxRow, type PatchAlerts, SliderRow } from "./row";
 
@@ -77,11 +78,7 @@ export function CycleTimers({
                     checked={draft.alerts.timers.includes(value)}
                     onChange={(checked) =>
                       patchAlerts({
-                        timers: checked
-                          ? [...draft.alerts.timers, value]
-                          : draft.alerts.timers.filter(
-                              (phase) => phase !== value,
-                            ),
+                        timers: toggled(draft.alerts.timers, value, checked),
                       })
                     }
                   >

@@ -62,6 +62,7 @@ export function Page({
 }
 
 export function Section({
+  id,
   title,
   description,
   action,
@@ -69,6 +70,7 @@ export function Section({
   controls,
   children,
 }: {
+  id?: string;
   title?: string;
   description?: ReactNode;
   action?: ReactNode;
@@ -77,7 +79,7 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <Card className={cn("gap-4", className)}>
+    <Card id={id} className={cn("gap-4", className)}>
       {(title || description || action || controls) && (
         <CardHeader
           className={cn(

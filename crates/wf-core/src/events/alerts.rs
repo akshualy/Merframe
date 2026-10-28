@@ -3,6 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 use wf_worldstate::{Fissure, RelicTier, mission_type_name, node_and_planet};
 
+use super::arbitrations::ArbitrationAlertSettings;
 use super::rewards::WorldRewardAlertChoices;
 
 const ANY: &str = "all";
@@ -206,6 +207,7 @@ pub struct AlertSettings {
     pub timer_lead_secs: i64,
     pub reward_notifications_enabled: bool,
     pub rewards: WorldRewardAlertChoices,
+    pub arbitrations: ArbitrationAlertSettings,
 }
 
 impl Default for AlertSettings {
@@ -217,6 +219,7 @@ impl Default for AlertSettings {
             timer_lead_secs: 180,
             reward_notifications_enabled: false,
             rewards: WorldRewardAlertChoices::default(),
+            arbitrations: ArbitrationAlertSettings::default(),
         }
     }
 }
@@ -475,6 +478,11 @@ mod tests {
                 ],
                 ..WorldRewardAlertChoices::default()
             },
+            arbitrations: ArbitrationAlertSettings {
+                enabled: true,
+                reminders: BTreeSet::from(["1727892000:SolNode64".to_owned()]),
+                ..ArbitrationAlertSettings::default()
+            },
         };
         let json = serde_json::to_string(&settings).unwrap();
         assert!(json.contains(r#""subtype":"steelPath""#));
@@ -482,6 +490,9 @@ mod tests {
             r#""timers":["earth_day","cetus_night","vallis_warm","duviri_joy","zariman_grineer"]"#
         ));
         assert!(json.contains(r#""fissure_notifications_enabled":true"#));
+        assert!(json.contains(
+            r#""arbitrations":{"enabled":true,"notify_on_start":true,"lead_minutes":10"#
+        ));
         let parsed: AlertSettings = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed, settings);
     }

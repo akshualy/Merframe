@@ -147,6 +147,30 @@
         "data": {
           "type": "object",
           "properties": {
+            "alert": {
+              "$ref": "#/$defs/ArbitrationAlert"
+            }
+          },
+          "required": [
+            "alert"
+          ]
+        },
+        "event": {
+          "type": "string",
+          "const": "arbitration_alert"
+        }
+      },
+      "required": [
+        "event",
+        "data"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "properties": {
             "ends_at": {
               "type": "string",
               "format": "date-time"
@@ -272,6 +296,104 @@
       "required": [
         "plat",
         "ducats"
+      ]
+    },
+    "ArbitrationAlert": {
+      "type": "object",
+      "properties": {
+        "at_start": {
+          "type": "boolean"
+        },
+        "minutes_ahead": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "reminder": {
+          "type": "boolean"
+        },
+        "slot": {
+          "$ref": "#/$defs/ArbitrationSlot"
+        }
+      },
+      "required": [
+        "slot",
+        "at_start",
+        "minutes_ahead",
+        "reminder"
+      ]
+    },
+    "ArbitrationSlot": {
+      "type": "object",
+      "properties": {
+        "ends": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "faction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "favourite": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "matches": {
+          "type": "boolean"
+        },
+        "mission_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "node": {
+          "type": "string"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "planet": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reminder": {
+          "type": "boolean"
+        },
+        "starts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tier": {
+          "$ref": "#/$defs/ArbitrationTier"
+        }
+      },
+      "required": [
+        "id",
+        "node_id",
+        "node",
+        "tier",
+        "starts",
+        "ends",
+        "favourite",
+        "matches",
+        "reminder"
+      ]
+    },
+    "ArbitrationTier": {
+      "type": "string",
+      "enum": [
+        "S",
+        "A",
+        "B",
+        "C",
+        "D",
+        "F"
       ]
     },
     "AutoCloseKind": {

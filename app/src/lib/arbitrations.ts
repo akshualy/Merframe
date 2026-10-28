@@ -7,7 +7,13 @@ import type {
   ArbitrationTier,
 } from "@/types";
 
-export const ARBITRATION_RELOAD_EVENTS: EventName[] = ["worldStateUpdated"];
+export const ARBITRATION_ALERTS_SECTION_ID = "arbitration-alerts";
+export const ARBITRATION_SETTINGS_PATH = `/settings#${ARBITRATION_ALERTS_SECTION_ID}`;
+
+export const ARBITRATION_RELOAD_EVENTS: EventName[] = [
+  "worldStateUpdated",
+  "settingsUpdated",
+];
 
 export const ARBITRATION_TIERS: ArbitrationTier[] = [
   "S",
@@ -17,6 +23,10 @@ export const ARBITRATION_TIERS: ArbitrationTier[] = [
   "D",
   "F",
 ];
+
+export const ARBITRATION_LEAD_MINUTES = [0, 5, 10, 15, 30, 60] as const;
+
+export type ArbitrationPersonalFilter = "favourites" | "matches" | "reminders";
 
 export function slotPlace(slot: {
   node: string;
@@ -68,6 +78,49 @@ export function nextSlot(
   now: number,
 ): ArbitrationSlot | null {
   return slots.find((slot) => startsAt(slot) > now) ?? null;
+}
+
+export function nextMatch(
+  schedule: ArbitrationSchedule | null,
+  now: number,
+): ArbitrationSlot | null {
+  if (!schedule?.has_match_rules) {
+    return null;
+  }
+
+  return (
+    schedule.slots.find((slot) => startsAt(slot) > now && slot.matches) ?? null
+  );
+}
+
+export function upcomingSlot(
+  schedule: ArbitrationSchedule | null,
+  now: number,
+): { slot: ArbitrationSlot; label: "Next" | "Next match" } | null {
+  const slots = liveSlots(schedule, now);
+  const next = nextSlot(slots, now);
+  const match = nextMatch(schedule, now);
+  if (match && next && match.id !== next.id) {
+    return { slot: match, label: "Next match" };
+  }
+
+  return next ? { slot: next, label: "Next" } : null;
+}
+
+export function personalMatch(
+  slot: ArbitrationSlot,
+  personal: ArbitrationPersonalFilter | null,
+): boolean {
+  switch (personal) {
+    case "favourites":
+      return slot.favourite;
+    case "matches":
+      return slot.matches;
+    case "reminders":
+      return slot.reminder;
+    case null:
+      return true;
+  }
 }
 
 export function slotSearchText(slot: ArbitrationSlot): string {
