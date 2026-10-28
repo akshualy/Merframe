@@ -290,8 +290,7 @@
     "upgradeValues": [
      {
       "value": -0.0049999999,
-      "locTag": "|val|% Ammo Efficiency",
-      "reverseValueSymbol": true
+      "locTag": "|val|% Ammo Efficiency"
      }
     ]
    },
@@ -1134,8 +1133,7 @@
     "upgradeValues": [
      {
       "value": -0.0049999999,
-      "locTag": "|val|% Ammo Efficiency",
-      "reverseValueSymbol": true
+      "locTag": "|val|% Ammo Efficiency"
      }
     ]
    },
@@ -1564,8 +1562,7 @@
     "upgradeValues": [
      {
       "value": -0.0049999999,
-      "locTag": "|val|% Ammo Efficiency",
-      "reverseValueSymbol": true
+      "locTag": "|val|% Ammo Efficiency"
      }
     ]
    },
@@ -1997,8 +1994,7 @@
     "upgradeValues": [
      {
       "value": -0.0049999999,
-      "locTag": "|val|% Ammo Efficiency",
-      "reverseValueSymbol": true
+      "locTag": "|val|% Ammo Efficiency"
      }
     ]
    },
@@ -2419,8 +2415,7 @@
     "upgradeValues": [
      {
       "value": -0.0049999999,
-      "locTag": "|val|% Ammo Efficiency",
-      "reverseValueSymbol": true
+      "locTag": "|val|% Ammo Efficiency"
      }
     ]
    },
