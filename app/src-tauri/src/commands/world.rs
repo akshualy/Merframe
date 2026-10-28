@@ -14,6 +14,7 @@ use wf_worldstate::{
 
 use super::{Shared, ready};
 use crate::error::CommandResult;
+use crate::settings::{DiscordMirroredAlert, Settings};
 use crate::state::{lock, read};
 
 #[derive(Debug, Clone, Serialize)]
@@ -50,10 +51,27 @@ pub struct ArbitrationDashboard {
     pub status: ArbitrationForecastStatus,
     pub fetched_at: Option<DateTime<Utc>>,
     pub schedule: Option<ArbitrationSchedule>,
+    pub notifications_available: bool,
+}
+
+fn notifications_available(settings: &Settings) -> bool {
+    let webhook_set = settings.discord.webhook().is_some();
+    settings.toasts.toasts_enabled
+        || settings.notifications.windows_notifications_enabled
+        || (settings
+            .discord
+            .mirrored
+            .mirrors(DiscordMirroredAlert::Arbitration)
+            && webhook_set)
 }
 
 impl ArbitrationDashboard {
-    pub fn build(core: &Core, refresh_failed: bool, now: DateTime<Utc>) -> Self {
+    pub fn build(
+        core: &Core,
+        settings: &Settings,
+        refresh_failed: bool,
+        now: DateTime<Utc>,
+    ) -> Self {
         let schedule = core.arbitration_schedule(now);
         let fetched_at = core.arbitration_forecast_fetched_at();
         let status = match fetched_at.filter(|_| schedule.is_some()) {
@@ -68,6 +86,7 @@ impl ArbitrationDashboard {
             status,
             fetched_at,
             schedule,
+            notifications_available: notifications_available(settings),
         }
     }
 }
@@ -356,9 +375,11 @@ pub async fn invasion_weapon_parts(state: Shared<'_>) -> CommandResult<Vec<Invas
 #[tauri::command]
 pub async fn arbitrations(state: Shared<'_>) -> CommandResult<ArbitrationDashboard> {
     let state = ready(&state).await?;
+    let settings = read(&state.settings).clone();
     let refresh_failed = state.arbitration_refresh_failed.load(Ordering::Relaxed);
     Ok(ArbitrationDashboard::build(
         &lock(&state.core),
+        &settings,
         refresh_failed,
         Utc::now(),
     ))
@@ -382,6 +403,7 @@ mod tests {
     use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState};
 
     use super::*;
+    use crate::settings::{NotificationSettings, ToastSettings};
     use crate::test_support::{ARBITRATIONS, core_with, empty_catalog};
 
     const FIXTURE: &str = include_str!("../../../../fixtures/worldState.json");
@@ -626,24 +648,40 @@ mod tests {
     fn arbitration_dashboard_status() {
         let forecast = ArbitrationForecast::parse(ARBITRATIONS).unwrap();
         let fetched_at = DateTime::from_timestamp_millis(1_727_884_800_000).unwrap();
+        let settings = Settings::default();
         let mut core = core_with(empty_catalog());
-        let unavailable = ArbitrationDashboard::build(&core, false, fetched_at);
+        let unavailable = ArbitrationDashboard::build(&core, &settings, false, fetched_at);
         assert_eq!(unavailable.status, ArbitrationForecastStatus::Unavailable);
         assert!(unavailable.schedule.is_none());
+        assert!(unavailable.notifications_available);
 
         core.set_arbitration_forecast(forecast, ArbitrationTiers::default(), fetched_at);
-        let fresh = ArbitrationDashboard::build(&core, false, fetched_at);
+        let fresh = ArbitrationDashboard::build(&core, &settings, false, fetched_at);
         assert_eq!(fresh.status, ArbitrationForecastStatus::Fresh);
         assert_eq!(fresh.fetched_at, Some(fetched_at));
         assert_eq!(fresh.schedule.unwrap().slots.len(), 48);
-        let cached = ArbitrationDashboard::build(&core, true, fetched_at);
+        let cached = ArbitrationDashboard::build(&core, &settings, true, fetched_at);
         assert_eq!(cached.status, ArbitrationForecastStatus::Cached);
         let day_later = fetched_at + TimeDelta::hours(25);
-        let stale = ArbitrationDashboard::build(&core, false, day_later);
+        let stale = ArbitrationDashboard::build(&core, &settings, false, day_later);
         assert_eq!(stale.status, ArbitrationForecastStatus::Stale);
         let after_the_end = fetched_at + TimeDelta::hours(48);
-        let ended = ArbitrationDashboard::build(&core, false, after_the_end);
+        let ended = ArbitrationDashboard::build(&core, &settings, false, after_the_end);
         assert_eq!(ended.status, ArbitrationForecastStatus::Unavailable);
+
+        let silent = Settings {
+            toasts: ToastSettings {
+                toasts_enabled: false,
+                ..ToastSettings::default()
+            },
+            notifications: NotificationSettings {
+                windows_notifications_enabled: false,
+                ..NotificationSettings::default()
+            },
+            ..Settings::default()
+        };
+        let muted = ArbitrationDashboard::build(&core, &silent, false, fetched_at);
+        assert!(!muted.notifications_available);
     }
 
     #[test]

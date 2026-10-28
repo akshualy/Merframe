@@ -5,5 +5,6 @@ import type { MarketAutoClose } from "./MarketAutoClose";
 import type { MarketSnapshot } from "./MarketSnapshot";
 import type { OverlayState } from "./OverlayState";
 import type { Presence } from "./Presence";
+import type { Settings } from "./Settings";
 
-export type AppEvent = { "event": "coreEvent", "data": CoreEventEnvelope } | { "event": "statusUpdated", "data": GameStatus } | { "event": "inventoryUpdated", "data": GameStatus } | { "event": "tradesUpdated" } | { "event": "worldStateUpdated" } | { "event": "rivenDataUpdated" } | { "event": "pricesUpdated" } | { "event": "favouriteUpdated" } | { "event": "marketUpdated", "data": MarketSnapshot } | { "event": "marketAutoClosed", "data": MarketAutoClose } | { "event": "marketSessionRejected" } | { "event": "marketPresence", "data": Presence } | { "event": "overlayState", "data": OverlayState };
+export type AppEvent = { "event": "coreEvent", "data": CoreEventEnvelope } | { "event": "statusUpdated", "data": GameStatus } | { "event": "inventoryUpdated", "data": GameStatus } | { "event": "settingsUpdated", "data": Settings } | { "event": "tradesUpdated" } | { "event": "worldStateUpdated" } | { "event": "rivenDataUpdated" } | { "event": "pricesUpdated" } | { "event": "favouriteUpdated" } | { "event": "marketUpdated", "data": MarketSnapshot } | { "event": "marketAutoClosed", "data": MarketAutoClose } | { "event": "marketSessionRejected" } | { "event": "marketPresence", "data": Presence } | { "event": "overlayState", "data": OverlayState };

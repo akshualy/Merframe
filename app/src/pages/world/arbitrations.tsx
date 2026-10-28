@@ -7,26 +7,32 @@ import {
   ARBITRATION_RELOAD_EVENTS,
   currentSlot,
   liveSlots,
-  nextSlot,
   slotMission,
   slotPlace,
+  upcomingSlot,
 } from "@/lib/arbitrations";
 import { api } from "@/lib/bridge";
 import { secondsUntil } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { endingSoon, timeLeft } from "@/lib/world";
 import { TierBadge } from "@/pages/arbitrations/schedule";
+import { useSettings } from "@/stores/app-store";
 
 export function WorldArbitrationCard({ now }: { now: number }) {
+  const shown = useSettings().alerts.arbitrations.show_on_world_page;
   const { data } = useAsyncData(
     "arbitrations",
     api.arbitrations,
     ARBITRATION_RELOAD_EVENTS,
   );
   const navigate = useNavigate();
-  const slots = liveSlots(data?.schedule ?? null, now);
-  const current = currentSlot(slots, now);
-  const next = nextSlot(slots, now);
+  if (!shown) {
+    return null;
+  }
+
+  const schedule = data?.schedule ?? null;
+  const current = currentSlot(liveSlots(schedule, now), now);
+  const upcoming = upcomingSlot(schedule, now);
   const remaining = current ? secondsUntil(current.ends, now) : 0;
   return (
     <Surface
@@ -78,9 +84,12 @@ export function WorldArbitrationCard({ now }: { now: number }) {
           </>
         )}
       </div>
-      {next && (
+      {upcoming && (
         <Hint as="span" className="truncate">
-          Next: {slotMission(next)}, {slotPlace(next)}
+          {upcoming.label}: {slotMission(upcoming.slot)},{" "}
+          {slotPlace(upcoming.slot)}
+          {upcoming.label === "Next match" &&
+            ` in ${timeLeft(secondsUntil(upcoming.slot.starts, now))}`}
         </Hint>
       )}
     </Surface>

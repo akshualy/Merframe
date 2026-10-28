@@ -27,6 +27,7 @@ function createSeenGate() {
 export function EventBridge() {
   const setStatus = useAppStore((state) => state.setStatus);
   const setWorld = useAppStore((state) => state.setWorld);
+  const setSettings = useAppStore((state) => state.setSettings);
   const applySnapshot = useMarketListingsStore((state) => state.applySnapshot);
   const clearListings = useMarketListingsStore((state) => state.clear);
   const setPresence = usePresenceStore((state) => state.setPresence);
@@ -35,6 +36,7 @@ export function EventBridge() {
 
   useListen("statusUpdated", setStatus);
   useListen("inventoryUpdated", setStatus);
+  useListen("settingsUpdated", setSettings);
   useEffect(() => {
     let cancelled = false;
     let stop: Unlisten | null = null;

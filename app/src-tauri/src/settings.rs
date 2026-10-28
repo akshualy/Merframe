@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
@@ -11,6 +12,7 @@ use wf_core::{AlertSettings, DucateringFilter, DucateringHidden, MasteryOptions,
 use wf_market::{OrderType, Reach, Session, TraderStatus};
 
 use crate::market::MarketPresenceChoice;
+use crate::state::{AppState, lock, write};
 
 pub const STORE_FILE: &str = "merframe.json";
 const TOKEN_FILE: &str = "market_token";
@@ -185,6 +187,7 @@ pub enum InGameToast {
     Trade,
     Fissure,
     Reward,
+    Arbitration,
     Timer,
     MarketClose,
 }
@@ -213,25 +216,100 @@ pub struct NotificationSettings {
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[serde(default)]
 pub struct DiscordSettings {
-    pub discord_notifications_enabled: bool,
     pub discord_webhook: Option<String>,
     pub discord_message_template: String,
     #[serde(flatten)]
     pub mirrored: DiscordMirroredAlerts,
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-#[serde(default)]
+#[serde(rename_all = "snake_case")]
+pub enum DiscordMirroredAlert {
+    Conversation,
+    Fissure,
+    Reward,
+    Arbitration,
+    Timer,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct DiscordMirroredAlerts {
-    pub discord_fissure_alerts: bool,
-    pub discord_reward_alerts: bool,
-    pub discord_timer_alerts: bool,
+    pub discord_mirror_enabled: bool,
+    pub discord_mirrored_alerts: BTreeSet<DiscordMirroredAlert>,
 }
 
 impl DiscordMirroredAlerts {
-    pub fn any(self) -> bool {
-        self.discord_fissure_alerts || self.discord_reward_alerts || self.discord_timer_alerts
+    pub fn any(&self) -> bool {
+        self.discord_mirror_enabled && !self.discord_mirrored_alerts.is_empty()
+    }
+
+    pub fn mirrors(&self, alert: DiscordMirroredAlert) -> bool {
+        self.discord_mirror_enabled && self.discord_mirrored_alerts.contains(&alert)
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum StoredDiscordMirroredAlerts {
+    Set {
+        #[serde(default)]
+        discord_mirror_enabled: bool,
+        discord_mirrored_alerts: BTreeSet<DiscordMirroredAlert>,
+    },
+    Toggles {
+        #[serde(default)]
+        discord_notifications_enabled: bool,
+        #[serde(default)]
+        discord_fissure_alerts: bool,
+        #[serde(default)]
+        discord_reward_alerts: bool,
+        #[serde(default)]
+        discord_timer_alerts: bool,
+    },
+}
+
+impl<'de> Deserialize<'de> for DiscordMirroredAlerts {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(
+            match StoredDiscordMirroredAlerts::deserialize(deserializer)? {
+                StoredDiscordMirroredAlerts::Set {
+                    discord_mirror_enabled,
+                    discord_mirrored_alerts,
+                } => Self {
+                    discord_mirror_enabled,
+                    discord_mirrored_alerts,
+                },
+                StoredDiscordMirroredAlerts::Toggles {
+                    discord_notifications_enabled,
+                    discord_fissure_alerts,
+                    discord_reward_alerts,
+                    discord_timer_alerts,
+                } => {
+                    let discord_mirrored_alerts: BTreeSet<DiscordMirroredAlert> = [
+                        (
+                            discord_notifications_enabled,
+                            DiscordMirroredAlert::Conversation,
+                        ),
+                        (discord_fissure_alerts, DiscordMirroredAlert::Fissure),
+                        (discord_reward_alerts, DiscordMirroredAlert::Reward),
+                        (discord_timer_alerts, DiscordMirroredAlert::Timer),
+                    ]
+                    .into_iter()
+                    .filter(|(on, _)| *on)
+                    .map(|(_, alert)| alert)
+                    .collect();
+                    Self {
+                        discord_mirror_enabled: !discord_mirrored_alerts.is_empty(),
+                        discord_mirrored_alerts,
+                    }
+                }
+            },
+        )
     }
 }
 
@@ -365,10 +443,17 @@ impl Default for NotificationSettings {
     }
 }
 
+impl DiscordSettings {
+    pub fn webhook(&self) -> Option<&str> {
+        self.discord_webhook
+            .as_deref()
+            .filter(|url| !url.is_empty())
+    }
+}
+
 impl Default for DiscordSettings {
     fn default() -> Self {
         Self {
-            discord_notifications_enabled: false,
             discord_webhook: None,
             discord_message_template: DISCORD_TEMPLATE.to_owned(),
             mirrored: DiscordMirroredAlerts::default(),
@@ -594,6 +679,17 @@ pub fn save<R: Runtime>(app: &AppHandle<R>, settings: &Settings) -> anyhow::Resu
     put(app, SETTINGS_KEY, Some(value))
 }
 
+pub fn apply<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &AppState,
+    settings: &Settings,
+) -> anyhow::Result<Settings> {
+    let previous = std::mem::replace(&mut *write(&state.settings), settings.clone());
+    lock(&state.core).set_alert_settings(settings.alerts.clone());
+    save(app, settings)?;
+    Ok(previous)
+}
+
 fn token_path<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<PathBuf> {
     Ok(crate::state::data_dir(app)?.join(TOKEN_FILE))
 }
@@ -680,11 +776,36 @@ mod tests {
     use super::*;
 
     #[test]
+    fn discord_mirrored_alerts_read_both_shapes() {
+        let legacy: Settings =
+            serde_json::from_str(r#"{"discord_fissure_alerts":true,"discord_timer_alerts":true}"#)
+                .unwrap();
+        let mirrored = &legacy.discord.mirrored;
+        assert!(mirrored.discord_mirror_enabled);
+        assert!(mirrored.mirrors(DiscordMirroredAlert::Fissure));
+        assert!(!mirrored.mirrors(DiscordMirroredAlert::Reward));
+        assert!(mirrored.mirrors(DiscordMirroredAlert::Timer));
+        let json = serde_json::to_string(&legacy).unwrap();
+        assert!(json.contains(r#""discord_mirror_enabled":true"#));
+        assert!(json.contains(r#""discord_mirrored_alerts":["fissure","timer"]"#));
+        assert!(!json.contains("discord_fissure_alerts"));
+        let parsed: Settings = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.discord.mirrored, legacy.discord.mirrored);
+
+        let switched_off: Settings = serde_json::from_str(
+            r#"{"discord_mirror_enabled":false,"discord_mirrored_alerts":["conversation"]}"#,
+        )
+        .unwrap();
+        assert!(!switched_off.discord.mirrored.any());
+        let empty: Settings = serde_json::from_str("{}").unwrap();
+        assert!(!empty.discord.mirrored.any());
+    }
+
+    #[test]
     fn shipped_defaults() {
         let settings = Settings::default();
         assert!(settings.notifications.windows_notifications_enabled);
         assert!(settings.notifications.sound_notifications_enabled);
-        assert!(!settings.discord.discord_notifications_enabled);
         assert_eq!(settings.discord.discord_webhook, None);
         assert_eq!(settings.discord.discord_message_template, DISCORD_TEMPLATE);
         assert!(settings.notifications.notification_only_background);
@@ -746,6 +867,10 @@ mod tests {
         assert!(!settings.copy_relic_rewards);
         assert!(settings.check_for_updates);
         assert!(!settings.discord.mirrored.any());
+        assert!(!settings.alerts.arbitrations.enabled);
+        assert!(settings.alerts.arbitrations.notify_on_start);
+        assert!(settings.alerts.arbitrations.show_on_world_page);
+        assert_eq!(settings.alerts.arbitrations.lead_minutes, 10);
         assert_eq!(settings.market.market_trader_status, TraderStatus::Ingame);
         assert_eq!(settings.market.market_trader_locale.as_deref(), Some("en"));
         assert_eq!(settings.log_file_path, None);
@@ -816,7 +941,12 @@ mod tests {
         assert!(!stored.notifications.windows_notifications_enabled);
         assert!(stored.notifications.sound_notifications_enabled);
         assert!(!stored.notifications.notification_only_background);
-        assert!(stored.discord.discord_notifications_enabled);
+        assert!(
+            stored
+                .discord
+                .mirrored
+                .mirrors(DiscordMirroredAlert::Conversation)
+        );
         assert_eq!(
             stored.discord.discord_webhook.as_deref(),
             Some("https://discord.example/hook")
@@ -992,7 +1122,7 @@ mod tests {
     #[test]
     fn discord_opt_in() {
         let settings = Settings::default();
-        assert!(!settings.discord.discord_notifications_enabled);
+        assert!(!settings.discord.mirrored.any());
         assert_eq!(settings.discord.discord_webhook, None);
         assert!(
             settings

@@ -207,12 +207,8 @@ impl Core {
     }
 
     pub fn ingest_world_state(&mut self, world: WorldState, now: DateTime<Utc>) -> Vec<CoreEvent> {
-        let unmastered = unmastered(self.account.as_ref(), &self.catalog);
-        let events = self
-            .engine
-            .handle_world_state(&world, &self.items, &unmastered, now);
         self.world = Some(world);
-        events
+        self.evaluate_world_state(now)
     }
 
     pub fn set_arbitration_forecast(
@@ -237,8 +233,17 @@ impl Core {
         ArbitrationOutlook {
             forecast: &loaded.forecast,
             tiers: &loaded.tiers,
+            settings: &self.engine.settings().arbitrations,
         }
         .schedule(now)
+    }
+
+    fn arbitration_events(&mut self, now: DateTime<Utc>) -> Vec<CoreEvent> {
+        let Some(loaded) = self.arbitrations.as_ref() else {
+            return Vec::new();
+        };
+        self.engine
+            .handle_arbitrations(&loaded.forecast, &loaded.tiers, loaded.fetched_at, now)
     }
 
     pub fn world_reward_alerts(&self, now: DateTime<Utc>) -> Vec<WorldRewardAlert> {
@@ -262,12 +267,16 @@ impl Core {
     }
 
     pub fn evaluate_world_state(&mut self, now: DateTime<Utc>) -> Vec<CoreEvent> {
-        let Some(world) = self.world.as_ref() else {
-            return Vec::new();
+        let mut events = match self.world.as_ref() {
+            Some(world) => {
+                let unmastered = unmastered(self.account.as_ref(), &self.catalog);
+                self.engine
+                    .handle_world_state(world, &self.items, &unmastered, now)
+            }
+            None => Vec::new(),
         };
-        let unmastered = unmastered(self.account.as_ref(), &self.catalog);
-        self.engine
-            .handle_world_state(world, &self.items, &unmastered, now)
+        events.extend(self.arbitration_events(now));
+        events
     }
 
     pub fn handle_log_event(

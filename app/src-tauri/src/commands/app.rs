@@ -13,7 +13,7 @@ use crate::event_feed::EventFeed;
 use crate::overlay;
 use crate::runtime::{self, AppEvent};
 use crate::settings::{self, Settings};
-use crate::state::{GameStatus, LOG_FILE, lock, read, write};
+use crate::state::{GameStatus, LOG_FILE, lock, read};
 
 #[tauri::command]
 pub async fn game_status(state: Shared<'_>) -> CommandResult<GameStatus> {
@@ -131,13 +131,8 @@ pub async fn settings_set<R: Runtime>(
 ) -> CommandResult<Settings> {
     let state = ready(&state).await?;
     settings.event_feed.check()?;
-    settings::save(&app, &settings)?;
-    lock(&state.core).set_alert_settings(settings.alerts.clone());
-    let choices_changed = std::mem::replace(&mut *write(&state.settings), settings.clone())
-        .alerts
-        .rewards
-        != settings.alerts.rewards;
-    if choices_changed {
+    let previous = settings::apply(&app, &state, &settings)?;
+    if previous.alerts != settings.alerts {
         runtime::emit(&app, AppEvent::WorldStateUpdated);
     }
     overlay::apply_from(&app, &state);

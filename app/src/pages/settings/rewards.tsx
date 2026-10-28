@@ -8,6 +8,7 @@ import { Hint } from "@/components/ui/hint";
 import { Label } from "@/components/ui/label";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { api } from "@/lib/bridge";
+import { toggled } from "@/lib/filters";
 import type {
   Settings,
   WorldRewardAlertChoices,
@@ -77,9 +78,7 @@ function WeaponParts({
                   size="icon"
                   aria-label="Remove weapon part"
                   title="Remove"
-                  onClick={() =>
-                    onChange(chosen.filter((kept) => kept !== uniqueName))
-                  }
+                  onClick={() => onChange(toggled(chosen, uniqueName, false))}
                 >
                   <Trash2 className="size-4" />
                 </Button>
@@ -124,9 +123,7 @@ export function WorldRewardAlertSettings({
               checked={rewards.groups.includes(value)}
               onChange={(checked) =>
                 patchRewards({
-                  groups: checked
-                    ? [...rewards.groups, value]
-                    : rewards.groups.filter((group) => group !== value),
+                  groups: toggled(rewards.groups, value, checked),
                 })
               }
             >

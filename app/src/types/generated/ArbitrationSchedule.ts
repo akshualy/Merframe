@@ -2,4 +2,4 @@
 import type { ArbitrationNode } from "./ArbitrationNode";
 import type { ArbitrationSlot } from "./ArbitrationSlot";
 
-export type ArbitrationSchedule = { slots: Array<ArbitrationSlot>, nodes: Array<ArbitrationNode>, };
+export type ArbitrationSchedule = { slots: Array<ArbitrationSlot>, nodes: Array<ArbitrationNode>, has_match_rules: boolean, };

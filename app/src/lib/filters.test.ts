@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   passesYesNo,
   plainOptions,
+  toggled,
   withYesNo,
   type YesNo,
   yesNoOptions,
@@ -64,5 +65,14 @@ describe("plainOptions", () => {
       { value: "Lith", label: "Lith" },
       { value: "Axi", label: "Axi" },
     ]);
+  });
+});
+
+describe("toggled", () => {
+  it("flips membership and keeps one copy", () => {
+    expect(toggled(["a", "b"], "b")).toEqual(["a"]);
+    expect(toggled(["a"], "b")).toEqual(["a", "b"]);
+    expect(toggled(["a", "b"], "b", true)).toEqual(["a", "b"]);
+    expect(toggled(["a"], "a", false)).toEqual([]);
   });
 });

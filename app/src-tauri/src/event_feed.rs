@@ -17,7 +17,10 @@ use tokio::net::TcpListener;
 use tokio::sync::{broadcast, watch};
 use tokio_stream::wrappers::BroadcastStream;
 use tracing::{debug, info, warn};
-use wf_core::{CoreEvent, FissureInfo, InventorySummary, RewardScreen, Trade, WorldRewardAlert};
+use wf_core::{
+    ArbitrationAlert, CoreEvent, FissureInfo, InventorySummary, RewardScreen, Trade,
+    WorldRewardAlert,
+};
 
 use crate::runtime::{AppEvent, MarketAutoClose, update_status};
 use crate::settings::EventFeedSettings;
@@ -93,6 +96,9 @@ pub enum FeedEvent {
     WorldRewardAlert {
         reward: WorldRewardAlert,
     },
+    ArbitrationAlert {
+        alert: ArbitrationAlert,
+    },
     TimerAlert {
         name: String,
         next_state: String,
@@ -119,6 +125,7 @@ impl FeedEvent {
             AppEvent::FavouriteUpdated => Some(Self::FavouriteUpdated),
             AppEvent::MarketAutoClosed(closed) => Some(Self::MarketAutoClosed(closed.clone())),
             AppEvent::InventoryUpdated(_)
+            | AppEvent::SettingsUpdated(_)
             | AppEvent::MarketUpdated(_)
             | AppEvent::MarketSessionRejected
             | AppEvent::MarketPresence(_)
@@ -142,6 +149,9 @@ impl FeedEvent {
             }),
             CoreEvent::WorldRewardAlert { reward } => Some(Self::WorldRewardAlert {
                 reward: reward.clone(),
+            }),
+            CoreEvent::ArbitrationAlert { alert } => Some(Self::ArbitrationAlert {
+                alert: alert.clone(),
             }),
             CoreEvent::TimerAlert {
                 name,

@@ -10,7 +10,10 @@ pub use alerts::{
     AlertSettings, CyclePhase, FissureFilter, FissureSubtype, TimerAlerts, tier_name,
 };
 pub(crate) use arbitrations::ArbitrationOutlook;
-pub use arbitrations::{ARBITRATION_FORECAST_TRUSTED, ArbitrationSchedule, ArbitrationSlot};
+pub use arbitrations::{
+    ARBITRATION_FORECAST_TRUSTED, ArbitrationAlert, ArbitrationAlertFilter,
+    ArbitrationAlertSettings, ArbitrationSchedule, ArbitrationSlot,
+};
 pub(crate) use engine::{Engine, inventory_events};
 pub(crate) use rewards::world_reward_alerts;
 pub use rewards::{WorldRewardAlert, WorldRewardAlertChoices, WorldRewardAlertGroup};
@@ -92,6 +95,9 @@ pub enum CoreEvent {
     WorldRewardAlert {
         reward: WorldRewardAlert,
     },
+    ArbitrationAlert {
+        alert: ArbitrationAlert,
+    },
     TimerAlert {
         name: String,
         next_state: String,
@@ -109,6 +115,7 @@ impl CoreEvent {
             Self::NewConversation { .. } => "NewConversation",
             Self::FissureAlert { .. } => "FissureAlert",
             Self::WorldRewardAlert { .. } => "WorldRewardAlert",
+            Self::ArbitrationAlert { .. } => "ArbitrationAlert",
             Self::TimerAlert { .. } => "TimerAlert",
         }
     }

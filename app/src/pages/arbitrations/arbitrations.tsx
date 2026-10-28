@@ -10,25 +10,41 @@ import { useNow } from "@/hooks/use-now";
 import {
   ARBITRATION_RELOAD_EVENTS,
   ARBITRATION_TIERS,
+  type ArbitrationPersonalFilter,
   currentSlot,
   groupByDay,
   liveSlots,
+  nextMatch,
   nextSlot,
   nodeValues,
+  personalMatch,
   slotSearchText,
 } from "@/lib/arbitrations";
 import { api } from "@/lib/bridge";
 import { type FilterOption, plainOptions } from "@/lib/filters";
 import { counted } from "@/lib/format";
+import { useSettings } from "@/stores/app-store";
 import type {
   ArbitrationDashboard,
   ArbitrationForecastStatus,
   ArbitrationTier,
 } from "@/types";
-import { ForecastNotice, ForecastSource } from "./panels";
-import { DayList, HeroCards } from "./schedule";
+import { useArbitrationMarks } from "./marks";
+import {
+  FavouriteNodesPanel,
+  ForecastNotice,
+  ForecastSource,
+  RemindersPanel,
+} from "./panels";
+import { DayList, HeroCards, type SlotMarks } from "./schedule";
 
 const ALL_DAYS = "all";
+
+const PERSONAL: FilterOption<ArbitrationPersonalFilter>[] = [
+  { value: "favourites", label: "Favourite nodes" },
+  { value: "matches", label: "Matches my filters" },
+  { value: "reminders", label: "Reminders" },
+];
 
 const TIERS: FilterOption<ArbitrationTier>[] = ARBITRATION_TIERS.map(
   (tier) => ({ value: tier, label: tier }),
@@ -37,7 +53,8 @@ const TIERS: FilterOption<ArbitrationTier>[] = ARBITRATION_TIERS.map(
 const STATUS_NOTE: Record<ArbitrationForecastStatus, string | null> = {
   fresh: null,
   cached: "The forecast could not be refreshed. This is the saved copy.",
-  stale: "The saved forecast is older than a day.",
+  stale:
+    "The saved forecast is older than a day. Arbitration alerts are paused until it refreshes.",
   unavailable: "The forecast is not available. Merframe retries on its own.",
 };
 
@@ -52,6 +69,8 @@ export function ArbitrationsPage() {
     ARBITRATION_RELOAD_EVENTS,
   );
   const now = useNow();
+  const alertsOn = useSettings().alerts.arbitrations.enabled;
+  const { busy, toggleFavourite, toggleReminder } = useArbitrationMarks();
   const [search, setSearch] = useState("");
   const [day, setDay] = useState(ALL_DAYS);
   const filters = useFilters<{
@@ -59,11 +78,13 @@ export function ArbitrationsPage() {
     planet: string | null;
     faction: string | null;
     tier: ArbitrationTier | null;
+    personal: ArbitrationPersonalFilter | null;
   }>({
     mission: null,
     planet: null,
     faction: null,
     tier: null,
+    personal: null,
   });
 
   const schedule = data?.schedule ?? null;
@@ -71,7 +92,14 @@ export function ArbitrationsPage() {
   const slots = liveSlots(schedule, now);
   const current = currentSlot(slots, now);
   const next = nextSlot(slots, now);
+  const match = nextMatch(schedule, now);
   const nodes = schedule?.nodes ?? [];
+  const marks: SlotMarks = {
+    busy,
+    reminderAllowed: data?.notifications_available ?? false,
+    onFavourite: toggleFavourite,
+    onReminder: toggleReminder,
+  };
 
   const query = search.trim().toLocaleLowerCase();
   const chosen = filters.values;
@@ -81,7 +109,8 @@ export function ArbitrationsPage() {
       (chosen.mission === null || slot.mission_type === chosen.mission) &&
       (chosen.planet === null || slot.planet === chosen.planet) &&
       (chosen.faction === null || slot.faction === chosen.faction) &&
-      (chosen.tier === null || slot.tier === chosen.tier),
+      (chosen.tier === null || slot.tier === chosen.tier) &&
+      personalMatch(slot, chosen.personal),
   );
   const days = groupByDay(shown, now);
   const dayTabs = [
@@ -101,6 +130,13 @@ export function ArbitrationsPage() {
     filters.clear();
   };
 
+  const favouriteNodes = nodes.filter((node) =>
+    slots.some((slot) => slot.favourite && slot.node_id === node.node_id),
+  );
+  const reminders = slots.filter(
+    (slot) => slot.reminder && new Date(slot.starts).getTime() > now,
+  );
+
   return (
     <Page
       title="Arbitrations"
@@ -109,7 +145,28 @@ export function ArbitrationsPage() {
       error={error}
     >
       {notice && <ForecastNotice>{notice}</ForecastNotice>}
-      <HeroCards current={current} next={next} now={now} />
+      <HeroCards
+        current={current}
+        next={next}
+        match={match}
+        hasMatchRules={schedule?.has_match_rules ?? false}
+        now={now}
+        marks={marks}
+      />
+
+      <div className="grid gap-3 @lg:grid-cols-2">
+        <FavouriteNodesPanel
+          nodes={favouriteNodes}
+          busy={busy}
+          onRemove={toggleFavourite}
+        />
+        <RemindersPanel
+          slots={reminders}
+          alertsOn={alertsOn}
+          busy={busy}
+          onRemove={toggleReminder}
+        />
+      </div>
 
       <Section
         className="min-w-0"
@@ -154,11 +211,18 @@ export function ArbitrationsPage() {
               options={TIERS}
               onChange={(value) => filters.set("tier", value)}
             />
+            <FilterSelect
+              label="Personal"
+              value={chosen.personal}
+              options={PERSONAL}
+              onChange={(value) => filters.set("personal", value)}
+            />
           </FilterGrid>
           <DayList
             days={shownDays}
             total={slots.length}
             now={now}
+            marks={marks}
             onClear={clear}
           />
         </div>
