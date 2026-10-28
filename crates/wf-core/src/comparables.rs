@@ -78,6 +78,19 @@ pub struct ComparableListing {
     pub attributes: Vec<ComparableAttribute>,
 }
 
+impl ComparableListing {
+    fn shared_count(&self) -> usize {
+        self.attributes
+            .iter()
+            .filter(|attribute| attribute.shared)
+            .count()
+    }
+
+    fn shares_half(&self, shown: usize) -> bool {
+        self.shared_count() * 2 >= shown
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct RivenComparables {
@@ -167,7 +180,7 @@ pub(crate) fn comparables(
         .auctions
         .iter()
         .map(|auction| listing(auction, &shown, &names))
-        .filter(|listing| listing.similarity >= 0.5)
+        .filter(|listing| listing.shares_half(shown.len()))
         .collect();
     listings.sort_by(|left, right| {
         right
@@ -250,9 +263,26 @@ mod tests {
             found
                 .listings
                 .iter()
-                .all(|listing| listing.similarity >= 0.5)
+                .all(|listing| listing.shared_count() >= 2)
         );
         assert!(found.listings.len() <= 25);
+    }
+
+    #[test]
+    fn half_shared_is_kept() {
+        let found = compared(&[
+            ("critical_chance", true),
+            ("ammo_efficiency", true),
+            ("recoil", false),
+        ]);
+
+        let kept = found
+            .listings
+            .iter()
+            .find(|listing| listing.id == "d6fb66178e3a5d40ed4aa453")
+            .unwrap();
+        assert!((kept.similarity - 0.4).abs() < f64::EPSILON);
+        assert_eq!(kept.shared_count(), 2);
     }
 
     #[test]

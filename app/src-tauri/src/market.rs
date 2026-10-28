@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use chrono::{DateTime, Duration, Utc};
 use indexmap::IndexSet;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use wf_core::{Core, ItemRecord, ItemSummary, ItemTable, MarketListings, PriceSource, market_name};
 use wf_market::{Auction, Item, Order, OrderType, UserStatus};
 
@@ -48,25 +48,18 @@ impl MarketCategory {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-pub struct Presence {
+pub struct MarketPresenceChoice {
     pub status: Option<UserStatus>,
     pub auto: bool,
-    pub live: Option<UserStatus>,
 }
 
-impl Presence {
-    pub fn is_live_online(self) -> bool {
-        matches!(self.live, Some(UserStatus::Online | UserStatus::Ingame))
-    }
-
-    #[must_use]
-    pub fn taken_offline(self) -> Self {
+impl MarketPresenceChoice {
+    pub fn taken_offline() -> Self {
         Self {
             status: Some(UserStatus::Invisible),
             auto: false,
-            live: self.live,
         }
     }
 
@@ -79,6 +72,20 @@ impl Presence {
             });
         }
         self.status
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct Presence {
+    #[serde(flatten)]
+    pub choice: MarketPresenceChoice,
+    pub live: Option<UserStatus>,
+}
+
+impl Presence {
+    pub fn is_live_online(self) -> bool {
+        matches!(self.live, Some(UserStatus::Online | UserStatus::Ingame))
     }
 }
 
@@ -633,31 +640,38 @@ mod tests {
     fn presence_follows_game() {
         use wf_market::UserStatus;
 
-        let untouched = Presence::default();
+        let untouched = MarketPresenceChoice::default();
         assert_eq!(untouched.wanted(true), None);
 
-        let manual = Presence {
+        let manual = MarketPresenceChoice {
             status: Some(UserStatus::Online),
             auto: false,
-            live: None,
         };
         assert_eq!(manual.wanted(true), Some(UserStatus::Online));
         assert_eq!(manual.wanted(false), Some(UserStatus::Online));
 
-        let automatic = Presence {
+        let automatic = MarketPresenceChoice {
             status: Some(UserStatus::Online),
             auto: true,
-            live: Some(UserStatus::Ingame),
         };
         assert_eq!(automatic.wanted(true), Some(UserStatus::Ingame));
         assert_eq!(automatic.wanted(false), Some(UserStatus::Invisible));
 
-        assert!(!manual.is_live_online());
-        assert!(automatic.is_live_online());
-        let offline = automatic.taken_offline();
+        let offline = MarketPresenceChoice::taken_offline();
         assert_eq!(offline.wanted(true), Some(UserStatus::Invisible));
         assert!(!offline.auto);
-        assert!(offline.is_live_online());
+    }
+
+    #[test]
+    fn presence_is_online_while_the_socket_reports_it() {
+        use wf_market::UserStatus;
+
+        let presence = Presence {
+            choice: MarketPresenceChoice::default(),
+            live: Some(UserStatus::Ingame),
+        };
+        assert!(presence.is_live_online());
+        assert!(!Presence::default().is_live_online());
     }
 
     #[test]

@@ -263,7 +263,10 @@ impl AppState {
             market: RwLock::new(Arc::new(market)),
             market_items: AsyncMutex::new(None),
             market_activity: Mutex::new(None),
-            market_presence: RwLock::new(Presence::default()),
+            market_presence: RwLock::new(Presence {
+                choice: settings::presence(app)?,
+                live: None,
+            }),
             market_presence_wake: Notify::new(),
             listings: Listings::default(),
             prices,

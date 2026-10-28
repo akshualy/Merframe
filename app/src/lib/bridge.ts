@@ -20,6 +20,7 @@ import type {
   MarketItem,
   MarketMover,
   MarketOrders,
+  MarketPresenceChoice,
   MarketWindow,
   MasteryOrdering,
   MasteryTab,
@@ -42,7 +43,6 @@ import type {
   StoredTrade,
   Trade,
   TradeAnalytics,
-  UserStatus,
   WorldStateView,
 } from "@/types";
 
@@ -184,8 +184,8 @@ export const api = {
   marketDeleteOrder: (id: string) => call<Order>("market_delete_order", { id }),
   marketActivity: () => call<void>("market_activity"),
   marketPresence: () => call<Presence>("market_presence"),
-  marketSetPresence: (status: UserStatus | null, auto: boolean) =>
-    call<Presence>("market_set_presence", { status, auto }),
+  marketSetPresence: (choice: MarketPresenceChoice) =>
+    call<Presence>("market_set_presence", { choice }),
   marketRemoveAll: () => call<number>("market_remove_all"),
   marketFixOrders: (id?: string) => call<number>("market_fix_orders", { id }),
   marketSetVisibility: (visible: boolean) =>
