@@ -7,6 +7,8 @@ use crate::item::Item;
 const ROLL_MIN: f64 = 0.9;
 const ROLL_MAX: f64 = 1.1;
 pub const MAX_RANK: u32 = 8;
+/// DE dropped this from their public export data for some reason.
+const REVERSED_STAT_TAGS: [&str; 1] = ["WeaponAmmoEfficiency"];
 
 const SPLICE_RECIPES: [(&str, [&str; 2]); 26] = [
     (
@@ -269,7 +271,8 @@ impl RivenData {
                                 suffix: entry.suffix_tag.clone(),
                                 base_value: first.value,
                                 localization: first.loc_tag.clone().unwrap_or_default(),
-                                reversed: first.reverse_value_symbol,
+                                reversed: first.reverse_value_symbol
+                                    || REVERSED_STAT_TAGS.contains(&entry.tag.as_str()),
                                 spliced: SPLICE_RECIPES
                                     .iter()
                                     .any(|(result, _)| *result == entry.tag),
