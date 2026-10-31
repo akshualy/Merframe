@@ -1,0 +1,564 @@
+0.046 Sys [Diag]: Build Label: 2026.10.22.13.12 Retail Windows x64 [Stripped]
+0.046 Sys [Diag]: Current time: Sat Oct 24 16:20:05 2026 [UTC: Sat Oct 24 16:20:05 2026]
+16343.383 Net [Info]: Set squad mission: 
+16344.887 Net [Info]: Set squad mission: {"name":"ClanNode11_EliteAlert"}
+16344.887 Script [Info]: ThemedSquadOverlay.lua: Pending mission: ClanNode11_EliteAlert
+16347.035 Net [Info]: Set squad mission: 
+16347.035 Net [Info]: Set squad mission: 
+16463.957 Net [Info]: Set squad mission: {"difficulty":0.60000002384186,"name":"ClanNode11_EliteAlert"}
+16463.957 Script [Info]: ThemedSquadOverlay.lua: Pending mission: ClanNode11_EliteAlert
+16468.857 Script [Info]: ThemedSquadOverlay.lua: Host loading {"difficulty":0.60000002384186,"name":"ClanNode11_EliteAlert"} with MissionInfo: 
+    minEnemyLevel=60
+    maxEnemyLevel=80
+            ExtraUpgradeFusionLevel=QA_MEDIUM
+16468.861 Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for ClanNode11_EliteAlert (/Lotus/Levels/Proc/Grineer/GrineerAsteroidSurvivalRaid)
+16469.111 Game [Info]: Level=/Lotus/Levels/Proc/Grineer/GrineerAsteroidSurvivalRaid/TNEmEAglfBhogSLtc9LrdDOU45-LEaHMobEABAAAAQAAEAAI.lp
+16472.107 Script [Info]: CinematicSetup.lua: Level=/Lotus/Levels/Proc/Grineer/GrineerAsteroidSurvivalRaid/TNEmEAglfBhogSLtc9LrdDOU45-LEaHMobEABAAAAQAAEAAI.lp
+16472.229 Net [Info]: **** Starting session on HOST
+16473.074 AI [Info]: OnAgentCreated /Npc/CatbrowPetAgent0 Live 0 Spawned 0 Ignored Ticking 0 Paused 0 IgnoredTicking 0 MonitoredTicking 0 AllyLive 0 AllyActive 0 NeutralActive 0
+16473.096 Game [Info]: OnStateStarted, mission type=MT_SURVIVAL
+16474.791 Script [Info]: SurvivalMission.lua: Survival: Starting script on object /Layer4/Layer5/Prefab7/ScriptTrigger30
+16474.791 Script [Info]: SurvivalMission.lua: Survival: MasterInit...
+16474.791 Script [Info]: SurvivalMission.lua: Survival: MasterInit complete
+16474.791 Script [Info]: SurvivalMission.lua: Survival: ReplicaInit...
+16474.791 Script [Info]: SurvivalMission.lua: Survival: ReplicaInit complete
+16474.797 Script [Info]: SurvivalMission.lua: Survival: State Change: MISSION_SETUP
+16474.803 Script [Info]: SurvivalMission.lua: Survival: State Change: WAIT_FOR_HACK
+16479.143 Script [Info]: SurvivalMission.lua: Survival: Alarm panel hacked
+16479.143 Script [Info]: SurvivalMission.lua: Survival: Starting survival
+16483.145 Script [Info]: SurvivalMission.lua: Survival: State Change: ENDLESS
+16483.145 Script [Info]: SurvivalMission.lua: Survival: Spawned SecurityCredentialsPickup at pos: Vector(117.1, -9.1, -81) Created by Capsule ID2
+16483.145 Script [Info]: SurvivalMission.lua: Survival: Spawned usable life support capsule with id 2
+16483.248 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16483.648 AI [Info]: OnAgentCreated /Npc/MeleeRunner1 Live 1 Spawned 0 Ticking 1 Paused 0 IgnoredTicking 1 MonitoredTicking 0 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.652 AI [Info]: OnAgentCreated /Npc/Quadruped2 Live 2 Spawned 1 Ticking 2 Paused 0 IgnoredTicking 1 MonitoredTicking 1 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.652 AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent3 Live 3 Spawned 2 Ticking 3 Paused 0 IgnoredTicking 1 MonitoredTicking 2 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.656 AI [Info]: OnAgentCreated /Npc/LeapingRunner4 Live 4 Spawned 2 Ticking 4 Paused 0 IgnoredTicking 2 MonitoredTicking 2 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.660 AI [Info]: OnAgentCreated /Npc/MeleeRunner5 Live 5 Spawned 3 Ticking 5 Paused 0 IgnoredTicking 2 MonitoredTicking 3 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.664 AI [Info]: OnAgentCreated /Npc/Quadruped6 Live 6 Spawned 4 Ticking 6 Paused 0 IgnoredTicking 2 MonitoredTicking 4 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.668 AI [Info]: OnAgentCreated /Npc/Quadruped7 Live 7 Spawned 5 Ticking 7 Paused 0 IgnoredTicking 2 MonitoredTicking 5 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.672 AI [Info]: OnAgentCreated /Npc/Quadruped8 Live 8 Spawned 6 Ticking 8 Paused 0 IgnoredTicking 2 MonitoredTicking 6 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.676 AI [Info]: OnAgentCreated /Npc/Quadruped9 Live 9 Spawned 7 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.682 AI [Info]: OnAgentCreated /Npc/Quadruped10 Live 10 Spawned 8 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.686 AI [Info]: OnAgentCreated /Npc/Quadruped11 Live 11 Spawned 9 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.689 AI [Info]: OnAgentCreated /Npc/Quadruped12 Live 12 Spawned 10 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16483.693 AI [Info]: OnAgentCreated /Npc/Quadruped13 Live 13 Spawned 11 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16486.742 AI [Info]: OnAgentCreated /Npc/MeleeRunner14 Live 13 Spawned 12 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16486.746 AI [Info]: OnAgentCreated /Npc/Quadruped15 Live 14 Spawned 13 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16486.750 AI [Info]: OnAgentCreated /Npc/MeleeRunner16 Live 15 Spawned 14 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.801 AI [Info]: OnAgentCreated /Npc/LeapingRunner17 Live 7 Spawned 15 Ticking 6 Paused 0 IgnoredTicking 1 MonitoredTicking 5 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.805 AI [Info]: OnAgentCreated /Npc/Quadruped18 Live 8 Spawned 16 Ticking 7 Paused 0 IgnoredTicking 1 MonitoredTicking 6 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.805 AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent19 Live 9 Spawned 17 Ticking 8 Paused 0 IgnoredTicking 1 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.809 AI [Info]: OnAgentCreated /Npc/Quadruped20 Live 10 Spawned 17 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.812 AI [Info]: OnAgentCreated /Npc/Quadruped21 Live 11 Spawned 18 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.816 AI [Info]: OnAgentCreated /Npc/Quadruped22 Live 12 Spawned 19 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.820 AI [Info]: OnAgentCreated /Npc/Quadruped23 Live 13 Spawned 20 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16489.826 AI [Info]: OnAgentCreated /Npc/MeleeRunner24 Live 14 Spawned 21 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16491.350 AI [Info]: OnAgentCreated /Npc/MeleeRunner25 Live 13 Spawned 22 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16491.354 AI [Info]: OnAgentCreated /Npc/MeleeRunner26 Live 14 Spawned 23 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16491.359 AI [Info]: OnAgentCreated /Npc/Quadruped27 Live 15 Spawned 24 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16494.914 AI [Info]: OnAgentCreated /Npc/Quadruped28 Live 12 Spawned 25 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16494.920 AI [Info]: OnAgentCreated /Npc/MeleeRunner29 Live 13 Spawned 26 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16495.434 AI [Info]: OnAgentCreated /Npc/MeleeRunner30 Live 12 Spawned 27 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16495.438 AI [Info]: OnAgentCreated /Npc/Quadruped31 Live 13 Spawned 28 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16495.951 AI [Info]: OnAgentCreated /Npc/Quadruped32 Live 14 Spawned 29 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16495.957 AI [Info]: OnAgentCreated /Npc/Quadruped33 Live 15 Spawned 30 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16496.471 AI [Info]: OnAgentCreated /Npc/Quadruped34 Live 15 Spawned 31 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16498.000 AI [Info]: OnAgentCreated /Npc/MeleeRunner35 Live 12 Spawned 32 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16498.004 AI [Info]: OnAgentCreated /Npc/Quadruped36 Live 13 Spawned 33 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16499.535 AI [Info]: OnAgentCreated /Npc/MeleeRunner37 Live 14 Spawned 34 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16499.539 AI [Info]: OnAgentCreated /Npc/LeapingRunner38 Live 15 Spawned 35 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16500.053 AI [Info]: OnAgentCreated /Npc/Quadruped39 Live 13 Spawned 36 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16500.057 AI [Info]: OnAgentCreated /Npc/LeapingRunner40 Live 14 Spawned 37 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16501.584 AI [Info]: OnAgentCreated /Npc/MeleeRunner41 Live 12 Spawned 38 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16501.590 AI [Info]: OnAgentCreated /Npc/MeleeRunner42 Live 13 Spawned 39 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16501.594 AI [Info]: OnAgentCreated /Npc/Quadruped43 Live 14 Spawned 40 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16501.600 AI [Info]: OnAgentCreated /Npc/MeleeRunner44 Live 15 Spawned 41 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16501.604 AI [Info]: OnAgentCreated /Npc/Quadruped45 Live 16 Spawned 42 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16502.625 AI [Info]: OnAgentCreated /Npc/Quadruped46 Live 11 Spawned 43 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16502.631 AI [Info]: OnAgentCreated /Npc/Quadruped47 Live 12 Spawned 44 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16502.633 AI [Info]: OnAgentCreated /Npc/Quadruped48 Live 13 Spawned 45 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16503.654 AI [Info]: OnAgentCreated /Npc/Quadruped49 Live 10 Spawned 46 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16503.658 AI [Info]: OnAgentCreated /Npc/Quadruped50 Live 11 Spawned 47 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16503.662 AI [Info]: OnAgentCreated /Npc/LeapingRunner51 Live 12 Spawned 48 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16503.666 AI [Info]: OnAgentCreated /Npc/Quadruped52 Live 13 Spawned 49 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16503.670 AI [Info]: OnAgentCreated /Npc/Quadruped53 Live 14 Spawned 50 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16504.693 AI [Info]: OnAgentCreated /Npc/MeleeRunner54 Live 13 Spawned 51 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16508.756 AI [Info]: OnAgentCreated /Npc/MeleeRunner55 Live 14 Spawned 52 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16509.271 AI [Info]: OnAgentCreated /Npc/MeleeRunner56 Live 12 Spawned 53 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16509.275 AI [Info]: OnAgentCreated /Npc/MeleeRunner57 Live 13 Spawned 54 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16509.279 AI [Info]: OnAgentCreated /Npc/Quadruped58 Live 14 Spawned 55 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16510.301 AI [Info]: OnAgentCreated /Npc/Quadruped59 Live 13 Spawned 56 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16511.828 AI [Info]: OnAgentCreated /Npc/MeleeRunner60 Live 12 Spawned 57 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16511.832 AI [Info]: OnAgentCreated /Npc/MeleeRunner61 Live 13 Spawned 58 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16512.852 AI [Info]: OnAgentCreated /Npc/Quadruped62 Live 13 Spawned 59 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16512.857 AI [Info]: OnAgentCreated /Npc/Quadruped63 Live 14 Spawned 60 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16513.371 AI [Info]: OnAgentCreated /Npc/MeleeRunner64 Live 11 Spawned 61 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16513.375 AI [Info]: OnAgentCreated /Npc/Quadruped65 Live 12 Spawned 62 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16513.379 AI [Info]: OnAgentCreated /Npc/Quadruped66 Live 13 Spawned 63 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16513.893 AI [Info]: OnAgentCreated /Npc/Quadruped67 Live 13 Spawned 64 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16514.408 AI [Info]: OnAgentCreated /Npc/MeleeRunner68 Live 13 Spawned 65 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16514.412 AI [Info]: OnAgentCreated /Npc/MeleeRunner69 Live 14 Spawned 66 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16514.416 AI [Info]: OnAgentCreated /Npc/LeapingRunner70 Live 15 Spawned 67 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16514.932 AI [Info]: OnAgentCreated /Npc/Quadruped71 Live 13 Spawned 68 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16515.953 AI [Info]: OnAgentCreated /Npc/Quadruped72 Live 14 Spawned 69 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16516.977 AI [Info]: OnAgentCreated /Npc/Quadruped73 Live 13 Spawned 70 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16518.502 AI [Info]: OnAgentCreated /Npc/Quadruped74 Live 13 Spawned 71 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16519.018 AI [Info]: OnAgentCreated /Npc/MeleeRunner75 Live 12 Spawned 72 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16519.021 AI [Info]: OnAgentCreated /Npc/Quadruped76 Live 13 Spawned 73 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16519.537 AI [Info]: OnAgentCreated /Npc/Quadruped77 Live 14 Spawned 74 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16519.541 AI [Info]: OnAgentCreated /Npc/Quadruped78 Live 15 Spawned 75 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16520.055 AI [Info]: OnAgentCreated /Npc/Quadruped79 Live 14 Spawned 76 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16520.572 AI [Info]: OnAgentCreated /Npc/Quadruped80 Live 13 Spawned 77 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16522.098 AI [Info]: OnAgentCreated /Npc/MeleeRunner81 Live 13 Spawned 78 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16522.102 AI [Info]: OnAgentCreated /Npc/MeleeRunner82 Live 14 Spawned 79 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16523.631 AI [Info]: OnAgentCreated /Npc/Quadruped83 Live 13 Spawned 80 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16523.635 AI [Info]: OnAgentCreated /Npc/MeleeRunner84 Live 14 Spawned 81 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16524.654 AI [Info]: OnAgentCreated /Npc/MeleeRunner85 Live 13 Spawned 82 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16524.658 AI [Info]: OnAgentCreated /Npc/Quadruped86 Live 14 Spawned 83 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16525.680 AI [Info]: OnAgentCreated /Npc/Quadruped87 Live 13 Spawned 84 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16527.715 AI [Info]: OnAgentCreated /Npc/Quadruped88 Live 14 Spawned 85 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16527.719 AI [Info]: OnAgentCreated /Npc/Quadruped89 Live 15 Spawned 86 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16527.725 AI [Info]: OnAgentCreated /Npc/Quadruped90 Live 16 Spawned 87 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16528.240 AI [Info]: OnAgentCreated /Npc/MeleeRunner91 Live 14 Spawned 88 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16528.244 AI [Info]: OnAgentCreated /Npc/Quadruped92 Live 15 Spawned 89 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16528.248 AI [Info]: OnAgentCreated /Npc/Quadruped93 Live 16 Spawned 90 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16530.283 AI [Info]: OnAgentCreated /Npc/Quadruped94 Live 14 Spawned 91 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16530.287 AI [Info]: OnAgentCreated /Npc/Quadruped95 Live 15 Spawned 92 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16531.309 AI [Info]: OnAgentCreated /Npc/Quadruped96 Live 12 Spawned 93 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16531.312 AI [Info]: OnAgentCreated /Npc/Quadruped97 Live 13 Spawned 94 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16531.826 AI [Info]: OnAgentCreated /Npc/Quadruped98 Live 11 Spawned 95 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16531.832 AI [Info]: OnAgentCreated /Npc/Quadruped99 Live 12 Spawned 96 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16531.834 AI [Info]: OnAgentCreated /Npc/Quadruped100 Live 13 Spawned 97 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16531.840 AI [Info]: OnAgentCreated /Npc/MeleeRunner101 Live 14 Spawned 98 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16532.352 AI [Info]: OnAgentCreated /Npc/MeleeRunner102 Live 13 Spawned 99 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16532.355 AI [Info]: OnAgentCreated /Npc/MeleeRunner103 Live 14 Spawned 100 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16534.393 AI [Info]: OnAgentCreated /Npc/Quadruped104 Live 12 Spawned 101 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16534.396 AI [Info]: OnAgentCreated /Npc/MeleeRunner105 Live 13 Spawned 102 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16534.402 AI [Info]: OnAgentCreated /Npc/Quadruped106 Live 14 Spawned 103 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16534.406 AI [Info]: OnAgentCreated /Npc/MeleeRunner107 Live 15 Spawned 104 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16534.922 AI [Info]: OnAgentCreated /Npc/Quadruped108 Live 13 Spawned 105 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16534.928 AI [Info]: OnAgentCreated /Npc/MeleeRunner109 Live 14 Spawned 106 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16535.949 AI [Info]: OnAgentCreated /Npc/Quadruped110 Live 14 Spawned 107 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16536.463 AI [Info]: OnAgentCreated /Npc/Quadruped111 Live 15 Spawned 108 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16536.471 AI [Info]: OnAgentCreated /Npc/MeleeRunner112 Live 16 Spawned 109 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16536.986 AI [Info]: OnAgentCreated /Npc/Quadruped113 Live 12 Spawned 110 Ticking 7 Paused 0 IgnoredTicking 2 MonitoredTicking 5 AllyLive 1 AllyActive 1 NeutralActive 0
+16536.990 AI [Info]: OnAgentCreated /Npc/Quadruped114 Live 13 Spawned 111 Ticking 8 Paused 0 IgnoredTicking 2 MonitoredTicking 6 AllyLive 1 AllyActive 1 NeutralActive 0
+16536.994 AI [Info]: OnAgentCreated /Npc/Quadruped115 Live 14 Spawned 112 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16536.998 AI [Info]: OnAgentCreated /Npc/LeapingRunner116 Live 15 Spawned 113 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16537.002 AI [Info]: OnAgentCreated /Npc/Quadruped117 Live 16 Spawned 114 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16537.008 AI [Info]: OnAgentCreated /Npc/Quadruped118 Live 17 Spawned 115 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16537.012 AI [Info]: OnAgentCreated /Npc/LeapingRunner119 Live 17 Spawned 116 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16538.539 AI [Info]: OnAgentCreated /Npc/Quadruped120 Live 13 Spawned 117 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.066 AI [Info]: OnAgentCreated /Npc/Quadruped121 Live 12 Spawned 118 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.072 AI [Info]: OnAgentCreated /Npc/LeapingRunner122 Live 13 Spawned 119 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.076 AI [Info]: OnAgentCreated /Npc/MeleeRunner123 Live 14 Spawned 120 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.592 AI [Info]: OnAgentCreated /Npc/Quadruped124 Live 11 Spawned 121 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.596 AI [Info]: OnAgentCreated /Npc/Quadruped125 Live 12 Spawned 122 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.600 AI [Info]: OnAgentCreated /Npc/Quadruped126 Live 13 Spawned 123 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.604 AI [Info]: OnAgentCreated /Npc/Quadruped127 Live 14 Spawned 124 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16540.607 AI [Info]: OnAgentCreated /Npc/Quadruped128 Live 15 Spawned 125 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16541.629 AI [Info]: OnAgentCreated /Npc/MeleeRunner129 Live 13 Spawned 126 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16541.635 AI [Info]: OnAgentCreated /Npc/Quadruped130 Live 14 Spawned 127 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16542.656 AI [Info]: OnAgentCreated /Npc/Quadruped131 Live 13 Spawned 128 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16543.678 AI [Info]: OnAgentCreated /Npc/Quadruped132 Live 13 Spawned 129 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16543.914 Script [Info]: SurvivalMission.lua: Survival: Spawned incoming life support capsule with id 1
+16544.018 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16545.713 AI [Info]: OnAgentCreated /Npc/MeleeRunner133 Live 12 Spawned 130 Ticking 11 Paused 0 IgnoredTicking 1 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16545.717 AI [Info]: OnAgentCreated /Npc/Quadruped134 Live 13 Spawned 131 Ticking 12 Paused 0 IgnoredTicking 1 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16545.717 AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent135 Live 14 Spawned 132 Ticking 13 Paused 0 IgnoredTicking 1 MonitoredTicking 12 AllyLive 1 AllyActive 1 NeutralActive 0
+16546.738 AI [Info]: OnAgentCreated /Npc/Quadruped136 Live 12 Spawned 132 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16546.742 AI [Info]: OnAgentCreated /Npc/Quadruped137 Live 13 Spawned 133 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16546.748 AI [Info]: OnAgentCreated /Npc/Quadruped138 Live 14 Spawned 134 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16546.752 AI [Info]: OnAgentCreated /Npc/Quadruped139 Live 15 Spawned 135 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16546.756 AI [Info]: OnAgentCreated /Npc/Quadruped140 Live 16 Spawned 136 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16547.777 AI [Info]: OnAgentCreated /Npc/Quadruped141 Live 13 Spawned 137 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16551.338 AI [Info]: OnAgentCreated /Npc/Quadruped142 Live 13 Spawned 138 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16551.854 AI [Info]: OnAgentCreated /Npc/Quadruped143 Live 13 Spawned 139 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16552.875 AI [Info]: OnAgentCreated /Npc/Quadruped144 Live 12 Spawned 140 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16552.879 AI [Info]: OnAgentCreated /Npc/Quadruped145 Live 13 Spawned 141 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16553.900 AI [Info]: OnAgentCreated /Npc/Quadruped146 Live 13 Spawned 142 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16556.947 AI [Info]: OnAgentCreated /Npc/MeleeRunner147 Live 12 Spawned 143 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16556.951 AI [Info]: OnAgentCreated /Npc/MeleeRunner148 Live 13 Spawned 144 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16557.973 AI [Info]: OnAgentCreated /Npc/LeapingRunner149 Live 13 Spawned 145 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16558.488 AI [Info]: OnAgentCreated /Npc/MeleeRunner150 Live 14 Spawned 146 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16560.016 AI [Info]: OnAgentCreated /Npc/Quadruped151 Live 13 Spawned 147 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16562.049 AI [Info]: OnAgentCreated /Npc/MeleeRunner152 Live 12 Spawned 148 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16562.053 AI [Info]: OnAgentCreated /Npc/Quadruped153 Live 13 Spawned 149 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16563.076 AI [Info]: OnAgentCreated /Npc/Quadruped154 Live 13 Spawned 150 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16563.592 AI [Info]: OnAgentCreated /Npc/MeleeRunner155 Live 13 Spawned 151 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16563.596 AI [Info]: OnAgentCreated /Npc/MeleeRunner156 Live 14 Spawned 152 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16563.600 AI [Info]: OnAgentCreated /Npc/MeleeRunner157 Live 15 Spawned 153 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16565.125 AI [Info]: OnAgentCreated /Npc/MeleeRunner158 Live 11 Spawned 154 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16565.129 AI [Info]: OnAgentCreated /Npc/Quadruped159 Live 12 Spawned 155 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16565.135 AI [Info]: OnAgentCreated /Npc/MeleeRunner160 Live 13 Spawned 156 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16565.648 AI [Info]: OnAgentCreated /Npc/Quadruped161 Live 14 Spawned 157 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16565.654 AI [Info]: OnAgentCreated /Npc/Quadruped162 Live 15 Spawned 158 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16568.191 AI [Info]: OnAgentCreated /Npc/Quadruped163 Live 12 Spawned 159 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16568.195 AI [Info]: OnAgentCreated /Npc/MeleeRunner164 Live 13 Spawned 160 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16568.711 AI [Info]: OnAgentCreated /Npc/Quadruped165 Live 13 Spawned 161 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16569.227 AI [Info]: OnAgentCreated /Npc/MeleeRunner166 Live 12 Spawned 162 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16569.230 AI [Info]: OnAgentCreated /Npc/Quadruped167 Live 13 Spawned 163 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16570.252 AI [Info]: OnAgentCreated /Npc/Quadruped168 Live 13 Spawned 164 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16571.273 AI [Info]: OnAgentCreated /Npc/MeleeRunner169 Live 13 Spawned 165 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16571.277 AI [Info]: OnAgentCreated /Npc/MeleeRunner170 Live 14 Spawned 166 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16571.791 AI [Info]: OnAgentCreated /Npc/MeleeRunner171 Live 13 Spawned 167 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16571.797 AI [Info]: OnAgentCreated /Npc/Quadruped172 Live 14 Spawned 168 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16574.166 Script [Info]: SurvivalMission.lua: Survival: Spawned SecurityCredentialsPickup at pos: Vector(83.6, -7.35, -106) Created by Capsule ID1
+16574.166 Script [Info]: SurvivalMission.lua: Survival: Spawned usable life support capsule with id 1
+16574.205 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16574.336 AI [Info]: OnAgentCreated /Npc/MeleeRunner173 Live 13 Spawned 169 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16576.369 AI [Info]: OnAgentCreated /Npc/Quadruped174 Live 13 Spawned 170 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16576.375 AI [Info]: OnAgentCreated /Npc/LeapingRunner175 Live 14 Spawned 171 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16577.395 AI [Info]: OnAgentCreated /Npc/Quadruped176 Live 13 Spawned 172 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16578.924 AI [Info]: OnAgentCreated /Npc/Quadruped177 Live 13 Spawned 173 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16579.439 AI [Info]: OnAgentCreated /Npc/Quadruped178 Live 12 Spawned 174 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16579.443 AI [Info]: OnAgentCreated /Npc/Quadruped179 Live 13 Spawned 175 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16579.957 AI [Info]: OnAgentCreated /Npc/Quadruped180 Live 13 Spawned 176 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16579.961 AI [Info]: OnAgentCreated /Npc/Quadruped181 Live 14 Spawned 177 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16580.475 AI [Info]: OnAgentCreated /Npc/Quadruped182 Live 14 Spawned 178 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16584.027 AI [Info]: OnAgentCreated /Npc/Quadruped183 Live 14 Spawned 179 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16584.543 AI [Info]: OnAgentCreated /Npc/Quadruped184 Live 12 Spawned 180 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16584.547 AI [Info]: OnAgentCreated /Npc/Quadruped185 Live 13 Spawned 181 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16584.553 AI [Info]: OnAgentCreated /Npc/Quadruped186 Live 14 Spawned 182 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16584.557 AI [Info]: OnAgentCreated /Npc/MeleeRunner187 Live 15 Spawned 183 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16585.578 AI [Info]: OnAgentCreated /Npc/Quadruped188 Live 14 Spawned 184 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16585.582 AI [Info]: OnAgentCreated /Npc/Quadruped189 Live 15 Spawned 185 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16586.600 AI [Info]: OnAgentCreated /Npc/MeleeRunner190 Live 12 Spawned 186 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16586.605 AI [Info]: OnAgentCreated /Npc/MeleeRunner191 Live 13 Spawned 187 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16588.643 AI [Info]: OnAgentCreated /Npc/Quadruped192 Live 14 Spawned 188 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16588.646 AI [Info]: OnAgentCreated /Npc/Quadruped193 Live 15 Spawned 189 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16588.650 AI [Info]: OnAgentCreated /Npc/Quadruped194 Live 16 Spawned 190 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16589.164 AI [Info]: OnAgentCreated /Npc/Quadruped195 Live 13 Spawned 191 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16589.168 AI [Info]: OnAgentCreated /Npc/Quadruped196 Live 14 Spawned 192 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16589.174 AI [Info]: OnAgentCreated /Npc/MeleeRunner197 Live 15 Spawned 193 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16589.178 AI [Info]: OnAgentCreated /Npc/MeleeRunner198 Live 16 Spawned 194 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16590.199 AI [Info]: OnAgentCreated /Npc/Quadruped199 Live 13 Spawned 195 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16594.766 AI [Info]: OnAgentCreated /Npc/MeleeRunner200 Live 14 Spawned 196 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16595.789 AI [Info]: OnAgentCreated /Npc/Quadruped201 Live 14 Spawned 197 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16596.305 AI [Info]: OnAgentCreated /Npc/Quadruped202 Live 14 Spawned 198 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16596.309 AI [Info]: OnAgentCreated /Npc/Quadruped203 Live 15 Spawned 199 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16598.850 AI [Info]: OnAgentCreated /Npc/Quadruped204 Live 13 Spawned 200 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16599.367 AI [Info]: OnAgentCreated /Npc/Quadruped205 Live 13 Spawned 201 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16599.371 AI [Info]: OnAgentCreated /Npc/Quadruped206 Live 14 Spawned 202 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16600.898 AI [Info]: OnAgentCreated /Npc/MeleeRunner207 Live 13 Spawned 203 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16603.438 AI [Info]: OnAgentCreated /Npc/Quadruped208 Live 13 Spawned 204 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16608.510 AI [Info]: OnAgentCreated /Npc/Quadruped209 Live 12 Spawned 205 Ticking 11 Paused 0 IgnoredTicking 1 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16608.514 AI [Info]: OnAgentCreated /Npc/SuicideRunner210 Live 13 Spawned 206 Ticking 12 Paused 0 IgnoredTicking 1 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16608.514 AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent211 Live 14 Spawned 207 Ticking 13 Paused 0 IgnoredTicking 1 MonitoredTicking 12 AllyLive 1 AllyActive 1 NeutralActive 0
+16609.027 AI [Info]: OnAgentCreated /Npc/MeleeRunner212 Live 14 Spawned 207 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16609.543 AI [Info]: OnAgentCreated /Npc/Quadruped213 Live 14 Spawned 208 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16609.549 AI [Info]: OnAgentCreated /Npc/Quadruped214 Live 15 Spawned 209 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16610.568 AI [Info]: OnAgentCreated /Npc/MeleeRunner215 Live 13 Spawned 210 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16611.592 AI [Info]: OnAgentCreated /Npc/MeleeRunner216 Live 14 Spawned 211 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16611.596 AI [Info]: OnAgentCreated /Npc/Quadruped217 Live 15 Spawned 212 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16611.600 AI [Info]: OnAgentCreated /Npc/Quadruped218 Live 16 Spawned 213 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16612.115 AI [Info]: OnAgentCreated /Npc/Quadruped219 Live 14 Spawned 214 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16612.121 AI [Info]: OnAgentCreated /Npc/Quadruped220 Live 15 Spawned 215 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16613.143 AI [Info]: OnAgentCreated /Npc/Quadruped221 Live 12 Spawned 216 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16613.148 AI [Info]: OnAgentCreated /Npc/Quadruped222 Live 13 Spawned 217 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16613.152 AI [Info]: OnAgentCreated /Npc/Quadruped223 Live 14 Spawned 218 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16613.668 AI [Info]: OnAgentCreated /Npc/MeleeRunner224 Live 13 Spawned 219 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16613.674 AI [Info]: OnAgentCreated /Npc/Quadruped225 Live 14 Spawned 220 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16615.203 AI [Info]: OnAgentCreated /Npc/SuicideRunner226 Live 13 Spawned 221 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16616.730 AI [Info]: OnAgentCreated /Npc/LeapingRunner227 Live 13 Spawned 222 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16617.752 AI [Info]: OnAgentCreated /Npc/Quadruped228 Live 14 Spawned 223 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16618.270 AI [Info]: OnAgentCreated /Npc/Quadruped229 Live 13 Spawned 224 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16618.785 AI [Info]: OnAgentCreated /Npc/Quadruped230 Live 14 Spawned 225 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16619.807 AI [Info]: OnAgentCreated /Npc/MeleeRunner231 Live 14 Spawned 226 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16619.811 AI [Info]: OnAgentCreated /Npc/Quadruped232 Live 15 Spawned 227 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16620.324 AI [Info]: OnAgentCreated /Npc/MeleeRunner233 Live 14 Spawned 228 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16620.328 AI [Info]: OnAgentCreated /Npc/Quadruped234 Live 15 Spawned 229 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16621.352 AI [Info]: OnAgentCreated /Npc/Quadruped235 Live 13 Spawned 230 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16621.355 AI [Info]: OnAgentCreated /Npc/LeapingRunner236 Live 14 Spawned 231 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16624.402 AI [Info]: OnAgentCreated /Npc/MeleeRunner237 Live 13 Spawned 232 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16624.406 AI [Info]: OnAgentCreated /Npc/Quadruped238 Live 14 Spawned 233 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16624.410 AI [Info]: OnAgentCreated /Npc/Quadruped239 Live 15 Spawned 234 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16624.926 AI [Info]: OnAgentCreated /Npc/Quadruped240 Live 14 Spawned 235 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16624.930 AI [Info]: OnAgentCreated /Npc/LeapingRunner241 Live 15 Spawned 236 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16625.445 AI [Info]: OnAgentCreated /Npc/SuicideRunner242 Live 13 Spawned 237 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16625.449 AI [Info]: OnAgentCreated /Npc/Quadruped243 Live 14 Spawned 238 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16625.965 AI [Info]: OnAgentCreated /Npc/Quadruped244 Live 13 Spawned 239 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16630.529 AI [Info]: OnAgentCreated /Npc/Quadruped245 Live 13 Spawned 240 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16630.533 AI [Info]: OnAgentCreated /Npc/Quadruped246 Live 14 Spawned 241 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16631.049 AI [Info]: OnAgentCreated /Npc/MeleeRunner247 Live 10 Spawned 242 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16631.053 AI [Info]: OnAgentCreated /Npc/Quadruped248 Live 11 Spawned 243 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16631.059 AI [Info]: OnAgentCreated /Npc/GrenadeCrawler250 Live 12 Spawned 244 Ignored Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16631.059 AI [Info]: OnAgentCreated /Npc/PoisonDroneAgent249 Live 13 Spawned 244 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16631.062 AI [Info]: OnAgentCreated /Npc/MeleeRunner251 Live 14 Spawned 245 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16634.676 Script [Info]: SurvivalMission.lua: Survival: Spawned incoming life support capsule with id 3
+16634.695 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16635.119 AI [Info]: OnAgentCreated /Npc/MeleeRunner252 Live 15 Spawned 246 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16637.156 AI [Info]: OnAgentCreated /Npc/Quadruped253 Live 13 Spawned 247 Ticking 10 Paused 0 IgnoredTicking 3 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16637.160 AI [Info]: OnAgentCreated /Npc/Quadruped254 Live 14 Spawned 248 Ticking 11 Paused 0 IgnoredTicking 3 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16637.166 AI [Info]: OnAgentCreated /Npc/LeapingRunner255 Live 15 Spawned 249 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16637.170 AI [Info]: OnAgentCreated /Npc/Quadruped256 Live 16 Spawned 250 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16637.174 AI [Info]: OnAgentCreated /Npc/MeleeRunner257 Live 17 Spawned 251 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16637.689 AI [Info]: OnAgentCreated /Npc/Quadruped258 Live 15 Spawned 252 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16637.693 AI [Info]: OnAgentCreated /Npc/MeleeRunner259 Live 16 Spawned 253 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16638.715 AI [Info]: OnAgentCreated /Npc/Quadruped260 Live 14 Spawned 254 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16640.244 AI [Info]: OnAgentCreated /Npc/MeleeRunner261 Live 14 Spawned 255 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16640.760 AI [Info]: OnAgentCreated /Npc/SuicideRunner262 Live 14 Spawned 256 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16640.764 AI [Info]: OnAgentCreated /Npc/LeapingRunner263 Live 15 Spawned 257 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16641.785 AI [Info]: OnAgentCreated /Npc/Quadruped264 Live 15 Spawned 258 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16643.820 AI [Info]: OnAgentCreated /Npc/MeleeRunner265 Live 14 Spawned 259 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16648.387 AI [Info]: OnAgentCreated /Npc/SuicideRunner266 Live 14 Spawned 260 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16649.916 AI [Info]: OnAgentCreated /Npc/Quadruped267 Live 14 Spawned 261 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16650.432 AI [Info]: OnAgentCreated /Npc/MeleeRunner268 Live 14 Spawned 262 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16650.436 AI [Info]: OnAgentCreated /Npc/SuicideRunner269 Live 15 Spawned 263 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16651.457 AI [Info]: OnAgentCreated /Npc/Quadruped270 Live 14 Spawned 264 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16651.463 AI [Info]: OnAgentCreated /Npc/Quadruped271 Live 15 Spawned 265 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16652.484 AI [Info]: OnAgentCreated /Npc/SuicideRunner272 Live 14 Spawned 266 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16653.000 AI [Info]: OnAgentCreated /Npc/SuicideRunner273 Live 12 Spawned 267 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16653.004 AI [Info]: OnAgentCreated /Npc/Quadruped274 Live 13 Spawned 268 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16653.520 AI [Info]: OnAgentCreated /Npc/Quadruped275 Live 14 Spawned 269 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16657.074 AI [Info]: OnAgentCreated /Npc/SuicideRunner276 Live 12 Spawned 270 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16657.078 AI [Info]: OnAgentCreated /Npc/Quadruped277 Live 13 Spawned 271 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16658.100 AI [Info]: OnAgentCreated /Npc/Quadruped278 Live 12 Spawned 272 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16658.104 AI [Info]: OnAgentCreated /Npc/Quadruped279 Live 13 Spawned 273 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16658.107 AI [Info]: OnAgentCreated /Npc/MeleeRunner280 Live 14 Spawned 274 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16661.154 AI [Info]: OnAgentCreated /Npc/LeapingRunner281 Live 13 Spawned 275 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16661.158 AI [Info]: OnAgentCreated /Npc/MeleeRunner282 Live 14 Spawned 276 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16662.182 AI [Info]: OnAgentCreated /Npc/SuicideRunner283 Live 13 Spawned 277 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16662.186 AI [Info]: OnAgentCreated /Npc/Quadruped284 Live 14 Spawned 278 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16664.729 AI [Info]: OnAgentCreated /Npc/Quadruped285 Live 13 Spawned 279 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16664.891 Script [Info]: SurvivalMission.lua: Survival: Spawned SecurityCredentialsPickup at pos: Vector(179, -1, -43) Created by Capsule ID3
+16664.891 Script [Info]: SurvivalMission.lua: Survival: Spawned usable life support capsule with id 3
+16664.932 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16665.240 AI [Info]: OnAgentCreated /Npc/Quadruped286 Live 13 Spawned 280 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16665.246 AI [Info]: OnAgentCreated /Npc/Quadruped287 Live 14 Spawned 281 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16667.789 AI [Info]: OnAgentCreated /Npc/SuicideRunner288 Live 13 Spawned 282 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16670.838 AI [Info]: OnAgentCreated /Npc/Quadruped289 Live 13 Spawned 283 Ticking 12 Paused 0 IgnoredTicking 1 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16670.842 AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent290 Live 14 Spawned 284 Ticking 13 Paused 0 IgnoredTicking 1 MonitoredTicking 12 AllyLive 1 AllyActive 1 NeutralActive 0
+16672.367 AI [Info]: OnAgentCreated /Npc/MeleeRunner291 Live 13 Spawned 284 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16672.881 AI [Info]: OnAgentCreated /Npc/Quadruped292 Live 13 Spawned 285 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16674.914 AI [Info]: OnAgentCreated /Npc/Quadruped293 Live 13 Spawned 286 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16674.918 AI [Info]: OnAgentCreated /Npc/MeleeRunner294 Live 14 Spawned 287 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16675.939 AI [Info]: OnAgentCreated /Npc/Quadruped295 Live 14 Spawned 288 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16676.959 AI [Info]: OnAgentCreated /Npc/SuicideRunner296 Live 13 Spawned 289 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16677.475 AI [Info]: OnAgentCreated /Npc/Quadruped297 Live 13 Spawned 290 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16677.988 AI [Info]: OnAgentCreated /Npc/Quadruped298 Live 14 Spawned 291 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16678.504 AI [Info]: OnAgentCreated /Npc/Quadruped299 Live 13 Spawned 292 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16678.508 AI [Info]: OnAgentCreated /Npc/Quadruped300 Live 14 Spawned 293 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16680.035 AI [Info]: OnAgentCreated /Npc/Quadruped301 Live 13 Spawned 294 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16680.551 AI [Info]: OnAgentCreated /Npc/SuicideRunner302 Live 12 Spawned 295 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16680.555 AI [Info]: OnAgentCreated /Npc/Quadruped303 Live 13 Spawned 296 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16680.559 AI [Info]: OnAgentCreated /Npc/Quadruped304 Live 14 Spawned 297 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16680.562 AI [Info]: OnAgentCreated /Npc/Quadruped305 Live 15 Spawned 298 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16681.078 AI [Info]: OnAgentCreated /Npc/MeleeRunner306 Live 9 Spawned 299 Ticking 8 Paused 0 IgnoredTicking 2 MonitoredTicking 6 AllyLive 1 AllyActive 1 NeutralActive 0
+16681.082 AI [Info]: OnAgentCreated /Npc/SuicideRunner307 Live 10 Spawned 300 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16681.088 AI [Info]: OnAgentCreated /Npc/Quadruped308 Live 11 Spawned 301 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16681.092 AI [Info]: OnAgentCreated /Npc/MeleeRunner309 Live 12 Spawned 302 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16681.096 AI [Info]: OnAgentCreated /Npc/SuicideRunner310 Live 13 Spawned 303 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16681.100 AI [Info]: OnAgentCreated /Npc/Quadruped311 Live 14 Spawned 304 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16682.633 AI [Info]: OnAgentCreated /Npc/MeleeRunner312 Live 13 Spawned 305 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16683.146 AI [Info]: OnAgentCreated /Npc/Quadruped313 Live 13 Spawned 306 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16685.688 AI [Info]: OnAgentCreated /Npc/Quadruped314 Live 11 Spawned 307 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16685.691 AI [Info]: OnAgentCreated /Npc/Quadruped315 Live 12 Spawned 308 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16685.695 AI [Info]: OnAgentCreated /Npc/SuicideRunner316 Live 13 Spawned 309 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16685.699 AI [Info]: OnAgentCreated /Npc/Quadruped317 Live 13 Spawned 310 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16687.227 AI [Info]: OnAgentCreated /Npc/Quadruped318 Live 14 Spawned 311 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16687.744 AI [Info]: OnAgentCreated /Npc/MeleeRunner319 Live 13 Spawned 312 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16688.768 AI [Info]: OnAgentCreated /Npc/Quadruped320 Live 13 Spawned 313 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16690.803 AI [Info]: OnAgentCreated /Npc/Quadruped321 Live 10 Spawned 314 Ticking 9 Paused 0 IgnoredTicking 2 MonitoredTicking 7 AllyLive 1 AllyActive 1 NeutralActive 0
+16690.809 AI [Info]: OnAgentCreated /Npc/Quadruped322 Live 11 Spawned 315 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16690.811 AI [Info]: OnAgentCreated /Npc/SuicideRunner323 Live 12 Spawned 316 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16690.816 AI [Info]: OnAgentCreated /Npc/Quadruped324 Live 13 Spawned 317 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16690.822 AI [Info]: OnAgentCreated /Npc/Quadruped325 Live 14 Spawned 318 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16691.340 AI [Info]: OnAgentCreated /Npc/MeleeRunner326 Live 14 Spawned 319 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16692.361 AI [Info]: OnAgentCreated /Npc/Quadruped327 Live 13 Spawned 320 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16692.879 AI [Info]: OnAgentCreated /Npc/LeapingRunner328 Live 13 Spawned 321 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16693.900 AI [Info]: OnAgentCreated /Npc/MeleeRunner329 Live 13 Spawned 322 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16693.904 AI [Info]: OnAgentCreated /Npc/SuicideRunner330 Live 14 Spawned 323 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16694.926 AI [Info]: OnAgentCreated /Npc/LeapingRunner331 Live 13 Spawned 324 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16695.146 Script [Info]: SurvivalMission.lua: Survival: Session locked
+16696.453 AI [Info]: OnAgentCreated /Npc/Quadruped332 Live 14 Spawned 325 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16696.969 AI [Info]: OnAgentCreated /Npc/SuicideRunner333 Live 12 Spawned 326 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16696.975 AI [Info]: OnAgentCreated /Npc/Quadruped334 Live 13 Spawned 327 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16698.502 AI [Info]: OnAgentCreated /Npc/GrenadeCrawler336 Live 12 Spawned 328 Ignored Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16698.502 AI [Info]: OnAgentCreated /Npc/PoisonDroneAgent335 Live 13 Spawned 328 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16698.506 AI [Info]: OnAgentCreated /Npc/Quadruped337 Live 14 Spawned 329 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16698.512 AI [Info]: OnAgentCreated /Npc/SuicideRunner338 Live 15 Spawned 330 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16699.535 AI [Info]: OnAgentCreated /Npc/LeapingRunner339 Live 14 Spawned 331 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16700.049 AI [Info]: OnAgentCreated /Npc/LeapingRunner340 Live 14 Spawned 332 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16700.053 AI [Info]: OnAgentCreated /Npc/Quadruped341 Live 15 Spawned 333 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16700.570 AI [Info]: OnAgentCreated /Npc/Quadruped342 Live 13 Spawned 334 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16700.574 AI [Info]: OnAgentCreated /Npc/Quadruped343 Live 14 Spawned 335 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16700.580 AI [Info]: OnAgentCreated /Npc/SuicideRunner344 Live 15 Spawned 336 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16702.105 AI [Info]: OnAgentCreated /Npc/MeleeRunner345 Live 14 Spawned 337 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16703.127 AI [Info]: OnAgentCreated /Npc/Quadruped346 Live 14 Spawned 338 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16703.131 AI [Info]: OnAgentCreated /Npc/SuicideRunner347 Live 15 Spawned 339 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16703.135 AI [Info]: OnAgentCreated /Npc/MeleeRunner348 Live 16 Spawned 340 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16705.170 AI [Info]: OnAgentCreated /Npc/MeleeRunner349 Live 14 Spawned 341 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16705.174 AI [Info]: OnAgentCreated /Npc/Quadruped350 Live 15 Spawned 342 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16705.178 AI [Info]: OnAgentCreated /Npc/SuicideRunner351 Live 16 Spawned 343 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16706.199 AI [Info]: OnAgentCreated /Npc/Quadruped352 Live 15 Spawned 344 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16706.203 AI [Info]: OnAgentCreated /Npc/SuicideRunner353 Live 16 Spawned 345 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16707.225 AI [Info]: OnAgentCreated /Npc/MeleeRunner354 Live 14 Spawned 346 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16708.248 AI [Info]: OnAgentCreated /Npc/Quadruped355 Live 13 Spawned 347 Ticking 12 Paused 1 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16708.252 AI [Info]: OnAgentCreated /Npc/Quadruped356 Live 14 Spawned 348 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16708.768 AI [Info]: OnAgentCreated /Npc/SuicideRunner357 Live 14 Spawned 349 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16709.281 AI [Info]: OnAgentCreated /Npc/Quadruped358 Live 13 Spawned 350 Ticking 12 Paused 1 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16709.287 AI [Info]: OnAgentCreated /Npc/Quadruped359 Live 14 Spawned 351 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16711.322 AI [Info]: OnAgentCreated /Npc/Quadruped360 Live 14 Spawned 352 Ticking 11 Paused 1 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16711.326 AI [Info]: OnAgentCreated /Npc/Quadruped361 Live 15 Spawned 353 Ticking 12 Paused 1 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16711.330 AI [Info]: OnAgentCreated /Npc/Quadruped362 Live 16 Spawned 354 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16711.846 AI [Info]: OnAgentCreated /Npc/MeleeRunner363 Live 14 Spawned 355 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16714.387 AI [Info]: OnAgentCreated /Npc/MeleeRunner364 Live 14 Spawned 356 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16715.914 AI [Info]: OnAgentCreated /Npc/MeleeRunner365 Live 14 Spawned 357 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16716.428 AI [Info]: OnAgentCreated /Npc/Quadruped366 Live 14 Spawned 358 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16718.969 AI [Info]: OnAgentCreated /Npc/Quadruped367 Live 15 Spawned 359 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16723.535 AI [Info]: OnAgentCreated /Npc/SuicideRunner368 Live 14 Spawned 360 Ticking 12 Paused 1 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16723.541 AI [Info]: OnAgentCreated /Npc/MeleeRunner369 Live 15 Spawned 361 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16724.057 AI [Info]: OnAgentCreated /Npc/MeleeRunner370 Live 14 Spawned 362 Ticking 12 Paused 1 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16724.061 AI [Info]: OnAgentCreated /Npc/MeleeRunner371 Live 15 Spawned 363 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16725.453 Script [Info]: SurvivalMission.lua: Survival: Spawned incoming life support capsule with id 5
+16725.498 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16727.609 AI [Info]: OnAgentCreated /Npc/SlowBombBipedAgent372 Live 12 Spawned 364 Ticking 11 Paused 1 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16727.613 AI [Info]: OnAgentCreated /Npc/SlowBombBipedAgent373 Live 13 Spawned 365 Ticking 12 Paused 1 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16727.619 AI [Info]: OnAgentCreated /Npc/Quadruped374 Live 14 Spawned 366 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16728.133 AI [Info]: OnAgentCreated /Npc/LeapingRunner375 Live 14 Spawned 367 Ticking 13 Paused 1 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16736.244 AI [Info]: OnAgentCreated /Npc/Quadruped376 Live 13 Spawned 368 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16736.250 AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent377 Live 14 Spawned 369 Ticking 14 Paused 0 IgnoredTicking 2 MonitoredTicking 12 AllyLive 1 AllyActive 1 NeutralActive 0
+16745.365 AI [Info]: OnAgentCreated /Npc/Quadruped378 Live 14 Spawned 369 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16745.371 AI [Info]: OnAgentCreated /Npc/Quadruped379 Live 15 Spawned 370 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16745.375 AI [Info]: OnAgentCreated /Npc/Quadruped380 Live 16 Spawned 371 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16745.891 AI [Info]: OnAgentCreated /Npc/SuicideRunner381 Live 11 Spawned 372 Ticking 11 Paused 0 IgnoredTicking 3 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16745.895 AI [Info]: OnAgentCreated /Npc/LeapingRunner382 Live 12 Spawned 373 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16745.898 AI [Info]: OnAgentCreated /Npc/Quadruped383 Live 13 Spawned 374 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16745.902 AI [Info]: OnAgentCreated /Npc/Quadruped384 Live 14 Spawned 375 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16746.418 AI [Info]: OnAgentCreated /Npc/Quadruped385 Live 13 Spawned 376 Ticking 11 Paused 0 IgnoredTicking 3 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16746.424 AI [Info]: OnAgentCreated /Npc/SuicideRunner386 Live 14 Spawned 377 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16746.428 AI [Info]: OnAgentCreated /Npc/MeleeRunner387 Live 15 Spawned 378 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16746.432 AI [Info]: OnAgentCreated /Npc/MeleeRunner388 Live 16 Spawned 379 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16748.465 AI [Info]: OnAgentCreated /Npc/MeleeRunner389 Live 14 Spawned 380 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16749.488 AI [Info]: OnAgentCreated /Npc/LeapingRunner390 Live 12 Spawned 381 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16749.494 AI [Info]: OnAgentCreated /Npc/Quadruped391 Live 13 Spawned 382 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16751.039 Script [Info]: EndOfMatch.lua: Initialize
+16751.039 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+16751.039 Script [Info]: EndOfMatch.lua: Mission Succeeded
+16751.039 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+16751.039 Script [Info]: EndOfMatch.lua: Connected: true
+16751.039 Script [Info]: EndOfMatch.lua: TestTenno - IsInTrigger=false
+16751.039 Script [Info]: EndOfMatch.lua: RewardUtilities: Gave reward tier 0
+16751.039 Script [Info]: EndOfMatch.lua: GetMissionCompleteCreditBonus: 0
+16751.043 Script [Info]: EndOfMatch.lua: Missing icon data!
+16751.043 Script [Info]: EndOfMatch.lua: Missing icon data!
+16751.045 Script [Info]: EndOfMatch.lua: Missing icon data!
+16751.045 Script [Info]: EndOfMatch.lua: Missing icon data!
+16751.047 Script [Info]: EndOfMatch.lua: Missing icon data!
+16751.047 Script [Info]: EndOfMatch.lua: Missing icon data!
+16751.531 AI [Info]: OnAgentCreated /Npc/Quadruped392 Live 10 Spawned 383 Ticking 10 Paused 0 IgnoredTicking 2 MonitoredTicking 8 AllyLive 1 AllyActive 1 NeutralActive 0
+16751.535 AI [Info]: OnAgentCreated /Npc/MeleeRunner393 Live 11 Spawned 384 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16751.541 AI [Info]: OnAgentCreated /Npc/MeleeRunner394 Live 12 Spawned 385 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16751.545 AI [Info]: OnAgentCreated /Npc/LeapingRunner395 Live 13 Spawned 386 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16751.803 Script [Info]: EndOfMatch.lua: DBG: HudVis 0
+16754.088 AI [Info]: OnAgentCreated /Npc/LeapingRunner396 Live 13 Spawned 387 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16755.109 AI [Info]: OnAgentCreated /Npc/SlowBombBipedAgent397 Live 14 Spawned 388 Ticking 11 Paused 0 IgnoredTicking 2 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16755.113 AI [Info]: OnAgentCreated /Npc/MeleeRunner398 Live 15 Spawned 389 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16755.113 AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent399 Live 16 Spawned 390 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16755.117 AI [Info]: OnAgentCreated /Npc/Quadruped400 Live 17 Spawned 390 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16755.602 Script [Info]: SurvivalMission.lua: Survival: Spawned SecurityCredentialsPickup at pos: Vector(-143.9, -1.45, -57.9001) Created by Capsule ID5
+16755.602 Script [Info]: SurvivalMission.lua: Survival: Spawned usable life support capsule with id 5
+16755.602 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16755.633 AI [Info]: OnAgentCreated /Npc/NoxiousCrawler402 Live 15 Spawned 391 Ignored Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16755.633 AI [Info]: OnAgentCreated /Npc/PoisonDroneAgent401 Live 16 Spawned 391 Ticking 15 Paused 0 IgnoredTicking 4 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16756.148 AI [Info]: OnAgentCreated /Npc/Quadruped403 Live 17 Spawned 392 Ticking 15 Paused 0 IgnoredTicking 4 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16756.666 AI [Info]: OnAgentCreated /Npc/Quadruped404 Live 14 Spawned 393 Ticking 13 Paused 0 IgnoredTicking 4 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16756.672 AI [Info]: OnAgentCreated /Npc/Quadruped405 Live 15 Spawned 394 Ticking 14 Paused 0 IgnoredTicking 4 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16756.678 AI [Info]: OnAgentCreated /Npc/MeleeRunner406 Live 16 Spawned 395 Ticking 15 Paused 0 IgnoredTicking 4 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16758.203 AI [Info]: OnAgentCreated /Npc/SuicideRunner407 Live 15 Spawned 396 Ticking 15 Paused 0 IgnoredTicking 4 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16759.734 AI [Info]: OnAgentCreated /Npc/Quadruped408 Live 15 Spawned 397 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16759.738 AI [Info]: OnAgentCreated /Npc/SlowBombBipedAgent409 Live 16 Spawned 398 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16760.252 AI [Info]: OnAgentCreated /Npc/SuicideRunner410 Live 16 Spawned 399 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16760.258 AI [Info]: OnAgentCreated /Npc/Quadruped411 Live 17 Spawned 400 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16762.797 AI [Info]: OnAgentCreated /Npc/MeleeRunner412 Live 14 Spawned 401 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16762.801 AI [Info]: OnAgentCreated /Npc/Quadruped413 Live 15 Spawned 402 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16765.850 AI [Info]: OnAgentCreated /Npc/MeleeRunner414 Live 14 Spawned 403 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16766.869 AI [Info]: OnAgentCreated /Npc/MeleeRunner415 Live 13 Spawned 404 Ticking 12 Paused 0 IgnoredTicking 3 MonitoredTicking 9 AllyLive 1 AllyActive 1 NeutralActive 0
+16766.875 AI [Info]: OnAgentCreated /Npc/LeapingRunner416 Live 14 Spawned 405 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16766.879 AI [Info]: OnAgentCreated /Npc/MeleeRunner417 Live 15 Spawned 406 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16767.902 AI [Info]: OnAgentCreated /Npc/MeleeRunner418 Live 13 Spawned 407 Ticking 13 Paused 0 IgnoredTicking 3 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16767.906 AI [Info]: OnAgentCreated /Npc/SuicideRunner419 Live 14 Spawned 408 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16768.424 AI [Info]: OnAgentCreated /Npc/LeapingRunner420 Live 14 Spawned 409 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16768.938 AI [Info]: OnAgentCreated /Npc/MeleeRunner421 Live 14 Spawned 410 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16769.957 AI [Info]: OnAgentCreated /Npc/LeapingRunner422 Live 14 Spawned 411 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16771.484 AI [Info]: OnAgentCreated /Npc/MeleeRunner423 Live 14 Spawned 412 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16772.000 AI [Info]: OnAgentCreated /Npc/Quadruped424 Live 14 Spawned 413 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16773.021 AI [Info]: OnAgentCreated /Npc/Quadruped425 Live 14 Spawned 414 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16776.576 AI [Info]: OnAgentCreated /Npc/Quadruped426 Live 13 Spawned 415 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16777.598 AI [Info]: OnAgentCreated /Npc/MeleeRunner427 Live 14 Spawned 416 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16778.113 AI [Info]: OnAgentCreated /Npc/SuicideRunner428 Live 14 Spawned 417 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16778.627 AI [Info]: OnAgentCreated /Npc/SuicideRunner429 Live 14 Spawned 418 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16779.143 AI [Info]: OnAgentCreated /Npc/Quadruped430 Live 14 Spawned 419 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16780.670 AI [Info]: OnAgentCreated /Npc/Quadruped431 Live 13 Spawned 420 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16782.199 AI [Info]: OnAgentCreated /Npc/Quadruped432 Live 12 Spawned 421 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16782.203 AI [Info]: OnAgentCreated /Npc/Quadruped433 Live 13 Spawned 422 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16782.717 AI [Info]: OnAgentCreated /Npc/SlowBombBipedAgent434 Live 14 Spawned 423 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16783.230 AI [Info]: OnAgentCreated /Npc/Quadruped435 Live 14 Spawned 424 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16784.252 AI [Info]: OnAgentCreated /Npc/Quadruped436 Live 13 Spawned 425 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16786.283 Script [Info]: SurvivalMission.lua: Survival: Session locked
+16786.283 Script [Info]: SurvivalMission.lua: Survival: Host - first reward
+16786.283 Script [Info]: SurvivalMission.lua: Survival: Gave reward tier 1 at 300.494873046875
+16787.301 AI [Info]: OnAgentCreated /Npc/Quadruped437 Live 13 Spawned 426 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16790.854 AI [Info]: OnAgentCreated /Npc/Quadruped438 Live 12 Spawned 427 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16790.859 AI [Info]: OnAgentCreated /Npc/LeapingRunner439 Live 13 Spawned 428 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16791.881 AI [Info]: OnAgentCreated /Npc/MeleeRunner440 Live 12 Spawned 429 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16791.885 AI [Info]: OnAgentCreated /Npc/MeleeRunner441 Live 13 Spawned 430 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16793.412 AI [Info]: OnAgentCreated /Npc/MeleeRunner442 Live 13 Spawned 431 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16793.926 AI [Info]: OnAgentCreated /Npc/SlowBombBipedAgent443 Live 12 Spawned 432 Ticking 12 Paused 0 IgnoredTicking 2 MonitoredTicking 10 AllyLive 1 AllyActive 1 NeutralActive 0
+16793.932 AI [Info]: OnAgentCreated /Npc/SuicideRunner444 Live 13 Spawned 433 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16796.975 AI [Info]: OnAgentCreated /Npc/Quadruped445 Live 13 Spawned 434 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16800.020 AI [Info]: OnAgentCreated /Npc/Quadruped446 Live 13 Spawned 435 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16801.041 AI [Info]: OnAgentCreated /Npc/Quadruped447 Live 13 Spawned 436 Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16803.074 AI [Info]: OnAgentCreated /Npc/MeleeCrawler449 Live 13 Spawned 437 Ignored Ticking 13 Paused 0 IgnoredTicking 2 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16803.076 AI [Info]: OnAgentCreated /Npc/PoisonDroneAgent448 Live 14 Spawned 437 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16803.590 AI [Info]: OnAgentCreated /Npc/MeleeRunner450 Live 14 Spawned 438 Ticking 14 Paused 0 IgnoredTicking 3 MonitoredTicking 11 AllyLive 1 AllyActive 1 NeutralActive 0
+16806.654 Script [Info]: EndOfMatch.lua: Initialize
+16806.654 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+16806.654 Script [Info]: EndOfMatch.lua: Mission Succeeded
+16806.654 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+16806.654 Script [Info]: EndOfMatch.lua: Connected: true
+16806.654 Script [Info]: EndOfMatch.lua: TestTenno - IsInTrigger=false
+16806.656 Script [Info]: EndOfMatch.lua: RewardUtilities: Gave reward tier 0
+16806.656 Script [Info]: EndOfMatch.lua: GetMissionCompleteCreditBonus: 0
+16806.660 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.660 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.662 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.662 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.664 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.664 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.664 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.928 Script [Info]: EndOfMatch.lua: DBG: HudVis 0
+16806.965 Script [Info]: ExtractionTimer.lua: EOM: All players extracting
+16806.967 Script [Info]: EndOfMatch.lua: Initialize
+16806.967 Script [Info]: EndOfMatch.lua: DBG: HudVis 1
+16806.967 Script [Info]: EndOfMatch.lua: Mission Succeeded
+16806.967 Script [Info]: EndOfMatch.lua: EndOfMatch.lua: GiveMissionRewards. success=true
+16806.977 Script [Info]: EndOfMatch.lua: Connected: true
+16806.977 Script [Info]: EndOfMatch.lua: TestTenno - IsInTrigger=true
+16806.977 Sys [Info]: MISSION_SCORE ClanNode11 0x00000142
+16806.977 Sys [Info]: EOM missionLocationUnlocked=1
+16806.982 Script [Info]: EndOfMatch.lua: RewardUtilities: Gave reward tier 0
+16806.986 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.988 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.988 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.988 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.990 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.990 Script [Info]: EndOfMatch.lua: Missing icon data!
+16806.990 Script [Info]: EndOfMatch.lua: Missing icon data!
+16807.275 Script [Info]: EndOfMatch.lua: DbUpdateComplete
+16807.277 Script [Info]: EndOfMatch.lua: WRONG NUM REWARDS
+16807.279 Script [Info]: EndOfMatch.lua: NotifyTagMultiple(MISSION_REWARD_CREDITS): 52400
+16810.062 Script [Info]: EndOfMatch.lua: Missing icon data!
+16810.062 Script [Info]: EndOfMatch.lua: Missing icon data!
+16810.082 Script [Info]: EndOfMatch.lua: Missing icon data!
+16810.084 Script [Info]: EndOfMatch.lua: Missing icon data!
+16810.084 Script [Info]: EndOfMatch.lua: Missing icon data!
+16810.084 Script [Info]: EndOfMatch.lua: Missing icon data!
+16810.105 Script [Info]: EndOfMatch.lua: Missing icon data!
+16814.031 Script [Info]: EndOfMatch.lua: Auto close delay=10.099241256713867
+16815.961 Script [Info]: SurvivalMission.lua: Survival: Spawned incoming life support capsule with id 4
+16816.035 Script [Info]: SurvivalMission.lua: Survival: HUD: Updated life support icons
+16824.133 Script [Info]: EndOfMatch.lua: EndOfMatch.lua - Close
+16824.355 Game [Info]: Level=/Lotus/Levels/Proc/PlayerShip/AeAo.lp
