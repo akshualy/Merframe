@@ -28,6 +28,7 @@ pub enum Level {
     Info,
     Warning,
     Error,
+    Diag,
 }
 
 impl Level {
@@ -36,6 +37,7 @@ impl Level {
             "Info" => Some(Self::Info),
             "Warning" => Some(Self::Warning),
             "Error" => Some(Self::Error),
+            "Diag" => Some(Self::Diag),
             _ => None,
         }
     }
@@ -153,8 +155,14 @@ mod tests {
     }
 
     #[test]
+    fn diag_level() {
+        let line = parse_line("0.043 Sys [Diag]: Process Command-line: -foo").unwrap();
+        assert_eq!(line.level, Level::Diag);
+    }
+
+    #[test]
     fn unknown_level() {
-        assert!(parse_line("0.043 Sys [Diag]: Process Command-line: -foo").is_none());
+        assert!(parse_line("0.043 Sys [Trace]: Process Command-line: -foo").is_none());
     }
 
     #[test]

@@ -252,7 +252,7 @@ export function FoundryTreeDialog({
 
   return (
     <Dialog open={item !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="top-16 max-h-[calc(100vh-8rem)] translate-y-0 overflow-y-auto sm:max-w-2xl">
+      <DialogContent scrollable className="top-16 translate-y-0 sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <ItemImage imageName={item?.image_name} size={40} />

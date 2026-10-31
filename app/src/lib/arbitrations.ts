@@ -1,7 +1,6 @@
 import type { EventName } from "@/lib/bridge";
 import { fullDate } from "@/lib/format";
 import type {
-  ArbitrationNode,
   ArbitrationSchedule,
   ArbitrationSlot,
   ArbitrationTier,
@@ -28,6 +27,8 @@ export const ARBITRATION_LEAD_MINUTES = [0, 5, 10, 15, 30, 60] as const;
 
 export type ArbitrationPersonalFilter = "favourites" | "matches" | "reminders";
 
+export type ArbitrationRunRoleFilter = "host" | "client";
+
 export function slotPlace(slot: {
   node: string;
   planet: string | null;
@@ -39,9 +40,9 @@ export function slotMission(slot: { mission_type: string | null }): string {
   return slot.mission_type ?? "Unknown mission";
 }
 
-export function nodeValues(
-  nodes: ArbitrationNode[],
-  key: "mission_type" | "planet" | "faction",
+export function nodeValues<K extends string>(
+  nodes: Record<K, string | null>[],
+  key: K,
 ): string[] {
   const known = nodes
     .map((node) => node[key])

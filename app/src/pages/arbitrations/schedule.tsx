@@ -1,6 +1,7 @@
 import { Bell, type LucideIcon, Star, Timer } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router";
+import { Figure } from "@/components/figure";
 import { GameIcon } from "@/components/game-icon";
 import { MarkToggle } from "@/components/mark-toggle";
 import { EmptyNote, FramedList, Surface } from "@/components/page";
@@ -174,17 +175,11 @@ function HeroCard({
 
 function Countdown({ label, seconds }: { label: string; seconds: number }) {
   return (
-    <span className="flex flex-col">
-      <Hint as="span">{label}</Hint>
-      <span
-        className={cn(
-          "font-mono text-base font-semibold",
-          endingSoon(seconds) ? "text-warning" : "text-accent",
-        )}
-      >
-        {timeLeft(seconds)}
-      </span>
-    </span>
+    <Figure
+      label={label}
+      value={timeLeft(seconds)}
+      className={endingSoon(seconds) ? "text-warning" : "text-accent"}
+    />
   );
 }
 
@@ -237,12 +232,11 @@ export function HeroCards({
         mark={next && <BellButton slot={next} marks={marks} started={false} />}
       >
         {next && (
-          <span className="flex flex-col">
-            <Hint as="span">Starts at</Hint>
-            <span className="text-accent font-mono text-base font-semibold">
-              {timeOfDay(next.starts)}
-            </span>
-          </span>
+          <Figure
+            label="Starts at"
+            value={timeOfDay(next.starts)}
+            className="text-accent"
+          />
         )}
       </HeroCard>
       <HeroCard

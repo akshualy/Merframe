@@ -5,6 +5,7 @@ import { Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { api, reportError } from "@/lib/bridge";
 import { notify } from "@/lib/toast";
+import { scrollToSection } from "@/lib/utils";
 import { useAppStore, useSettings } from "@/stores/app-store";
 import type { Settings } from "@/types";
 import { ArbitrationAlertSettingsSection } from "./arbitrations";
@@ -29,9 +30,7 @@ export function SettingsPage() {
   const { hash } = useLocation();
   useEffect(() => {
     if (hash) {
-      document
-        .getElementById(hash.slice(1))
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToSection(hash.slice(1));
     }
   }, [hash]);
 

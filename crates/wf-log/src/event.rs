@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::line::LogLine;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Event {
     LoggedIn {
         name: String,
@@ -13,6 +13,8 @@ pub enum Event {
     LoggingIn,
     MissionSet {
         void_tier: Option<String>,
+        node_id: Option<String>,
+        elite: bool,
     },
     MissionStart {
         level_path: String,
@@ -65,6 +67,60 @@ pub enum Event {
         focused: bool,
     },
     GameMonitor(MonitorRect),
+    ClockAnchor {
+        utc: String,
+    },
+    MissionPending {
+        node_id: String,
+        elite: bool,
+    },
+    MissionLoading {
+        host: bool,
+        node_id: String,
+        elite: bool,
+    },
+    SessionStarted {
+        host: bool,
+    },
+    MissionStateStarted {
+        mission_type: String,
+    },
+    SurvivalStarted,
+    SurvivalReward {
+        elapsed_secs: f64,
+    },
+    DefenseWave {
+        index: u32,
+    },
+    DefenseWaveCleared,
+    RotationRewarded,
+    AgentCreated {
+        agent: String,
+        live: u32,
+        spawned: u32,
+    },
+    MissionFailed,
+    MissionAborted,
+    PlayersExtracting,
+    MissionScore {
+        node_id: String,
+    },
+    MissionLocationUnlocked,
+    LevelLoaded {
+        path: String,
+    },
+    HubReturned,
+    HubBlessingPending {
+        resource: bool,
+    },
+    HubBlessingsRequested,
+    HubBlessingSent {
+        resource: bool,
+    },
+    HubBlessingConfirmed {
+        resource: bool,
+        duration_secs: f64,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -115,11 +171,33 @@ impl Event {
             Self::InventorySynced => "InventorySynced",
             Self::WindowFocus { .. } => "WindowFocus",
             Self::GameMonitor(_) => "GameMonitor",
+            Self::ClockAnchor { .. } => "ClockAnchor",
+            Self::MissionPending { .. } => "MissionPending",
+            Self::MissionLoading { .. } => "MissionLoading",
+            Self::SessionStarted { .. } => "SessionStarted",
+            Self::MissionStateStarted { .. } => "MissionStateStarted",
+            Self::SurvivalStarted => "SurvivalStarted",
+            Self::SurvivalReward { .. } => "SurvivalReward",
+            Self::DefenseWave { .. } => "DefenseWave",
+            Self::DefenseWaveCleared => "DefenseWaveCleared",
+            Self::RotationRewarded => "RotationRewarded",
+            Self::AgentCreated { .. } => "AgentCreated",
+            Self::MissionFailed => "MissionFailed",
+            Self::MissionAborted => "MissionAborted",
+            Self::PlayersExtracting => "PlayersExtracting",
+            Self::MissionScore { .. } => "MissionScore",
+            Self::MissionLocationUnlocked => "MissionLocationUnlocked",
+            Self::LevelLoaded { .. } => "LevelLoaded",
+            Self::HubReturned => "HubReturned",
+            Self::HubBlessingPending { .. } => "HubBlessingPending",
+            Self::HubBlessingsRequested => "HubBlessingsRequested",
+            Self::HubBlessingSent { .. } => "HubBlessingSent",
+            Self::HubBlessingConfirmed { .. } => "HubBlessingConfirmed",
         }
     }
 }
 
-fn compiled(pattern: &str) -> Regex {
+pub(crate) fn compiled(pattern: &str) -> Regex {
     match Regex::new(pattern) {
         Ok(regex) => regex,
         Err(_) => unreachable!(),
@@ -145,6 +223,12 @@ static MONITOR_INFO: LazyLock<Regex> =
 struct MissionSetWire {
     #[serde(rename = "voidTier")]
     void_tier: Option<String>,
+    name: Option<String>,
+}
+
+pub(crate) fn node_and_elite(name: &str) -> (String, bool) {
+    let (node_id, suffix) = name.split_once('_').unwrap_or((name, ""));
+    (node_id.to_owned(), suffix == "EliteAlert")
 }
 
 fn mission_set(message: &str) -> Option<Event> {
@@ -153,8 +237,14 @@ fn mission_set(message: &str) -> Option<Event> {
         return Some(Event::MissionCleared);
     }
     let wire: MissionSetWire = serde_json::from_str(json_part).ok()?;
+    let (node_id, elite) = wire.name.as_deref().map_or((None, false), |name| {
+        let (node_id, elite) = node_and_elite(name);
+        (Some(node_id), elite)
+    });
     Some(Event::MissionSet {
         void_tier: wire.void_tier,
+        node_id,
+        elite,
     })
 }
 
@@ -355,7 +445,7 @@ pub fn classify(line: &LogLine) -> Option<Event> {
     {
         return Some(Event::InventorySynced);
     }
-    None
+    crate::run::classify(message)
 }
 
 #[cfg(test)]
@@ -393,6 +483,8 @@ mod tests {
             event,
             Some(Event::MissionSet {
                 void_tier: Some("VoidT1".to_owned()),
+                node_id: Some("SolNode14".to_owned()),
+                elite: false,
             })
         );
     }
