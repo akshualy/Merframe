@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use tauri::{
-    AppHandle, LogicalPosition, LogicalSize, Manager, Runtime, WebviewUrl, WebviewWindow,
-    WebviewWindowBuilder,
+    AppHandle, LogicalPosition, LogicalSize, Manager, PhysicalPosition, Runtime, WebviewUrl,
+    WebviewWindow, WebviewWindowBuilder,
 };
 use tracing::{debug, warn};
 use wf_log::MonitorRect;
@@ -42,10 +42,12 @@ impl Screen {
         }
     }
 
-    fn from_game(rect: MonitorRect, scale: f64) -> Self {
+    /// Wine moves the primary monitor to 0,0,
+    /// but the physical position reports the absolute coordinates.
+    fn from_game(rect: MonitorRect, primary_origin: PhysicalPosition<i32>, scale: f64) -> Self {
         Self {
-            x: f64::from(rect.left),
-            y: f64::from(rect.top),
+            x: f64::from(rect.left + primary_origin.x),
+            y: f64::from(rect.top + primary_origin.y),
             width: f64::from(rect.width),
             height: f64::from(rect.height),
             scale,
@@ -180,15 +182,20 @@ pub(super) fn screen_of<R: Runtime>(app: &AppHandle<R>, game: Option<MonitorRect
             .as_ref()
             .map_or(DEFAULT_SCREEN, Screen::from_monitor);
     };
-    let centre_x = f64::from(rect.left) + f64::from(rect.width) / 2.0;
-    let centre_y = f64::from(rect.top) + f64::from(rect.height) / 2.0;
+    let primary_origin = primary
+        .as_ref()
+        .map_or(PhysicalPosition::new(0, 0), |monitor| *monitor.position());
+    let screen = Screen::from_game(rect, primary_origin, 1.0);
     let scale = app
-        .monitor_from_point(centre_x, centre_y)
+        .monitor_from_point(
+            screen.x + screen.width / 2.0,
+            screen.y + screen.height / 2.0,
+        )
         .ok()
         .flatten()
         .or(primary)
         .map_or(1.0, |monitor| monitor.scale_factor());
-    Screen::from_game(rect, scale)
+    Screen { scale, ..screen }
 }
 
 pub(super) fn open<R: Runtime>(app: &AppHandle<R>, kind: Kind, bounds: Bounds, scale: f64) {
@@ -681,7 +688,7 @@ mod tests {
             height: 1080,
         };
         assert_eq!(
-            Screen::from_game(rect, 1.25),
+            Screen::from_game(rect, PhysicalPosition::new(0, 0), 1.25),
             Screen {
                 x: 1920.0,
                 y: 0.0,
@@ -689,5 +696,34 @@ mod tests {
                 ..FULL_HD
             }
         );
+    }
+
+    #[test]
+    fn game_rectangle_offset_by_primary() {
+        let middle_of_three = MonitorRect {
+            left: 0,
+            top: 0,
+            width: 2560,
+            height: 1440,
+        };
+        let primary = PhysicalPosition::new(2560, -360);
+        assert_eq!(
+            Screen::from_game(middle_of_three, primary, 1.0),
+            Screen {
+                x: 2560.0,
+                y: -360.0,
+                width: 2560.0,
+                height: 1440.0,
+                scale: 1.0,
+            }
+        );
+
+        let left_of_primary = MonitorRect {
+            left: -2560,
+            top: 0,
+            width: 2560,
+            height: 1440,
+        };
+        assert_eq!(Screen::from_game(left_of_primary, primary, 1.0).x, 0.0);
     }
 }
