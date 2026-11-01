@@ -16,6 +16,15 @@ pub enum ArbitrationRunUpdate {
     Finished(Box<ArbitrationRun>),
 }
 
+impl ArbitrationRunUpdate {
+    fn finished(self) -> Option<ArbitrationRun> {
+        match self {
+            Self::Finished(run) => Some(*run),
+            Self::Unchanged | Self::Changed(_) => None,
+        }
+    }
+}
+
 struct ReportedArbitrationRun {
     run: ArbitrationRun,
     secs: f64,
@@ -72,8 +81,9 @@ impl ArbitrationRunRecorder {
         self.active.as_ref().map(|active| self.snapshot(active))
     }
 
-    pub fn finish(&mut self) -> Option<ArbitrationRun> {
+    pub fn finish(&mut self) -> ArbitrationRunUpdate {
         self.interrupt(CaptureNote::LogEnd)
+            .map_or(ArbitrationRunUpdate::Unchanged, Self::close_update)
     }
 
     pub fn replay(lines: &[LogLine], source: ArbitrationRunSource) -> Vec<ArbitrationRun> {
@@ -82,14 +92,19 @@ impl ArbitrationRunRecorder {
             .iter()
             .filter_map(|line| {
                 let event = wf_log::classify(line)?;
-                match recorder.observe(&event, line.time, None) {
-                    ArbitrationRunUpdate::Finished(run) => Some(*run),
-                    ArbitrationRunUpdate::Unchanged | ArbitrationRunUpdate::Changed(_) => None,
-                }
+                recorder.observe(&event, line.time, None).finished()
             })
             .collect();
-        runs.extend(recorder.finish());
+        runs.extend(recorder.finish().finished());
         runs
+    }
+
+    fn close_update(run: ArbitrationRun) -> ArbitrationRunUpdate {
+        if run.rewarded() {
+            ArbitrationRunUpdate::Finished(Box::new(run))
+        } else {
+            ArbitrationRunUpdate::Changed(Box::new(run))
+        }
     }
 
     fn snapshot(&self, active: &ActiveRun) -> ArbitrationRun {
@@ -270,7 +285,7 @@ impl ArbitrationRunRecorder {
         current_node: Option<&str>,
     ) -> ArbitrationRunUpdate {
         if let Some(finished) = self.session_context(event, secs, current_node) {
-            return ArbitrationRunUpdate::Finished(Box::new(finished));
+            return Self::close_update(finished);
         }
 
         let Some(mut active) = self.active.take() else {
@@ -287,7 +302,7 @@ impl ArbitrationRunRecorder {
 
         active.outcome(event, secs);
         if active.end_observed() && returned_home(event) {
-            return ArbitrationRunUpdate::Finished(Box::new(self.closed(&active)));
+            return Self::close_update(self.closed(&active));
         }
 
         let run = self.snapshot(&active);
@@ -305,13 +320,17 @@ impl ArbitrationRunRecorder {
 }
 
 #[cfg(test)]
-pub(crate) fn fixture_runs() -> Vec<ArbitrationRun> {
+pub(crate) fn fixture_lines() -> Vec<LogLine> {
     let path = concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../fixtures/arbitration_survival.log"
     );
-    let lines = wf_log::read_all(std::path::Path::new(path)).unwrap();
-    ArbitrationRunRecorder::replay(&lines, ArbitrationRunSource::Import)
+    wf_log::read_all(std::path::Path::new(path)).unwrap()
+}
+
+#[cfg(test)]
+pub(crate) fn fixture_runs() -> Vec<ArbitrationRun> {
+    ArbitrationRunRecorder::replay(&fixture_lines(), ArbitrationRunSource::Import)
 }
 
 #[cfg(test)]
@@ -396,9 +415,7 @@ mod tests {
         let mut recorder = ArbitrationRunRecorder::new(ArbitrationRunSource::Live);
         let mut runs = Vec::new();
         for (event, secs) in events {
-            if let ArbitrationRunUpdate::Finished(run) = recorder.observe(event, *secs, None) {
-                runs.push(*run);
-            }
+            runs.extend(recorder.observe(event, *secs, None).finished());
         }
         (runs, recorder)
     }
@@ -452,6 +469,7 @@ mod tests {
     #[test]
     fn aborted_run() {
         let mut events = arbitration_start();
+        events.push((LogEvent::RotationRewarded, 80.0));
         events.push((LogEvent::MissionAborted, 90.0));
         events.push((
             LogEvent::LevelLoaded {
@@ -469,7 +487,33 @@ mod tests {
             runs[0].started_at.unwrap().to_rfc3339(),
             "2026-10-04T16:20:24+00:00"
         );
-        assert_eq!(runs[0].reward_cycles, None);
+        assert_eq!(runs[0].reward_cycles, Some(1));
+    }
+
+    #[test]
+    fn unrewarded_run_dropped() {
+        let mut events = arbitration_start();
+        events.push((LogEvent::MissionAborted, 90.0));
+        events.push((
+            LogEvent::LevelLoaded {
+                path: "/Lotus/Levels/Proc/PlayerShip/AeAo.lp".to_owned(),
+            },
+            100.0,
+        ));
+        let mut recorder = ArbitrationRunRecorder::new(ArbitrationRunSource::Live);
+        let mut last = ArbitrationRunUpdate::Unchanged;
+        for (event, secs) in &events {
+            last = recorder.observe(event, *secs, None);
+        }
+
+        assert!(
+            matches!(last, ArbitrationRunUpdate::Changed(run) if run.status == ArbitrationRunStatus::Aborted)
+        );
+        assert!(recorder.live().is_none());
+        assert!(matches!(
+            drive(&arbitration_start()).1.finish(),
+            ArbitrationRunUpdate::Changed(_)
+        ));
     }
 
     #[test]
@@ -492,7 +536,7 @@ mod tests {
     #[test]
     fn next_mission_interrupts() {
         let mut events = arbitration_start();
-        events.push((LogEvent::DefenseWave { index: 1 }, 30.0));
+        events.push((LogEvent::RotationRewarded, 30.0));
         events.push((
             LogEvent::MissionLoading {
                 host: true,
@@ -516,6 +560,7 @@ mod tests {
     #[test]
     fn clock_restart_and_log_end() {
         let mut events = arbitration_start();
+        events.push((LogEvent::RotationRewarded, 320.0));
         events.push((
             LogEvent::ClockAnchor {
                 utc: "Sun Oct 4 17:00:00 2026".to_owned(),
@@ -542,10 +587,8 @@ mod tests {
             recorder.live().unwrap().started_at.unwrap().to_rfc3339(),
             "2026-10-04T17:00:29.500+00:00"
         );
-        assert!(recorder.finish().is_some());
-
-        let (_, mut recorder) = drive(&arbitration_start());
-        let run = recorder.finish().unwrap();
+        recorder.observe(&LogEvent::RotationRewarded, 330.0, None);
+        let run = recorder.finish().finished().unwrap();
         assert_eq!(run.status, ArbitrationRunStatus::Interrupted);
         assert!(run.notes.contains(&CaptureNote::LogEnd.text().to_owned()));
     }
@@ -597,6 +640,7 @@ mod tests {
     #[test]
     fn dojo_closes_ended_run() {
         let mut events = arbitration_start();
+        events.push((LogEvent::RotationRewarded, 300.0));
         events.push((LogEvent::PlayersExtracting, 400.0));
         events.push((
             LogEvent::LevelLoaded {
@@ -634,6 +678,24 @@ mod tests {
         }
         ids.dedup();
         assert_eq!(ids, vec!["1791130804000:12"]);
+    }
+
+    #[test]
+    fn drone_start_counts_as_host() {
+        let mut recorder = ArbitrationRunRecorder::new(ArbitrationRunSource::Live);
+        let drone = LogEvent::AgentCreated {
+            agent: "/Npc/CorpusEliteShieldDroneAgent".to_owned(),
+            live: 3,
+            spawned: 2,
+        };
+        recorder.observe(&drone, 12.0, Some("SolNode64"));
+
+        let run = recorder.live().unwrap();
+        assert_eq!(run.host, Some(true));
+        assert!(
+            !run.notes
+                .contains(&CaptureNote::ClientSide.text().to_owned())
+        );
     }
 
     #[test]
@@ -730,6 +792,7 @@ mod tests {
     #[test]
     fn next_run_after_end() {
         let mut events = arbitration_start();
+        events.push((LogEvent::RotationRewarded, 300.0));
         events.push((LogEvent::PlayersExtracting, 400.0));
         events.push((
             LogEvent::MissionScore {

@@ -10,6 +10,7 @@ export type * from "./ArbitrationDashboard";
 export type * from "./ArbitrationForecastStatus";
 export type * from "./ArbitrationNode";
 export type * from "./ArbitrationRun";
+export type * from "./ArbitrationRunExportFormat";
 export type * from "./ArbitrationRunResourceBooster";
 export type * from "./ArbitrationRunResourceBoosterKind";
 export type * from "./ArbitrationRunRotation";

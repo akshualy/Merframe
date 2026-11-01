@@ -315,11 +315,22 @@ impl Core {
         secs: f64,
     ) -> Result<Option<CoreEvent>> {
         let current_node = self.current_arbitration_node(now);
-        match self
+        let update = self
             .arbitration_recorder
-            .observe(event, secs, current_node.as_deref())
-        {
-            ArbitrationRunUpdate::Finished(run) => self.store_finished_run(*run, now).map(Some),
+            .observe(event, secs, current_node.as_deref());
+        self.arbitration_run_event(update, now)
+    }
+
+    fn arbitration_run_event(
+        &mut self,
+        update: ArbitrationRunUpdate,
+        now: DateTime<Utc>,
+    ) -> Result<Option<CoreEvent>> {
+        match update {
+            ArbitrationRunUpdate::Finished(run) => {
+                self.store.save_arbitration_run(&run, now)?;
+                Ok(Some(CoreEvent::ArbitrationRunRecorded { run }))
+            }
             ArbitrationRunUpdate::Unchanged => Ok(None),
             ArbitrationRunUpdate::Changed(run) => {
                 Ok(Some(CoreEvent::ArbitrationRunUpdated { run }))
@@ -345,15 +356,11 @@ impl Core {
     }
 
     pub fn finish_arbitration_run(&mut self, now: DateTime<Utc>) -> Result<Vec<CoreEvent>> {
-        let Some(finished) = self.arbitration_recorder.finish() else {
-            return Ok(Vec::new());
-        };
-        Ok(vec![self.store_finished_run(finished, now)?])
-    }
-
-    fn store_finished_run(&mut self, run: ArbitrationRun, now: DateTime<Utc>) -> Result<CoreEvent> {
-        self.store.save_arbitration_run(&run, now)?;
-        Ok(CoreEvent::ArbitrationRunRecorded { run: Box::new(run) })
+        let update = self.arbitration_recorder.finish();
+        Ok(self
+            .arbitration_run_event(update, now)?
+            .into_iter()
+            .collect())
     }
 
     pub fn arbitration_runs(&self) -> Result<Vec<ArbitrationRun>> {
@@ -373,10 +380,15 @@ impl Core {
         lines: &[wf_log::LogLine],
         now: DateTime<Utc>,
     ) -> Result<usize> {
-        let runs = ArbitrationRunRecorder::replay(lines, ArbitrationRunSource::Import);
+        let mut known = self.store.arbitration_runs()?;
+        known.extend(self.arbitration_recorder.live());
         let mut imported = 0;
-        for run in &runs {
-            if self.store.save_arbitration_run(run, now)? {
+        for run in ArbitrationRunRecorder::replay(lines, ArbitrationRunSource::Import) {
+            if known.iter().any(|seen| seen.same_mission(&run)) {
+                continue;
+            }
+
+            if self.store.save_arbitration_run(&run, now)? {
                 imported += 1;
             }
         }
@@ -733,6 +745,7 @@ impl Core {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::arbitration_runs::ArbitrationRunStatus;
     use crate::catalog::fixtures::{self, TRINITY_PRIME_SYSTEMS, at, scratch_dir, synced};
     use crate::events::ScannedTradeItem;
     use crate::events::{CyclePhase, FissureFilter, InventorySummary, TimerAlerts};
@@ -1260,13 +1273,17 @@ mod tests {
         std::fs::remove_dir_all(&root).unwrap();
     }
 
+    fn observe_lines(core: &mut Core, lines: &[wf_log::LogLine], now: DateTime<Utc>) {
+        for line in lines {
+            if let Some(event) = wf_log::classify(line) {
+                core.handle_log_event(&event, now, line.time).unwrap();
+            }
+        }
+    }
+
     #[test]
     fn arbitration_log_import_is_idempotent() {
-        let lines = wf_log::read_all(std::path::Path::new(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../../fixtures/arbitration_survival.log"
-        )))
-        .unwrap();
+        let lines = crate::arbitration_runs::fixture_lines();
         let core = core();
         let now = at(1_792_858_804_954);
         assert_eq!(core.import_arbitration_runs(&lines, now).unwrap(), 1);
@@ -1280,5 +1297,89 @@ mod tests {
         );
         core.delete_arbitration_run(&runs[0].id).unwrap();
         assert!(core.arbitration_runs().unwrap().is_empty());
+    }
+
+    #[test]
+    fn arbitration_log_import_skips_a_run_keyed_differently() {
+        let lines = crate::arbitration_runs::fixture_lines();
+        let core = core();
+        let now = at(1_792_858_804_954);
+        let mut stored = crate::arbitration_runs::fixture_runs().remove(0);
+        stored.id = format!("drone:{}", stored.id);
+        stored.started_at = stored
+            .started_at
+            .map(|at| at + chrono::Duration::seconds(30));
+        core.store.save_arbitration_run(&stored, now).unwrap();
+
+        assert_eq!(core.import_arbitration_runs(&lines, now).unwrap(), 0);
+
+        let mut later = stored.clone();
+        later.id = "later".to_owned();
+        later.started_at = stored
+            .started_at
+            .map(|at| at + chrono::Duration::seconds(60));
+        assert!(stored.same_mission(&later));
+        assert!(later.same_mission(&stored));
+
+        let mut elsewhere = stored.clone();
+        elsewhere.id = "elsewhere".to_owned();
+        elsewhere.node_id = Some("SolNode1".to_owned());
+        assert!(!stored.same_mission(&elsewhere));
+        assert_eq!(core.arbitration_runs().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn arbitration_run_without_a_reward_is_dropped() {
+        let mut core = core();
+        let now = at(1_792_858_804_954);
+        let mission = LogEvent::MissionLoading {
+            host: true,
+            node_id: "SolNode64".to_owned(),
+            elite: true,
+        };
+        core.handle_log_event(&mission, now, 10.0).unwrap();
+        core.handle_log_event(&LogEvent::MissionAborted, now, 40.0)
+            .unwrap();
+        let home = LogEvent::LevelLoaded {
+            path: "/Lotus/Levels/Proc/PlayerShip/AeAo.lp".to_owned(),
+        };
+        let events = core.handle_log_event(&home, now, 50.0).unwrap();
+
+        assert!(matches!(
+            events.as_slice(),
+            [CoreEvent::ArbitrationRunUpdated { run }] if run.status == ArbitrationRunStatus::Aborted
+        ));
+        assert!(core.live_arbitration_run().is_none());
+        assert!(core.arbitration_runs().unwrap().is_empty());
+    }
+
+    #[test]
+    fn arbitration_log_import_skips_the_live_run() {
+        let lines = crate::arbitration_runs::fixture_lines();
+        let first_reward = lines
+            .iter()
+            .position(|line| {
+                matches!(
+                    wf_log::classify(line),
+                    Some(LogEvent::SurvivalReward { .. })
+                )
+            })
+            .unwrap();
+        let (started, rest) = lines.split_at(first_reward + 1);
+        let mut core = core();
+        let now = at(1_792_858_804_954);
+        observe_lines(&mut core, started, now);
+        let live = core.live_arbitration_run().unwrap();
+
+        assert_eq!(core.import_arbitration_runs(started, now).unwrap(), 0);
+
+        observe_lines(&mut core, rest, now);
+        core.finish_arbitration_run(now).unwrap();
+
+        let runs = core.arbitration_runs().unwrap();
+        assert_eq!(runs.len(), 1);
+        assert_eq!(runs[0].id, live.id);
+        assert_eq!(runs[0].source, ArbitrationRunSource::Live);
+        assert_eq!(runs[0].status, ArbitrationRunStatus::Completed);
     }
 }

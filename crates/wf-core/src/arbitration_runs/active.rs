@@ -26,7 +26,6 @@ pub(super) fn log_offset(secs: f64) -> Option<TimeDelta> {
 pub(super) enum CaptureNote {
     NoStart,
     NoClock,
-    NoRole,
     LogEnd,
     NextMission,
     ClockRestart,
@@ -42,7 +41,6 @@ impl CaptureNote {
                 "The mission start is missing, elapsed time begins at the first arbitration line."
             }
             Self::NoClock => "The log has no clock line, so the run has no calendar time.",
-            Self::NoRole => "Whether you were host or client could not be read from the log.",
             Self::LogEnd => "The log ends before the mission did.",
             Self::NextMission => "The next mission began before this one ended.",
             Self::ClockRestart => "The game restarted during the run.",
@@ -50,7 +48,7 @@ impl CaptureNote {
                 "The game's spawn counter reset, the total only counts logged increments."
             }
             Self::SpawnCounting => {
-                "Enemy spawns is the game's spawn counter, drones are logged drone spawns. Neither counts kills."
+                "These are not kills. Enemy spawns is the game's spawn counter, drones are logged drone spawns."
             }
             Self::ClientSide => {
                 "Recorded as a client, spawns and drones are only available for the host."
@@ -227,6 +225,14 @@ impl ActiveRun {
 
     pub(super) fn set_host(&mut self, host: bool) {
         self.host = Some(host);
+    }
+
+    fn host_telemetry(&self) -> bool {
+        matches!(self.spawn_counter, SpawnCounter::Seen { .. }) || self.drone_spawns > 0
+    }
+
+    fn host(&self) -> bool {
+        self.host.unwrap_or_else(|| self.host_telemetry())
     }
 
     pub(super) fn mission_started(&mut self, secs: f64) {
@@ -465,13 +471,10 @@ impl ActiveRun {
         if self.origin.is_none() {
             notes.insert(CaptureNote::NoClock);
         }
-        if self.host.is_none() {
-            notes.insert(CaptureNote::NoRole);
-        }
-        notes.insert(if self.host == Some(false) {
-            CaptureNote::ClientSide
-        } else {
+        notes.insert(if self.host() {
             CaptureNote::SpawnCounting
+        } else {
+            CaptureNote::ClientSide
         });
         notes
             .into_iter()
@@ -494,8 +497,7 @@ impl ActiveRun {
             ArbitrationMissionEnd::Open | ArbitrationMissionEnd::Interrupted => self.last_secs,
         };
         let relative = |secs: f64| (secs - start).max(0.0);
-        let host_telemetry =
-            matches!(self.spawn_counter, SpawnCounter::Seen { .. }) || self.drone_spawns > 0;
+        let host_telemetry = self.host_telemetry();
         let place = self
             .node_id
             .as_deref()
@@ -515,7 +517,7 @@ impl ActiveRun {
             mission_type: self.mission_type.clone(),
             started_at,
             duration_secs: (end - start).max(0.0),
-            host: self.host,
+            host: Some(self.host()),
             complete_capture: self.started() && self.end_observed() && !self.capture_broken(),
             notes: self.capture_notes(),
             rotations: self

@@ -137,7 +137,7 @@ mod tests {
     #[test]
     fn text_report_lines() {
         let text = text_report(&run());
-        assert!(text.starts_with("Arbitration run report\nZeugma (Phobos)\nMission: Survival\n"));
+        assert!(text.starts_with("Arbitration run report\nZeugma, Phobos\nMission: Survival\n"));
         assert!(text.contains("Started: unknown\n"));
         assert!(text.contains("Duration: 334 seconds\n"));
         assert!(text.contains("Outcome: completed, capture: complete\n"));

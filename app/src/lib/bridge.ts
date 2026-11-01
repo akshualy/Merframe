@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import type {
   AppEvent,
   ArbitrationDashboard,
+  ArbitrationRun,
+  ArbitrationRunExportFormat,
   Auction,
   CommandError,
   ComparedStat,
@@ -206,6 +208,14 @@ export const api = {
     call<void>("market_set_auctions_visibility", { visible }),
   worldstate: () => call<WorldStateView>("worldstate"),
   arbitrations: () => call<ArbitrationDashboard>("arbitrations"),
+  arbitrationRuns: () => call<ArbitrationRun[]>("arbitration_runs"),
+  arbitrationLiveRun: () => call<ArbitrationRun | null>("arbitration_live_run"),
+  deleteArbitrationRun: (id: string) =>
+    call<void>("delete_arbitration_run", { id }),
+  importArbitrationLog: () => call<number | null>("import_arbitration_log"),
+  refreshArbitrationRuns: () => call<number>("refresh_arbitration_runs"),
+  exportArbitrationRun: (id: string, format: ArbitrationRunExportFormat) =>
+    call<string | null>("export_arbitration_run", { id, format }),
   invasionWeaponParts: () =>
     call<InvasionWeaponPart[]>("invasion_weapon_parts"),
   openUrl: (url: string) => call<void>("open_url", { url }),
