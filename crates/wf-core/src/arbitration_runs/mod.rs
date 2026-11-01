@@ -6,9 +6,9 @@ mod report;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[cfg(test)]
-pub(crate) use recorder::fixture_runs;
 pub(crate) use recorder::{ArbitrationRunRecorder, ArbitrationRunUpdate};
+#[cfg(test)]
+pub(crate) use recorder::{fixture_lines, fixture_runs};
 pub use report::{svg_report, text_report};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -104,9 +104,25 @@ pub struct ArbitrationRun {
 }
 
 impl ArbitrationRun {
+    pub(crate) fn rewarded(&self) -> bool {
+        self.reward_cycles.is_some_and(|cycles| cycles > 0)
+    }
+
+    pub fn same_mission(&self, other: &Self) -> bool {
+        if self.id == other.id {
+            return true;
+        }
+
+        let Some((started, other_started)) = self.started_at.zip(other.started_at) else {
+            return false;
+        };
+        let gap = (other_started - started).as_seconds_f64();
+        self.node_id == other.node_id && gap <= self.duration_secs && -gap <= other.duration_secs
+    }
+
     pub fn place(&self) -> String {
         match (&self.node, &self.planet) {
-            (Some(node), Some(planet)) => format!("{node} ({planet})"),
+            (Some(node), Some(planet)) => format!("{node}, {planet}"),
             _ => String::from("Unknown node"),
         }
     }

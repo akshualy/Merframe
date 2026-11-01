@@ -4,10 +4,10 @@ use anyhow::Context;
 use chrono::Utc;
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime};
-use tauri_plugin_dialog::{DialogExt, FilePath};
+use tauri_plugin_dialog::{DialogExt, FileDialogBuilder};
 use tauri_plugin_opener::OpenerExt;
 
-use super::{Shared, ready};
+use super::{Shared, ask_path, game_log_path, pick_log, ready};
 use crate::error::{CommandError, CommandResult};
 use crate::event_feed::EventFeed;
 use crate::overlay;
@@ -91,13 +91,11 @@ pub async fn export<R: Runtime>(
 ) -> CommandResult<Option<String>> {
     let state = ready(&state).await?;
     let dialog = app.dialog().file().set_title("Export inventory JSON");
-    let picked =
-        tauri::async_runtime::spawn_blocking(move || dialog.blocking_pick_folder()).await?;
-    let Some(dir) = picked.as_ref().and_then(FilePath::as_path) else {
+    let Some(dir) = ask_path(dialog, FileDialogBuilder::blocking_pick_folder).await? else {
         return Ok(None);
     };
 
-    let target = dir.to_path_buf();
+    let target = dir.clone();
     tauri::async_runtime::spawn_blocking(move || lock(&state.core).export(&target, Utc::now()))
         .await??;
     Ok(Some(dir.display().to_string()))
@@ -105,16 +103,8 @@ pub async fn export<R: Runtime>(
 
 #[tauri::command]
 pub async fn pick_log_file<R: Runtime>(app: AppHandle<R>) -> CommandResult<Option<String>> {
-    let dialog = app
-        .dialog()
-        .file()
-        .set_title("Choose EE.log")
-        .add_filter("Warframe log", &["log"]);
-    let picked = tauri::async_runtime::spawn_blocking(move || dialog.blocking_pick_file()).await?;
-    Ok(picked
-        .as_ref()
-        .and_then(FilePath::as_path)
-        .map(|path| path.display().to_string()))
+    let picked = pick_log(&app, "Choose EE.log").await?;
+    Ok(picked.map(|path| path.display().to_string()))
 }
 
 #[tauri::command]
@@ -183,12 +173,9 @@ pub async fn open_game_log_folder<R: Runtime>(
     state: Shared<'_>,
 ) -> CommandResult<()> {
     let state = ready(&state).await?;
-    let log = read(&state.settings)
-        .log_path()
-        .context("EE.log not found on this machine")?;
     Ok(app
         .opener()
-        .reveal_item_in_dir(log)
+        .reveal_item_in_dir(game_log_path(&state)?)
         .context("Opening the EE.log folder")?)
 }
 
