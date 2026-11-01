@@ -39,6 +39,8 @@ pub enum AppEvent {
     StatusUpdated(GameStatus),
     InventoryUpdated(GameStatus),
     SettingsUpdated(Box<Settings>),
+    ArbitrationRunUpdated,
+    ArbitrationRunsUpdated,
     TradesUpdated,
     WorldStateUpdated,
     RivenDataUpdated,
@@ -185,6 +187,10 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
         }
         CoreEvent::ArbitrationAlert { alert } => {
             arbitration_alert(app, state, &settings, alert).await;
+        }
+        CoreEvent::ArbitrationRunUpdated { .. } => emit(app, AppEvent::ArbitrationRunUpdated),
+        CoreEvent::ArbitrationRunRecorded { .. } => {
+            emit(app, AppEvent::ArbitrationRunsUpdated);
         }
         CoreEvent::TimerAlert {
             name,

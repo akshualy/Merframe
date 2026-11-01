@@ -10,14 +10,17 @@ use wf_market::{RivenData, WeaponAuctions};
 use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState};
 
 use crate::account::Account;
+use crate::arbitration_runs::{
+    ArbitrationRun, ArbitrationRunRecorder, ArbitrationRunSource, ArbitrationRunUpdate,
+};
 use crate::catalog::{Catalog, REQUIEM_MARKER};
 use crate::comparables::{self, ComparedStat, RivenComparables};
 use crate::delta;
 use crate::ducatering::{self, Ducatering, DucateringFilter};
 use crate::error::Result;
 use crate::events::{
-    self, AlertSettings, ArbitrationOutlook, ArbitrationSchedule, CoreEvent, Engine,
-    ScannedRewards, ScannedTrade, WorldRewardAlert,
+    self, ARBITRATION_FORECAST_TRUSTED, AlertSettings, ArbitrationOutlook, ArbitrationSchedule,
+    CoreEvent, Engine, ScannedRewards, ScannedTrade, WorldRewardAlert,
 };
 use crate::export::{ExportBundle, export};
 use crate::favourites::Favourites;
@@ -70,6 +73,7 @@ pub struct Core {
     items: ItemTable,
     prices: Arc<dyn PriceSource + Send + Sync>,
     engine: Engine,
+    arbitration_recorder: ArbitrationRunRecorder,
     account: Option<Account>,
     world: Option<WorldState>,
     arbitrations: Option<LoadedArbitrationForecast>,
@@ -102,6 +106,7 @@ impl Core {
             catalog,
             prices,
             engine: Engine::new(alerts),
+            arbitration_recorder: ArbitrationRunRecorder::new(ArbitrationRunSource::Live),
             account: None,
             world: None,
             arbitrations: None,
@@ -179,8 +184,14 @@ impl Core {
             "Snapshot restored as the current inventory"
         );
         self.latest_snapshot = Some(snapshot.clone());
-        self.account = Some(Account::new(inventory));
+        self.adopt_inventory(inventory);
         Ok(Some(snapshot))
+    }
+
+    fn adopt_inventory(&mut self, inventory: Inventory) {
+        self.arbitration_recorder
+            .keep_latest_booster_expiries(&inventory.boosters);
+        self.account = Some(Account::new(inventory));
     }
 
     pub fn ingest_inventory(&mut self, json: &str, now: DateTime<Utc>) -> Result<Vec<CoreEvent>> {
@@ -202,7 +213,7 @@ impl Core {
         tracing::info!(snapshot = id.0, changes, "Inventory ingested");
         self.latest_snapshot = self.store.snapshot(id)?;
         let events = events::inventory_events(&inventory, changes);
-        self.account = Some(Account::new(inventory));
+        self.adopt_inventory(inventory);
         Ok(events)
     }
 
@@ -283,6 +294,7 @@ impl Core {
         &mut self,
         event: &LogEvent,
         now: DateTime<Utc>,
+        secs: f64,
     ) -> Result<Vec<CoreEvent>> {
         if let LogEvent::OwnRelicReward { store_item, .. } = event {
             self.own_relic_reward = Some(store_item.clone());
@@ -290,9 +302,85 @@ impl Core {
         if matches!(event, LogEvent::RelicRewardScreenOpened) {
             self.reward_screen_recorded = false;
         }
-        let events = self.engine.handle_log_event(event, now);
+        let mut events = self.engine.handle_log_event(event, now);
+        events.extend(self.record_arbitration_run(event, now, secs)?);
         self.record(&events, now)?;
         Ok(events)
+    }
+
+    fn record_arbitration_run(
+        &mut self,
+        event: &LogEvent,
+        now: DateTime<Utc>,
+        secs: f64,
+    ) -> Result<Option<CoreEvent>> {
+        let current_node = self.current_arbitration_node(now);
+        match self
+            .arbitration_recorder
+            .observe(event, secs, current_node.as_deref())
+        {
+            ArbitrationRunUpdate::Finished(run) => self.store_finished_run(*run, now).map(Some),
+            ArbitrationRunUpdate::Unchanged => Ok(None),
+            ArbitrationRunUpdate::Changed(run) => {
+                Ok(Some(CoreEvent::ArbitrationRunUpdated { run }))
+            }
+        }
+    }
+
+    fn current_arbitration_node(&self, now: DateTime<Utc>) -> Option<String> {
+        let loaded = self.arbitrations.as_ref()?;
+        if now.signed_duration_since(loaded.fetched_at) > ARBITRATION_FORECAST_TRUSTED {
+            return None;
+        }
+
+        let index = loaded.forecast.index_at(now)?;
+        loaded
+            .forecast
+            .hour(index)
+            .map(|hour| hour.node_id.to_owned())
+    }
+
+    pub fn live_arbitration_run(&self) -> Option<ArbitrationRun> {
+        self.arbitration_recorder.live()
+    }
+
+    pub fn finish_arbitration_run(&mut self, now: DateTime<Utc>) -> Result<Vec<CoreEvent>> {
+        let Some(finished) = self.arbitration_recorder.finish() else {
+            return Ok(Vec::new());
+        };
+        Ok(vec![self.store_finished_run(finished, now)?])
+    }
+
+    fn store_finished_run(&mut self, run: ArbitrationRun, now: DateTime<Utc>) -> Result<CoreEvent> {
+        self.store.save_arbitration_run(&run, now)?;
+        Ok(CoreEvent::ArbitrationRunRecorded { run: Box::new(run) })
+    }
+
+    pub fn arbitration_runs(&self) -> Result<Vec<ArbitrationRun>> {
+        self.store.arbitration_runs()
+    }
+
+    pub fn arbitration_run(&self, id: &str) -> Result<Option<ArbitrationRun>> {
+        self.store.arbitration_run(id)
+    }
+
+    pub fn delete_arbitration_run(&self, id: &str) -> Result<()> {
+        self.store.delete_arbitration_run(id)
+    }
+
+    pub fn import_arbitration_runs(
+        &self,
+        lines: &[wf_log::LogLine],
+        now: DateTime<Utc>,
+    ) -> Result<usize> {
+        let runs = ArbitrationRunRecorder::replay(lines, ArbitrationRunSource::Import);
+        let mut imported = 0;
+        for run in &runs {
+            if self.store.save_arbitration_run(run, now)? {
+                imported += 1;
+            }
+        }
+        Ok(imported)
     }
 
     pub fn handle_trade_screen(
@@ -966,7 +1054,7 @@ mod tests {
         let tab = LogEvent::ChatTabAdded {
             channel: "Fexampletenno".to_owned(),
         };
-        let first = core.handle_log_event(&tab, now).expect("chat tab");
+        let first = core.handle_log_event(&tab, now, 1.0).expect("chat tab");
         assert_eq!(
             first,
             vec![CoreEvent::NewConversation {
@@ -974,10 +1062,10 @@ mod tests {
                 player: "exampletenno".to_owned(),
             }]
         );
-        let second = core.handle_log_event(&tab, now).expect("chat tab");
+        let second = core.handle_log_event(&tab, now, 1.0).expect("chat tab");
         assert!(second.is_empty());
         core.set_alert_settings(AlertSettings::default());
-        let third = core.handle_log_event(&tab, now).expect("chat tab");
+        let third = core.handle_log_event(&tab, now, 1.0).expect("chat tab");
         assert!(third.is_empty());
         let region = core
             .handle_log_event(
@@ -985,6 +1073,7 @@ mod tests {
                     channel: "Q_EN_EU".to_owned(),
                 },
                 now,
+                1.0,
             )
             .expect("chat tab");
         assert!(region.is_empty());
@@ -1001,6 +1090,7 @@ mod tests {
                 store_item: "/Lotus/StoreItems/Upgrades/Mods/Immortal/RequiemModA".to_owned(),
             },
             now,
+            1.0,
         )
         .unwrap();
         let events = core
@@ -1035,6 +1125,7 @@ mod tests {
                     .to_owned(),
             },
             now,
+            1.0,
         )
         .unwrap();
         let events = core
@@ -1167,5 +1258,27 @@ mod tests {
             fixtures::INVENTORY
         );
         std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn arbitration_log_import_is_idempotent() {
+        let lines = wf_log::read_all(std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../fixtures/arbitration_survival.log"
+        )))
+        .unwrap();
+        let core = core();
+        let now = at(1_792_858_804_954);
+        assert_eq!(core.import_arbitration_runs(&lines, now).unwrap(), 1);
+        assert_eq!(core.import_arbitration_runs(&lines, now).unwrap(), 0);
+        let runs = core.arbitration_runs().unwrap();
+        assert_eq!(runs.len(), 1);
+        assert_eq!(runs[0].source, ArbitrationRunSource::Import);
+        assert_eq!(
+            core.arbitration_run(&runs[0].id).unwrap().unwrap().id,
+            runs[0].id
+        );
+        core.delete_arbitration_run(&runs[0].id).unwrap();
+        assert!(core.arbitration_runs().unwrap().is_empty());
     }
 }
