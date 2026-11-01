@@ -1,4 +1,5 @@
 mod account;
+mod arbitration_runs;
 mod catalog;
 mod comparables;
 mod delta;
@@ -24,6 +25,9 @@ mod text;
 mod trade;
 mod view;
 
+pub use arbitration_runs::{
+    ArbitrationRun, ArbitrationRunSource, ArbitrationRunStatus, svg_report, text_report,
+};
 pub use catalog::{Catalog, VaultStatus};
 pub use comparables::{ComparableAttribute, ComparableListing, ComparedStat, RivenComparables};
 pub use delta::ItemDelta;
