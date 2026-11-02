@@ -17,8 +17,7 @@ fn entry_for(service: &str, account: &str) -> anyhow::Result<Entry> {
     #[cfg(any(windows, target_os = "linux"))]
     {
         let store = store.map_err(|_| unavailable())?;
-        // Build directly against the native store: never use the library's mock
-        // or sample store as a production fallback.
+        // Build directly against the native store, never the library's mock store.
         #[cfg(windows)]
         let modifiers = Some(std::collections::HashMap::from([("persistence", "Local")]));
         #[cfg(target_os = "linux")]
@@ -32,11 +31,8 @@ fn entry_for(service: &str, account: &str) -> anyhow::Result<Entry> {
 }
 
 fn unavailable() -> anyhow::Error {
-    // Some backend errors contain secret bytes; do not propagate their Debug
-    // values or cause chains to logs or the frontend.
-    anyhow!(
-        "The OS credential store is unavailable. Unlock Windows Credential Manager or your Linux Secret Service and try again."
-    )
+    // Backend errors can contain secret bytes. Do not propagate their causes.
+    anyhow!("The OS credential store is unavailable")
 }
 
 pub fn read(entry: &Entry) -> anyhow::Result<Option<String>> {
@@ -64,45 +60,164 @@ pub fn delete(entry: &Entry) -> anyhow::Result<()> {
     }
 }
 
-pub fn clear(
-    entry: impl FnOnce() -> anyhow::Result<Entry>,
-    cleanup: impl FnOnce() -> anyhow::Result<()>,
-) -> anyhow::Result<()> {
-    // Attempt both removals even if a legacy file cannot be removed or the
-    // credential store cannot be opened. Return an error so logout can be retried.
-    let legacy = cleanup();
-    let secure = entry().and_then(|entry| delete(&entry));
-    legacy.and(secure)
+pub trait TokenFiles {
+    fn read(&self) -> anyhow::Result<Option<String>>;
+    fn legacy(&self) -> anyhow::Result<Option<String>>;
+    fn write(&self, token: &str) -> anyhow::Result<()>;
+    fn remove(&self) -> anyhow::Result<()>;
 }
 
-pub fn migrate(
-    entry: &Entry,
-    legacy: impl FnOnce() -> anyhow::Result<Option<String>>,
-    cleanup: impl FnOnce() -> anyhow::Result<()>,
+fn migrate(entry: &Entry, token: &str, files: &impl TokenFiles) {
+    match write(entry, token) {
+        Ok(()) => {
+            if let Err(error) = files.remove() {
+                tracing::warn!(%error, "Plaintext market session cleanup will be retried");
+            }
+        }
+        Err(error) => {
+            tracing::warn!(%error, "Keeping the plaintext market session");
+        }
+    }
+}
+
+pub fn load(
+    entry: anyhow::Result<Entry>,
+    files: &impl TokenFiles,
 ) -> anyhow::Result<Option<String>> {
-    if let Some(token) = read(entry)? {
-        cleanup().context("Removing obsolete plaintext session copies")?;
+    // A fallback file may hold a newer login or rotation than the secure store.
+    if let Some(token) = files.read()? {
+        if token.is_empty() {
+            // An empty file records logout while secure storage was unavailable.
+            // Keep it until all older copies are removed, preventing resurrection.
+            if entry.and_then(|entry| delete(&entry)).is_ok()
+                && let Err(error) = files.remove()
+            {
+                tracing::warn!(%error, "Logged-out market session cleanup will be retried");
+            }
+            return Ok(None);
+        }
+        if let Ok(entry) = entry {
+            migrate(&entry, &token, files);
+        }
         return Ok(Some(token));
     }
-    let Some(token) = legacy()? else {
-        return Ok(None);
+
+    let entry = match entry {
+        Ok(entry) => entry,
+        Err(error) => {
+            tracing::warn!(%error, "Loading the plaintext market session");
+            return files.legacy();
+        }
     };
-    write(entry, &token)?;
-    // Only remove the old copy after a verified successful write. A locked
-    // keyring must never silently discard an existing session.
-    cleanup().context("Removing the migrated plaintext session")?;
-    Ok(Some(token))
+    match read(&entry) {
+        Ok(Some(token)) => {
+            if let Err(error) = files.remove() {
+                tracing::warn!(%error, "Plaintext market session cleanup will be retried");
+            }
+            Ok(Some(token))
+        }
+        Ok(None) => {
+            let token = files.legacy()?;
+            if let Some(token) = &token {
+                migrate(&entry, token, files);
+            }
+            Ok(token)
+        }
+        Err(error) => {
+            // Do not overwrite an unreadable secure session with obsolete JSON.
+            tracing::warn!(%error, "Loading the plaintext market session");
+            files.legacy()
+        }
+    }
+}
+
+pub fn save(
+    entry: anyhow::Result<Entry>,
+    token: &str,
+    files: &impl TokenFiles,
+) -> anyhow::Result<()> {
+    if token.is_empty() {
+        return Err(anyhow!("The market session token is empty"));
+    }
+    match entry.and_then(|entry| write(&entry, token)) {
+        Ok(()) => {
+            if let Err(error) = files.remove() {
+                // An older fallback must never shadow the newly saved token.
+                files.write(token)?;
+                tracing::warn!(%error, "Keeping the current market session in plaintext");
+            }
+            Ok(())
+        }
+        Err(error) => {
+            files
+                .write(token)
+                .context("Saving the plaintext market session")?;
+            tracing::warn!(%error, "Saved the market session in plaintext");
+            Ok(())
+        }
+    }
+}
+
+pub fn clear(entry: anyhow::Result<Entry>, files: &impl TokenFiles) -> anyhow::Result<()> {
+    // Record logout before deleting anything. If the secure store is locked,
+    // this marker suppresses its stale session until deletion can be retried.
+    let marker = files.write("");
+    match entry.and_then(|entry| delete(&entry)) {
+        Ok(()) => files.remove(),
+        Err(error) => {
+            marker.context("Recording market logout")?;
+            tracing::warn!(%error, "Secure market session deletion will be retried");
+            Ok(())
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::cell::Cell;
+    use std::cell::{Cell, RefCell};
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
 
     use keyring_core::api::CredentialApi;
 
     use super::*;
+
+    #[derive(Default)]
+    struct Files {
+        token: RefCell<Option<String>>,
+        legacy: RefCell<Option<String>>,
+        fail_write: Cell<bool>,
+        fail_cleanup: Cell<bool>,
+        writes: Cell<usize>,
+    }
+
+    impl TokenFiles for Files {
+        fn read(&self) -> anyhow::Result<Option<String>> {
+            Ok(self.token.borrow().clone())
+        }
+
+        fn legacy(&self) -> anyhow::Result<Option<String>> {
+            Ok(self.legacy.borrow().clone())
+        }
+
+        fn write(&self, token: &str) -> anyhow::Result<()> {
+            if self.fail_write.get() {
+                return Err(anyhow!("simulated file write failure"));
+            }
+            self.writes.set(self.writes.get() + 1);
+            self.token.replace(Some(token.to_owned()));
+            Ok(())
+        }
+
+        fn remove(&self) -> anyhow::Result<()> {
+            if self.fail_cleanup.get() {
+                return Err(anyhow!("simulated file cleanup failure"));
+            }
+            self.legacy.replace(None);
+            self.token.replace(None);
+            Ok(())
+        }
+    }
 
     fn mock_entry() -> Entry {
         keyring_core::mock::Store::new()
@@ -163,67 +278,77 @@ mod tests {
     }
 
     #[test]
-    fn migration_persists_before_removing_plaintext() {
+    fn healthy_store_does_not_write_plaintext() {
         let entry = mock_entry();
-        let cleaned = Cell::new(false);
-        let token = migrate(
-            &entry,
-            || Ok(Some("legacy-session".to_owned())),
-            || {
-                assert_eq!(read(&entry)?.as_deref(), Some("legacy-session"));
-                cleaned.set(true);
-                Ok(())
-            },
-        )
-        .unwrap();
-        assert_eq!(token.as_deref(), Some("legacy-session"));
-        assert!(cleaned.get());
-        delete(&entry).unwrap();
-        assert_eq!(read(&entry).unwrap(), None);
-        delete(&entry).unwrap();
+        let files = Files::default();
+        save(Ok(entry), "session", &files).unwrap();
+        assert_eq!(files.read().unwrap(), None);
+        assert_eq!(files.writes.get(), 0);
     }
 
     #[test]
-    fn existing_secure_session_wins_and_stale_copies_are_removed() {
+    fn unavailable_store_persists_and_loads_plaintext() {
+        let files = Files::default();
+        save(Err(unavailable()), "session", &files).unwrap();
+        assert_eq!(files.read().unwrap().as_deref(), Some("session"));
+        assert_eq!(
+            load(Err(unavailable()), &files).unwrap().as_deref(),
+            Some("session")
+        );
+    }
+
+    #[test]
+    fn fallback_overrides_stale_secure_session_and_migrates_on_recovery() {
+        let store = keyring_core::mock::Store::new().unwrap();
+        let entry = store.build(SERVICE, ACCOUNT, None).unwrap();
+        let files = Files::default();
+        write(&entry, "old-session").unwrap();
+        save(Err(unavailable()), "new-session", &files).unwrap();
+        assert_eq!(
+            load(Ok(store.build(SERVICE, ACCOUNT, None).unwrap()), &files)
+                .unwrap()
+                .as_deref(),
+            Some("new-session")
+        );
+        assert_eq!(read(&entry).unwrap().as_deref(), Some("new-session"));
+        assert_eq!(files.read().unwrap(), None);
+    }
+
+    #[test]
+    fn existing_secure_session_wins_over_legacy_json() {
         let entry = mock_entry();
         write(&entry, "current-session").unwrap();
-        let cleaned = Cell::new(false);
-        let token = migrate(
-            &entry,
-            || panic!("An obsolete plaintext session must not be read"),
-            || {
-                cleaned.set(true);
-                Ok(())
-            },
-        )
-        .unwrap();
-        assert_eq!(token.as_deref(), Some("current-session"));
-        assert!(cleaned.get());
-    }
-
-    #[test]
-    fn failed_write_preserves_the_legacy_copy() {
-        let entry = mock_entry();
-        let cleaned = Cell::new(false);
-        let result = migrate(
-            &entry,
-            || {
-                fail_next(&entry);
-                Ok(Some("legacy-session".to_owned()))
-            },
-            || {
-                cleaned.set(true);
-                Ok(())
-            },
+        let files = Files::default();
+        files.legacy.replace(Some("obsolete-session".to_owned()));
+        assert_eq!(
+            load(Ok(entry), &files).unwrap().as_deref(),
+            Some("current-session")
         );
-        assert!(result.is_err());
-        assert!(!cleaned.get());
-        assert_redacted(&result.unwrap_err());
-        assert_eq!(read(&entry).unwrap(), None);
+        assert_eq!(files.legacy().unwrap(), None);
     }
 
     #[test]
-    fn unverified_write_preserves_the_legacy_copy() {
+    fn legacy_json_stays_usable_when_secure_read_fails() {
+        let entry = mock_entry();
+        write(&entry, "current-secure-session").unwrap();
+        fail_next(&entry);
+        let files = Files::default();
+        files.legacy.replace(Some("legacy-session".to_owned()));
+        assert_eq!(
+            load(Ok(entry), &files).unwrap().as_deref(),
+            Some("legacy-session")
+        );
+        assert_eq!(files.legacy().unwrap().as_deref(), Some("legacy-session"));
+    }
+
+    #[test]
+    fn failed_or_unverified_write_uses_plaintext() {
+        let entry = mock_entry();
+        fail_next(&entry);
+        let files = Files::default();
+        save(Ok(entry), "session", &files).unwrap();
+        assert_eq!(files.read().unwrap().as_deref(), Some("session"));
+
         let readbacks: [fn() -> keyring_core::Result<Vec<u8>>; 3] = [
             || Err(Error::NoEntry),
             || Ok(b"unexpected-session".to_vec()),
@@ -234,79 +359,103 @@ mod tests {
                 written: AtomicBool::new(false),
                 readback,
             }));
-            let error = migrate(
-                &entry,
-                || Ok(Some("legacy-session".to_owned())),
-                || panic!("The legacy copy must survive a failed verification"),
-            )
-            .unwrap_err();
-            assert_redacted(&error);
+            let files = Files::default();
+            save(Ok(entry), "session", &files).unwrap();
+            assert_eq!(files.read().unwrap().as_deref(), Some("session"));
         }
     }
 
     #[test]
-    fn failed_read_does_not_access_or_remove_legacy_session() {
+    fn failed_migration_keeps_plaintext_login_usable() {
         let entry = mock_entry();
         fail_next(&entry);
-        let error = migrate(
-            &entry,
-            || panic!("Do not fall back to plaintext while the store is unavailable"),
-            || panic!("Do not discard an unmigrated session"),
-        )
-        .unwrap_err();
-        assert_redacted(&error);
+        let files = Files::default();
+        files.write("session").unwrap();
+        assert_eq!(load(Ok(entry), &files).unwrap().as_deref(), Some("session"));
+        assert_eq!(files.read().unwrap().as_deref(), Some("session"));
     }
 
     #[test]
-    fn logout_removes_secure_session_despite_failed_legacy_cleanup() {
+    fn failed_cleanup_never_restores_an_older_fallback() {
         let store = keyring_core::mock::Store::new().unwrap();
-        let entry = store.build(SERVICE, ACCOUNT, None).unwrap();
-        write(&entry, "session").unwrap();
-        assert!(
-            clear(
-                || store.build(SERVICE, ACCOUNT, None).map_err(Into::into),
-                || Err(anyhow!("simulated file permission failure")),
-            )
-            .is_err()
-        );
-        assert_eq!(read(&entry).unwrap(), None);
-    }
-
-    #[test]
-    fn logout_cleans_legacy_copies_when_store_cannot_be_opened() {
-        let cleaned = Cell::new(false);
-        assert!(
-            clear(
-                || Err(unavailable()),
-                || {
-                    cleaned.set(true);
-                    Ok(())
-                },
-            )
-            .is_err()
-        );
-        assert!(cleaned.get());
-    }
-
-    #[test]
-    fn failed_secure_logout_is_redacted_and_can_be_retried() {
-        let store = keyring_core::mock::Store::new().unwrap();
-        let entry = store.build(SERVICE, ACCOUNT, None).unwrap();
-        write(&entry, "session").unwrap();
-        fail_next(&entry);
-        let error = clear(
-            || store.build(SERVICE, ACCOUNT, None).map_err(Into::into),
-            || Ok(()),
-        )
-        .unwrap_err();
-        assert_redacted(&error);
-        assert_eq!(read(&entry).unwrap().as_deref(), Some("session"));
-        clear(
-            || store.build(SERVICE, ACCOUNT, None).map_err(Into::into),
-            || Ok(()),
+        let files = Files::default();
+        files.write("old-session").unwrap();
+        files.fail_cleanup.set(true);
+        save(
+            Ok(store.build(SERVICE, ACCOUNT, None).unwrap()),
+            "new-session",
+            &files,
         )
         .unwrap();
+        assert_eq!(files.read().unwrap().as_deref(), Some("new-session"));
+        files.fail_cleanup.set(false);
+        assert_eq!(
+            load(Ok(store.build(SERVICE, ACCOUNT, None).unwrap()), &files)
+                .unwrap()
+                .as_deref(),
+            Some("new-session")
+        );
+        assert_eq!(files.read().unwrap(), None);
+    }
+
+    #[test]
+    fn failed_plaintext_write_reports_persistence_error() {
+        let files = Files::default();
+        files.fail_write.set(true);
+        assert!(save(Err(unavailable()), "session", &files).is_err());
+        assert_eq!(files.read().unwrap(), None);
+    }
+
+    #[test]
+    fn logout_while_locked_survives_restart_and_cleans_up_on_recovery() {
+        let store = keyring_core::mock::Store::new().unwrap();
+        let entry = store.build(SERVICE, ACCOUNT, None).unwrap();
+        let files = Files::default();
+        write(&entry, "old-secure-session").unwrap();
+        files.write("fallback-session").unwrap();
+        files.legacy.replace(Some("old-json-session".to_owned()));
+        clear(Err(unavailable()), &files).unwrap();
+        assert_eq!(files.read().unwrap().as_deref(), Some(""));
+        assert_eq!(load(Err(unavailable()), &files).unwrap(), None);
+        assert_eq!(
+            load(Ok(store.build(SERVICE, ACCOUNT, None).unwrap()), &files).unwrap(),
+            None
+        );
         assert_eq!(read(&entry).unwrap(), None);
+        assert_eq!(files.read().unwrap(), None);
+        assert_eq!(files.legacy().unwrap(), None);
+    }
+
+    #[test]
+    fn failed_logout_cleanup_keeps_marker_until_retry() {
+        let files = Files::default();
+        files.legacy.replace(Some("old-json-session".to_owned()));
+        files.fail_cleanup.set(true);
+        assert!(clear(Ok(mock_entry()), &files).is_err());
+        assert_eq!(load(Ok(mock_entry()), &files).unwrap(), None);
+        assert_eq!(files.read().unwrap().as_deref(), Some(""));
+        files.fail_cleanup.set(false);
+        assert_eq!(load(Ok(mock_entry()), &files).unwrap(), None);
+        assert_eq!(files.read().unwrap(), None);
+        assert_eq!(files.legacy().unwrap(), None);
+    }
+
+    #[test]
+    fn unavailable_store_and_failed_marker_write_report_logout_error() {
+        let files = Files::default();
+        files.fail_write.set(true);
+        assert!(clear(Err(unavailable()), &files).is_err());
+    }
+
+    #[test]
+    fn backend_errors_remain_redacted() {
+        let entry = mock_entry();
+        fail_next(&entry);
+        assert_redacted(&read(&entry).unwrap_err());
+        fail_next(&entry);
+        assert_redacted(&write(&entry, "session").unwrap_err());
+        fail_next(&entry);
+        assert_redacted(&delete(&entry).unwrap_err());
     }
 
     #[test]
@@ -326,44 +475,27 @@ mod tests {
             }
         }
         let _cleanup = Cleanup(entry_for(service, &account).unwrap());
-        let migrated = migrate(
-            &entry,
-            || Ok(Some("temporary-test-session".to_owned())),
-            || {
-                let reopened = entry_for(service, &account)?;
-                assert_eq!(read(&reopened)?.as_deref(), Some("temporary-test-session"));
-                Ok(())
-            },
-        )
-        .unwrap();
-        assert_eq!(migrated.as_deref(), Some("temporary-test-session"));
-        write(&entry, "rotated-test-session").unwrap();
+        let files = Files::default();
+        files.write("temporary-test-session").unwrap();
         assert_eq!(
-            read(&entry_for(service, &account).unwrap())
+            load(entry_for(service, &account), &files)
                 .unwrap()
                 .as_deref(),
+            Some("temporary-test-session")
+        );
+        assert_eq!(files.read().unwrap(), None);
+        assert_eq!(
+            read(&entry).unwrap().as_deref(),
+            Some("temporary-test-session")
+        );
+        save(entry_for(service, &account), "rotated-test-session", &files).unwrap();
+        assert_eq!(
+            read(&entry).unwrap().as_deref(),
             Some("rotated-test-session")
         );
-        clear(|| entry_for(service, &account), || Ok(())).unwrap();
+        clear(entry_for(service, &account), &files).unwrap();
         assert_eq!(read(&entry).unwrap(), None);
-        clear(|| entry_for(service, &account), || Ok(())).unwrap();
-    }
-
-    #[test]
-    fn cleanup_failure_can_be_retried_without_overwriting_secure_session() {
-        let entry = mock_entry();
-        assert!(
-            migrate(
-                &entry,
-                || Ok(Some("session".to_owned())),
-                || Err(anyhow!("simulated file permission failure")),
-            )
-            .is_err()
-        );
-        assert_eq!(read(&entry).unwrap().as_deref(), Some("session"));
-        assert_eq!(
-            migrate(&entry, || Ok(None), || Ok(())).unwrap().as_deref(),
-            Some("session")
-        );
+        assert_eq!(files.read().unwrap(), None);
+        clear(entry_for(service, &account), &files).unwrap();
     }
 }
