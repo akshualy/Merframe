@@ -142,14 +142,6 @@ pub async fn test_notifications<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn open_url<R: Runtime>(app: AppHandle<R>, url: String) -> CommandResult<()> {
-    Ok(app
-        .opener()
-        .open_url(url, None::<&str>)
-        .context("Opening the URL")?)
-}
-
-#[tauri::command]
 pub async fn app_log_file(state: Shared<'_>) -> CommandResult<String> {
     let state = ready(&state).await?;
     Ok(state.data_dir.join(LOG_FILE).display().to_string())
