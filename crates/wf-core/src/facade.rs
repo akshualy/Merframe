@@ -3,6 +3,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
+use indexmap::IndexMap;
 use serde::Serialize;
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
@@ -391,17 +392,19 @@ impl Core {
     }
 
     pub fn record_mission_end(&mut self, rewards: &[MissionEndReward]) -> bool {
-        let rewards: Vec<ArbitrationRunReward> = rewards
-            .iter()
-            .map(|reward| {
-                let record = self.items.resolve(&reward.store_item);
-                ArbitrationRunReward {
-                    item_type: record.unique_name.clone(),
+        let mut merged: IndexMap<String, ArbitrationRunReward> = IndexMap::new();
+        for reward in rewards {
+            let record = self.items.resolve(&reward.store_item);
+            merged
+                .entry(record.unique_name.clone())
+                .or_insert_with_key(|item_type| ArbitrationRunReward {
+                    item_type: item_type.clone(),
                     name: record.name.clone(),
-                    count: reward.item_count,
-                }
-            })
-            .collect();
+                    count: 0,
+                })
+                .count += reward.item_count;
+        }
+        let rewards: Vec<ArbitrationRunReward> = merged.into_values().collect();
         self.arbitration_recorder
             .attach_mission_end(&rewards, self.synced_vitus)
     }
@@ -1353,10 +1356,11 @@ mod tests {
     }
 
     fn mission_end_rewards() -> Vec<MissionEndReward> {
-        vec![MissionEndReward {
+        let vitus = || MissionEndReward {
             store_item: String::from("/Lotus/StoreItems/Types/Items/MiscItems/Elitium"),
             item_count: 1,
-        }]
+        };
+        vec![vitus(), vitus()]
     }
 
     #[test]
@@ -1389,7 +1393,7 @@ mod tests {
             Some(vec![ArbitrationRunReward {
                 item_type: String::from(VITUS_ESSENCE),
                 name: String::from("Vitus Essence"),
-                count: 1,
+                count: 2,
             }])
         );
     }

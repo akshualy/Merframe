@@ -94,7 +94,7 @@ export function perMinute(count: number | null, secs: number): number | null {
 }
 
 export function liveElapsedSecs(run: ArbitrationRun, now: number): number {
-  if (run.started_at === null) {
+  if (run.status !== "recording" || run.started_at === null) {
     return run.duration_secs;
   }
 

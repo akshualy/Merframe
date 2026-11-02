@@ -95,9 +95,13 @@ test("booster text", () => {
 
 test("live elapsed", () => {
   const started = new Date("2026-10-24T20:54:38Z").getTime();
-  expect(liveElapsedSecs(run(), started + 400_000)).toBe(400);
-  expect(liveElapsedSecs(run(), started + 100_000)).toBe(333.9);
-  expect(liveElapsedSecs(run({ started_at: null }), started)).toBe(333.9);
+  const live = { status: "recording" } as const;
+  expect(liveElapsedSecs(run(live), started + 400_000)).toBe(400);
+  expect(liveElapsedSecs(run(live), started + 100_000)).toBe(333.9);
+  expect(liveElapsedSecs(run({ ...live, started_at: null }), started)).toBe(
+    333.9,
+  );
+  expect(liveElapsedSecs(run(), started + 400_000)).toBe(333.9);
 });
 
 test("metric readings", () => {

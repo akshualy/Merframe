@@ -1,5 +1,6 @@
 import { ChevronDown, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { ArbitrationRunFigures } from "@/components/arbitration-run-figures";
 import { Figure } from "@/components/figure";
 import { EmptyNote } from "@/components/page";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,6 @@ import { num } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import type { ArbitrationRun, ArbitrationRunExportFormat } from "@/types";
 import { ArbitrationRunChart } from "./run-chart";
-import { ArbitrationRunFigures } from "./run-figures";
 import { ArbitrationRunPace } from "./run-pace";
 import { ArbitrationRunStatusBadge } from "./runs";
 
@@ -130,8 +130,8 @@ function ArbitrationRunOverview({ run }: { run: ArbitrationRun }) {
         <div className="flex flex-col gap-1">
           <Hint>Mission rewards</Hint>
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            {run.rewards.map((reward, index) => (
-              <li key={`${reward.item_type}:${index}`}>
+            {run.rewards.map((reward) => (
+              <li key={reward.item_type}>
                 {reward.name}{" "}
                 <span className="text-muted-foreground">
                   {num(reward.count)}
