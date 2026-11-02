@@ -3,6 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 import { DucateringFilters } from "@/components/ducatering-filters";
 import { SelectField } from "@/components/option-select";
 import {
+  ArbitrationLiveSlot,
   DucateringSlot,
   RecommendationSlot,
   RewardSlot,
@@ -46,7 +47,8 @@ type PlacementSetting =
   | "overlay_relic_reward_placement"
   | "overlay_relic_recommendation_placement"
   | "overlay_riven_placement"
-  | "overlay_ducatering_placement";
+  | "overlay_ducatering_placement"
+  | "overlay_arbitration_placement";
 
 const REFINEMENTS: { value: RecommendationRefinement; label: string }[] = [
   { value: "radiant", label: "Always Radiant" },
@@ -191,6 +193,7 @@ export function OverlaysPage() {
   const recommendation = master && settings.overlay_relic_recommendation;
   const riven = master && settings.overlay_riven;
   const ducatering = master && settings.overlay_ducatering;
+  const arbitration = master && settings.overlay_arbitration;
 
   const actions = (
     kind: OverlayKind,
@@ -445,6 +448,36 @@ export function OverlaysPage() {
           <DucateringSlot
             trigger={ducatering ? overlays.ducatering : null}
             clipboard={settings.ducatering_clipboard}
+          />
+        </Focused>
+      </Section>
+
+      <Section
+        title="Live Arbitration"
+        controls={
+          <CardControls
+            name="arbitration"
+            enabled={settings.overlay_arbitration}
+            disabled={!master}
+            onEnabled={(enabled) =>
+              saveSettings({ overlay_arbitration: enabled })
+            }
+          />
+        }
+        action={actions(
+          "arbitration_live",
+          "overlay_arbitration_placement",
+          arbitration,
+        )}
+        description={
+          arbitration
+            ? "Shown while an Arbitration runs and for a moment after it ends, with the drone pace."
+            : OFF
+        }
+      >
+        <Focused trigger={arbitration ? overlays.arbitration : null}>
+          <ArbitrationLiveSlot
+            trigger={arbitration ? overlays.arbitration : null}
           />
         </Focused>
       </Section>

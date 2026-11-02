@@ -5,6 +5,7 @@ import {
   NotificationOverlay,
 } from "@/components/notification-overlay";
 import {
+  ArbitrationLiveSlot,
   DucateringSlot,
   RecommendationSlot,
   RewardSlot,
@@ -128,6 +129,16 @@ export function OverlayWindow() {
                   clipboard={overlays.ducatering_clipboard}
                   compact
                 />
+              </OverlayFrame>
+            )
+          }
+        />
+        <Route
+          path="arbitration"
+          element={
+            overlays.arbitration && (
+              <OverlayFrame opacity={overlays.opacity} scroll={false}>
+                <ArbitrationLiveSlot trigger={overlays.arbitration} />
               </OverlayFrame>
             )
           }

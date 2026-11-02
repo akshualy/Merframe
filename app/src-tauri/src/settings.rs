@@ -366,6 +366,25 @@ pub struct OverlaySettings {
     pub overlay_account_balance: bool,
     #[serde(flatten)]
     pub ducatering: DucateringSettings,
+    #[serde(flatten)]
+    pub arbitration: ArbitrationOverlaySettings,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(default)]
+pub struct ArbitrationOverlaySettings {
+    pub overlay_arbitration: bool,
+    pub overlay_arbitration_placement: OverlayPlacement,
+}
+
+impl Default for ArbitrationOverlaySettings {
+    fn default() -> Self {
+        Self {
+            overlay_arbitration: true,
+            overlay_arbitration_placement: OverlayPlacement::TopRight,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -501,6 +520,7 @@ impl Default for OverlaySettings {
             overlay_only_while_game_active: true,
             overlay_account_balance: true,
             ducatering: DucateringSettings::default(),
+            arbitration: ArbitrationOverlaySettings::default(),
         }
     }
 }
@@ -829,6 +849,11 @@ mod tests {
         assert!(settings.overlays.shown.overlay_relic_recommendation);
         assert!(settings.overlays.shown.overlay_riven);
         assert!(settings.overlays.ducatering.overlay_ducatering);
+        assert!(settings.overlays.arbitration.overlay_arbitration);
+        assert_eq!(
+            settings.overlays.arbitration.overlay_arbitration_placement,
+            OverlayPlacement::TopRight
+        );
         assert_eq!(
             settings.overlays.ducatering.overlay_ducatering_placement,
             OverlayPlacement::TopRight

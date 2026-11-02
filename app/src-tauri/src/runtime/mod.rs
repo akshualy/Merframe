@@ -188,8 +188,16 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
         CoreEvent::ArbitrationAlert { alert } => {
             arbitration_alert(app, state, &settings, alert).await;
         }
-        CoreEvent::ArbitrationRunUpdated { .. } => emit(app, AppEvent::ArbitrationRunUpdated),
-        CoreEvent::ArbitrationRunRecorded { .. } => {
+        CoreEvent::ArbitrationRunUpdated { run } => {
+            overlay::on_arbitration_run_updated(app, state, run.clone());
+            emit(app, AppEvent::ArbitrationRunUpdated);
+        }
+        CoreEvent::ArbitrationRunRecorded { run } => {
+            tauri::async_runtime::spawn(overlay::on_arbitration_run_recorded(
+                app.clone(),
+                Arc::clone(state),
+                run.clone(),
+            ));
             emit(app, AppEvent::ArbitrationRunsUpdated);
         }
         CoreEvent::TimerAlert {

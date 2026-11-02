@@ -147,6 +147,8 @@ fn gameplay(message: &str) -> Option<Event> {
         "Disruption: Endless mission reward given",
         "ZarimanSurvivalMission.lua: Gave reward tier",
         "Created /Lotus/Interface/DefenseReward.swf",
+        "ColonistRescueMission.lua: Defection: Reward ",
+        "ExcavationMission.lua: Survival: Gave reward tier ",
     ];
     if rotation_markers
         .iter()
@@ -386,6 +388,8 @@ mod tests {
             "Disruption: Endless mission reward given",
             "ZarimanSurvivalMission.lua: Gave reward tier 2",
             "Created /Lotus/Interface/DefenseReward.swf",
+            "ColonistRescueMission.lua: Defection: Reward 1 given",
+            "ExcavationMission.lua: Survival: Gave reward tier 2",
         ] {
             assert_eq!(
                 classify(message),

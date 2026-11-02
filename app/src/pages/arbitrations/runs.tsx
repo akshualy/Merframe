@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { VariantProps } from "class-variance-authority";
 import { Activity, FileUp, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ArbitrationRunFigures } from "@/components/arbitration-run-figures";
 import { DataTable } from "@/components/data-table";
 import { Figure } from "@/components/figure";
 import { FilterGrid } from "@/components/filter-grid";
@@ -37,7 +38,6 @@ import type {
   ArbitrationRunSource,
   ArbitrationRunStatus,
 } from "@/types";
-import { ArbitrationRunFigures } from "./run-figures";
 import { HeroHeading } from "./schedule";
 
 const STATUS_VARIANT: Record<
@@ -152,8 +152,6 @@ export function ArbitrationLiveRunCard({ now }: { now: number }) {
     return null;
   }
 
-  const elapsedSecs =
-    run.status === "recording" ? liveElapsedSecs(run, now) : run.duration_secs;
   return (
     <Surface className="gap-2 px-4 py-3">
       <HeroHeading icon={Activity} label="Live run">
@@ -166,7 +164,10 @@ export function ArbitrationLiveRunCard({ now }: { now: number }) {
         {slotPlace(run)}, {runRole(run).toLowerCase()}
       </span>
       <div className="flex flex-wrap gap-x-6 gap-y-2">
-        <ArbitrationRunFigures run={run} elapsedSecs={elapsedSecs} />
+        <ArbitrationRunFigures
+          run={run}
+          elapsedSecs={liveElapsedSecs(run, now)}
+        />
       </div>
     </Surface>
   );
