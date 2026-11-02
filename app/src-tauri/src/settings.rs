@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
 use wf_core::{AlertSettings, DucateringFilter, DucateringHidden, MasteryOptions, MasteryOrdering};
-use wf_market::{OrderType, Reach, Session, TraderStatus};
+use wf_market::{OrderType, Reach, Session, TraderStatus, UserStatus};
 
 use crate::market::MarketPresenceChoice;
 use crate::state::{AppState, lock, write};
@@ -776,8 +776,35 @@ pub fn set_account<R: Runtime>(
 }
 
 pub fn presence<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<MarketPresenceChoice> {
-    let choice = stored(app, PRESENCE_KEY, "Stored market presence is not readable")?;
-    Ok(choice.unwrap_or_default())
+    let choice: Option<StoredMarketPresenceChoice> =
+        stored(app, PRESENCE_KEY, "Stored market presence is not readable")?;
+    Ok(choice.map(MarketPresenceChoice::from).unwrap_or_default())
+}
+
+/// Migration: Until 2026-11-02 the presence choice was stored as a status with an `auto` flag.
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum StoredMarketPresenceChoice {
+    Choice(MarketPresenceChoice),
+    StatusAndAuto {
+        status: Option<UserStatus>,
+        auto: bool,
+    },
+}
+
+impl From<StoredMarketPresenceChoice> for MarketPresenceChoice {
+    fn from(stored: StoredMarketPresenceChoice) -> Self {
+        match stored {
+            StoredMarketPresenceChoice::Choice(choice) => choice,
+            StoredMarketPresenceChoice::StatusAndAuto { auto: true, .. } => Self::FollowGame,
+            StoredMarketPresenceChoice::StatusAndAuto { status, .. } => match status {
+                None => Self::Untouched,
+                Some(UserStatus::Offline | UserStatus::Invisible) => Self::Invisible,
+                Some(UserStatus::Online) => Self::Online,
+                Some(UserStatus::Ingame) => Self::Ingame,
+            },
+        }
+    }
 }
 
 pub fn set_presence<R: Runtime>(
@@ -1159,6 +1186,28 @@ mod tests {
         let chosen: Settings =
             serde_json::from_str(r#"{"discord_message_template":"{tenno}?"}"#).unwrap();
         assert_eq!(chosen.discord.discord_message_template, "{tenno}?");
+    }
+
+    #[test]
+    fn stored_presence_reads_both_shapes() {
+        let read = |json: &str| {
+            MarketPresenceChoice::from(
+                serde_json::from_str::<StoredMarketPresenceChoice>(json).unwrap(),
+            )
+        };
+        assert_eq!(read(r#""follow_game""#), MarketPresenceChoice::FollowGame);
+        assert_eq!(
+            read(r#"{"status":"online","auto":true}"#),
+            MarketPresenceChoice::FollowGame
+        );
+        assert_eq!(
+            read(r#"{"status":"invisible","auto":false}"#),
+            MarketPresenceChoice::Invisible
+        );
+        assert_eq!(
+            read(r#"{"status":null,"auto":false}"#),
+            MarketPresenceChoice::Untouched
+        );
     }
 
     #[test]
