@@ -1327,22 +1327,19 @@ mod tests {
 
     #[test]
     fn stylesheet_sets_the_same_root_sizes() {
-        let css = include_str!("../../src/globals.css");
+        let css = include_str!("../../src/globals.css").replace(char::is_whitespace, "");
         for (size, name) in [
             (TextSize::Small, "small"),
             (TextSize::Medium, "medium"),
             (TextSize::Large, "large"),
         ] {
             let rule = format!(
-                "html[data-text-size=\"{name}\"] {{\n    font-size: {}px;",
+                "html[data-text-size=\"{name}\"]{{font-size:{}px;",
                 size.root_px()
             );
             assert!(css.contains(&rule), "{rule}");
         }
-        let fallback = format!(
-            "html {{\n    font-size: {}px;",
-            TextSize::default().root_px()
-        );
+        let fallback = format!("html{{font-size:{}px;", TextSize::default().root_px());
         assert!(css.contains(&fallback), "{fallback}");
     }
 
