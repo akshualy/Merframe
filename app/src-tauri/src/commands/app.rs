@@ -142,30 +142,6 @@ pub async fn test_notifications<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn open_url<R: Runtime>(app: AppHandle<R>, url: String) -> CommandResult<()> {
-    let url = browser_url(&url)?;
-    Ok(app
-        .opener()
-        .open_url(url.as_str(), None::<&str>)
-        .context("Opening the URL")?)
-}
-
-fn browser_url(url: &str) -> CommandResult<tauri::Url> {
-    let parsed = tauri::Url::parse(url)
-        .map_err(|_| CommandError::from("Not a valid browser URL".to_owned()))?;
-    if !matches!(parsed.scheme(), "http" | "https")
-        || parsed.host_str().is_none()
-        || !parsed.username().is_empty()
-        || parsed.password().is_some()
-    {
-        return Err(CommandError::from(
-            "Only HTTP and HTTPS browser URLs without credentials are allowed".to_owned(),
-        ));
-    }
-    Ok(parsed)
-}
-
-#[tauri::command]
 pub async fn app_log_file(state: Shared<'_>) -> CommandResult<String> {
     let state = ready(&state).await?;
     Ok(state.data_dir.join(LOG_FILE).display().to_string())
@@ -237,21 +213,54 @@ pub async fn prefetch_images(
 
 #[cfg(test)]
 mod tests {
-    use super::browser_url;
+    fn browser_patterns() -> Vec<glob::Pattern> {
+        let capability: serde_json::Value =
+            serde_json::from_str(include_str!("../../capabilities/default.json")).unwrap();
+        let permissions = capability["permissions"].as_array().unwrap();
+        let opener = permissions
+            .iter()
+            .filter(|permission| {
+                permission
+                    .as_str()
+                    .or_else(|| permission["identifier"].as_str())
+                    .is_some_and(|id| id.starts_with("opener:"))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(opener.len(), 1, "Only scoped URL opening should be granted");
+        assert_eq!(opener[0]["identifier"], "opener:allow-open-url");
+        // Use the same glob matcher as the opener plugin against the real capability.
+        opener[0]["allow"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|entry| glob::Pattern::new(entry["url"].as_str().unwrap()).unwrap())
+            .collect()
+    }
 
     #[test]
     fn browser_links_allow_web_pages() {
+        let patterns = browser_patterns();
         for url in [
+            "https://wiki.warframe.com",
             "https://wiki.warframe.com/w/Braton_Prime",
+            "https://warframe.market",
             "https://warframe.market/items/braton_prime_set",
-            "http://example.com/",
+            "https://warframe.market/im/chats",
+            "https://warframe.market/auctions/search?type=riven&weapon_url_name=kuva_shildeg",
+            "https://yareli.net/merframe",
+            "https://github.com/akshualy/Merframe",
+            "https://github.com/WFCD/warframe-items",
+            "https://alecaframe.com",
+            "https://browse.wf/arbys",
+            "https://browse.wf/about",
         ] {
-            assert!(browser_url(url).is_ok(), "{url}");
+            assert!(patterns.iter().any(|pattern| pattern.matches(url)), "{url}");
         }
     }
 
     #[test]
-    fn browser_links_reject_files_and_protocol_handlers() {
+    fn browser_links_reject_untrusted_destinations() {
+        let patterns = browser_patterns();
         for url in [
             "file:///C:/Windows/System32/calc.exe",
             "C:\\Windows\\System32\\calc.exe",
@@ -259,10 +268,24 @@ mod tests {
             "javascript:alert(1)",
             "ms-settings:windowsupdate",
             "steam://run/123",
-            "https://user:password@example.com/",
+            "mailto:user@example.com",
+            "tel:12345",
+            "http://wiki.warframe.com/w/Braton_Prime",
+            "https://example.com/",
+            "https://wiki.warframe.com.evil.example/",
+            "https://wiki.warframe.com@evil.example/",
+            "https://user:password@wiki.warframe.com/",
+            "https://wiki.warframe.com:9999/",
+            "https://warframe.market.evil.example/",
+            "https://warframe.market@evil.example/",
+            "https://user@warframe.market/",
+            "https://",
             "not a URL",
         ] {
-            assert!(browser_url(url).is_err(), "{url}");
+            assert!(
+                !patterns.iter().any(|pattern| pattern.matches(url)),
+                "{url}"
+            );
         }
     }
 }

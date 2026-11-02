@@ -185,7 +185,6 @@ fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
         commands::arbitrations::import_arbitration_log,
         commands::arbitrations::refresh_arbitration_runs,
         commands::arbitrations::export_arbitration_run,
-        commands::app::open_url,
         commands::app::app_log_file,
         commands::app::open_data_folder,
         commands::app::open_game_log_folder,

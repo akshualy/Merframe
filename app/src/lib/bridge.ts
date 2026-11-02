@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { toast } from "sonner";
 import type {
   AppEvent,
@@ -220,7 +221,6 @@ export const api = {
     call<string | null>("export_arbitration_run", { id, format }),
   invasionWeaponParts: () =>
     call<InvasionWeaponPart[]>("invasion_weapon_parts"),
-  openUrl: (url: string) => call<void>("open_url", { url }),
   appLogFile: () => call<string>("app_log_file"),
   openDataFolder: () => call<void>("open_data_folder"),
   openGameLogFolder: () => call<void>("open_game_log_folder"),
@@ -231,7 +231,7 @@ export const api = {
 
 export async function openExternal(url: string) {
   try {
-    await api.openUrl(url);
+    await openUrl(url);
   } catch (error) {
     reportError(error);
   }
