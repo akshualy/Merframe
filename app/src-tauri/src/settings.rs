@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use anyhow::Context;
@@ -18,6 +18,7 @@ pub const STORE_FILE: &str = "merframe.json";
 const TOKEN_FILE: &str = "market_token";
 const SETTINGS_KEY: &str = "settings";
 const LEGACY_TOKEN_KEY: &str = "market_token";
+static TOKEN_LOCK: Mutex<()> = Mutex::new(());
 const ACCOUNT_KEY: &str = "market_account";
 const PRESENCE_KEY: &str = "market_presence";
 
@@ -715,49 +716,86 @@ fn token_path<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<PathBuf> {
 }
 
 pub fn token<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<String>> {
-    let path = token_path(app)?;
-    let token = unless_missing(std::fs::read_to_string(&path))
-        .with_context(|| format!("Reading {}", path.display()))?;
-    match token {
-        Some(token) => Ok(Some(token)),
-        None => moved_token(app, &path),
-    }
-}
-
-fn moved_token<R: Runtime>(app: &AppHandle<R>, path: &Path) -> anyhow::Result<Option<String>> {
-    let Some(token) = store(app)?
-        .get(LEGACY_TOKEN_KEY)
-        .and_then(|value| value.as_str().map(str::to_owned))
-    else {
-        return Ok(None);
+    let _guard = lock(&TOKEN_LOCK);
+    let files = SessionFiles {
+        app,
+        path: token_path(app)?,
     };
-
-    write_token(path, &token)?;
-    put(app, LEGACY_TOKEN_KEY, None)?;
-    tracing::info!("Session token moved to its own file");
-    Ok(Some(token))
+    crate::credentials::load(crate::credentials::entry(), &files)
 }
 
 pub fn set_token<R: Runtime>(app: &AppHandle<R>, token: Option<&str>) -> anyhow::Result<()> {
-    let path = token_path(app)?;
+    let _guard = lock(&TOKEN_LOCK);
+    let files = SessionFiles {
+        app,
+        path: token_path(app)?,
+    };
     match token {
-        Some(token) => write_token(&path, token),
-        None => unless_missing(std::fs::remove_file(&path))
-            .map(|_| ())
-            .with_context(|| format!("Removing {}", path.display())),
+        Some(token) => crate::credentials::save(crate::credentials::entry(), token, &files),
+        None => crate::credentials::clear(crate::credentials::entry(), &files),
     }
 }
 
-fn write_token(path: &Path, token: &str) -> anyhow::Result<()> {
-    std::fs::write(path, token).with_context(|| format!("Writing {}", path.display()))?;
+struct SessionFiles<'a, R: Runtime> {
+    app: &'a AppHandle<R>,
+    path: PathBuf,
+}
+
+impl<R: Runtime> crate::credentials::TokenFiles for SessionFiles<'_, R> {
+    fn read(&self) -> anyhow::Result<Option<String>> {
+        unless_missing(std::fs::read_to_string(&self.path))
+            .context("Reading the plaintext session file")
+    }
+
+    fn legacy(&self) -> anyhow::Result<Option<String>> {
+        stored(
+            self.app,
+            LEGACY_TOKEN_KEY,
+            "The legacy session is not readable",
+        )
+    }
+
+    fn write(&self, token: &str) -> anyhow::Result<()> {
+        write_plaintext_token(&self.path, token)
+    }
+
+    fn remove(&self) -> anyhow::Result<()> {
+        let store = store(self.app)?;
+        store.delete(LEGACY_TOKEN_KEY);
+        // Save even if the key is already absent in memory: a previous save
+        // might have failed after deleting it from the in-memory store.
+        store.save().context("Removing the legacy JSON session")?;
+        // Keep the fallback or logout marker until the JSON copy is gone.
+        unless_missing(std::fs::remove_file(&self.path))
+            .context("Removing the plaintext session file")
+            .map(|_| ())
+    }
+}
+
+fn write_plaintext_token(path: &std::path::Path, token: &str) -> anyhow::Result<()> {
+    use std::io::Write as _;
+
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create(true).truncate(false);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt as _;
+        options.mode(0o600);
+    }
+    let mut file = options
+        .open(path)
+        .context("Opening the plaintext session file")?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt as _;
-
-        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
-            .with_context(|| format!("Restricting {}", path.display()))?;
+        file.set_permissions(std::fs::Permissions::from_mode(0o600))
+            .context("Restricting the plaintext session file")?;
     }
-    Ok(())
+    file.set_len(0)
+        .context("Truncating the plaintext session file")?;
+    file.write_all(token.as_bytes())
+        .context("Writing the plaintext session file")?;
+    file.sync_all().context("Saving the plaintext session file")
 }
 
 pub fn account<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<MarketAccount>> {
@@ -821,6 +859,30 @@ mod tests {
     use wf_core::TimerAlerts;
 
     use super::*;
+
+    #[test]
+    fn plaintext_session_replacement_and_logout_marker() {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let path =
+            std::env::temp_dir().join(format!("merframe-token-{}-{unique}", std::process::id()));
+        std::fs::write(&path, "older-longer-session").unwrap();
+        write_plaintext_token(&path, "new-session").unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "new-session");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt as _;
+            assert_eq!(
+                std::fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+                0o600
+            );
+        }
+        write_plaintext_token(&path, "").unwrap();
+        assert!(std::fs::read(&path).unwrap().is_empty());
+        std::fs::remove_file(path).unwrap();
+    }
 
     #[test]
     fn discord_mirrored_alerts_read_both_shapes() {
