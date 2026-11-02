@@ -3,16 +3,20 @@ import type { VariantProps } from "class-variance-authority";
 import { Activity, FileUp, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
+import { Figure } from "@/components/figure";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect } from "@/components/filter-select";
 import { ErrorNote, Section, Surface, TableSkeleton } from "@/components/page";
 import { Badge, type badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Hint } from "@/components/ui/hint";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useFilters } from "@/hooks/use-filters";
 import {
+  earningsSummary,
   elapsedText,
   liveElapsedSecs,
+  rateText,
   runDate,
   runRole,
   runTitle,
@@ -114,6 +118,12 @@ const COLUMNS: ColumnDef<ArbitrationRun>[] = [
     cell: ({ row }) => num(row.original.drone_spawns),
   },
   {
+    accessorKey: "vitus",
+    header: "Vitus Essence",
+    meta: { numeric: true },
+    cell: ({ row }) => num(row.original.vitus),
+  },
+  {
     id: "status",
     accessorFn: (run) => run.status,
     header: "Status",
@@ -162,6 +172,28 @@ export function ArbitrationLiveRunCard({ now }: { now: number }) {
   );
 }
 
+function ArbitrationEarnings({ runs }: { runs: ArbitrationRun[] }) {
+  const summary = earningsSummary(runs);
+
+  if (summary.runs === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+      <Figure label="Runs counted" value={num(summary.runs)} />
+      <Figure label="Vitus Essence" value={num(summary.vitus)} />
+      <Figure
+        label="Vitus Essence per hour"
+        value={rateText(summary.perHour, 1)}
+      />
+      <Hint as="span">
+        Shown runs with Vitus Essence, per hour from their total run time
+      </Hint>
+    </div>
+  );
+}
+
 function ArbitrationRunTable({
   runs,
   onOpenReport,
@@ -186,50 +218,53 @@ function ArbitrationRunTable({
   );
 
   return (
-    <DataTable
-      tableId="arbitrationRuns"
-      columns={COLUMNS}
-      data={shown}
-      resetKey={JSON.stringify(chosen)}
-      searchPlaceholder="Filter runs"
-      searchValue={runTitle}
-      initialSorting={[{ id: "started_at", desc: true }]}
-      rowKey={(run) => run.id}
-      emptyMessage={
-        runs.length === 0
-          ? "No run recorded yet. Runs are recorded while Merframe watches the game log. Refresh reads the current EE.log again, Import reads an older one."
-          : "No run matches these filters."
-      }
-      filters={
-        <FilterGrid activeFilters={filters.active} onClear={filters.clear}>
-          <FilterSelect
-            label="Mission"
-            value={chosen.mission}
-            options={plainOptions(missions)}
-            onChange={(value) => filters.set("mission", value)}
-          />
-          <FilterSelect
-            label="Status"
-            value={chosen.status}
-            options={STATUSES}
-            onChange={(value) => filters.set("status", value)}
-          />
-          <FilterSelect
-            label="Role"
-            value={chosen.role}
-            options={ROLES}
-            onChange={(value) => filters.set("role", value)}
-          />
-          <FilterSelect
-            label="Source"
-            value={chosen.source}
-            options={SOURCES}
-            onChange={(value) => filters.set("source", value)}
-          />
-        </FilterGrid>
-      }
-      onRowClick={onOpenReport}
-    />
+    <>
+      <ArbitrationEarnings runs={shown} />
+      <DataTable
+        tableId="arbitrationRuns"
+        columns={COLUMNS}
+        data={shown}
+        resetKey={JSON.stringify(chosen)}
+        searchPlaceholder="Filter runs"
+        searchValue={runTitle}
+        initialSorting={[{ id: "started_at", desc: true }]}
+        rowKey={(run) => run.id}
+        emptyMessage={
+          runs.length === 0
+            ? "No run recorded yet. Runs are recorded while Merframe watches the game log. Refresh reads the current EE.log again, Import reads an older one."
+            : "No run matches these filters."
+        }
+        filters={
+          <FilterGrid activeFilters={filters.active} onClear={filters.clear}>
+            <FilterSelect
+              label="Mission"
+              value={chosen.mission}
+              options={plainOptions(missions)}
+              onChange={(value) => filters.set("mission", value)}
+            />
+            <FilterSelect
+              label="Status"
+              value={chosen.status}
+              options={STATUSES}
+              onChange={(value) => filters.set("status", value)}
+            />
+            <FilterSelect
+              label="Role"
+              value={chosen.role}
+              options={ROLES}
+              onChange={(value) => filters.set("role", value)}
+            />
+            <FilterSelect
+              label="Source"
+              value={chosen.source}
+              options={SOURCES}
+              onChange={(value) => filters.set("source", value)}
+            />
+          </FilterGrid>
+        }
+        onRowClick={onOpenReport}
+      />
+    </>
   );
 }
 

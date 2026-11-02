@@ -13,6 +13,7 @@ export type * from "./ArbitrationRun";
 export type * from "./ArbitrationRunExportFormat";
 export type * from "./ArbitrationRunResourceBooster";
 export type * from "./ArbitrationRunResourceBoosterKind";
+export type * from "./ArbitrationRunReward";
 export type * from "./ArbitrationRunRotation";
 export type * from "./ArbitrationRunSample";
 export type * from "./ArbitrationRunSource";

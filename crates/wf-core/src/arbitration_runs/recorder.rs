@@ -5,7 +5,7 @@ use wf_worldstate::mission_type_name;
 
 use super::active::{ActiveRun, CaptureNote, log_offset};
 use super::boosters::ArbitrationRunBoosterTracker;
-use super::{ArbitrationRun, ArbitrationRunSource};
+use super::{ArbitrationRun, ArbitrationRunReward, ArbitrationRunSource};
 
 const CLOCK_RESTART_SECS: f64 = 300.0;
 const LIVE_REPORT_INTERVAL_SECS: f64 = 2.0;
@@ -79,6 +79,16 @@ impl ArbitrationRunRecorder {
 
     pub fn live(&self) -> Option<ArbitrationRun> {
         self.active.as_ref().map(|active| self.snapshot(active))
+    }
+
+    pub fn attach_mission_end(
+        &mut self,
+        rewards: &[ArbitrationRunReward],
+        collected_vitus: Option<u32>,
+    ) -> bool {
+        self.active
+            .as_mut()
+            .is_some_and(|active| active.attach_mission_end(rewards, collected_vitus))
     }
 
     pub fn finish(&mut self) -> ArbitrationRunUpdate {

@@ -30,7 +30,6 @@ import { useSettings } from "@/stores/app-store";
 import type {
   ArbitrationDashboard,
   ArbitrationForecastStatus,
-  ArbitrationRun,
   ArbitrationTier,
 } from "@/types";
 import { useArbitrationMarks } from "./marks";
@@ -83,7 +82,8 @@ export function ArbitrationsPage() {
     ["arbitrationRunsUpdated"],
   );
   const [tab, setTab] = useTabParam<"forecast" | "history">("forecast");
-  const [report, setReport] = useState<ArbitrationRun | null>(null);
+  const [reportId, setReportId] = useState<string | null>(null);
+  const report = runs?.find((run) => run.id === reportId) ?? null;
   const [search, setSearch] = useState("");
   const [day, setDay] = useState(ALL_DAYS);
   const filters = useFilters<{
@@ -265,12 +265,12 @@ export function ArbitrationsPage() {
           <ArbitrationRunHistory
             runs={runs}
             error={runsError}
-            onOpenReport={setReport}
+            onOpenReport={(run) => setReportId(run.id)}
           />
         </TabsContent>
       </Tabs>
       {report && (
-        <ArbitrationRunDialog run={report} onClose={() => setReport(null)} />
+        <ArbitrationRunDialog run={report} onClose={() => setReportId(null)} />
       )}
     </Page>
   );
