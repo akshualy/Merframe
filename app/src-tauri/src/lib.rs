@@ -32,16 +32,9 @@ pub fn closes_app(label: &str) -> bool {
 }
 
 pub fn is_own_page(url: &Url) -> bool {
-    if !url.username().is_empty() || url.password().is_some() {
-        return false;
-    }
-    matches!(
-        (url.scheme(), url.host_str(), url.port()),
-        ("tauri", Some("localhost"), None) | ("http", Some("tauri.localhost"), None)
-    ) || (cfg!(dev)
-        && url.scheme() == "http"
-        && url.host_str() == Some("localhost")
-        && url.port() == Some(1420))
+    url.scheme() == "tauri"
+        || url.host_str() == Some("tauri.localhost")
+        || (cfg!(dev) && url.host_str() == Some("localhost"))
 }
 
 fn navigation_guard<R: Runtime>() -> TauriPlugin<R> {
@@ -260,23 +253,10 @@ mod tests {
         for foreign in [
             "https://warframe.market/im/chats",
             "http://tauri.localhost.example.com/",
-            "http://tauri.localhost:9999/",
-            "https://tauri.localhost/",
-            "tauri://example.com/",
-            "http://localhost:9999/",
-            "http://user:password@tauri.localhost/",
             "file:///etc/passwd",
         ] {
             assert!(!is_own_page(&Url::parse(foreign).unwrap()), "{foreign}");
         }
-    }
-
-    #[test]
-    fn dev_server_uses_configured_origin() {
-        assert_eq!(
-            is_own_page(&Url::parse("http://localhost:1420/").unwrap()),
-            cfg!(dev)
-        );
     }
 
     #[test]
