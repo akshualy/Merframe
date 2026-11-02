@@ -2552,6 +2552,7 @@ dependencies = [
  "chrono",
  "futures-util",
  "gdk",
+ "glob",
  "gtk",
  "indexmap 2.14.2",
  "notify-rust",

@@ -142,14 +142,6 @@ pub async fn test_notifications<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn open_url<R: Runtime>(app: AppHandle<R>, url: String) -> CommandResult<()> {
-    Ok(app
-        .opener()
-        .open_url(url, None::<&str>)
-        .context("Opening the URL")?)
-}
-
-#[tauri::command]
 pub async fn app_log_file(state: Shared<'_>) -> CommandResult<String> {
     let state = ready(&state).await?;
     Ok(state.data_dir.join(LOG_FILE).display().to_string())
@@ -217,4 +209,83 @@ pub async fn prefetch_images(
         .flatten()
         .collect();
     Ok(held)
+}
+
+#[cfg(test)]
+mod tests {
+    fn browser_patterns() -> Vec<glob::Pattern> {
+        let capability: serde_json::Value =
+            serde_json::from_str(include_str!("../../capabilities/default.json")).unwrap();
+        let permissions = capability["permissions"].as_array().unwrap();
+        let opener = permissions
+            .iter()
+            .filter(|permission| {
+                permission
+                    .as_str()
+                    .or_else(|| permission["identifier"].as_str())
+                    .is_some_and(|id| id.starts_with("opener:"))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(opener.len(), 1, "Only scoped URL opening should be granted");
+        assert_eq!(opener[0]["identifier"], "opener:allow-open-url");
+        // Use the same glob matcher as the opener plugin against the real capability.
+        opener[0]["allow"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|entry| glob::Pattern::new(entry["url"].as_str().unwrap()).unwrap())
+            .collect()
+    }
+
+    #[test]
+    fn browser_links_allow_web_pages() {
+        let patterns = browser_patterns();
+        for url in [
+            "https://wiki.warframe.com",
+            "https://wiki.warframe.com/w/Braton_Prime",
+            "https://warframe.market",
+            "https://warframe.market/items/braton_prime_set",
+            "https://warframe.market/im/chats",
+            "https://warframe.market/auctions/search?type=riven&weapon_url_name=kuva_shildeg",
+            "https://yareli.net/merframe",
+            "https://github.com/akshualy/Merframe",
+            "https://github.com/WFCD/warframe-items",
+            "https://alecaframe.com",
+            "https://browse.wf/arbys",
+            "https://browse.wf/about",
+        ] {
+            assert!(patterns.iter().any(|pattern| pattern.matches(url)), "{url}");
+        }
+    }
+
+    #[test]
+    fn browser_links_reject_untrusted_destinations() {
+        let patterns = browser_patterns();
+        for url in [
+            "file:///C:/Windows/System32/calc.exe",
+            "C:\\Windows\\System32\\calc.exe",
+            "\\\\server\\share\\program.exe",
+            "javascript:alert(1)",
+            "ms-settings:windowsupdate",
+            "steam://run/123",
+            "mailto:user@example.com",
+            "tel:12345",
+            "http://wiki.warframe.com/w/Braton_Prime",
+            "https://example.com/",
+            "https://wiki.warframe.com.evil.example/",
+            "https://wiki.warframe.com@evil.example/",
+            "https://user:password@wiki.warframe.com/",
+            "https://wiki.warframe.com:9999/",
+            "https://warframe.market.evil.example/",
+            "https://warframe.market@evil.example/",
+            "https://user@warframe.market/",
+            "https://",
+            "not a URL",
+        ] {
+            assert!(
+                !patterns.iter().any(|pattern| pattern.matches(url)),
+                "{url}"
+            );
+        }
+    }
 }

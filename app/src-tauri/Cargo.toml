@@ -54,6 +54,9 @@ notify-rust = { workspace = true }
 [target.'cfg(windows)'.dependencies]
 windows-sys = { workspace = true }
 
+[dev-dependencies]
+glob = "0.3"
+
 [features]
 bindings = ["dep:ts-rs", "wf-core/bindings", "wf-data/bindings", "wf-market/bindings", "wf-worldstate/bindings"]
 schema = ["dep:schemars", "wf-core/schema"]
