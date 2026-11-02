@@ -2,7 +2,7 @@
 
 ![Merframe header image](.github/Merframe.png)
 
-Merframe is an open-source alternative to AlecaFrame that runs natively on Linux (Proton) and Windows.
+Merframe is an open-source alternative to AlecaFrame that runs natively on Linux and Windows.
 
 Merframe displays information about:
  - World timers, fissures, alerts, invasions and events
