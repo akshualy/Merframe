@@ -212,6 +212,8 @@ export const api = {
   arbitrationLiveRun: () => call<ArbitrationRun | null>("arbitration_live_run"),
   deleteArbitrationRun: (id: string) =>
     call<void>("delete_arbitration_run", { id }),
+  setArbitrationRunVitus: (id: string, vitus: number | null) =>
+    call<void>("set_arbitration_run_vitus", { id, vitus }),
   importArbitrationLog: () => call<number | null>("import_arbitration_log"),
   refreshArbitrationRuns: () => call<number>("refresh_arbitration_runs"),
   exportArbitrationRun: (id: string, format: ArbitrationRunExportFormat) =>

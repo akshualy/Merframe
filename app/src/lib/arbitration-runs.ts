@@ -54,6 +54,29 @@ export function runRole(run: ArbitrationRun): string {
   return run.host ? "Host" : "Client";
 }
 
+export interface ArbitrationEarningsSummary {
+  runs: number;
+  vitus: number;
+  perHour: number | null;
+}
+
+export function earningsSummary(
+  runs: ArbitrationRun[],
+): ArbitrationEarningsSummary {
+  const known = runs.flatMap((run) =>
+    run.vitus === null ? [] : [{ vitus: run.vitus, secs: run.duration_secs }],
+  );
+  const timed = known.filter((run) => run.secs > 0);
+  const total = (list: { vitus: number }[]) =>
+    list.reduce((sum, run) => sum + run.vitus, 0);
+  const secs = timed.reduce((sum, run) => sum + run.secs, 0);
+  return {
+    runs: known.length,
+    vitus: total(known),
+    perHour: secs > 0 ? (total(timed) * 3600) / secs : null,
+  };
+}
+
 export function elapsedText(secs: number): string {
   const whole = Math.floor(secs);
   return whole <= 0 ? "0s" : countdown(whole);

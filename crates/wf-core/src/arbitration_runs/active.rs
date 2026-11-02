@@ -6,8 +6,8 @@ use wf_worldstate::{node_and_planet, node_name};
 
 use super::boosters::ArbitrationRunBoosterTracker;
 use super::{
-    ArbitrationRun, ArbitrationRunRotation, ArbitrationRunSample, ArbitrationRunSource,
-    ArbitrationRunStatus, ArbitrationRunWave,
+    ArbitrationRun, ArbitrationRunReward, ArbitrationRunRotation, ArbitrationRunSample,
+    ArbitrationRunSource, ArbitrationRunStatus, ArbitrationRunWave,
 };
 
 const SAMPLE_BUCKET_SECS: f64 = 5.0;
@@ -153,6 +153,8 @@ pub(super) struct ActiveRun {
     samples: Vec<ArbitrationRunSample>,
     notes: BTreeSet<CaptureNote>,
     origin: Option<DateTime<Utc>>,
+    rewards: Option<Vec<ArbitrationRunReward>>,
+    collected_vitus: Option<u32>,
 }
 
 impl ActiveRun {
@@ -183,7 +185,23 @@ impl ActiveRun {
             samples: Vec::new(),
             notes: BTreeSet::new(),
             origin,
+            rewards: None,
+            collected_vitus: None,
         }
+    }
+
+    pub(super) fn attach_mission_end(
+        &mut self,
+        rewards: &[ArbitrationRunReward],
+        collected_vitus: Option<u32>,
+    ) -> bool {
+        if !self.end_observed() || self.rewards.is_some() {
+            return false;
+        }
+
+        self.rewards = Some(rewards.to_vec());
+        self.collected_vitus = collected_vitus;
+        true
     }
 
     pub(super) fn node_id(&self) -> Option<&str> {
@@ -507,7 +525,7 @@ impl ActiveRun {
             || "unanchored".to_owned(),
             |origin| origin.timestamp_millis().to_string(),
         );
-        ArbitrationRun {
+        let mut run = ArbitrationRun {
             id: format!("{origin_key}:{}", self.first_secs),
             source,
             status: self.end.status(),
@@ -543,6 +561,15 @@ impl ActiveRun {
                     ..*sample
                 })
                 .collect(),
+            rewards: None,
+            collected_vitus: None,
+            manual_vitus: None,
+            vitus: None,
+        };
+        if let Some(rewards) = &self.rewards {
+            run.attach_mission_end(rewards.clone(), self.collected_vitus);
         }
+
+        run
     }
 }

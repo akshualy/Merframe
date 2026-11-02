@@ -478,6 +478,15 @@ impl Store {
         Ok(inserted == 1)
     }
 
+    pub fn update_arbitration_run(&self, run: &ArbitrationRun) -> Result<()> {
+        let run_json = serde_json::to_string(run)?;
+        self.connection.execute(
+            "UPDATE arbitration_runs SET run_json = ?2 WHERE id = ?1",
+            params![run.id, run_json],
+        )?;
+        Ok(())
+    }
+
     pub fn arbitration_runs(&self) -> Result<Vec<ArbitrationRun>> {
         let mut statement = self.connection.prepare(
             "SELECT run_json FROM arbitration_runs \
@@ -610,7 +619,13 @@ mod tests {
         assert!(store.save_arbitration_run(run, at(1_000_000)).unwrap());
         assert!(!store.save_arbitration_run(run, at(1_000_001)).unwrap());
         assert_eq!(store.arbitration_run(&run.id).unwrap().unwrap().id, run.id);
-        assert_eq!(store.arbitration_runs().unwrap().len(), 1);
+
+        let mut changed = run.clone();
+        changed.manual_vitus = Some(4);
+        store.update_arbitration_run(&changed).unwrap();
+        let stored = store.arbitration_runs().unwrap();
+        assert_eq!(stored.len(), 1);
+        assert_eq!(stored[0].manual_vitus, Some(4));
 
         store.delete_arbitration_run(&run.id).unwrap();
         assert!(store.arbitration_run(&run.id).unwrap().is_none());

@@ -43,9 +43,11 @@ fn export_body(run: &ArbitrationRun, format: ArbitrationRunExportFormat) -> Comm
     })
 }
 
+const RUN_GONE: &str = "This run is no longer stored";
+
 fn stored_run(core: &wf_core::Core, id: &str) -> CommandResult<ArbitrationRun> {
     core.arbitration_run(id)?
-        .ok_or_else(|| CommandError::from("This run is no longer stored"))
+        .ok_or_else(|| CommandError::from(RUN_GONE))
 }
 
 #[tauri::command]
@@ -107,6 +109,23 @@ pub async fn delete_arbitration_run<R: Runtime>(
 ) -> CommandResult<()> {
     let state = ready(&state).await?;
     lock(&state.core).delete_arbitration_run(&id)?;
+    runtime::emit(&app, AppEvent::ArbitrationRunsUpdated);
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn set_arbitration_run_vitus<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+    id: String,
+    vitus: Option<u32>,
+) -> CommandResult<()> {
+    let state = ready(&state).await?;
+    let stored = lock(&state.core).set_arbitration_run_vitus(&id, vitus)?;
+    if !stored {
+        return Err(CommandError::from(RUN_GONE));
+    }
+
     runtime::emit(&app, AppEvent::ArbitrationRunsUpdated);
     Ok(())
 }

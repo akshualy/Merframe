@@ -5,6 +5,7 @@ import {
   clockText,
   cyclePace,
   cycleRows,
+  earningsSummary,
   elapsedText,
   liveElapsedSecs,
   metricReadings,
@@ -40,9 +41,27 @@ function run(extra: Partial<ArbitrationRun> = {}): ArbitrationRun {
       { secs: 10, drone_spawns: 1, live_agents: 8 },
       { secs: 15, drone_spawns: 2, live_agents: 9 },
     ],
+    rewards: null,
+    collected_vitus: null,
+    manual_vitus: null,
+    vitus: null,
     ...extra,
   };
 }
+
+test("earnings summary", () => {
+  expect(earningsSummary([run()])).toEqual({
+    runs: 0,
+    vitus: 0,
+    perHour: null,
+  });
+  const summary = earningsSummary([
+    run({ vitus: 3, duration_secs: 600 }),
+    run({ vitus: 9, duration_secs: 1200 }),
+    run({ vitus: 4, duration_secs: 0 }),
+  ]);
+  expect(summary).toEqual({ runs: 3, vitus: 16, perHour: 24 });
+});
 
 test("rate text", () => {
   expect(rateText(null, 2)).toBe("-");

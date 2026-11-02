@@ -67,6 +67,9 @@ pub fn text_report(run: &ArbitrationRun) -> String {
         "Observed drone spawns: {}",
         or_unknown(run.drone_spawns)
     );
+    if let Some(vitus) = run.vitus {
+        let _ = writeln!(text, "Vitus Essence: {vitus}");
+    }
     for note in &run.notes {
         let _ = writeln!(text, "Capture note: {note}");
     }
@@ -131,6 +134,10 @@ mod tests {
             peak_live_agents: Some(17),
             boosters: Vec::new(),
             samples: Vec::new(),
+            rewards: None,
+            collected_vitus: Some(3),
+            manual_vitus: Some(4),
+            vitus: Some(4),
         }
     }
 
@@ -143,6 +150,7 @@ mod tests {
         assert!(text.contains("Outcome: completed, capture: complete\n"));
         assert!(text.contains("Role: host\n"));
         assert!(text.contains("Observed drone spawns: 7\n"));
+        assert!(text.contains("Vitus Essence: 4\n"));
         assert!(text.contains("Capture note: A note\n"));
         assert!(text.ends_with("Recorded with Merframe\n"));
     }

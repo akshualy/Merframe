@@ -11,6 +11,8 @@ pub(crate) use recorder::{ArbitrationRunRecorder, ArbitrationRunUpdate};
 pub(crate) use recorder::{fixture_lines, fixture_runs};
 pub use report::{svg_report, text_report};
 
+pub const VITUS_ESSENCE: &str = "/Lotus/Types/Items/MiscItems/Elitium";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -101,11 +103,52 @@ pub struct ArbitrationRun {
     pub peak_live_agents: Option<u32>,
     pub boosters: Vec<ArbitrationRunResourceBooster>,
     pub samples: Vec<ArbitrationRunSample>,
+    #[serde(default)]
+    pub rewards: Option<Vec<ArbitrationRunReward>>,
+    #[serde(default)]
+    pub collected_vitus: Option<u32>,
+    #[serde(default)]
+    pub manual_vitus: Option<u32>,
+    #[serde(default)]
+    pub vitus: Option<u32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct ArbitrationRunReward {
+    pub item_type: String,
+    pub name: String,
+    pub count: u32,
+}
+
+pub struct MissionEndReward {
+    pub store_item: String,
+    pub item_count: u32,
 }
 
 impl ArbitrationRun {
     pub(crate) fn rewarded(&self) -> bool {
         self.reward_cycles.is_some_and(|cycles| cycles > 0)
+    }
+
+    pub(crate) fn set_manual_vitus(&mut self, vitus: Option<u32>) {
+        self.manual_vitus = vitus;
+        self.derive_vitus();
+    }
+
+    pub(crate) fn attach_mission_end(
+        &mut self,
+        rewards: Vec<ArbitrationRunReward>,
+        collected_vitus: Option<u32>,
+    ) {
+        self.rewards = Some(rewards);
+        self.collected_vitus = collected_vitus;
+        self.derive_vitus();
+    }
+
+    fn derive_vitus(&mut self) {
+        self.vitus = self.manual_vitus.or(self.collected_vitus);
     }
 
     pub fn same_mission(&self, other: &Self) -> bool {
