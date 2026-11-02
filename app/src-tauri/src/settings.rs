@@ -723,18 +723,26 @@ pub fn set_token<R: Runtime>(app: &AppHandle<R>, token: Option<&str>) -> anyhow:
         None => {
             // Delete both old locations too, so logging out cannot resurrect a
             // session from a pre-migration settings file on the next launch.
-            remove_legacy_token(app, &path)?;
-            crate::credentials::delete(&crate::credentials::entry()?)
+            crate::credentials::clear(crate::credentials::entry, || {
+                remove_legacy_token(app, &path)
+            })
         }
     }
 }
 
 fn remove_legacy_token<R: Runtime>(app: &AppHandle<R>, path: &Path) -> anyhow::Result<()> {
-    unless_missing(std::fs::remove_file(path)).context("Removing the plaintext session file")?;
-    if store(app)?.get(LEGACY_TOKEN_KEY).is_some() {
-        put(app, LEGACY_TOKEN_KEY, None)?;
-    }
-    Ok(())
+    let file = unless_missing(std::fs::remove_file(path))
+        .context("Removing the plaintext session file")
+        .map(|_| ());
+    // A failure at either old location must not prevent removing the other.
+    let json = (|| {
+        let store = store(app)?;
+        store.delete(LEGACY_TOKEN_KEY);
+        // Save even if the key is already absent in memory: a previous save
+        // might have failed after deleting it from the in-memory store.
+        store.save().context("Removing the legacy JSON session")
+    })();
+    file.and(json)
 }
 
 pub fn account<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<MarketAccount>> {

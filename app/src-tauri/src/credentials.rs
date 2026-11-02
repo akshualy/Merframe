@@ -48,7 +48,13 @@ pub fn read(entry: &Entry) -> anyhow::Result<Option<String>> {
 }
 
 pub fn write(entry: &Entry, token: &str) -> anyhow::Result<()> {
-    entry.set_password(token).map_err(|_| unavailable())
+    entry.set_password(token).map_err(|_| unavailable())?;
+    if read(entry)?.as_deref() != Some(token) {
+        return Err(anyhow!(
+            "The OS credential store did not retain the session"
+        ));
+    }
+    Ok(())
 }
 
 pub fn delete(entry: &Entry) -> anyhow::Result<()> {
@@ -56,6 +62,17 @@ pub fn delete(entry: &Entry) -> anyhow::Result<()> {
         Ok(()) | Err(Error::NoEntry) => Ok(()),
         Err(_) => Err(unavailable()),
     }
+}
+
+pub fn clear(
+    entry: impl FnOnce() -> anyhow::Result<Entry>,
+    cleanup: impl FnOnce() -> anyhow::Result<()>,
+) -> anyhow::Result<()> {
+    // Attempt both removals even if a legacy file cannot be removed or the
+    // credential store cannot be opened. Return an error so logout can be retried.
+    let legacy = cleanup();
+    let secure = entry().and_then(|entry| delete(&entry));
+    legacy.and(secure)
 }
 
 pub fn migrate(
@@ -71,11 +88,6 @@ pub fn migrate(
         return Ok(None);
     };
     write(entry, &token)?;
-    if read(entry)?.as_deref() != Some(token.as_str()) {
-        return Err(anyhow!(
-            "The OS credential store did not retain the session"
-        ));
-    }
     // Only remove the old copy after a verified successful write. A locked
     // keyring must never silently discard an existing session.
     cleanup().context("Removing the migrated plaintext session")?;
@@ -85,6 +97,10 @@ pub fn migrate(
 #[cfg(test)]
 mod tests {
     use std::cell::Cell;
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    use keyring_core::api::CredentialApi;
 
     use super::*;
 
@@ -93,6 +109,57 @@ mod tests {
             .unwrap()
             .build(SERVICE, ACCOUNT, None)
             .unwrap()
+    }
+
+    fn fail_next(entry: &Entry) {
+        entry
+            .as_any()
+            .downcast_ref::<keyring_core::mock::Cred>()
+            .unwrap()
+            .set_error(Error::BadEncoding(b"secret-do-not-log".to_vec()));
+    }
+
+    fn assert_redacted(error: &anyhow::Error) {
+        assert!(!format!("{error:#}").contains("secret-do-not-log"));
+        assert!(!format!("{error:?}").contains("secret-do-not-log"));
+    }
+
+    // A backend which acknowledges writes but cannot read the saved value.
+    struct UnretainedCredential {
+        written: AtomicBool,
+        readback: fn() -> keyring_core::Result<Vec<u8>>,
+    }
+
+    impl CredentialApi for UnretainedCredential {
+        fn set_secret(&self, _: &[u8]) -> keyring_core::Result<()> {
+            self.written.store(true, Ordering::Relaxed);
+            Ok(())
+        }
+
+        fn get_secret(&self) -> keyring_core::Result<Vec<u8>> {
+            if self.written.load(Ordering::Relaxed) {
+                (self.readback)()
+            } else {
+                Err(Error::NoEntry)
+            }
+        }
+
+        fn delete_credential(&self) -> keyring_core::Result<()> {
+            self.written.store(false, Ordering::Relaxed);
+            Ok(())
+        }
+
+        fn get_credential(&self) -> keyring_core::Result<Option<Arc<keyring_core::Credential>>> {
+            Ok(None)
+        }
+
+        fn get_specifiers(&self) -> Option<(String, String)> {
+            None
+        }
+
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
     #[test]
@@ -141,11 +208,7 @@ mod tests {
         let result = migrate(
             &entry,
             || {
-                entry
-                    .as_any()
-                    .downcast_ref::<keyring_core::mock::Cred>()
-                    .unwrap()
-                    .set_error(Error::BadEncoding(b"secret-do-not-log".to_vec()));
+                fail_next(&entry);
                 Ok(Some("legacy-session".to_owned()))
             },
             || {
@@ -155,7 +218,94 @@ mod tests {
         );
         assert!(result.is_err());
         assert!(!cleaned.get());
-        assert!(!format!("{:#}", result.unwrap_err()).contains("secret-do-not-log"));
+        assert_redacted(&result.unwrap_err());
+        assert_eq!(read(&entry).unwrap(), None);
+    }
+
+    #[test]
+    fn unverified_write_preserves_the_legacy_copy() {
+        let readbacks: [fn() -> keyring_core::Result<Vec<u8>>; 3] = [
+            || Err(Error::NoEntry),
+            || Ok(b"unexpected-session".to_vec()),
+            || Err(Error::BadEncoding(b"secret-do-not-log".to_vec())),
+        ];
+        for readback in readbacks {
+            let entry = Entry::new_with_credential(Arc::new(UnretainedCredential {
+                written: AtomicBool::new(false),
+                readback,
+            }));
+            let error = migrate(
+                &entry,
+                || Ok(Some("legacy-session".to_owned())),
+                || panic!("The legacy copy must survive a failed verification"),
+            )
+            .unwrap_err();
+            assert_redacted(&error);
+        }
+    }
+
+    #[test]
+    fn failed_read_does_not_access_or_remove_legacy_session() {
+        let entry = mock_entry();
+        fail_next(&entry);
+        let error = migrate(
+            &entry,
+            || panic!("Do not fall back to plaintext while the store is unavailable"),
+            || panic!("Do not discard an unmigrated session"),
+        )
+        .unwrap_err();
+        assert_redacted(&error);
+    }
+
+    #[test]
+    fn logout_removes_secure_session_despite_failed_legacy_cleanup() {
+        let store = keyring_core::mock::Store::new().unwrap();
+        let entry = store.build(SERVICE, ACCOUNT, None).unwrap();
+        write(&entry, "session").unwrap();
+        assert!(
+            clear(
+                || store.build(SERVICE, ACCOUNT, None).map_err(Into::into),
+                || Err(anyhow!("simulated file permission failure")),
+            )
+            .is_err()
+        );
+        assert_eq!(read(&entry).unwrap(), None);
+    }
+
+    #[test]
+    fn logout_cleans_legacy_copies_when_store_cannot_be_opened() {
+        let cleaned = Cell::new(false);
+        assert!(
+            clear(
+                || Err(unavailable()),
+                || {
+                    cleaned.set(true);
+                    Ok(())
+                },
+            )
+            .is_err()
+        );
+        assert!(cleaned.get());
+    }
+
+    #[test]
+    fn failed_secure_logout_is_redacted_and_can_be_retried() {
+        let store = keyring_core::mock::Store::new().unwrap();
+        let entry = store.build(SERVICE, ACCOUNT, None).unwrap();
+        write(&entry, "session").unwrap();
+        fail_next(&entry);
+        let error = clear(
+            || store.build(SERVICE, ACCOUNT, None).map_err(Into::into),
+            || Ok(()),
+        )
+        .unwrap_err();
+        assert_redacted(&error);
+        assert_eq!(read(&entry).unwrap().as_deref(), Some("session"));
+        clear(
+            || store.build(SERVICE, ACCOUNT, None).map_err(Into::into),
+            || Ok(()),
+        )
+        .unwrap();
         assert_eq!(read(&entry).unwrap(), None);
     }
 
@@ -166,13 +316,37 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let entry = entry_for("net.yareli.merframe.integration-test", &unique.to_string()).unwrap();
-        write(&entry, "temporary-test-session").unwrap();
-        let saved = read(&entry);
-        let removed = delete(&entry);
-        assert_eq!(saved.unwrap().as_deref(), Some("temporary-test-session"));
-        removed.unwrap();
+        let service = "net.yareli.merframe.integration-test";
+        let account = unique.to_string();
+        let entry = entry_for(service, &account).unwrap();
+        struct Cleanup(Entry);
+        impl Drop for Cleanup {
+            fn drop(&mut self) {
+                let _ = delete(&self.0);
+            }
+        }
+        let _cleanup = Cleanup(entry_for(service, &account).unwrap());
+        let migrated = migrate(
+            &entry,
+            || Ok(Some("temporary-test-session".to_owned())),
+            || {
+                let reopened = entry_for(service, &account)?;
+                assert_eq!(read(&reopened)?.as_deref(), Some("temporary-test-session"));
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert_eq!(migrated.as_deref(), Some("temporary-test-session"));
+        write(&entry, "rotated-test-session").unwrap();
+        assert_eq!(
+            read(&entry_for(service, &account).unwrap())
+                .unwrap()
+                .as_deref(),
+            Some("rotated-test-session")
+        );
+        clear(|| entry_for(service, &account), || Ok(())).unwrap();
         assert_eq!(read(&entry).unwrap(), None);
+        clear(|| entry_for(service, &account), || Ok(())).unwrap();
     }
 
     #[test]
