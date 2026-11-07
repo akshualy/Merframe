@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { usePaged } from "@/hooks/use-paged";
 import { api } from "@/lib/bridge";
+import { NO_FILTER_MATCHES } from "@/lib/filters";
 import { counted, num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
 import { cn } from "@/lib/utils";
@@ -318,7 +319,7 @@ export function MasteryPage() {
       >
         <CardGrid className={cn("transition-opacity", loading && "opacity-60")}>
           {topItems.length === 0 ? (
-            <EmptyNote>Nothing matches these filters.</EmptyNote>
+            <EmptyNote>{NO_FILTER_MATCHES}</EmptyNote>
           ) : (
             topItems.map((item) => (
               <div

@@ -19,7 +19,7 @@ import { useAsyncData } from "@/hooks/use-async-data";
 import { useFilters } from "@/hooks/use-filters";
 import { usePaged } from "@/hooks/use-paged";
 import { api } from "@/lib/bridge";
-import { type YesNo, yesNoOptions } from "@/lib/filters";
+import { NO_FILTER_MATCHES, type YesNo, yesNoOptions } from "@/lib/filters";
 import { num } from "@/lib/format";
 import { CATEGORIES } from "@/lib/foundry-filters";
 import { type ShowFilter, visibleResources } from "@/lib/resource-filters";
@@ -247,7 +247,7 @@ export function ResourcesPage() {
               <EmptyPanel>
                 {data?.resources.length === 0 && filters.active === 0
                   ? NO_DEMAND[source][scope]
-                  : "Nothing matches these filters."}
+                  : NO_FILTER_MATCHES}
               </EmptyPanel>
             ) : (
               <CardGrid
