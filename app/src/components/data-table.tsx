@@ -19,15 +19,7 @@ import {
 import { Fragment, type ReactNode, useMemo, useState } from "react";
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { CheckboxMenu } from "@/components/ui/checkbox-menu";
 import {
   Table,
   TableBody,
@@ -168,32 +160,22 @@ export function DataTable<TData, TValue>({
         <span className="text-muted-foreground ml-auto text-xs">
           {num(shownRows.length)} rows
         </span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
+        <CheckboxMenu
+          trigger={
+            <>
               <Columns3 className="size-4" />
               Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel className="text-xs">
-              Shown columns
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {hideable.map((column) => (
-              <DropdownMenuCheckboxItem
-                key={column.id}
-                checked={column.getIsVisible()}
-                onCheckedChange={(checked) =>
-                  column.toggleVisibility(checked === true)
-                }
-                onSelect={(e) => e.preventDefault()}
-              >
-                {columnLabel(column)}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </>
+          }
+          heading="Shown columns"
+          align="end"
+          items={hideable.map((column) => ({
+            key: column.id,
+            label: columnLabel(column),
+            checked: column.getIsVisible(),
+            onCheckedChange: (checked) => column.toggleVisibility(checked),
+          }))}
+        />
       </div>
 
       {filters}
