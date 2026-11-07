@@ -8,8 +8,8 @@ export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-export function endingSoon(seconds: number): boolean {
-  return seconds < 5 * 60;
+export function countdownTone(seconds: number): string {
+  return seconds < 5 * 60 ? "text-warning" : "text-accent";
 }
 
 export function timeLeft(seconds: number): string {
