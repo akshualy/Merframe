@@ -162,6 +162,7 @@ export type * from "./RelicPlannerTab";
 export type * from "./RelicRow";
 export type * from "./RelicSource";
 export type * from "./RelicTier";
+export type * from "./ResetWindow";
 export type * from "./ResourceQuery";
 export type * from "./ResourceRow";
 export type * from "./ResourceScope";

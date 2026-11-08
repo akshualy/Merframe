@@ -13,6 +13,7 @@ mod manifest;
 mod mission_types;
 mod nodes;
 mod prime;
+mod resets;
 mod rewards;
 mod season;
 mod sortie;
@@ -43,6 +44,7 @@ pub use nodes::{
     node_mastery_xp, node_name,
 };
 pub use prime::{PrimeAccessAvailability, Varzia, VarziaItem};
+pub use resets::{ResetWindow, daily_reset_window, game_week_count, weekly_reset_window};
 pub use rewards::{WorldRewardOffer, WorldRewardSource};
 pub use season::{ChallengeKind, NightwaveChallenge, NightwaveSeason};
 pub use sortie::{Sortie, SortieMission};
