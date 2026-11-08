@@ -354,7 +354,9 @@ impl WorldStateView {
             prime_resurgence: world
                 .varzia(now)
                 .map(|varzia| prime_resurgence(core, varzia)),
-            nightwave: world.season(now),
+            nightwave: world.season(now, |challenge| {
+                core.catalog().nightwave_act_text(challenge)
+            }),
             world_reward_alerts: core.world_reward_alerts(now),
             daily_reset: daily_reset_window(now),
             weekly_reset: weekly_reset_window(now),
