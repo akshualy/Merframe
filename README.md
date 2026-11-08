@@ -95,12 +95,11 @@ App data holds the SQLite store, the last inventory as `inventory.json.gz`, WFCD
 
 ## Privacy
 
-The warframe.market session token (allows acting as you) is stored in plaintext in `market_token` in the app data directory.
-It is readable by the user's own processes, just as any other desktop client's session would be.
-The token does not contain your password.
+The warframe.market session token (allows acting as you) is preferably stored in Windows Credential Manager or the desktop Secret Service on Linux (for example GNOME Keyring or KDE Wallet). If secure storage is unavailable or cannot retain the token, Merframe saves it in plaintext in `market_token` in the app data directory. On Linux this file is restricted to the current user. Login still works without a credential store.
 
-Merframe is not sending any of your personal data anywhere outside your PC.
-All third party calls are item-specific lookups and carry no information outside your IP (since the request is coming from your PC).
+Plaintext sessions migrate into secure storage on the next session load or save when it is available; their files and legacy JSON copies are removed only after the secure write is verified. A fallback file takes precedence over an older secure session. Logout remains effective while secure storage is unavailable, and deletion of the secure copy is retried on the next startup. If neither storage option can save the login or logout, Merframe reports an error. Other programs running as your user may be able to access either kind of stored session. The token does not contain your password.
+
+Inventory and analytics are kept locally. Signing in sends your email and password directly to warframe.market over HTTPS, and authenticated trading requests send the session token to that service. Optional Discord notifications send configured alert text to your webhook. Public item/price lookups also expose your IP address to their providers.
 
 Services Merframe talks to:
 - `api.warframe.com`: the public world state, polled every 5 to 10 minutes.
