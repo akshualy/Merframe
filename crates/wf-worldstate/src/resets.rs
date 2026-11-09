@@ -43,6 +43,13 @@ pub fn game_week_count(now: DateTime<Utc>) -> i64 {
     TimeDelta::seconds(since_week_zero).num_weeks()
 }
 
+pub fn current_descendia_window(descents: &[Window], now: DateTime<Utc>) -> Option<ResetWindow> {
+    descents
+        .iter()
+        .find(|window| window.contains(now))
+        .map(|&window| window.into())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
