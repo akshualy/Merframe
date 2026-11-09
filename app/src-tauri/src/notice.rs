@@ -31,7 +31,9 @@ impl Notice {
     pub fn for_event(event: &CoreEvent) -> Option<Self> {
         match event {
             CoreEvent::InventoryUpdated(summary) => Self::inventory(summary),
-            CoreEvent::RelicRewardScreen { .. } | CoreEvent::ArbitrationRunUpdated { .. } => None,
+            CoreEvent::RelicRewardScreen { .. }
+            | CoreEvent::ArbitrationRunUpdated { .. }
+            | CoreEvent::MissionWon => None,
             CoreEvent::TradeCompleted { trade, partner, .. } => {
                 Some(Self::trade(trade.plat, partner.as_deref()))
             }

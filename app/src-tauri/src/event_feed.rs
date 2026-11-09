@@ -134,6 +134,7 @@ impl FeedEvent {
             | AppEvent::SettingsUpdated(_)
             | AppEvent::ArbitrationRunUpdated
             | AppEvent::ArbitrationRunsUpdated
+            | AppEvent::ResetChecklistUpdated
             | AppEvent::MarketUpdated(_)
             | AppEvent::MarketSessionRejected
             | AppEvent::MarketPresence(_)
@@ -178,7 +179,7 @@ impl FeedEvent {
                 ends_at: *ends_at,
                 remaining_secs: *remaining_secs,
             }),
-            CoreEvent::NewConversation { .. } => None,
+            CoreEvent::NewConversation { .. } | CoreEvent::MissionWon => None,
         }
     }
 }
@@ -482,6 +483,8 @@ mod tests {
         };
         let inside = [
             AppEvent::CoreEvent(CoreEventEnvelope::wrap(conversation)),
+            AppEvent::CoreEvent(CoreEventEnvelope::wrap(CoreEvent::MissionWon)),
+            AppEvent::ResetChecklistUpdated,
             AppEvent::InventoryUpdated(GameStatus::default()),
             AppEvent::MarketUpdated(MarketSnapshot {
                 orders: None,
