@@ -17,6 +17,7 @@ mod market_holdings;
 mod mastery;
 mod prices;
 mod relic_planner;
+mod reset_checklist;
 mod resources;
 mod resurgence;
 mod rivens;
@@ -66,6 +67,11 @@ pub use relic_planner::{
     AccountBalance, Best, DEFAULT_SQUAD_SIZE, DropLocation, IntactToRadiant, MissingPart,
     OwnedRefinement, Ownership, PerTrace, RankedComponent, RankedReward, RefinementValue,
     RelicMarket, RelicPlan, RelicSource, RewardBreakdown, RewardOwnership, RewardScreen,
+};
+pub use reset_checklist::{
+    ArchonShardColour, KuvaWeeklySummary, ResetChecklistGroup, ResetChecklistManualRowId,
+    ResetChecklistProgress, ResetChecklistRow, ResetChecklistRowId, ResetChecklistRowPart,
+    ResetChecklistStandingPool, ResetChecklistTab, ResetChecklistVendor, VendorWeeklyOffer,
 };
 pub use resources::{
     ResourceQuery, ResourceRow, ResourceScope, ResourceSource, ResourceUse, ResourcesTab,

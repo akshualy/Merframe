@@ -424,6 +424,16 @@ pub mod fixtures {
         }
     }
 
+    pub fn inventory_replacing(replacements: &[(&str, &str)]) -> Inventory {
+        let json = replacements
+            .iter()
+            .fold(INVENTORY.to_owned(), |json, (from, to)| {
+                json.replace(from, to)
+            });
+
+        Inventory::parse(&json).unwrap()
+    }
+
     pub fn synced(oid: &str) -> String {
         INVENTORY.replacen(SYNC_OID, oid, 1)
     }

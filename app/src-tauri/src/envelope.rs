@@ -41,6 +41,7 @@ fn kind(event: &CoreEvent) -> &'static str {
         CoreEvent::ArbitrationRunUpdated { .. } => "arbitration-run-updated",
         CoreEvent::ArbitrationRunRecorded { .. } => "arbitration-run-recorded",
         CoreEvent::TimerAlert { .. } => "timer-alert",
+        CoreEvent::MissionWon => "mission-won",
     }
 }
 
@@ -90,6 +91,14 @@ mod tests {
             }),
             "relic-reward-screen"
         );
+    }
+
+    #[test]
+    fn mission_won_is_silent() {
+        let envelope = CoreEventEnvelope::wrap(CoreEvent::MissionWon);
+
+        assert!(envelope.id.starts_with("mission-won-"));
+        assert_eq!(envelope.notice, None);
     }
 
     #[test]

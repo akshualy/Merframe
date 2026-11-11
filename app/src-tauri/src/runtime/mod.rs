@@ -46,6 +46,7 @@ pub enum AppEvent {
     RivenDataUpdated,
     PricesUpdated,
     FavouriteUpdated,
+    ResetChecklistUpdated,
     MarketUpdated(MarketSnapshot),
     MarketAutoClosed(MarketAutoClose),
     MarketSessionRejected,
@@ -209,6 +210,7 @@ async fn deliver<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, event: &
             let notice = Notice::timer(name, next_state, *remaining_secs);
             world_alert(app, state, &settings, &notice, DiscordMirroredAlert::Timer).await;
         }
+        CoreEvent::MissionWon => emit(app, AppEvent::ResetChecklistUpdated),
         CoreEvent::InventoryUpdated(_) => {}
     }
 }

@@ -16,12 +16,14 @@ use crate::catalog::DUCATS_ITEM;
 use crate::delta::ItemDelta;
 use crate::error::{CoreError, Result};
 use crate::favourites::Favourites;
+use crate::reset_checklist::ResetChecklistManualRowId;
 use crate::stats::AYA_ITEM;
 use crate::trade::Trade;
 
-const MIGRATIONS: [(i64, &str); 2] = [
+const MIGRATIONS: [(i64, &str); 3] = [
     (1, include_str!("sql/0001_init.sql")),
     (2, include_str!("sql/0002_arbitration_runs.sql")),
+    (3, include_str!("sql/0003_reset_checklist_ticks.sql")),
 ];
 const SNAPSHOT_COLUMNS: &str = "id, taken_at, last_sync_oid, plat, credits, endo, ducats, mr";
 
@@ -522,6 +524,38 @@ impl Store {
         Ok(())
     }
 
+    pub fn reset_checklist_ticked(
+        &self,
+        row: ResetChecklistManualRowId,
+        period_start: DateTime<Utc>,
+    ) -> Result<bool> {
+        let ticked = self
+            .connection
+            .query_row(
+                "SELECT 1 FROM reset_checklist_ticks WHERE manual_row = ?1 AND period_start = ?2",
+                reset_checklist_tick(row, period_start)?,
+                |_| Ok(()),
+            )
+            .optional()?;
+        Ok(ticked.is_some())
+    }
+
+    pub fn set_reset_checklist_ticked(
+        &self,
+        row: ResetChecklistManualRowId,
+        period_start: DateTime<Utc>,
+        ticked: bool,
+    ) -> Result<()> {
+        let sql = if ticked {
+            "INSERT INTO reset_checklist_ticks (manual_row, period_start) VALUES (?1, ?2) ON CONFLICT DO NOTHING"
+        } else {
+            "DELETE FROM reset_checklist_ticks WHERE manual_row = ?1 AND period_start = ?2"
+        };
+        self.connection
+            .execute(sql, reset_checklist_tick(row, period_start)?)?;
+        Ok(())
+    }
+
     pub fn setting<T: DeserializeOwned>(&self, key: &str) -> Result<Option<T>> {
         let raw: Option<String> = self
             .connection
@@ -546,6 +580,14 @@ impl Store {
         )?;
         Ok(())
     }
+}
+
+fn reset_checklist_tick(
+    row: ResetChecklistManualRowId,
+    period_start: DateTime<Utc>,
+) -> Result<(String, i64)> {
+    let key = serde_json::from_value(serde_json::to_value(row)?)?;
+    Ok((key, period_start.timestamp_millis()))
 }
 
 fn snapshot_from_row(row: &Row<'_>) -> Result<Snapshot> {
@@ -913,6 +955,53 @@ mod tests {
         assert_eq!(since, 1_000_001);
         drop(reopened);
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn reset_checklist_ticks() {
+        let store = Store::in_memory().unwrap();
+        let today = at(1_788_739_200_000);
+        let tomorrow = at(1_788_825_600_000);
+
+        store
+            .set_reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, today, true)
+            .unwrap();
+        store
+            .set_reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, today, true)
+            .unwrap();
+        let stored: String = store
+            .connection
+            .query_row("SELECT manual_row FROM reset_checklist_ticks", [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+
+        assert_eq!(stored, "ventkidsRaces");
+        assert!(
+            store
+                .reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, today)
+                .unwrap()
+        );
+        assert!(
+            !store
+                .reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, tomorrow)
+                .unwrap()
+        );
+        assert!(
+            !store
+                .reset_checklist_ticked(ResetChecklistManualRowId::ConclaveChallenges, today)
+                .unwrap()
+        );
+
+        store
+            .set_reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, today, false)
+            .unwrap();
+
+        assert!(
+            !store
+                .reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, today)
+                .unwrap()
+        );
     }
 
     #[test]
