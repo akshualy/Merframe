@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
 import { OptionTabs } from "@/components/option-tabs";
 import { CardGrid, EmptyNote, Page, Section } from "@/components/page";
 import { useNow } from "@/hooks/use-now";
+import { useRollover } from "@/hooks/use-rollover";
 import { api, reportError } from "@/lib/bridge";
 import { secondsUntil } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -39,22 +39,10 @@ export function WorldPage() {
   const fissurePath = usePreferencesStore((state) => state.fissurePath);
   const setFissurePath = usePreferencesStore((state) => state.setFissurePath);
 
-  const nextCycleEnd = data?.timers.length
-    ? Math.min(...data.timers.map((timer) => new Date(timer.ends).getTime()))
-    : null;
-  const rolledOver = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (
-      nextCycleEnd === null ||
-      now < nextCycleEnd ||
-      rolledOver.current === nextCycleEnd
-    ) {
-      return;
-    }
-    rolledOver.current = nextCycleEnd;
+  const rollovers = data?.timers.map((timer) => timer.ends) ?? [];
+  useRollover(rollovers, now, () => {
     api.worldstate().then(setWorld, reportError);
-  }, [now, nextCycleEnd, setWorld]);
+  });
 
   const shown: Record<FissurePath, (fissure: Fissure) => boolean> = {
     all: () => true,
