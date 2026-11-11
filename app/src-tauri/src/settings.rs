@@ -8,7 +8,10 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
-use wf_core::{AlertSettings, DucateringFilter, DucateringHidden, MasteryOptions, MasteryOrdering};
+use wf_core::{
+    AlertSettings, DucateringCompleteSets, DucateringFilter, DucateringHidden, MasteryOptions,
+    MasteryOrdering,
+};
 use wf_market::{OrderType, Reach, Session, TraderStatus, UserStatus};
 
 use crate::market::MarketPresenceChoice;
@@ -17,7 +20,6 @@ use crate::state::{AppState, lock, write};
 pub const STORE_FILE: &str = "merframe.json";
 const TOKEN_FILE: &str = "market_token";
 const SETTINGS_KEY: &str = "settings";
-const LEGACY_TOKEN_KEY: &str = "market_token";
 const ACCOUNT_KEY: &str = "market_account";
 const PRESENCE_KEY: &str = "market_presence";
 
@@ -343,8 +345,6 @@ pub struct LastTradeSettings {
 #[serde(default)]
 pub struct InventorySettings {
     pub include_founders_items: Option<bool>,
-    #[serde(skip_serializing)]
-    hide_founders_items: Option<bool>,
     pub include_forma_ranks: bool,
     pub stats_tab_enabled: bool,
 }
@@ -396,8 +396,22 @@ pub struct DucateringSettings {
     pub ducatering_clipboard: bool,
     pub ducatering_most_ducats_first: bool,
     pub ducatering_max_plat: u32,
+    pub ducatering_min_ducats_per_plat: u32,
+    #[serde(deserialize_with = "drop_unknown_hidden")]
     pub ducatering_hidden: Vec<DucateringHidden>,
-    pub ducatering_hidden_set_plat: u32,
+    pub ducatering_complete_sets: DucateringCompleteSets,
+}
+
+/// Settings written when `complete_sets` wasn't its own setting yet list it here
+/// (will be dropped in a few updates).
+fn drop_unknown_hidden<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> std::result::Result<Vec<DucateringHidden>, D::Error> {
+    let names = Vec::<String>::deserialize(deserializer)?;
+    Ok(names
+        .into_iter()
+        .filter_map(|name| serde_json::from_value(serde_json::Value::String(name)).ok())
+        .collect())
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -500,7 +514,6 @@ impl Default for InventorySettings {
     fn default() -> Self {
         Self {
             include_founders_items: None,
-            hide_founders_items: None,
             include_forma_ranks: true,
             stats_tab_enabled: true,
         }
@@ -530,8 +543,9 @@ impl DucateringSettings {
         DucateringFilter {
             most_ducats_first: self.ducatering_most_ducats_first,
             max_plat: self.ducatering_max_plat,
+            min_ducats_per_plat: self.ducatering_min_ducats_per_plat,
             hidden: self.ducatering_hidden.clone(),
-            hidden_set_plat: self.ducatering_hidden_set_plat,
+            complete_sets: self.ducatering_complete_sets,
         }
     }
 }
@@ -544,8 +558,13 @@ impl Default for DucateringSettings {
             ducatering_clipboard: true,
             ducatering_most_ducats_first: true,
             ducatering_max_plat: 10,
-            ducatering_hidden: Vec::new(),
-            ducatering_hidden_set_plat: 0,
+            ducatering_min_ducats_per_plat: 0,
+            ducatering_hidden: vec![
+                DucateringHidden::Listed,
+                DucateringHidden::Unmastered,
+                DucateringHidden::Vaulted,
+            ],
+            ducatering_complete_sets: DucateringCompleteSets::KeepAbove { plat: 30 },
         }
     }
 }
@@ -603,16 +622,9 @@ impl Settings {
     pub fn mastery_options(&self, ordering: MasteryOrdering) -> MasteryOptions {
         MasteryOptions {
             ordering,
-            include_founders_items: self.inventory.founders_choice(),
+            include_founders_items: self.inventory.include_founders_items,
             include_forma_ranks: self.inventory.include_forma_ranks,
         }
-    }
-}
-
-impl InventorySettings {
-    pub fn founders_choice(&self) -> Option<bool> {
-        self.include_founders_items
-            .or_else(|| self.hide_founders_items.map(|hidden| !hidden))
     }
 }
 
@@ -718,24 +730,7 @@ pub fn token<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<String>> {
     let path = token_path(app)?;
     let token = unless_missing(std::fs::read_to_string(&path))
         .with_context(|| format!("Reading {}", path.display()))?;
-    match token {
-        Some(token) => Ok(Some(token)),
-        None => moved_token(app, &path),
-    }
-}
-
-fn moved_token<R: Runtime>(app: &AppHandle<R>, path: &Path) -> anyhow::Result<Option<String>> {
-    let Some(token) = store(app)?
-        .get(LEGACY_TOKEN_KEY)
-        .and_then(|value| value.as_str().map(str::to_owned))
-    else {
-        return Ok(None);
-    };
-
-    write_token(path, &token)?;
-    put(app, LEGACY_TOKEN_KEY, None)?;
-    tracing::info!("Session token moved to its own file");
-    Ok(Some(token))
+    Ok(token)
 }
 
 pub fn set_token<R: Runtime>(app: &AppHandle<R>, token: Option<&str>) -> anyhow::Result<()> {
@@ -885,11 +880,6 @@ mod tests {
             settings.overlays.ducatering.overlay_ducatering_placement,
             OverlayPlacement::TopRight
         );
-        assert!(settings.overlays.ducatering.ducatering_clipboard);
-        assert!(settings.overlays.ducatering.ducatering_most_ducats_first);
-        assert_eq!(settings.overlays.ducatering.ducatering_max_plat, 10);
-        assert!(settings.overlays.ducatering.ducatering_hidden.is_empty());
-        assert_eq!(settings.overlays.ducatering.ducatering_hidden_set_plat, 0);
         assert_eq!(
             settings.overlays.placements.overlay_relic_reward_placement,
             OverlayPlacement::Centre
@@ -1189,6 +1179,59 @@ mod tests {
     }
 
     #[test]
+    fn ducatering_defaults() {
+        let ducatering = Settings::default().overlays.ducatering;
+        assert!(ducatering.ducatering_clipboard);
+        assert!(ducatering.ducatering_most_ducats_first);
+        assert_eq!(ducatering.ducatering_max_plat, 10);
+        assert_eq!(ducatering.ducatering_min_ducats_per_plat, 0);
+        assert_eq!(
+            ducatering.ducatering_hidden,
+            vec![
+                DucateringHidden::Listed,
+                DucateringHidden::Unmastered,
+                DucateringHidden::Vaulted
+            ]
+        );
+        assert_eq!(
+            ducatering.ducatering_complete_sets,
+            DucateringCompleteSets::KeepAbove { plat: 30 }
+        );
+    }
+
+    #[test]
+    fn hidden_list_drops_the_old_complete_sets_entry() {
+        let stored: Settings = serde_json::from_str(
+            r#"{"ducatering_hidden":["complete_sets","listed"],"ducatering_hidden_set_plat":20}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            stored.overlays.ducatering.ducatering_hidden,
+            vec![DucateringHidden::Listed]
+        );
+        assert_eq!(
+            stored.overlays.ducatering.ducatering_complete_sets,
+            DucateringCompleteSets::KeepAbove { plat: 30 }
+        );
+    }
+
+    #[test]
+    fn complete_sets_rule_round_trips() {
+        let settings: Settings =
+            serde_json::from_str(r#"{"ducatering_complete_sets":{"keep_above":{"plat":30}}}"#)
+                .unwrap();
+        assert_eq!(
+            settings.overlays.ducatering.ducatering_complete_sets,
+            DucateringCompleteSets::KeepAbove { plat: 30 }
+        );
+        let json = serde_json::to_value(&settings).unwrap();
+        assert_eq!(
+            json["ducatering_complete_sets"],
+            serde_json::json!({"keep_above": {"plat": 30}})
+        );
+    }
+
+    #[test]
     fn stored_presence_reads_both_shapes() {
         let read = |json: &str| {
             MarketPresenceChoice::from(
@@ -1282,9 +1325,9 @@ mod tests {
     }
 
     #[test]
-    fn founders_choice_default() {
+    fn inventory_defaults() {
         let settings = Settings::default();
-        assert_eq!(settings.inventory.founders_choice(), None);
+        assert_eq!(settings.inventory.include_founders_items, None);
         assert!(settings.inventory.include_forma_ranks);
 
         let options = settings.mastery_options(wf_core::MasteryOrdering::FromRelics);
@@ -1305,24 +1348,6 @@ mod tests {
         let options = stored.mastery_options(wf_core::MasteryOrdering::Closest);
         assert_eq!(options.include_founders_items, Some(true));
         assert!(!options.include_forma_ranks);
-    }
-
-    #[test]
-    fn legacy_hide_founders_flag() {
-        let stored: Settings = serde_json::from_str(r#"{"hide_founders_items":true}"#).unwrap();
-        assert_eq!(stored.inventory.founders_choice(), Some(false));
-        assert_eq!(stored.inventory.include_founders_items, None);
-
-        let shown: Settings = serde_json::from_str(r#"{"hide_founders_items":false}"#).unwrap();
-        assert_eq!(shown.inventory.founders_choice(), Some(true));
-
-        let chosen: Settings =
-            serde_json::from_str(r#"{"hide_founders_items":true,"include_founders_items":true}"#)
-                .unwrap();
-        assert_eq!(chosen.inventory.founders_choice(), Some(true));
-
-        let saved = serde_json::to_string(&stored).unwrap();
-        assert!(!saved.contains("hide_founders_items"));
     }
 
     #[test]

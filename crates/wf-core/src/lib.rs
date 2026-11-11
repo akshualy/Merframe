@@ -18,6 +18,7 @@ mod mastery;
 mod prices;
 mod relic_planner;
 mod resources;
+mod resurgence;
 mod rivens;
 mod stats;
 mod store;
@@ -33,8 +34,8 @@ pub use catalog::{Catalog, VaultStatus};
 pub use comparables::{ComparableAttribute, ComparableListing, ComparedStat, RivenComparables};
 pub use delta::ItemDelta;
 pub use ducatering::{
-    Ducatering, DucateringEntry, DucateringFilter, DucateringHidden, DucateringProgress,
-    DucateringState, DucateringStep, ScannedKiosk, ScannedKioskItem,
+    Ducatering, DucateringCompleteSets, DucateringEntry, DucateringFilter, DucateringHidden,
+    DucateringProgress, DucateringState, DucateringStep, ScannedKiosk, ScannedKioskItem,
 };
 pub use error::{CoreError, Result};
 pub use events::{
