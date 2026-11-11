@@ -54,6 +54,7 @@ export type * from "./DiscordMirroredAlert";
 export type * from "./DiscordMirroredAlerts";
 export type * from "./DiscordSettings";
 export type * from "./DropLocation";
+export type * from "./DucateringCompleteSets";
 export type * from "./DucateringEntry";
 export type * from "./DucateringHidden";
 export type * from "./DucateringProgress";

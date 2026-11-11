@@ -162,8 +162,13 @@ impl Core {
         &self.catalog
     }
 
-    pub fn ducatering(&self, filter: &DucateringFilter) -> Option<Ducatering> {
-        Some(Ducatering::new(ducatering::entries(&self.view()?, filter)))
+    pub fn ducatering(&self, now: DateTime<Utc>, filter: &DucateringFilter) -> Option<Ducatering> {
+        Some(Ducatering::new(ducatering::entries(
+            &self.view()?,
+            self.world.as_ref(),
+            now,
+            filter,
+        )))
     }
 
     pub fn inventory(&self) -> Option<&Inventory> {
