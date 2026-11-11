@@ -10,7 +10,7 @@ use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
 use wf_core::{
     AlertSettings, DucateringCompleteSets, DucateringFilter, DucateringHidden, MasteryOptions,
-    MasteryOrdering,
+    MasteryOrdering, ResetChecklistRowId,
 };
 use wf_market::{OrderType, Reach, Session, TraderStatus, UserStatus};
 
@@ -146,6 +146,18 @@ pub struct Settings {
     pub motion: Motion,
     #[serde(flatten)]
     pub event_feed: EventFeedSettings,
+    #[serde(flatten)]
+    pub reset_checklist: ResetChecklistSettings,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(default)]
+pub struct ResetChecklistSettings {
+    #[serde(deserialize_with = "drop_unknown_entries")]
+    pub reset_checklist_hidden: BTreeSet<ResetChecklistRowId>,
+    pub reset_checklist_hide_done: bool,
+    pub reset_checklist_show_locked: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -397,16 +409,19 @@ pub struct DucateringSettings {
     pub ducatering_most_ducats_first: bool,
     pub ducatering_max_plat: u32,
     pub ducatering_min_ducats_per_plat: u32,
-    #[serde(deserialize_with = "drop_unknown_hidden")]
+    #[serde(deserialize_with = "drop_unknown_entries")]
     pub ducatering_hidden: Vec<DucateringHidden>,
     pub ducatering_complete_sets: DucateringCompleteSets,
 }
 
 /// Settings written when `complete_sets` wasn't its own setting yet list it here
 /// (will be dropped in a few updates).
-fn drop_unknown_hidden<'de, D: serde::Deserializer<'de>>(
-    deserializer: D,
-) -> std::result::Result<Vec<DucateringHidden>, D::Error> {
+fn drop_unknown_entries<'de, D, T, C>(deserializer: D) -> std::result::Result<C, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::de::DeserializeOwned,
+    C: FromIterator<T>,
+{
     let names = Vec::<String>::deserialize(deserializer)?;
     Ok(names
         .into_iter()
@@ -450,6 +465,7 @@ impl Default for Settings {
             text_size: TextSize::default(),
             motion: Motion::default(),
             event_feed: EventFeedSettings::default(),
+            reset_checklist: ResetChecklistSettings::default(),
         }
     }
 }
@@ -1196,6 +1212,40 @@ mod tests {
         assert_eq!(
             ducatering.ducatering_complete_sets,
             DucateringCompleteSets::KeepAbove { plat: 30 }
+        );
+    }
+
+    #[test]
+    fn reset_checklist_settings_round_trip() {
+        let old: Settings = serde_json::from_str(r#"{"market_poll_minutes":10}"#).unwrap();
+        assert_eq!(old.reset_checklist, ResetChecklistSettings::default());
+        assert!(old.reset_checklist.reset_checklist_hidden.is_empty());
+        assert!(!old.reset_checklist.reset_checklist_hide_done);
+        assert!(!old.reset_checklist.reset_checklist_show_locked);
+
+        let stored: Settings = serde_json::from_str(
+            r#"{"reset_checklist_hidden":["icebind","helpClem"],"reset_checklist_hide_done":true,"reset_checklist_show_locked":true}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            stored.reset_checklist.reset_checklist_hidden,
+            BTreeSet::from([ResetChecklistRowId::Icebind, ResetChecklistRowId::HelpClem])
+        );
+        assert!(stored.reset_checklist.reset_checklist_hide_done);
+        assert!(stored.reset_checklist.reset_checklist_show_locked);
+
+        let json = serde_json::to_string(&stored).unwrap();
+        assert_eq!(serde_json::from_str::<Settings>(&json).unwrap(), stored);
+    }
+
+    #[test]
+    fn reset_checklist_hidden_drops_unknown_ids() {
+        let stored: Settings =
+            serde_json::from_str(r#"{"reset_checklist_hidden":["netracells","icebind"]}"#).unwrap();
+
+        assert_eq!(
+            stored.reset_checklist.reset_checklist_hidden,
+            BTreeSet::from([ResetChecklistRowId::Icebind])
         );
     }
 

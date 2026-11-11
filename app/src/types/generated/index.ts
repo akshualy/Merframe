@@ -170,6 +170,7 @@ export type * from "./ResetChecklistProgress";
 export type * from "./ResetChecklistRow";
 export type * from "./ResetChecklistRowId";
 export type * from "./ResetChecklistRowPart";
+export type * from "./ResetChecklistSettings";
 export type * from "./ResetChecklistStandingPool";
 export type * from "./ResetChecklistTab";
 export type * from "./ResetChecklistVendor";

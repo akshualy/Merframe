@@ -133,6 +133,8 @@ fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
         commands::tabs::stats_openings,
         commands::tabs::stats_trades,
         commands::tabs::toggle_favourite,
+        commands::tabs::reset_checklist_tab,
+        commands::tabs::set_reset_checklist_checked,
         commands::tabs::relics_for,
         commands::app::game_status,
         commands::app::updates_supported,
