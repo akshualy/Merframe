@@ -39,7 +39,13 @@ export function WorldPage() {
   const fissurePath = usePreferencesStore((state) => state.fissurePath);
   const setFissurePath = usePreferencesStore((state) => state.setFissurePath);
 
-  const rollovers = data?.timers.map((timer) => timer.ends) ?? [];
+  const rollovers = data
+    ? [
+        ...data.timers.map((timer) => timer.ends),
+        data.daily_reset.expiry,
+        data.weekly_reset.expiry,
+      ]
+    : [];
   useRollover(rollovers, now, () => {
     api.worldstate().then(setWorld, reportError);
   });
@@ -102,7 +108,12 @@ export function WorldPage() {
         {baroPresent && baroPanel}
         <div className="flex flex-col gap-4">
           {!baroPresent && baroPanel}
-          <ResetsPanel sortie={sortie} now={now} />
+          <ResetsPanel
+            daily={data?.daily_reset ?? null}
+            weekly={data?.weekly_reset ?? null}
+            sortie={sortie}
+            now={now}
+          />
           <WorldRewardAlertsPanel
             rewards={data?.world_reward_alerts ?? []}
             now={now}

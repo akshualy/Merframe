@@ -13,6 +13,7 @@ mod manifest;
 mod mission_types;
 mod nodes;
 mod prime;
+mod resets;
 mod rewards;
 mod season;
 mod sortie;
@@ -43,8 +44,12 @@ pub use nodes::{
     node_mastery_xp, node_name,
 };
 pub use prime::{PrimeAccessAvailability, Varzia, VarziaItem};
+pub use resets::{ResetWindow, daily_reset_window, game_week_count, weekly_reset_window};
 pub use rewards::{WorldRewardOffer, WorldRewardSource};
-pub use season::{ChallengeKind, NightwaveChallenge, NightwaveSeason};
+pub use season::{
+    ChallengeKind, NightwaveActDefinition, NightwaveActText, NightwaveChallenge, NightwaveSeason,
+    nightwave_act_definition,
+};
 pub use sortie::{Sortie, SortieMission};
 pub use void_trader::BaroStatus;
 
@@ -137,11 +142,15 @@ impl WorldState {
         flash_sale::market_sales(&self.raw.flash_sales, now)
     }
 
-    pub fn season(&self, now: DateTime<Utc>) -> Option<NightwaveSeason> {
+    pub fn season(
+        &self,
+        now: DateTime<Utc>,
+        act_text: impl Fn(&str) -> Option<NightwaveActText>,
+    ) -> Option<NightwaveSeason> {
         self.raw
             .season_info
             .as_ref()
-            .map(|raw| season::current_season(raw, now))
+            .map(|raw| season::current_season(raw, now, act_text))
     }
 
     pub fn varzia(&self, now: DateTime<Utc>) -> Option<Varzia> {
@@ -294,7 +303,14 @@ mod tests {
     #[test]
     fn nightwave_season() {
         let state = WorldState::parse(FIXTURE).unwrap();
-        let season = state.season(now()).unwrap();
+        let poisoner = |challenge: &str| {
+            (challenge == "SeasonDailyKillEnemiesWithPoison").then(|| NightwaveActText {
+                title: "Poisoner".to_owned(),
+                description: "Kill 150 Enemies with Toxin Damage".to_owned(),
+                required: 150,
+            })
+        };
+        let season = state.season(now(), poisoner).unwrap();
         assert_eq!(season.season, 18);
         assert_eq!(season.phase, 0);
         assert_eq!(season.name, "Intermission 16");
@@ -303,13 +319,13 @@ mod tests {
         let dailies = season
             .challenges
             .iter()
-            .filter(|challenge| challenge.kind == ChallengeKind::Daily)
+            .filter(|challenge| challenge.act.kind == ChallengeKind::Daily)
             .count();
         assert_eq!(dailies, 3);
         let elite = season
             .challenges
             .iter()
-            .filter(|challenge| challenge.kind == ChallengeKind::EliteWeekly)
+            .filter(|challenge| challenge.act.kind == ChallengeKind::EliteWeekly)
             .count();
         assert_eq!(elite, 2);
         let poison = season
@@ -317,20 +333,22 @@ mod tests {
             .iter()
             .find(|challenge| challenge.tag.ends_with("SeasonDailyKillEnemiesWithPoison"))
             .unwrap();
-        assert_eq!(poison.name, "Poisoner");
+        assert_eq!(poison.id, "001900040000000000000055");
+        assert_eq!(poison.act.name, "Poisoner");
         assert_eq!(
-            poison.description,
+            poison.act.description.as_deref(),
             Some("Kill 150 Enemies with Toxin Damage")
         );
+        assert_eq!(poison.act.required, 150);
         let titled = season
             .challenges
             .iter()
-            .filter(|challenge| challenge.description.is_some())
+            .filter(|challenge| challenge.act.description.is_some())
             .count();
-        assert_eq!(titled, 9);
+        assert_eq!(titled, 1);
         for challenge in &season.challenges {
-            assert!(!challenge.name.contains('/'));
-            assert!(!challenge.name.starts_with("Season"));
+            assert!(!challenge.act.name.contains('/'));
+            assert!(!challenge.act.name.starts_with("Season"));
         }
     }
 

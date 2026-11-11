@@ -1,8 +1,6 @@
 import { countdown } from "@/lib/format";
 
 export const DAY_MS = 86_400_000;
-export const WEEK_MS = 7 * DAY_MS;
-export const MONDAY_OFFSET_MS = 4 * DAY_MS;
 
 export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -45,9 +43,4 @@ export function elapsedShare(starts: string, ends: string, now: number) {
     return 100;
   }
   return Math.min(100, Math.max(0, ((now - from) / (to - from)) * 100));
-}
-
-export function nextResetSeconds(period: number, offset: number, now: number) {
-  const remainder = (now - offset) % period;
-  return Math.round((period - remainder) / 1000);
 }
