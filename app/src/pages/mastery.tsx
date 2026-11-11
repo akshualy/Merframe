@@ -387,9 +387,7 @@ export function MasteryPage() {
             ))
           )}
         </CardGrid>
-        <div className="mt-3">
-          <Pagination {...pagination} />
-        </div>
+        <Pagination {...pagination} className="mt-3" />
         {ordering === "by_platinum" && (data?.plat_total ?? 0) > 0 && (
           <p className="text-muted-foreground mt-3 text-right text-sm">
             Total{" "}
