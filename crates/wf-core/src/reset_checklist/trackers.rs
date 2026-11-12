@@ -14,6 +14,7 @@ use crate::reset_checklist::syndicate_missions::syndicate_missions;
 
 const SEARCH_PULSES: u32 = 5;
 const DESCENDIA_FLOORS: u32 = 21;
+const CIRCUIT_REWARD_TIERS: u32 = 10;
 const ICEBIND_CHOICES: u32 = 3;
 const ICEBIND_CRYOBELLS_HELD: usize = 6;
 const HELMINTH_INVIGORATIONS: u32 = 3;
@@ -128,7 +129,7 @@ impl Tracker {
                 .as_ref()
                 .and_then(|world| tracker.track(context, world))
                 .unwrap_or_else(Tracked::unknown),
-            Self::Manual { id, .. } => Tracked::manual(id, context.checked.contains(&id)),
+            Self::Manual { id, .. } => Tracked::manual(id, context.stored.checked.contains(&id)),
         }
     }
 }
@@ -206,6 +207,7 @@ impl InventoryTracker {
             Self::DailyTribute => Tracked::finished(context.synced_today()),
             Self::FirstWin => Tracked::finished(
                 context
+                    .stored
                     .last_mission_won
                     .is_some_and(|won| won >= ResetCadence::Daily.window(context.now).activation),
             ),
@@ -262,10 +264,14 @@ fn circuit(context: &ResetChecklistContext, category: &str) -> Tracked {
         .circuit_progress(context.now)
         .find(|circuit| circuit.category == category)
     else {
-        return Tracked::finished(false);
+        return Tracked::counted(0, CIRCUIT_REWARD_TIERS);
     };
 
-    Tracked::finished(true).with_detail(Some(progress.choices.join(" and ")))
+    Tracked::counted(
+        tally(progress.reward_tiers_earned()),
+        tally(progress.reward_tiers()),
+    )
+    .with_detail(Some(progress.choices.join(" and ")))
 }
 
 fn icebind(context: &ResetChecklistContext) -> Tracked {

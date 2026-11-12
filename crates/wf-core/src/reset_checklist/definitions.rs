@@ -79,7 +79,7 @@ pub(crate) const RESET_CHECKLIST_ROWS: [ResetChecklistRowDefinition; 30] = [
     ResetChecklistRowDefinition {
         id: ResetChecklistRowId::SteelPathIncursions,
         name: "Steel Path Incursions",
-        requirements: &[],
+        requirements: &[ResetChecklistRequirement::SteelPathMissionCompleted],
         tracker: Tracker::Inventory(InventoryTracker::PeriodicMissionCount {
             tag_prefix: "HardDaily",
             total: 6,
@@ -193,7 +193,10 @@ pub(crate) const RESET_CHECKLIST_ROWS: [ResetChecklistRowDefinition; 30] = [
     ResetChecklistRowDefinition {
         id: ResetChecklistRowId::CircuitSteelPath,
         name: "The Circuit (Steel Path)",
-        requirements: &[ResetChecklistRequirement::Quest(Quest::DuviriParadox)],
+        requirements: &[
+            ResetChecklistRequirement::Quest(Quest::DuviriParadox),
+            ResetChecklistRequirement::SteelPathMissionCompleted,
+        ],
         tracker: Tracker::Inventory(InventoryTracker::Circuit("EXC_HARD")),
     },
     ResetChecklistRowDefinition {
@@ -205,7 +208,10 @@ pub(crate) const RESET_CHECKLIST_ROWS: [ResetChecklistRowDefinition; 30] = [
     ResetChecklistRowDefinition {
         id: ResetChecklistRowId::DescendiaSteelPath,
         name: "The Descendia (Steel Path)",
-        requirements: &[ResetChecklistRequirement::Quest(Quest::OldPeace)],
+        requirements: &[
+            ResetChecklistRequirement::Quest(Quest::OldPeace),
+            ResetChecklistRequirement::SteelPathMissionCompleted,
+        ],
         tracker: Tracker::Inventory(InventoryTracker::Descendia("DM_COH_HARD")),
     },
     ResetChecklistRowDefinition {

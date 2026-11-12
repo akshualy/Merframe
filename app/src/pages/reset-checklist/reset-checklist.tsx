@@ -161,6 +161,7 @@ export function ResetChecklistPage() {
           <ResetChecklistVendorPurchases
             vendors={data.vendors}
             kuva={data.kuva}
+            showLocked={settings.reset_checklist_show_locked}
             reset={data.weekly}
             now={now}
           />

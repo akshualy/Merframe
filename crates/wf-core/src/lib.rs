@@ -71,7 +71,8 @@ pub use relic_planner::{
 pub use reset_checklist::{
     ArchonShardColour, KuvaWeeklySummary, ResetChecklistGroup, ResetChecklistManualRowId,
     ResetChecklistProgress, ResetChecklistRow, ResetChecklistRowId, ResetChecklistRowPart,
-    ResetChecklistStandingPool, ResetChecklistTab, ResetChecklistVendor, VendorWeeklyOffer,
+    ResetChecklistStandingPool, ResetChecklistTab, ResetChecklistVendor, VendorKuvaCertainty,
+    VendorWeeklyOffer,
 };
 pub use resources::{
     ResourceQuery, ResourceRow, ResourceScope, ResourceSource, ResourceUse, ResourcesTab,

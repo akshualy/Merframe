@@ -38,7 +38,7 @@ fn every_row_listed() {
     assert_eq!(tab.daily.activation, at(1_788_739_200_000));
     assert_eq!(tab.weekly.expiry, at(1_789_344_000_000));
     assert_eq!(tab.standing.len(), 14);
-    assert_eq!(tab.vendors.len(), 9);
+    assert_eq!(tab.vendors.len(), 11);
 }
 
 #[test]
@@ -109,12 +109,18 @@ fn circuit_choices() {
 
     assert_eq!(
         (normal.progress, normal.done),
-        (ResetChecklistProgress::YesNo, false)
+        (
+            ResetChecklistProgress::Counted { done: 0, total: 10 },
+            false
+        )
     );
     assert_eq!(normal.detail, None);
     assert_eq!(
         (hard.progress, hard.done),
-        (ResetChecklistProgress::YesNo, true)
+        (
+            ResetChecklistProgress::Counted { done: 5, total: 10 },
+            false
+        )
     );
     assert_eq!(hard.detail.as_deref(), Some("Akstiletto and Kronen"));
 }
@@ -219,8 +225,10 @@ fn daily_tribute_and_first_win() {
         &ITEMS,
         Some(world_at(synced_at())),
         synced_at(),
-        Some(at(1_788_775_200_000)),
-        HashSet::new(),
+        ResetChecklistStored {
+            last_mission_won: Some(at(1_788_775_200_000)),
+            ..ResetChecklistStored::default()
+        },
     );
 
     let tomorrow = tab_of(&inventory, synced_at() + TimeDelta::days(1));
@@ -543,8 +551,10 @@ fn manual_tick() {
         &ITEMS,
         None,
         synced_at(),
-        None,
-        HashSet::from([ResetChecklistManualRowId::VentkidsRaces]),
+        ResetChecklistStored {
+            checked: HashSet::from([ResetChecklistManualRowId::VentkidsRaces]),
+            ..ResetChecklistStored::default()
+        },
     );
 
     let tab = tab(&context);
@@ -578,8 +588,7 @@ fn without_world_state() {
         &ITEMS,
         None,
         synced_at(),
-        None,
-        HashSet::new(),
+        ResetChecklistStored::default(),
     );
 
     let tab = tab(&context);
@@ -646,8 +655,7 @@ fn calendar_own_window() {
         &ITEMS,
         Some(world),
         synced_at(),
-        None,
-        HashSet::new(),
+        ResetChecklistStored::default(),
     );
 
     let weekly_season = tab_of(&inventory, synced_at());

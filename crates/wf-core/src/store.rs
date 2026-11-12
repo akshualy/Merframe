@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
@@ -16,14 +17,18 @@ use crate::catalog::DUCATS_ITEM;
 use crate::delta::ItemDelta;
 use crate::error::{CoreError, Result};
 use crate::favourites::Favourites;
-use crate::reset_checklist::ResetChecklistManualRowId;
+use crate::reset_checklist::{ResetChecklistManualRowId, VendorKuvaBought};
 use crate::stats::AYA_ITEM;
 use crate::trade::Trade;
 
-const MIGRATIONS: [(i64, &str); 3] = [
+const MIGRATIONS: [(i64, &str); 4] = [
     (1, include_str!("sql/0001_init.sql")),
     (2, include_str!("sql/0002_arbitration_runs.sql")),
     (3, include_str!("sql/0003_reset_checklist_ticks.sql")),
+    (
+        4,
+        include_str!("sql/0004_reset_checklist_kuva_purchases.sql"),
+    ),
 ];
 const SNAPSHOT_COLUMNS: &str = "id, taken_at, last_sync_oid, plat, credits, endo, ducats, mr";
 
@@ -556,6 +561,43 @@ impl Store {
         Ok(())
     }
 
+    pub fn reset_checklist_kuva_purchases(
+        &self,
+        period_start: DateTime<Utc>,
+    ) -> Result<HashMap<String, u32>> {
+        let mut statement = self.connection.prepare(
+            "SELECT vendor, bought FROM reset_checklist_kuva_purchases WHERE period_start = ?1",
+        )?;
+        let rows = statement.query_map(params![period_start.timestamp_millis()], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })?;
+        Ok(rows.collect::<rusqlite::Result<HashMap<String, u32>>>()?)
+    }
+
+    pub(crate) fn add_reset_checklist_kuva_purchases(
+        &self,
+        period_start: DateTime<Utc>,
+        purchases: &[VendorKuvaBought],
+    ) -> Result<()> {
+        let transaction = self.connection.unchecked_transaction()?;
+        {
+            let mut statement = transaction.prepare(
+                "INSERT INTO reset_checklist_kuva_purchases (vendor, period_start, bought) \
+                 VALUES (?1, ?2, ?3) \
+                 ON CONFLICT (vendor, period_start) DO UPDATE SET bought = bought + excluded.bought",
+            )?;
+            for purchase in purchases {
+                statement.execute(params![
+                    purchase.manifest,
+                    period_start.timestamp_millis(),
+                    purchase.bought
+                ])?;
+            }
+        }
+        transaction.commit()?;
+        Ok(())
+    }
+
     pub fn setting<T: DeserializeOwned>(&self, key: &str) -> Result<Option<T>> {
         let raw: Option<String> = self
             .connection
@@ -1001,6 +1043,33 @@ mod tests {
             !store
                 .reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, today)
                 .unwrap()
+        );
+    }
+
+    #[test]
+    fn reset_checklist_kuva_purchases_per_week() {
+        let store = Store::in_memory().unwrap();
+        let this_week = at(1_788_739_200_000);
+        let next_week = at(1_789_344_000_000);
+        let bought = |manifest, bought| VendorKuvaBought { manifest, bought };
+
+        store
+            .add_reset_checklist_kuva_purchases(
+                this_week,
+                &[bought("teshin", 3), bought("palladino", 1)],
+            )
+            .unwrap();
+        store
+            .add_reset_checklist_kuva_purchases(this_week, &[bought("teshin", 22)])
+            .unwrap();
+
+        assert_eq!(
+            store.reset_checklist_kuva_purchases(this_week).unwrap(),
+            HashMap::from([("teshin".to_owned(), 25), ("palladino".to_owned(), 1)])
+        );
+        assert_eq!(
+            store.reset_checklist_kuva_purchases(next_week).unwrap(),
+            HashMap::new()
         );
     }
 
