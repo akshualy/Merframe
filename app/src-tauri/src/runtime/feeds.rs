@@ -15,6 +15,7 @@ use wf_worldstate::{
 };
 
 use super::{AppEvent, RIVEN_DATA_KEY, dispatch, emit, emit_status, try_blocking};
+use crate::event_feed;
 use crate::market;
 use crate::state::{AppState, lock, read, write};
 
@@ -47,6 +48,8 @@ pub(super) async fn world_state_task<R: Runtime>(app: AppHandle<R>, state: Arc<A
             let events = lock(&state.core).evaluate_world_state(Utc::now());
             dispatch(&app, &state, events).await;
         }
+
+        event_feed::publish_reset_checklist(&app, &state);
         tokio::time::sleep(Duration::from_secs(15)).await;
     }
 }

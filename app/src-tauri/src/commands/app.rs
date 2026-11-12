@@ -9,7 +9,7 @@ use tauri_plugin_opener::OpenerExt;
 
 use super::{Shared, ask_path, game_log_path, pick_log, ready};
 use crate::error::{CommandError, CommandResult};
-use crate::event_feed::EventFeed;
+use crate::event_feed::{self, EventFeed};
 use crate::overlay;
 use crate::runtime::{self, AppEvent};
 use crate::settings::{self, Settings};
@@ -127,6 +127,10 @@ pub async fn settings_set<R: Runtime>(
     }
     overlay::apply_from(&app, &state);
     app.state::<EventFeed>().configure(settings.event_feed);
+    if previous.event_feed != settings.event_feed {
+        event_feed::publish_reset_checklist(&app, &state);
+    }
+
     Ok(settings)
 }
 

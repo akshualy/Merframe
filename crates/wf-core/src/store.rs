@@ -976,7 +976,7 @@ mod tests {
             })
             .unwrap();
 
-        assert_eq!(stored, "ventkidsRaces");
+        assert_eq!(stored, "ventkids_races");
         assert!(
             store
                 .reset_checklist_ticked(ResetChecklistManualRowId::VentkidsRaces, today)

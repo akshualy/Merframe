@@ -86,7 +86,7 @@ function progressText(progress: ResetChecklistProgress): string | null {
     case "remaining":
       return `${num(progress.left)} left of ${num(progress.cap)}`;
     case "manual":
-    case "yesNo":
+    case "yes_no":
       return null;
     case "unknown":
       return "No data yet";

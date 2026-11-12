@@ -6,7 +6,8 @@ use crate::reset_checklist::context::{ResetChecklistContext, ResetChecklistWorld
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum ResetChecklistGroup {
     Daily,
     Weekly,
