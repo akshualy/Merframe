@@ -14,7 +14,7 @@ const AMBER_SHARD_WEEK: i64 = 665;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub enum ArchonShardColour {
     Azure,
     Amber,
@@ -41,7 +41,7 @@ impl ArchonShardColour {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(tag = "kind", rename_all = "snake_case")]
 pub enum VendorWeeklyOffer {
     Kuva {
         amount: u32,

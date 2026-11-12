@@ -12,7 +12,9 @@ use wf_scan::{HttpClients, InventoryBuffer};
 
 use crate::overlay;
 use crate::runtime::attach::open_game;
-use crate::runtime::{AppEvent, dispatch, emit, market_loop, try_blocking, update_status};
+use crate::runtime::{
+    AppEvent, dispatch, emit, emit_with_reset_checklist, market_loop, try_blocking, update_status,
+};
 use crate::state::{AppState, InventorySource, QueueSession, lock, read};
 
 pub(crate) async fn inventory_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
@@ -93,7 +95,11 @@ where
             events,
             rewards_attached,
         } => {
-            emit(app, AppEvent::InventoryUpdated(state.status_snapshot()));
+            emit_with_reset_checklist(
+                app,
+                state,
+                AppEvent::InventoryUpdated(state.status_snapshot()),
+            );
             if rewards_attached {
                 emit(app, AppEvent::ArbitrationRunsUpdated);
             }

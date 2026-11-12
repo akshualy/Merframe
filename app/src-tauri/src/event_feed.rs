@@ -18,8 +18,9 @@ use tokio::sync::{broadcast, watch};
 use tokio_stream::wrappers::BroadcastStream;
 use tracing::{debug, info, warn};
 use wf_core::{
-    ArbitrationAlert, ArbitrationRun, CoreEvent, FissureInfo, InventorySummary, RewardScreen,
-    Trade, WorldRewardAlert,
+    ArbitrationAlert, ArbitrationRun, CoreEvent, FissureInfo, InventorySummary,
+    ResetChecklistGroup, ResetChecklistProgress, ResetChecklistRow, ResetChecklistRowId,
+    RewardScreen, Trade, WorldRewardAlert,
 };
 
 use crate::runtime::{AppEvent, MarketAutoClose, update_status};
@@ -76,12 +77,35 @@ impl From<&InventorySummary> for FeedInventory {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct FeedResetChecklistRow {
+    pub id: ResetChecklistRowId,
+    pub name: &'static str,
+    pub group: ResetChecklistGroup,
+    pub done: bool,
+    pub progress: ResetChecklistProgress,
+}
+
+impl From<&ResetChecklistRow> for FeedResetChecklistRow {
+    fn from(row: &ResetChecklistRow) -> Self {
+        Self {
+            id: row.id,
+            name: row.name,
+            group: row.group,
+            done: row.done,
+            progress: row.progress,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "event", content = "data", rename_all = "snake_case")]
 pub enum FeedEvent {
     Status(FeedStatus),
     InventoryUpdated(FeedInventory),
+    ResetChecklistRowChanged(FeedResetChecklistRow),
     RelicRewardScreen {
         relic: Option<String>,
         screen: RewardScreen,
@@ -190,6 +214,7 @@ pub struct EventFeed {
     events: broadcast::Sender<FeedEvent>,
     wanted: watch::Sender<Option<u16>>,
     last_status: Arc<Mutex<Option<FeedStatus>>>,
+    last_reset_checklist_rows: Arc<Mutex<Option<Vec<FeedResetChecklistRow>>>>,
 }
 
 impl Default for EventFeed {
@@ -198,6 +223,7 @@ impl Default for EventFeed {
             events: broadcast::channel(BUFFERED_EVENTS).0,
             wanted: watch::Sender::new(None),
             last_status: Arc::default(),
+            last_reset_checklist_rows: Arc::default(),
         }
     }
 }
@@ -218,10 +244,52 @@ impl EventFeed {
         let _ = self.events.send(forwarded);
     }
 
+    fn publish_reset_checklist_rows(&self, rows: &[ResetChecklistRow]) {
+        let unlocked: Vec<FeedResetChecklistRow> = rows
+            .iter()
+            .filter(|row| !row.locked)
+            .map(FeedResetChecklistRow::from)
+            .collect();
+
+        let mut last = lock(&self.last_reset_checklist_rows);
+        let changed: Vec<FeedResetChecklistRow> = match last.as_ref() {
+            Some(known) => unlocked
+                .iter()
+                .filter(|row| !known.contains(row))
+                .cloned()
+                .collect(),
+            None => Vec::new(),
+        };
+        *last = Some(unlocked);
+        drop(last);
+
+        for row in changed {
+            let _ = self.events.send(FeedEvent::ResetChecklistRowChanged(row));
+        }
+    }
+
+    fn enabled(&self) -> bool {
+        self.wanted.borrow().is_some()
+    }
+
     pub fn configure(&self, settings: EventFeedSettings) {
         let port = settings.port();
         self.wanted
             .send_if_modified(|wanted| std::mem::replace(wanted, port) != port);
+    }
+}
+
+pub(crate) fn publish_reset_checklist<R: Runtime>(app: &AppHandle<R>, state: &AppState) {
+    let feed = app.state::<EventFeed>();
+    if !feed.enabled() {
+        return;
+    }
+
+    let rebuilt = lock(&state.core).reset_checklist_tab(Utc::now());
+    match rebuilt {
+        Ok(Some(tab)) => feed.publish_reset_checklist_rows(&tab.rows),
+        Ok(None) => {}
+        Err(error) => warn!(%error, "Reset checklist not rebuilt for the event feed"),
     }
 }
 
@@ -334,6 +402,31 @@ mod tests {
         FeedEvent::forwarded(event).map(|forwarded| serde_json::to_value(forwarded).unwrap())
     }
 
+    fn checklist_row(id: ResetChecklistRowId, done: u32, locked: bool) -> ResetChecklistRow {
+        ResetChecklistRow {
+            id,
+            name: "Test activity",
+            group: ResetChecklistGroup::SortieReset,
+            progress: ResetChecklistProgress::Counted { done, total: 3 },
+            done: done == 3,
+            locked,
+            own_window: None,
+            detail: None,
+            parts: Vec::new(),
+        }
+    }
+
+    fn received_rows(
+        client: &mut broadcast::Receiver<FeedEvent>,
+    ) -> Vec<(ResetChecklistRowId, bool)> {
+        let mut received = Vec::new();
+        while let Ok(FeedEvent::ResetChecklistRowChanged(row)) = client.try_recv() {
+            received.push((row.id, row.done));
+        }
+
+        received
+    }
+
     async fn served(feed: &EventFeed) -> u16 {
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).await.unwrap();
         let port = listener.local_addr().unwrap().port();
@@ -402,6 +495,29 @@ mod tests {
 
         feed.configure(EventFeedSettings::default());
         assert_eq!(next_event(&mut reader).await, None);
+    }
+
+    #[tokio::test]
+    async fn stream_sends_checklist_rows_changed_after_connecting() {
+        let feed = EventFeed::default();
+        feed.publish(&AppEvent::StatusUpdated(GameStatus::default()));
+        feed.publish_reset_checklist_rows(&[checklist_row(ResetChecklistRowId::Sortie, 2, false)]);
+        let port = served(&feed).await;
+
+        let (_, mut reader) = get_events(port, &format!("localhost:{port}")).await;
+        assert_eq!(next_event(&mut reader).await.unwrap()["event"], "status");
+
+        feed.publish_reset_checklist_rows(&[checklist_row(ResetChecklistRowId::Sortie, 3, false)]);
+        assert_eq!(
+            next_event(&mut reader).await.unwrap(),
+            json!({"event": "reset_checklist_row_changed", "data": {
+                "id": "sortie",
+                "name": "Test activity",
+                "group": "sortie",
+                "done": true,
+                "progress": {"kind": "counted", "done": 3, "total": 3}
+            }})
+        );
     }
 
     #[tokio::test]
@@ -571,6 +687,66 @@ mod tests {
 
         let event = client.try_recv().unwrap();
         assert!(matches!(event, FeedEvent::Status(status) if status.scanning));
+    }
+
+    #[test]
+    fn checklist_rows_are_sent_on_change() {
+        let feed = EventFeed::default();
+        let mut client = feed.events.subscribe();
+        let rows = [
+            checklist_row(ResetChecklistRowId::Sortie, 1, false),
+            checklist_row(ResetChecklistRowId::Icebind, 0, false),
+        ];
+
+        feed.publish_reset_checklist_rows(&rows);
+        feed.publish_reset_checklist_rows(&rows);
+        feed.publish_reset_checklist_rows(&[
+            checklist_row(ResetChecklistRowId::Sortie, 3, false),
+            checklist_row(ResetChecklistRowId::Icebind, 0, false),
+        ]);
+
+        assert_eq!(
+            received_rows(&mut client),
+            [(ResetChecklistRowId::Sortie, true)]
+        );
+    }
+
+    #[test]
+    fn locked_checklist_rows_are_sent_once_unlocked() {
+        let feed = EventFeed::default();
+        let mut client = feed.events.subscribe();
+        let locked = [checklist_row(ResetChecklistRowId::Descendia, 0, true)];
+        let unlocked = [checklist_row(ResetChecklistRowId::Descendia, 0, false)];
+
+        feed.publish_reset_checklist_rows(&locked);
+        assert!(received_rows(&mut client).is_empty());
+
+        feed.publish_reset_checklist_rows(&unlocked);
+        feed.publish_reset_checklist_rows(&unlocked);
+        assert_eq!(
+            received_rows(&mut client),
+            [(ResetChecklistRowId::Descendia, false)]
+        );
+    }
+
+    #[test]
+    fn reset_sends_the_row_back_to_not_done() {
+        let feed = EventFeed::default();
+        feed.publish_reset_checklist_rows(&[checklist_row(ResetChecklistRowId::Sortie, 3, false)]);
+        let mut client = feed.events.subscribe();
+
+        feed.publish_reset_checklist_rows(&[checklist_row(ResetChecklistRowId::Sortie, 0, false)]);
+
+        let event = client.try_recv().unwrap();
+        assert!(matches!(
+            event,
+            FeedEvent::ResetChecklistRowChanged(FeedResetChecklistRow {
+                done: false,
+                progress: ResetChecklistProgress::Counted { done: 0, total: 3 },
+                ..
+            })
+        ));
+        assert!(client.try_recv().is_err());
     }
 
     #[test]

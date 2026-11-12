@@ -1224,7 +1224,7 @@ mod tests {
         assert!(!old.reset_checklist.reset_checklist_show_locked);
 
         let stored: Settings = serde_json::from_str(
-            r#"{"reset_checklist_hidden":["icebind","helpClem"],"reset_checklist_hide_done":true,"reset_checklist_show_locked":true}"#,
+            r#"{"reset_checklist_hidden":["icebind","help_clem"],"reset_checklist_hide_done":true,"reset_checklist_show_locked":true}"#,
         )
         .unwrap();
         assert_eq!(

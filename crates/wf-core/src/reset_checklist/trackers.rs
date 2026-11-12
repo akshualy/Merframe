@@ -24,7 +24,8 @@ const FOCUS_CAP_PER_RANK: u32 = 5_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "snake_case")]
 pub enum ResetChecklistProgress {
     Counted {
         done: u32,

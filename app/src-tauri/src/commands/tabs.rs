@@ -160,7 +160,7 @@ pub async fn set_reset_checklist_checked<R: Runtime>(
 ) -> CommandResult<()> {
     let state = ready(&state).await?;
     lock(&state.core).set_reset_checklist_checked(id, checked, Utc::now())?;
-    runtime::emit(&app, AppEvent::ResetChecklistUpdated);
+    runtime::emit_with_reset_checklist(&app, &state, AppEvent::ResetChecklistUpdated);
     Ok(())
 }
 
