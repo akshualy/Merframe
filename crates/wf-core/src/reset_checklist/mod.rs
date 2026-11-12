@@ -1,6 +1,7 @@
 mod cadence;
 mod context;
 mod definitions;
+mod kuva_purchases;
 mod nightwave;
 mod standing;
 mod syndicate_missions;
@@ -12,17 +13,22 @@ use std::collections::HashSet;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+use wf_inventory::Inventory;
 use wf_worldstate::ResetWindow;
 
 use cadence::ResetCadence;
 pub use cadence::ResetChecklistGroup;
-pub(crate) use context::{ResetChecklistContext, ResetChecklistWorld};
+pub(crate) use context::{ResetChecklistContext, ResetChecklistStored, ResetChecklistWorld};
 use definitions::{RESET_CHECKLIST_ROWS, ResetChecklistRowDefinition};
 pub use definitions::{ResetChecklistManualRowId, ResetChecklistRowId};
+pub(crate) use kuva_purchases::VendorKuvaBought;
 pub use standing::ResetChecklistStandingPool;
 pub use trackers::ResetChecklistProgress;
 use trackers::Tracker;
-pub use vendors::{ArchonShardColour, KuvaWeeklySummary, ResetChecklistVendor, VendorWeeklyOffer};
+pub use vendors::{
+    ArchonShardColour, KuvaWeeklySummary, ResetChecklistVendor, VendorKuvaCertainty,
+    VendorWeeklyOffer,
+};
 
 use crate::error::Result;
 use crate::store::Store;
@@ -79,7 +85,6 @@ pub struct ResetChecklistTab {
 fn reset_checklist_row(
     definition: &ResetChecklistRowDefinition,
     context: &ResetChecklistContext,
-    completed_quests: &HashSet<&str>,
 ) -> ResetChecklistRow {
     let cadence = definition.tracker.cadence();
     let tracked = definition.tracker.track(context);
@@ -90,7 +95,7 @@ fn reset_checklist_row(
         group: cadence.group(),
         progress: tracked.progress,
         done: tracked.done,
-        locked: unlocks::locked(definition.requirements, context.inventory, completed_quests),
+        locked: unlocks::locked(definition.requirements, context),
         own_window: cadence.own_window(context),
         detail: tracked.detail,
         parts: tracked.parts,
@@ -98,7 +103,6 @@ fn reset_checklist_row(
 }
 
 pub(crate) fn tab(context: &ResetChecklistContext) -> ResetChecklistTab {
-    let completed_quests = context.inventory.completed_quests();
     let vendors = vendors::vendors(context);
 
     ResetChecklistTab {
@@ -108,7 +112,7 @@ pub(crate) fn tab(context: &ResetChecklistContext) -> ResetChecklistTab {
         synced_at: context.synced,
         rows: RESET_CHECKLIST_ROWS
             .iter()
-            .map(|definition| reset_checklist_row(definition, context, &completed_quests))
+            .map(|definition| reset_checklist_row(definition, context))
             .collect(),
         standing: standing::standing_pools(context),
         kuva: vendors::kuva_summary(&vendors),
@@ -125,7 +129,7 @@ fn manual_rows() -> impl Iterator<Item = (ResetChecklistManualRowId, ResetCadenc
         })
 }
 
-pub(crate) fn checked_manual_rows(
+fn checked_manual_rows(
     store: &Store,
     now: DateTime<Utc>,
 ) -> Result<HashSet<ResetChecklistManualRowId>> {
@@ -150,6 +154,32 @@ pub(crate) fn set_checked(
         .map_or(Ok(()), |(id, cadence)| {
             store.set_reset_checklist_ticked(id, cadence.window(now).activation, checked)
         })
+}
+
+impl ResetChecklistStored {
+    pub(crate) fn load(store: &Store, now: DateTime<Utc>) -> Result<Self> {
+        Ok(Self {
+            last_mission_won: store.setting(MISSION_WON_SETTING)?,
+            checked: checked_manual_rows(store, now)?,
+            kuva_bought: store.reset_checklist_kuva_purchases(week_start(now))?,
+        })
+    }
+}
+
+pub(crate) fn record_kuva_bought(
+    store: &Store,
+    previous: &Inventory,
+    next: &Inventory,
+    now: DateTime<Utc>,
+) -> Result<()> {
+    store.add_reset_checklist_kuva_purchases(
+        week_start(now),
+        &kuva_purchases::kuva_bought_between(previous, next, now),
+    )
+}
+
+fn week_start(now: DateTime<Utc>) -> DateTime<Utc> {
+    ResetCadence::Weekly.window(now).activation
 }
 
 #[cfg(test)]

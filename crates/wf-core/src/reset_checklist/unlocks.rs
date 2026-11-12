@@ -1,7 +1,6 @@
-use std::collections::HashSet;
-
 use wf_inventory::Inventory;
 
+use crate::reset_checklist::context::ResetChecklistContext;
 use crate::reset_checklist::syndicate_missions::syndicate_missions_open;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -15,10 +14,13 @@ pub(crate) enum Quest {
     DuviriParadox,
     OldPeace,
     ManOfFewWords,
+    ChainsOfHarrow,
+    AngelsOfTheZariman,
+    JadeShadowsConstellations,
 }
 
 impl Quest {
-    fn key_chain(self) -> &'static str {
+    pub(super) fn key_chain(self) -> &'static str {
         match self {
             Self::WarWithin => "/Lotus/Types/Keys/WarWithinQuest/WarWithinQuestKeyChain",
             Self::SecondDream => "/Lotus/Types/Keys/OrokinMoonQuest/OrokinMoonQuestKeyChain",
@@ -29,6 +31,11 @@ impl Quest {
             Self::DuviriParadox => "/Lotus/Types/Keys/DuviriQuest/DuviriQuestKeyChain",
             Self::OldPeace => "/Lotus/Types/Keys/TauPrequel/TauPrequelQuestKeyChain",
             Self::ManOfFewWords => "/Lotus/Types/Keys/GetClemQuest/GetClemQuestKeyChain",
+            Self::ChainsOfHarrow => "/Lotus/Types/Keys/PriestFrameQuest/PriestQuestKeyChain",
+            Self::AngelsOfTheZariman => "/Lotus/Types/Keys/ZarimanQuest/ZarimanQuestKeyChain",
+            Self::JadeShadowsConstellations => {
+                "/Lotus/Types/Keys/JadeShadowsPart2Constellations/JadeShadowsPart2QuestKeyChain"
+            }
         }
     }
 }
@@ -48,6 +55,14 @@ impl SyndicateRank {
         tag: "HexSyndicate",
         rank: 5,
     };
+    pub(crate) const HEX_4: Self = Self {
+        tag: "HexSyndicate",
+        rank: 4,
+    };
+    pub(crate) const NIGHTCAP_3: Self = Self {
+        tag: "NightcapJournalSyndicate",
+        rank: 3,
+    };
 
     fn reached(self, inventory: &Inventory) -> bool {
         inventory
@@ -64,28 +79,31 @@ pub(crate) enum ResetChecklistRequirement {
     AnyFactionSyndicateRanked,
     DialogueFlag(&'static str),
     EliteArchimedeaUnlocked,
+    SteelPathMissionCompleted,
 }
 
 impl ResetChecklistRequirement {
-    fn met(self, inventory: &Inventory, completed_quests: &HashSet<&str>) -> bool {
+    fn met(self, context: &ResetChecklistContext) -> bool {
+        let inventory = context.inventory;
+
         match self {
-            Self::Quest(quest) => completed_quests.contains(quest.key_chain()),
+            Self::Quest(quest) => context.completed_quests.contains(quest.key_chain()),
             Self::SyndicateRank(rank) => rank.reached(inventory),
             Self::AnyFactionSyndicateRanked => syndicate_missions_open(inventory),
             Self::DialogueFlag(flag) => inventory.dialogue_flag_set(flag),
             Self::EliteArchimedeaUnlocked => inventory.elite_archimedea_unlocked(),
+            Self::SteelPathMissionCompleted => inventory.steel_path_mission_completed(),
         }
     }
 }
 
 pub(crate) fn locked(
     requirements: &[ResetChecklistRequirement],
-    inventory: &Inventory,
-    completed_quests: &HashSet<&str>,
+    context: &ResetChecklistContext,
 ) -> bool {
     requirements
         .iter()
-        .any(|requirement| !requirement.met(inventory, completed_quests))
+        .any(|requirement| !requirement.met(context))
 }
 
 #[cfg(test)]
@@ -94,9 +112,10 @@ mod tests {
 
     use super::*;
     use crate::catalog::fixtures;
+    use crate::reset_checklist::context::fixtures::{context, synced_at};
 
     fn locked_for(inventory: &Inventory, requirements: &[ResetChecklistRequirement]) -> bool {
-        locked(requirements, inventory, &inventory.completed_quests())
+        locked(requirements, &context(inventory, synced_at()))
     }
 
     #[test]

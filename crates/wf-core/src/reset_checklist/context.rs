@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use chrono::{DateTime, Utc};
 use wf_inventory::Inventory;
@@ -42,6 +42,13 @@ impl ResetChecklistWorld {
     }
 }
 
+#[derive(Default)]
+pub(crate) struct ResetChecklistStored {
+    pub(crate) last_mission_won: Option<DateTime<Utc>>,
+    pub(crate) checked: HashSet<ResetChecklistManualRowId>,
+    pub(crate) kuva_bought: HashMap<String, u32>,
+}
+
 pub(crate) struct ResetChecklistContext<'a> {
     pub(crate) inventory: &'a Inventory,
     pub(crate) catalog: &'a Catalog,
@@ -49,8 +56,8 @@ pub(crate) struct ResetChecklistContext<'a> {
     pub(crate) world: Option<ResetChecklistWorld>,
     pub(crate) now: DateTime<Utc>,
     pub(crate) synced: Option<DateTime<Utc>>,
-    pub(crate) last_mission_won: Option<DateTime<Utc>>,
-    pub(crate) checked: HashSet<ResetChecklistManualRowId>,
+    pub(crate) stored: ResetChecklistStored,
+    pub(crate) completed_quests: HashSet<&'a str>,
 }
 
 impl<'a> ResetChecklistContext<'a> {
@@ -60,8 +67,7 @@ impl<'a> ResetChecklistContext<'a> {
         items: &'a ItemTable,
         world: Option<ResetChecklistWorld>,
         now: DateTime<Utc>,
-        last_mission_won: Option<DateTime<Utc>>,
-        checked: HashSet<ResetChecklistManualRowId>,
+        stored: ResetChecklistStored,
     ) -> Self {
         Self {
             inventory,
@@ -73,8 +79,8 @@ impl<'a> ResetChecklistContext<'a> {
                 .last_inventory_sync
                 .seconds()
                 .and_then(|seconds| DateTime::from_timestamp(i64::from(seconds), 0)),
-            last_mission_won,
-            checked,
+            stored,
+            completed_quests: inventory.completed_quests(),
         }
     }
 
@@ -94,14 +100,13 @@ impl<'a> ResetChecklistContext<'a> {
 
 #[cfg(test)]
 pub(crate) mod fixtures {
-    use std::collections::HashSet;
     use std::sync::LazyLock;
 
     use chrono::{DateTime, Utc};
     use wf_inventory::Inventory;
     use wf_worldstate::WorldState;
 
-    use super::{ResetChecklistContext, ResetChecklistWorld};
+    use super::{ResetChecklistContext, ResetChecklistStored, ResetChecklistWorld};
     use crate::catalog::Catalog;
     use crate::catalog::fixtures::{WORLD_STATE, at, nightwave_catalog};
     use crate::identity::ItemTable;
@@ -125,8 +130,7 @@ pub(crate) mod fixtures {
             &ITEMS,
             Some(world_at(now)),
             now,
-            None,
-            HashSet::new(),
+            ResetChecklistStored::default(),
         )
     }
 }

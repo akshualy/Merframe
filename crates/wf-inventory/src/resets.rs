@@ -6,6 +6,8 @@ use wf_mongo::{MongoDate, ObjectId};
 
 use crate::model::{EquipmentItem, Inventory};
 
+const STEEL_PATH_TIER: u32 = 1;
+
 #[derive(Debug, Clone, Deserialize)]
 pub(crate) struct PeriodicMissionCompletion {
     date: MongoDate,
@@ -50,7 +52,28 @@ pub struct CircuitProgress {
     pub category: String,
     #[serde(default)]
     pub choices: Vec<String>,
+    earn: u32,
+    #[serde(default)]
+    pending_rewards: Vec<CircuitRewardTier>,
     expiry: MongoDate,
+}
+
+impl CircuitProgress {
+    pub fn reward_tiers(&self) -> &[CircuitRewardTier] {
+        &self.pending_rewards
+    }
+
+    pub fn reward_tiers_earned(&self) -> impl Iterator<Item = &CircuitRewardTier> {
+        self.pending_rewards
+            .iter()
+            .filter(|tier| tier.required_total_xp <= self.earn)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CircuitRewardTier {
+    required_total_xp: u32,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -301,6 +324,12 @@ impl Inventory {
         self.kuva_keys.len()
     }
 
+    pub fn steel_path_mission_completed(&self) -> bool {
+        self.missions
+            .iter()
+            .any(|mission| mission.tier == Some(STEEL_PATH_TIER))
+    }
+
     pub fn elite_archimedea_unlocked(&self) -> bool {
         self.entrati_lab_conquest_hard_mode_status != 0
             || self.echoes_hex_conquest_hard_mode_status != 0
@@ -442,6 +471,8 @@ mod tests {
         assert_eq!(inv.endless_xp.len(), 2);
         assert_eq!(hard.category, "EXC_HARD");
         assert_eq!(hard.choices, ["Akstiletto", "Kronen"]);
+        assert_eq!(hard.reward_tiers_earned().count(), 5);
+        assert_eq!(hard.reward_tiers().len(), 10);
     }
 
     #[test]
@@ -621,6 +652,19 @@ mod tests {
                 .unwrap()
                 .dialogue_flag_set("FFFirstInteractionDone")
         );
+    }
+
+    #[test]
+    fn steel_path_mission() {
+        let mut inv = fixture();
+
+        assert!(inv.steel_path_mission_completed());
+
+        for mission in &mut inv.missions {
+            mission.tier = None;
+        }
+
+        assert!(!inv.steel_path_mission_completed());
     }
 
     #[test]

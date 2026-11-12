@@ -34,8 +34,8 @@ use crate::mastery::{self, MasteryOptions, MasteryTab};
 use crate::prices::PriceSource;
 use crate::relic_planner::{self, MissingPart, RelicPlan, RelicSource, RewardScreen};
 use crate::reset_checklist::{
-    self, MISSION_WON_SETTING, ResetChecklistContext, ResetChecklistManualRowId, ResetChecklistTab,
-    ResetChecklistWorld,
+    self, MISSION_WON_SETTING, ResetChecklistContext, ResetChecklistManualRowId,
+    ResetChecklistStored, ResetChecklistTab, ResetChecklistWorld,
 };
 use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
@@ -218,8 +218,10 @@ impl Core {
             if let Some(previous) = previous
                 && let Some(cached) = self.store.cached_inventory()?
             {
-                let deltas = delta::compute(&Inventory::parse(&cached)?, &inventory);
+                let cached = Inventory::parse(&cached)?;
+                let deltas = delta::compute(&cached, &inventory);
                 self.store.record_deltas(previous.id, id, &deltas)?;
+                reset_checklist::record_kuva_bought(&self.store, &cached, &inventory, now)?;
                 changes = deltas.len();
                 self.synced_vitus = synced_vitus(&deltas);
             }
@@ -586,8 +588,7 @@ impl Core {
                 .as_ref()
                 .map(|world| ResetChecklistWorld::new(world, &self.catalog, now)),
             now,
-            self.store.setting(MISSION_WON_SETTING)?,
-            reset_checklist::checked_manual_rows(&self.store, now)?,
+            ResetChecklistStored::load(&self.store, now)?,
         );
 
         Ok(Some(reset_checklist::tab(&context)))
@@ -1116,6 +1117,29 @@ mod tests {
             row(&core, ResetChecklistRowId::Sortie).progress,
             ResetChecklistProgress::Unknown
         );
+    }
+
+    #[test]
+    fn kuva_bought_recorded_on_sync() {
+        let mut core = core();
+        let now = at(1_788_800_000_000);
+        core.ingest_inventory(fixtures::INVENTORY, now).unwrap();
+        let bought = synced("6a9eeb1f000000000000c002")
+            .replacen(
+                r#""NumPurchased":2,"ItemId":"6a9a2f60000000000000f201""#,
+                r#""NumPurchased":5,"ItemId":"6a9a2f60000000000000f201""#,
+                1,
+            )
+            .replacen(
+                r#""MiscItems":["#,
+                r#""MiscItems":[{"ItemCount":30000,"ItemType":"/Lotus/Types/Items/MiscItems/Kuva"},"#,
+                1,
+            );
+
+        core.ingest_inventory(&bought, now).unwrap();
+
+        let kuva = core.reset_checklist_tab(now).unwrap().unwrap().kuva;
+        assert_eq!(kuva.estimated, 30_000);
     }
 
     #[test]
