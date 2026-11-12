@@ -79,7 +79,7 @@ export function SettingsPage() {
               <Undo2 className="size-4" />
               Discard
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving}>
+            <Button size="sm" onClick={handleSave} pending={saving}>
               <Save className="size-4" />
               Save
             </Button>

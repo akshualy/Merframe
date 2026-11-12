@@ -1,4 +1,3 @@
-import { LoaderCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Amount } from "@/components/currency";
@@ -15,6 +14,7 @@ import {
 } from "@/components/page";
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
+import { Spinner } from "@/components/ui/spinner";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { useFilters } from "@/hooks/use-filters";
 import { usePaged } from "@/hooks/use-paged";
@@ -177,10 +177,10 @@ export function ResourcesPage() {
           action={
             <div className="flex items-center gap-3">
               {loading && (
-                <LoaderCircle
+                <Spinner
                   role="status"
                   aria-label="Loading"
-                  className="text-muted-foreground size-4 animate-spin"
+                  className="text-muted-foreground"
                 />
               )}
               <ResultCount

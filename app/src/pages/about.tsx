@@ -133,7 +133,7 @@ export function AboutPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={checking}
+                  pending={checking}
                   onClick={handleCheck}
                 >
                   <RefreshCw className="size-3.5" />

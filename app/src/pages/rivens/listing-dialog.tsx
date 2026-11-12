@@ -219,7 +219,11 @@ export function ListingDialog({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={posting || !priced(form)}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!priced(form)}
+            pending={posting}
+          >
             {submitLabel ?? (form.direct ? "List for Sale" : "Post Auction")}
           </Button>
         </DialogFooter>

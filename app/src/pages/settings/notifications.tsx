@@ -180,7 +180,7 @@ export function NotificationChannels({
             size="sm"
             className="self-start"
             onClick={handleTest}
-            disabled={testing}
+            pending={testing}
           >
             <BellRing className="size-4" />
             Test Notifications
