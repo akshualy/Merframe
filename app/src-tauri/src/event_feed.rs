@@ -293,7 +293,7 @@ pub(crate) fn publish_reset_checklist<R: Runtime>(app: &AppHandle<R>, state: &Ap
     }
 }
 
-pub async fn serve<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+pub async fn serve<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) -> ! {
     let feed = app.state::<EventFeed>();
     feed.configure(read(&state.settings).event_feed);
     let mut wanted = feed.wanted.subscribe();

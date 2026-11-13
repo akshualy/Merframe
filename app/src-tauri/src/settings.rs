@@ -670,9 +670,8 @@ struct StoredDocument {
 }
 
 pub fn wants_overlay_windows(document: &[u8]) -> bool {
-    let settings = serde_json::from_slice::<StoredDocument>(document)
-        .map(|stored| stored.settings)
-        .unwrap_or_default();
+    let settings =
+        serde_json::from_slice::<StoredDocument>(document).map_or_default(|stored| stored.settings);
     settings.overlays.overlays_enabled && settings.overlays.overlay_mode != OverlayMode::Tab
 }
 
@@ -789,7 +788,7 @@ pub fn set_account<R: Runtime>(
 pub fn presence<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<MarketPresenceChoice> {
     let choice: Option<StoredMarketPresenceChoice> =
         stored(app, PRESENCE_KEY, "Stored market presence is not readable")?;
-    Ok(choice.map(MarketPresenceChoice::from).unwrap_or_default())
+    Ok(choice.map_or_default(MarketPresenceChoice::from))
 }
 
 /// Migration: Until 2026-11-02 the presence choice was stored as a status with an `auto` flag.

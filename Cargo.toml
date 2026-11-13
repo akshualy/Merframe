@@ -6,7 +6,7 @@ members = ["crates/*", "app/src-tauri"]
 edition = "2024"
 version = "0.9.1"
 license = "GPL-3.0-or-later"
-rust-version = "1.99"
+rust-version = "1.100"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

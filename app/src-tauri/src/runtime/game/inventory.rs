@@ -1,3 +1,4 @@
+use std::mem::DropGuard;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::time::Duration;
@@ -17,7 +18,7 @@ use crate::runtime::{
 };
 use crate::state::{AppState, InventorySource, QueueSession, lock, read};
 
-pub(crate) async fn inventory_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+pub(crate) async fn inventory_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) -> ! {
     loop {
         state.rescan.notified().await;
         if read(&state.status).game_detected {
@@ -30,14 +31,16 @@ pub(super) fn capture<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     if state.capturing.swap(true, Ordering::SeqCst) {
         return;
     }
+
     let app = app.clone();
-    let state = Arc::clone(state);
+    let state = DropGuard::new(Arc::clone(state), |state| {
+        state.capturing.store(false, Ordering::SeqCst);
+    });
     tauri::async_runtime::spawn(async move {
         acquire_with(&app, &state, |state| {
             ingest_window(state, Duration::from_secs(10))
         })
         .await;
-        state.capturing.store(false, Ordering::SeqCst);
     });
 }
 

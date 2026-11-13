@@ -12,7 +12,7 @@ use crate::runtime::{AppEvent, emit, update_status};
 use crate::settings::MarketAccount;
 use crate::state::{AppState, lock, read};
 
-pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+pub(crate) async fn market_task<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) -> ! {
     let mut failures: u32 = 0;
     let mut verified_at: Option<Instant> = None;
     let mut emitted: Option<MarketSnapshot> = None;

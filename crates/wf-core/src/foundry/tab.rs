@@ -29,7 +29,7 @@ pub(crate) fn tab(
     FoundryTab {
         pending: pending(&view.account.inventory, view.items, now),
         items: items(view, world, include_founders, now),
-        timers: world.map(|state| timers(state, now)).unwrap_or_default(),
+        timers: world.map_or_default(|state| timers(state, now)),
     }
 }
 
