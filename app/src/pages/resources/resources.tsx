@@ -186,7 +186,7 @@ export function ResourcesPage() {
               <ResultCount
                 shown={resources.length}
                 total={data?.resources.length}
-                noun="resources"
+                noun="resource"
               />
               <SearchInput
                 value={query}

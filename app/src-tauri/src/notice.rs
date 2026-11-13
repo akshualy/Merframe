@@ -3,7 +3,7 @@ use std::fmt::Write as _;
 use serde::Serialize;
 use wf_core::{
     ArbitrationAlert, ArbitrationRun, CoreEvent, FissureInfo, InventorySummary, WorldRewardAlert,
-    thousands,
+    counted, thousands,
 };
 use wf_worldstate::WorldRewardSource;
 
@@ -53,7 +53,7 @@ impl Notice {
 
     fn inventory(summary: &InventorySummary) -> Option<Self> {
         (summary.changes > 0).then(|| Self {
-            title: format!("{} inventory changes", summary.changes),
+            title: counted(summary.changes, "inventory change"),
             body: format!(
                 "{} plat, {} endo, MR {}",
                 thousands(summary.plat),

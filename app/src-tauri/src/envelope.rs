@@ -107,6 +107,6 @@ mod tests {
         let json = serde_json::to_value(&envelope).unwrap();
         assert!(json["id"].is_string());
         assert!(json["event"]["InventoryUpdated"].is_object());
-        assert_eq!(json["notice"]["title"], "1 inventory changes");
+        assert_eq!(json["notice"]["title"], "1 inventory change");
     }
 }

@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usePagePosition } from "@/hooks/use-paged";
-import { num } from "@/lib/format";
+import { counted } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
 
@@ -158,7 +158,7 @@ export function DataTable<TData, TValue>({
         />
         {toolbar}
         <span className="text-muted-foreground ml-auto text-xs">
-          {num(shownRows.length)} rows
+          {counted(shownRows.length, "row")}
         </span>
         <CheckboxMenu
           trigger={

@@ -9,6 +9,7 @@ use crate::reset_checklist::ResetChecklistRowPart;
 use crate::reset_checklist::cadence::ResetCadence;
 use crate::reset_checklist::context::ResetChecklistContext;
 use crate::reset_checklist::trackers::{Tracked, tally};
+use crate::text::counted;
 
 const RECOVERED_ACT_SLOTS: usize = 3;
 
@@ -59,11 +60,7 @@ fn recovered_acts_offered(open_current_weekly: usize, pool: usize) -> usize {
 }
 
 fn reserve_note(reserve: usize) -> Option<String> {
-    match reserve {
-        0 => None,
-        1 => Some("1 act on reserve".to_owned()),
-        acts => Some(format!("{acts} acts on reserve")),
-    }
+    (reserve > 0).then(|| format!("{} on reserve", counted(reserve, "act")))
 }
 
 pub(crate) fn recovered_acts(
