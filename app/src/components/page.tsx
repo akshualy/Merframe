@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Hint } from "@/components/ui/hint";
 import { Skeleton } from "@/components/ui/skeleton";
-import { num } from "@/lib/format";
+import { counted, num } from "@/lib/format";
 import { type PageQuoteKey, usePageQuote } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
 
@@ -175,7 +175,7 @@ export function ResultCount({
 }) {
   return (
     <span className="text-muted-foreground text-sm">
-      {num(shown)} of {num(total)} {noun}
+      {num(shown)} of {counted(total, noun)}
     </span>
   );
 }

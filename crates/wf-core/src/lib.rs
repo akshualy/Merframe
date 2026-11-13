@@ -91,5 +91,5 @@ pub use stats::{
 pub use store::{
     RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
 };
-pub use text::thousands;
+pub use text::{counted, thousands};
 pub use trade::{Trade, TradeItem, relic_refinement, traded_set};
