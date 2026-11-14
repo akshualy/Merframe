@@ -94,6 +94,7 @@ function useBoot() {
         setReady(true);
       },
       failed: setBootError,
+      quiet: true,
     });
   }, [attempt, setBootError, setReady, setSettings, setStatus]);
 

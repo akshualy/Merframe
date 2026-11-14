@@ -10,6 +10,7 @@ pub mod market;
 mod market_session;
 pub mod notice;
 pub mod overlay;
+mod reset;
 pub mod runtime;
 pub mod settings;
 pub mod state;
@@ -176,6 +177,7 @@ fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
         commands::app::app_log_file,
         commands::app::open_data_folder,
         commands::app::open_game_log_folder,
+        commands::app::reset_merframe,
         commands::app::item_image,
         commands::app::prefetch_images,
     ]
@@ -186,6 +188,7 @@ pub fn run() {
     #[cfg(target_os = "linux")]
     let startup = overlay::adopt_xwayland();
     let builder = tauri::Builder::default()
+        .plugin(reset::first_plugin())
         .plugin(navigation_guard())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
@@ -206,6 +209,14 @@ pub fn run() {
             }
         })
         .setup(move |app| {
+            app.manage(EventFeed::default());
+
+            if let Some(failed) = app.try_state::<reset::FailedReset>() {
+                app.manage(AppStateCell::new_with(Some(Err(failed.0.clone()))));
+                return Ok(());
+            }
+
+            app.manage(AppStateCell::new());
             init_tracing(&state::data_dir(app.handle())?)?;
             #[cfg(target_os = "linux")]
             tracing::info!(
@@ -216,8 +227,6 @@ pub fn run() {
                 xwayland = startup.adopted,
                 "Overlay backend chosen"
             );
-            app.manage(AppStateCell::new());
-            app.manage(EventFeed::default());
             tauri::async_runtime::spawn(publish_state(app.handle().clone()));
             Ok(())
         });

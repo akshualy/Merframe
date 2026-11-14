@@ -9,6 +9,7 @@ import { scrollToSection } from "@/lib/utils";
 import { useAppStore, useSettings } from "@/stores/app-store";
 import type { Settings } from "@/types";
 import { ArbitrationAlertSettingsSection } from "./arbitrations";
+import { DangerZone } from "./danger-zone";
 import { PricesAndData, StatsTabSetting } from "./data";
 import { DisplaySetting } from "./display";
 import { EventFeed } from "./feed";
@@ -101,6 +102,7 @@ export function SettingsPage() {
       <StatsTabSetting draft={draft} patch={patch} />
       <DisplaySetting draft={draft} patch={patch} />
       <EventFeed draft={draft} patch={patch} />
+      <DangerZone />
     </Page>
   );
 }

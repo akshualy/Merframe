@@ -229,6 +229,7 @@ export const api = {
   appLogFile: () => call<string>("app_log_file"),
   openDataFolder: () => call<void>("open_data_folder"),
   openGameLogFolder: () => call<void>("open_game_log_folder"),
+  resetMerframe: () => call<void>("reset_merframe"),
   itemImage: (imageName: string) => call<string>("item_image", { imageName }),
   prefetchImages: (names: string[]) =>
     call<ImagePath[]>("prefetch_images", { names }),
