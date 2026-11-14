@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
@@ -8,6 +9,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::{Store, StoreExt};
+use tracing::warn;
 use wf_core::{
     AlertSettings, DucateringCompleteSets, DucateringFilter, DucateringHidden, MasteryOptions,
     MasteryOrdering, ResetChecklistRowId,
@@ -18,7 +20,8 @@ use crate::market::MarketPresenceChoice;
 use crate::state::{AppState, lock, write};
 
 pub const STORE_FILE: &str = "merframe.json";
-const TOKEN_FILE: &str = "market_token";
+const MARKET_TOKEN: &str = "market_token";
+const KEYRING_SERVICE: &str = "merframe";
 const SETTINGS_KEY: &str = "settings";
 const ACCOUNT_KEY: &str = "market_account";
 const PRESENCE_KEY: &str = "market_presence";
@@ -738,36 +741,78 @@ pub fn apply<R: Runtime>(
 }
 
 fn token_path<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<PathBuf> {
-    Ok(crate::state::data_dir(app)?.join(TOKEN_FILE))
+    Ok(crate::state::data_dir(app)?.join(MARKET_TOKEN))
 }
 
 pub fn token<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<String>> {
     let path = token_path(app)?;
-    let token = unless_missing(std::fs::read_to_string(&path))
+    let file = unless_missing(std::fs::read_to_string(&path))
         .with_context(|| format!("Reading {}", path.display()))?;
-    Ok(token)
+    let Some(token) = file else {
+        return Ok(in_keyring(keyring::Entry::get_password));
+    };
+
+    if store_in_keyring(&token) {
+        remove_token_file(&path)?;
+    }
+
+    Ok(Some(token))
 }
 
 pub fn set_token<R: Runtime>(app: &AppHandle<R>, token: Option<&str>) -> anyhow::Result<()> {
     let path = token_path(app)?;
-    match token {
-        Some(token) => write_token(&path, token),
-        None => unless_missing(std::fs::remove_file(&path))
-            .map(|_| ())
-            .with_context(|| format!("Removing {}", path.display())),
+    let Some(token) = token else {
+        match keyring::Entry::new(KEYRING_SERVICE, MARKET_TOKEN)
+            .and_then(|entry| entry.delete_credential())
+        {
+            Ok(()) | Err(keyring::Error::NoEntry) => {}
+            Err(error) => {
+                warn!(%error, "Removing the saved market login failed");
+                anyhow::bail!(
+                    "Couldn't remove your saved login. Unlock your keyring and retry. Restarting may sign you back in."
+                );
+            }
+        }
+        return remove_token_file(&path);
+    };
+
+    if store_in_keyring(token) {
+        remove_token_file(&path)
+    } else {
+        write_token_file(&path, token)
     }
 }
 
-fn write_token(path: &Path, token: &str) -> anyhow::Result<()> {
-    std::fs::write(path, token).with_context(|| format!("Writing {}", path.display()))?;
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt as _;
-
-        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
-            .with_context(|| format!("Restricting {}", path.display()))?;
+fn in_keyring<T>(request: impl FnOnce(&keyring::Entry) -> keyring::Result<T>) -> Option<T> {
+    let answer =
+        keyring::Entry::new(KEYRING_SERVICE, MARKET_TOKEN).and_then(|entry| request(&entry));
+    match answer {
+        Ok(value) => Some(value),
+        Err(keyring::Error::NoEntry) => None,
+        Err(error) => {
+            warn!(%error, "Keyring request for the market token failed");
+            None
+        }
     }
-    Ok(())
+}
+
+fn store_in_keyring(token: &str) -> bool {
+    in_keyring(|entry| entry.set_password(token)).is_some()
+}
+
+fn write_token_file(path: &Path, token: &str) -> anyhow::Result<()> {
+    crate::state::owner_only_file()
+        .write(true)
+        .truncate(true)
+        .open(path)
+        .and_then(|mut file| file.write_all(token.as_bytes()))
+        .with_context(|| format!("Writing {}", path.display()))
+}
+
+fn remove_token_file(path: &Path) -> anyhow::Result<()> {
+    unless_missing(std::fs::remove_file(path))
+        .map(|_| ())
+        .with_context(|| format!("Removing {}", path.display()))
 }
 
 pub fn account<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Option<MarketAccount>> {
@@ -1432,5 +1477,23 @@ mod tests {
         ));
         assert!(wants_overlay_windows(b""));
         assert!(wants_overlay_windows(b"{\"settings\":"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn token_file_is_owner_only() {
+        use std::os::unix::fs::PermissionsExt as _;
+
+        let dir = std::env::temp_dir().join(format!("merframe-token-file-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join(MARKET_TOKEN);
+
+        write_token_file(&path, "token").unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "token");
+
+        let mode = std::fs::metadata(&path).unwrap().permissions().mode();
+        assert_eq!(mode & 0o777, 0o600);
+
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 }
