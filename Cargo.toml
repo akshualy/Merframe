@@ -53,6 +53,7 @@ tauri-plugin-store = "2"
 tauri-plugin-updater = { version = "2", default-features = false, features = ["system-proxy", "zip"] }
 tauri-plugin-window-state = "2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+keyring = "4"
 schemars = { version = "1", features = ["chrono04"] }
 wf-mem = { path = "crates/wf-mem" }
 wf-scan = { path = "crates/wf-scan" }

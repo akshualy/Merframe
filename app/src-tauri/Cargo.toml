@@ -19,6 +19,7 @@ axum = { workspace = true }
 chrono = { workspace = true }
 futures-util = { workspace = true }
 indexmap = { workspace = true }
+keyring = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

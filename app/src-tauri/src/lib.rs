@@ -65,15 +65,8 @@ fn open_log(data_dir: &Path) -> std::io::Result<std::fs::File> {
     if std::fs::metadata(&path).is_ok_and(|log| log.len() > 4 * 1024 * 1024) {
         std::fs::rename(&path, path.with_extension("log.1"))?;
     }
-    let mut options = std::fs::OpenOptions::new();
-    options.create(true).append(true);
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt as _;
 
-        options.mode(0o600);
-    }
-    options.open(&path)
+    state::owner_only_file().append(true).open(&path)
 }
 
 fn init_tracing(data_dir: &Path) -> std::io::Result<()> {
