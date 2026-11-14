@@ -217,8 +217,8 @@ export function EmptyPanel({ children }: { children: ReactNode }) {
 export function ErrorNote({ message }: { message: string }) {
   return (
     <div className="text-destructive flex items-center gap-2 text-sm">
-      <AlertCircle className="size-4" />
-      {message}
+      <AlertCircle className="size-4 shrink-0" />
+      <span className="min-w-0 wrap-anywhere">{message}</span>
     </div>
   );
 }

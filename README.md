@@ -96,9 +96,11 @@ App data holds the SQLite store, the last inventory as `inventory.json.gz`, WFCD
 
 ## Privacy
 
-The warframe.market session token (allows acting as you) is stored in plaintext in `market_token` in the app data directory.
-It is readable by the user's own processes, just as any other desktop client's session would be.
+The warframe.market session token (allows acting as you) is stored in your operating system's keyring (secure storage) when available.
+If saving to the keyring fails, Merframe falls back to a plaintext `market_token` file in the app data directory.
 The token does not contain your password.
+Logging out removes the saved token from the keyring and deletes the fallback file.
+You can also use **Forget Login** in the **Danger Zone** at the bottom of Settings.
 
 Merframe is not sending any of your personal data anywhere outside your PC.
 All third party calls are item-specific lookups and carry no information outside your IP (since the request is coming from your PC).

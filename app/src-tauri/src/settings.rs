@@ -711,7 +711,7 @@ fn put<R: Runtime>(
     store.save().context("Writing the settings store")
 }
 
-fn unless_missing<T>(result: std::io::Result<T>) -> std::io::Result<Option<T>> {
+pub(crate) fn unless_missing<T>(result: std::io::Result<T>) -> std::io::Result<Option<T>> {
     match result {
         Ok(value) => Ok(Some(value)),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),

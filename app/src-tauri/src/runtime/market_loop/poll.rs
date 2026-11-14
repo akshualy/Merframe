@@ -89,7 +89,8 @@ async fn checked_session<R: Runtime>(
     state: &Arc<AppState>,
     was_signed_in: bool,
 ) -> Option<String> {
-    let session = match state.market().me().await {
+    let client = state.market();
+    let session = match client.me().await {
         Ok(session) => session,
         Err(MarketError::Unauthorized) => {
             info!("Warframe.market rejected the stored token");
@@ -102,11 +103,9 @@ async fn checked_session<R: Runtime>(
         }
     };
 
-    if let Some(token) = &session.rotated_token {
-        debug!("Warframe.market issued a new token");
-        if let Err(error) = market_session::store_token(app, state, token) {
-            warn!(%error, "Rotated token save failed");
-        }
+    let rotated_token = session.rotated_token.as_deref();
+    if !market_session::adopt_checked_session(app, state, &client, rotated_token) {
+        return None;
     }
 
     let account = MarketAccount::from(&session);
