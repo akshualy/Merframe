@@ -1,4 +1,4 @@
-import { passesYesNo, type YesNo } from "@/lib/filters";
+import { matchesText, passesYesNo, type YesNo } from "@/lib/filters";
 import {
   completion,
   crafted,
@@ -222,12 +222,11 @@ const TRAITS: Record<
 };
 
 function matchesSearch(entry: InventoryEntry, search: string): boolean {
-  if (!search) {
-    return true;
-  }
   const setName = entry.kind === "part" ? entry.set.name : "";
-  const haystack = `${entry.item.name} ${setName} ${refinement(entry) ?? ""}`;
-  return haystack.toLowerCase().includes(search.toLowerCase());
+  return matchesText(
+    `${entry.item.name} ${setName} ${refinement(entry) ?? ""}`,
+    search,
+  );
 }
 
 export function keeps(

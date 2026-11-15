@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usePagePosition } from "@/hooks/use-paged";
+import { matchesText } from "@/lib/filters";
 import { counted } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -118,9 +119,7 @@ export function DataTable<TData, TValue>({
     },
     globalFilterFn: searchValue
       ? (row, _columnId, filter: string) =>
-          searchValue(row.original)
-            .toLowerCase()
-            .includes(filter.trim().toLowerCase())
+          matchesText(searchValue(row.original), filter)
       : "auto",
     onSortingChange: setSorting,
     onColumnVisibilityChange: (updater) => {

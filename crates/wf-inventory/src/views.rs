@@ -54,23 +54,23 @@ impl Inventory {
             .flat_map(<[EquipmentItem]>::iter)
     }
 
-    pub fn owned_item_types(&self) -> HashSet<&str> {
+    pub fn built_item_types(&self) -> HashSet<&str> {
         self.equipment()
             .chain(&self.ships)
             .map(|item| item.item_type.as_str())
             .collect()
     }
 
-    pub fn owns(&self, item_type: &str) -> bool {
+    pub fn held_item_types(&self) -> impl Iterator<Item = &str> {
         let cosmetics = self.weapon_skins.iter().chain(&self.flavour_items);
-        self.counted(item_type) > 0
-            || self
-                .equipment()
-                .map(|item| &item.item_type)
-                .chain(cosmetics.map(|item| &item.item_type))
-                .chain(self.upgrades.iter().map(|upgrade| &upgrade.item_type))
-                .chain(self.ship_decorations.iter().map(|item| &item.item_type))
-                .any(|owned| owned == item_type)
+        self.counted_items()
+            .filter(|item| item.item_count > 0)
+            .map(|item| &item.item_type)
+            .chain(self.equipment().map(|item| &item.item_type))
+            .chain(cosmetics.map(|item| &item.item_type))
+            .chain(self.upgrades.iter().map(|upgrade| &upgrade.item_type))
+            .chain(self.ship_decorations.iter().map(|item| &item.item_type))
+            .map(String::as_str)
     }
 
     pub fn is_founder(&self) -> bool {
@@ -188,6 +188,8 @@ fn max_per_key<'a, T: Ord + Default + Copy>(
 
 #[cfg(test)]
 pub(crate) mod tests {
+    use std::collections::HashSet;
+
     use crate::model::Inventory;
     use chrono::Datelike;
 
@@ -299,9 +301,9 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn owned_item_types() {
+    fn built_item_types() {
         let inv = fixture();
-        let owned = inv.owned_item_types();
+        let owned = inv.built_item_types();
         assert!(owned.contains("/Lotus/Powersuits/Trinity/TrinityPrime"));
         assert!(owned.contains("/Lotus/Types/Sentinels/SentinelWeapons/Gremlin"));
         assert!(owned.contains("/Lotus/Types/Vehicles/Hoverboard/HoverboardSuit"));
@@ -311,24 +313,27 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn owns_across_collections() {
+    fn held_across_collections() {
         let inv = fixture();
-        assert!(inv.owns("/Lotus/Powersuits/Trinity/TrinityPrime"));
-        assert!(inv.owns("/Lotus/Types/Items/MiscItems/Ferrite"));
-        assert!(inv.owns("/Lotus/Upgrades/Skins/Sigils/BossSigilJackal"));
-        assert!(inv.owns("/Lotus/Types/StoreItems/AvatarImages/AvatarImageItem1"));
-        assert!(inv.owns("/Lotus/Upgrades/Mods/Warframe/AvatarShieldMaxMod"));
-        assert!(!inv.owns("/Lotus/Weapons/Corpus/LongGuns/Prisma/PrismaGrakata"));
+        let held: HashSet<&str> = inv.held_item_types().collect();
+
+        assert!(held.contains("/Lotus/Powersuits/Trinity/TrinityPrime"));
+        assert!(held.contains("/Lotus/Types/Items/MiscItems/Ferrite"));
+        assert!(held.contains("/Lotus/Upgrades/Skins/Sigils/BossSigilJackal"));
+        assert!(held.contains("/Lotus/Types/StoreItems/AvatarImages/AvatarImageItem1"));
+        assert!(held.contains("/Lotus/Upgrades/Mods/Warframe/AvatarShieldMaxMod"));
+        assert!(!held.contains("/Lotus/Weapons/Corpus/LongGuns/Prisma/PrismaGrakata"));
     }
 
     #[test]
-    fn owns_ship_decorations() {
+    fn held_ship_decorations() {
         const BOBBLE_HEAD: &str = "/Lotus/Types/Items/ShipDecos/TeshinBobbleHead";
         let decorated = patched(&format!(
             r#""ShipDecorations":[{{"ItemType":"{BOBBLE_HEAD}","ItemCount":1}}]"#
         ));
-        assert!(decorated.owns(BOBBLE_HEAD));
-        assert!(!fixture().owns(BOBBLE_HEAD));
+
+        assert!(decorated.held_item_types().any(|held| held == BOBBLE_HEAD));
+        assert!(!fixture().held_item_types().any(|held| held == BOBBLE_HEAD));
     }
 
     #[test]
