@@ -241,7 +241,7 @@ pub mod fixtures {
 
     use chrono::{DateTime, Utc};
     use serde_json::{Value, json};
-    use wf_data::{GameData, NightwaveActs};
+    use wf_data::{Dictionary, GameData, NightwaveActs};
     use wf_inventory::Inventory;
 
     use super::Catalog;
@@ -382,7 +382,8 @@ pub mod fixtures {
     }
 
     pub fn nightwave_catalog() -> Catalog {
-        let acts = NightwaveActs::from_json(NIGHTWAVE_ACTS, NIGHTWAVE_DICTIONARY).unwrap();
+        let dictionary = Dictionary::from_json(NIGHTWAVE_DICTIONARY).unwrap();
+        let acts = NightwaveActs::from_json(NIGHTWAVE_ACTS, &dictionary).unwrap();
         let data = GameData::from_json(MISC_ITEMS, RELICS, COMPONENTS).unwrap();
 
         Catalog::new(data.with_nightwave_acts(acts))

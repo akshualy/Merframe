@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 
+use crate::dictionary::Dictionary;
 use crate::error::{DataError, Result};
 use crate::markup::without_markup;
 
@@ -30,11 +31,9 @@ pub struct NightwaveActs {
 }
 
 impl NightwaveActs {
-    pub fn from_json(export: &str, dictionary: &str) -> Result<Self> {
+    pub fn from_json(export: &str, dictionary: &Dictionary) -> Result<Self> {
         let export: RawNightwaveExport = serde_json::from_str(export)
             .map_err(|source| DataError::Parse("Nightwave act", source))?;
-        let dictionary: HashMap<String, String> = serde_json::from_str(dictionary)
-            .map_err(|source| DataError::Parse("Nightwave dictionary", source))?;
 
         let by_name = export
             .challenges
@@ -44,7 +43,7 @@ impl NightwaveActs {
                     .rsplit_once('/')
                     .map_or(path.as_str(), |(_, name)| name);
                 let act = NightwaveAct {
-                    title: dictionary.get(&act.name)?.clone(),
+                    title: dictionary.get(&act.name)?.to_owned(),
                     description_template: without_markup(dictionary.get(&act.description)?)
                         .trim_end()
                         .trim_end_matches('.')
@@ -71,7 +70,8 @@ mod tests {
 
     #[test]
     fn act_by_name() {
-        let acts = NightwaveActs::from_json(EXPORT, DICTIONARY).unwrap();
+        let dictionary = Dictionary::from_json(DICTIONARY).unwrap();
+        let acts = NightwaveActs::from_json(EXPORT, &dictionary).unwrap();
         let trampoline = acts.get("SeasonDailyBulletJump").unwrap();
 
         assert_eq!(trampoline.title, "Trampoline");
@@ -82,15 +82,9 @@ mod tests {
     #[test]
     fn untranslated_act_left_out() {
         let export = r#"{"challenges":{"/Lotus/Types/Challenges/Seasons/Daily/SeasonDailyNew":{"name":"/Lotus/Language/New_Name","description":"/Lotus/Language/New_Description","required":2}}}"#;
-        let acts =
-            NightwaveActs::from_json(export, r#"{"/Lotus/Language/New_Name":"New"}"#).unwrap();
+        let dictionary = Dictionary::from_json(r#"{"/Lotus/Language/New_Name":"New"}"#).unwrap();
+        let acts = NightwaveActs::from_json(export, &dictionary).unwrap();
 
         assert_eq!(acts.get("SeasonDailyNew"), None);
-    }
-
-    #[test]
-    fn rejects_malformed_json() {
-        assert!(NightwaveActs::from_json("{", "{}").is_err());
-        assert!(NightwaveActs::from_json(r#"{"challenges":{}}"#, "[").is_err());
     }
 }

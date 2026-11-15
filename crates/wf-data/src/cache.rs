@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use futures_util::future::{try_join, try_join_all, try_join3};
+use futures_util::future::{join, try_join_all, try_join3};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
+use crate::dictionary::Dictionary;
 use crate::error::{DataError, Result};
 use crate::game_data::GameData;
 use crate::nightwave::NightwaveActs;
@@ -89,12 +90,22 @@ pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameD
     meta.record(RELICS_FILE, relics_entry);
     meta.record(COMPONENTS_FILE, components_entry);
 
-    let nightwave_acts = load_nightwave_acts(dir, client, &mut meta)
-        .await
-        .unwrap_or_else(|error| {
-            warn!(%error, "Loading the Nightwave acts failed, their names are derived from their type names");
-            NightwaveActs::default()
+    let (dictionary, nightwave_acts) = join(
+        fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, DICTIONARY_FILE, client, &meta),
+        fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, NIGHTWAVE_ACTS_FILE, client, &meta),
+    )
+    .await;
+    let dictionary = parsed_or_default(
+        DICTIONARY_FILE,
+        dictionary,
+        &mut meta,
+        Dictionary::from_json,
+    );
+    let nightwave_acts =
+        parsed_or_default(NIGHTWAVE_ACTS_FILE, nightwave_acts, &mut meta, |body| {
+            NightwaveActs::from_json(body, &dictionary)
         });
+
     write_meta(&meta_path, &meta).await?;
 
     Ok(
@@ -103,21 +114,27 @@ pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameD
     )
 }
 
-async fn load_nightwave_acts(
-    dir: &Path,
-    client: &reqwest::Client,
+fn parsed_or_default<T: Default>(
+    file_name: &str,
+    fetched: Result<(String, Option<CacheEntry>)>,
     meta: &mut CacheMeta,
-) -> Result<NightwaveActs> {
-    let ((acts_body, acts_entry), (dictionary_body, dictionary_entry)) = try_join(
-        fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, NIGHTWAVE_ACTS_FILE, client, meta),
-        fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, DICTIONARY_FILE, client, meta),
-    )
-    .await?;
-    let acts = NightwaveActs::from_json(&acts_body, &dictionary_body)?;
-
-    meta.record(NIGHTWAVE_ACTS_FILE, acts_entry);
-    meta.record(DICTIONARY_FILE, dictionary_entry);
-    Ok(acts)
+    parse: impl FnOnce(&str) -> Result<T>,
+) -> T {
+    let parsed = fetched.and_then(|(body, entry)| Ok((parse(&body)?, entry)));
+    match parsed {
+        Ok((parsed, entry)) => {
+            meta.record(file_name, entry);
+            parsed
+        }
+        Err(error) => {
+            warn!(
+                file = file_name,
+                %error,
+                "Loading the game data file failed, everything read from it is missing"
+            );
+            T::default()
+        }
+    }
 }
 
 async fn read_meta(path: &Path) -> CacheMeta {
