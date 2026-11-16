@@ -13,6 +13,7 @@ pub(crate) struct Account {
     pub(crate) foundry: FoundryStock,
     affinity: HashMap<String, u64>,
     built: HashSet<String>,
+    owned: HashSet<String>,
 }
 
 impl Account {
@@ -26,10 +27,11 @@ impl Account {
                 .map(|(item_type, xp)| (item_type.to_owned(), xp))
                 .collect(),
             built: inventory
-                .owned_item_types()
+                .built_item_types()
                 .into_iter()
                 .map(str::to_owned)
                 .collect(),
+            owned: inventory.held_item_types().map(str::to_owned).collect(),
             inventory,
         }
     }
@@ -40,6 +42,10 @@ impl Account {
 
     pub(crate) fn built(&self, unique_name: &str) -> bool {
         self.built.contains(unique_name)
+    }
+
+    pub(crate) fn owns(&self, unique_name: &str) -> bool {
+        self.owned.contains(unique_name)
     }
 
     pub(crate) fn mastered(&self, item: &Item) -> bool {

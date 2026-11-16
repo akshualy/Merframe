@@ -236,7 +236,7 @@ fn baro_manifest(core: &Core, baro: Option<&BaroStatus>) -> Vec<BaroGroup> {
                 name: baro_offer_name(core.items(), &item_type),
                 ducats: offer.ducats,
                 credits: offer.credits,
-                owned: core.inventory().map(|inventory| inventory.owns(&item_type)),
+                owned: core.owns(&item_type),
             });
         }
     }
@@ -275,9 +275,7 @@ fn market_offers(core: &Core, sales: Vec<MarketSale>) -> Vec<MarketOffer> {
         .filter_map(|sale| {
             let owned = match sale.package_name {
                 Some(_) => None,
-                None => core
-                    .inventory()
-                    .map(|inventory| inventory.owns(&sale.type_name)),
+                None => core.owns(&sale.type_name),
             };
             let name = sale
                 .package_name

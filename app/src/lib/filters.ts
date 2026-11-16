@@ -4,6 +4,10 @@ export const ANY = "any";
 
 export const NO_FILTER_MATCHES = "Nothing matches these filters.";
 
+export function matchesText(text: string, search: string): boolean {
+  return text.toLowerCase().includes(search.trim().toLowerCase());
+}
+
 export function failsYesNo(mode: YesNo, flag: boolean | null): boolean {
   return (mode === "yes") !== flag;
 }

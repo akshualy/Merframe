@@ -179,6 +179,12 @@ impl Core {
         self.account.as_ref().map(|account| &account.inventory)
     }
 
+    pub fn owns(&self, unique_name: &str) -> Option<bool> {
+        self.account
+            .as_ref()
+            .map(|account| account.owns(unique_name))
+    }
+
     pub fn latest_snapshot(&self) -> Option<&Snapshot> {
         self.latest_snapshot.as_ref()
     }
