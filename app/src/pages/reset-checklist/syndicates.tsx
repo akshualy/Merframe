@@ -3,11 +3,12 @@ import { type ReactNode, useMemo, useState } from "react";
 import { Amount } from "@/components/currency";
 import { ItemImage } from "@/components/item-image";
 import { Section, Surface } from "@/components/page";
+import { Badge } from "@/components/ui/badge";
 import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
 import { SwitchField } from "@/components/ui/switch";
-import { toggled } from "@/lib/filters";
-import { num } from "@/lib/format";
+import { matchesText, toggled } from "@/lib/filters";
+import { counted, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type {
   SyndicateDailyStanding,
@@ -20,6 +21,7 @@ import type {
   SyndicatesTab,
 } from "@/types";
 import { ResetChecklistCountdown } from "./reset-countdown";
+import { SyndicateOffers, useSyndicateOffers } from "./syndicate-offers";
 import { ResetChecklistTile } from "./tiles";
 
 const PLEDGE_MARKS: Record<
@@ -125,13 +127,24 @@ function SyndicateMeter({
   );
 }
 
-function SyndicateTile({ syndicate }: { syndicate: SyndicateOverview }) {
+function SyndicateTile({
+  syndicate,
+  matches,
+}: {
+  syndicate: SyndicateOverview;
+  matches: number | null;
+}) {
   const { standing, meter, rank, daily, pledge } = syndicate;
   return (
-    <ResetChecklistTile>
+    <ResetChecklistTile className={cn(matches === 0 && "opacity-50")}>
       <span className="flex items-center gap-2">
         <span className="truncate font-medium">{syndicate.name}</span>
         {pledge && <SyndicatePledgeMark relation={pledge} />}
+        {matches !== null && matches > 0 && (
+          <Badge variant="accent" className="ml-auto">
+            {counted(matches, "match", "matches")}
+          </Badge>
+        )}
       </span>
       <Hint as="span" className="h-4">
         {rank && rankText(rank)}
@@ -182,46 +195,68 @@ export function ResetChecklistSyndicates({
   now: number;
 }) {
   const { syndicates } = tab;
+  const [search, setSearch] = useState("");
   const [excluded, setExcluded] = useState<SyndicateKind[]>(["event"]);
   const included = useMemo(
     () => syndicates.filter((syndicate) => !excluded.includes(syndicate.kind)),
     [syndicates, excluded],
   );
+  const selection = useSyndicateOffers(included);
+
+  const matches = (syndicate: SyndicateOverview) =>
+    search.trim() === ""
+      ? null
+      : selection.offers.filter(
+          (offer) =>
+            offer.tag === syndicate.tag &&
+            matchesText(offer.search_text, search),
+        ).length;
   const tile = (syndicate: SyndicateOverview) => (
-    <SyndicateTile key={syndicate.tag} syndicate={syndicate} />
+    <SyndicateTile
+      key={syndicate.tag}
+      syndicate={syndicate}
+      matches={matches(syndicate)}
+    />
   );
 
   const factions = included.filter(({ kind }) => kind === "faction");
   const others = included.filter(({ kind }) => kind !== "faction");
 
   return (
-    <Section
-      title="Syndicates"
-      action={<ResetChecklistCountdown window={tab.daily_reset} now={now} />}
-      controls={
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          {KIND_SWITCHES.map(({ kind, label }) => (
-            <SwitchField
-              key={kind}
-              id={`syndicates-exclude-${kind}`}
-              label={label}
-              checked={excluded.includes(kind)}
-              onChange={(checked) =>
-                setExcluded(toggled(excluded, kind, checked))
-              }
-            />
-          ))}
+    <div className="flex flex-col gap-4">
+      <Section
+        title="Syndicates"
+        action={<ResetChecklistCountdown window={tab.daily_reset} now={now} />}
+        controls={
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            {KIND_SWITCHES.map(({ kind, label }) => (
+              <SwitchField
+                key={kind}
+                id={`syndicates-exclude-${kind}`}
+                label={label}
+                checked={excluded.includes(kind)}
+                onChange={(checked) =>
+                  setExcluded(toggled(excluded, kind, checked))
+                }
+              />
+            ))}
+          </div>
+        }
+      >
+        <div className="flex flex-col gap-3">
+          {tab.faction_daily && factions.length > 0 && (
+            <SyndicateFactionStanding daily={tab.faction_daily}>
+              {factions.map(tile)}
+            </SyndicateFactionStanding>
+          )}
+          <SyndicateTileGrid>{others.map(tile)}</SyndicateTileGrid>
         </div>
-      }
-    >
-      <div className="flex flex-col gap-3">
-        {tab.faction_daily && factions.length > 0 && (
-          <SyndicateFactionStanding daily={tab.faction_daily}>
-            {factions.map(tile)}
-          </SyndicateFactionStanding>
-        )}
-        <SyndicateTileGrid>{others.map(tile)}</SyndicateTileGrid>
-      </div>
-    </Section>
+      </Section>
+      <SyndicateOffers
+        syndicates={included}
+        selection={selection}
+        onSearchChange={setSearch}
+      />
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { CardGrid, Surface } from "@/components/page";
+import { cn } from "@/lib/utils";
 
 export function ResetChecklistTileGrid({ children }: { children: ReactNode }) {
   return (
@@ -9,6 +10,16 @@ export function ResetChecklistTileGrid({ children }: { children: ReactNode }) {
   );
 }
 
-export function ResetChecklistTile({ children }: { children: ReactNode }) {
-  return <Surface className="gap-1.5 p-3 text-sm">{children}</Surface>;
+export function ResetChecklistTile({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Surface className={cn("gap-1.5 p-3 text-sm", className)}>
+      {children}
+    </Surface>
+  );
 }

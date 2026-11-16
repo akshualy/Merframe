@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::markup::without_markup;
+
 pub fn store_item_to_type(path: &str) -> String {
     path.replacen("/Lotus/StoreItems/", "/Lotus/", 1)
 }
@@ -38,7 +40,10 @@ pub struct Attack {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LevelStat {}
+pub struct LevelStat {
+    #[serde(default)]
+    pub stats: Vec<String>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Component {
@@ -128,12 +133,36 @@ pub struct Item {
     pub fusion_limit: Option<u32>,
     #[serde(rename = "levelStats")]
     pub level_stats: Option<Vec<LevelStat>>,
+    pub description: Option<String>,
+    #[serde(rename = "compatName")]
+    pub compat_name: Option<String>,
+    #[serde(rename = "isAugment")]
+    pub is_augment: Option<bool>,
 }
 
 pub const DEFAULT_MAX_RANK: u32 = 30;
 pub const MECH_MAX_RANK: u32 = 40;
 
 impl Item {
+    pub fn offer_search_terms(&self) -> impl Iterator<Item = String> {
+        let augmented = self
+            .compat_name
+            .clone()
+            .filter(|_| self.is_augment == Some(true));
+        let top_rank = self
+            .level_stats
+            .iter()
+            .flatten()
+            .next_back()
+            .filter(|rank| !rank.stats.is_empty())
+            .map(|rank| rank.stats.join(" "));
+        let description = top_rank
+            .or_else(|| self.description.clone())
+            .map(|text| without_markup(&text));
+
+        augmented.into_iter().chain(description)
+    }
+
     pub fn masterable(&self) -> bool {
         self.masterable.unwrap_or(false)
     }
@@ -275,6 +304,9 @@ pub(crate) mod tests {
             upgrade_entries: None,
             fusion_limit: None,
             level_stats: None,
+            description: None,
+            compat_name: None,
+            is_augment: None,
         }
     }
 
@@ -456,6 +488,44 @@ pub(crate) mod tests {
         plain.masterable = None;
         assert!(!plain.masterable());
         assert!(item("Primary", "LongGuns").masterable());
+    }
+
+    #[test]
+    fn offer_search_terms_of_augments_and_others() {
+        let terms = |item: &Item| item.offer_search_terms().collect::<Vec<_>>();
+        let augment = Item {
+            compat_name: Some("Voruna".to_owned()),
+            is_augment: Some(true),
+            level_stats: Some(vec![
+                LevelStat {
+                    stats: vec!["Rank 0 text".to_owned()],
+                },
+                LevelStat {
+                    stats: vec![
+                        "Shroud of Dynar Augment: <DT_SLASH_COLOR>Slash damage.".to_owned(),
+                        "+1 'Justice'".to_owned(),
+                    ],
+                },
+            ]),
+            description: Some("Unused".to_owned()),
+            ..item("Mods", "Upgrades")
+        };
+        let rifle_mod = Item {
+            compat_name: Some("Rifle".to_owned()),
+            is_augment: Some(false),
+            description: Some("A <LINE_SEPARATOR>rifle mod".to_owned()),
+            ..item("Mods", "Upgrades")
+        };
+
+        assert_eq!(
+            terms(&augment),
+            [
+                "Voruna",
+                "Shroud of Dynar Augment: Slash damage. +1 'Justice'"
+            ]
+        );
+        assert_eq!(terms(&rifle_mod), ["A rifle mod"]);
+        assert!(terms(&item("Misc", "Misc")).is_empty());
     }
 
     #[test]

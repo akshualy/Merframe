@@ -82,6 +82,10 @@ impl PriceSource for SharedPrices {
     fn buy_plat(&self, market_slug: &str) -> Option<f64> {
         lock(&self.cache).buy_plat(market_slug)
     }
+
+    fn weekly_trades(&self, market_slug: &str) -> Option<u32> {
+        lock(&self.cache).weekly_trades(market_slug)
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]

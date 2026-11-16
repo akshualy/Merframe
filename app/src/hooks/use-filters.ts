@@ -13,6 +13,8 @@ export function useFilters<T extends { [K in keyof T]: string | null }>(
   );
   const clear = useCallback(() => setValues(cleared), [cleared]);
 
-  const active = Object.values(values).filter((value) => value !== null).length;
+  const active = (Object.keys(values) as (keyof T)[]).filter(
+    (key) => values[key] !== cleared[key],
+  ).length;
   return { values, set, active, clear };
 }

@@ -209,6 +209,7 @@ export type * from "./StatsTab";
 export type * from "./StoredTrade";
 export type * from "./SyndicateDailyStanding";
 export type * from "./SyndicateKind";
+export type * from "./SyndicateOfferRow";
 export type * from "./SyndicateOverview";
 export type * from "./SyndicatePledgeRelation";
 export type * from "./SyndicateProgressMeter";
