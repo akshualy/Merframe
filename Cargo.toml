@@ -25,7 +25,7 @@ flate2 = "1"
 indexmap = "2.14"
 notify = "8"
 notify-rust = "4"
-gdk = "0.18"
+gdk = "0.19"
 gtk = "0.18"
 windows-sys = { version = "0.60", features = [
     "Win32_System_Memory",
