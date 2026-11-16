@@ -41,6 +41,7 @@ use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
 use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
 use crate::store::{Snapshot, StatPoint, Store, TimeRange};
+use crate::syndicates::{self, SyndicatesTab};
 use crate::trade::{Trade, player_name};
 use crate::view::View;
 
@@ -598,6 +599,10 @@ impl Core {
         );
 
         Ok(Some(reset_checklist::tab(&context)))
+    }
+
+    pub fn syndicates_tab(&self, now: DateTime<Utc>) -> Option<SyndicatesTab> {
+        Some(syndicates::tab(&self.view()?, now))
     }
 
     pub fn set_reset_checklist_checked(

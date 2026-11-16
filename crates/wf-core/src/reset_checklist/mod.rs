@@ -18,11 +18,13 @@ use wf_worldstate::ResetWindow;
 
 use cadence::ResetCadence;
 pub use cadence::ResetChecklistGroup;
+#[cfg(test)]
+pub(crate) use context::fixtures;
 pub(crate) use context::{ResetChecklistContext, ResetChecklistStored, ResetChecklistWorld};
 use definitions::{RESET_CHECKLIST_ROWS, ResetChecklistRowDefinition};
 pub use definitions::{ResetChecklistManualRowId, ResetChecklistRowId};
 pub(crate) use kuva_purchases::VendorKuvaBought;
-pub use standing::ResetChecklistStandingPool;
+pub(crate) use standing::DailyStanding;
 pub use trackers::ResetChecklistProgress;
 use trackers::Tracker;
 pub use vendors::{
@@ -77,7 +79,6 @@ pub struct ResetChecklistTab {
     pub sortie: Option<ResetWindow>,
     pub synced_at: Option<DateTime<Utc>>,
     pub rows: Vec<ResetChecklistRow>,
-    pub standing: Vec<ResetChecklistStandingPool>,
     pub vendors: Vec<ResetChecklistVendor>,
     pub kuva: KuvaWeeklySummary,
 }
@@ -114,7 +115,6 @@ pub(crate) fn tab(context: &ResetChecklistContext) -> ResetChecklistTab {
             .iter()
             .map(|definition| reset_checklist_row(definition, context))
             .collect(),
-        standing: standing::standing_pools(context),
         kuva: vendors::kuva_summary(&vendors),
         vendors,
     }

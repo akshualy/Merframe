@@ -12,6 +12,12 @@ pub struct ResetWindow {
     pub expiry: DateTime<Utc>,
 }
 
+impl ResetWindow {
+    pub fn contains(self, at: DateTime<Utc>) -> bool {
+        at >= self.activation && at < self.expiry
+    }
+}
+
 impl From<Window> for ResetWindow {
     fn from(window: Window) -> Self {
         Self {

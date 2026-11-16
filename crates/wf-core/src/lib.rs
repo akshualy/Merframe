@@ -23,6 +23,7 @@ mod resurgence;
 mod rivens;
 mod stats;
 mod store;
+mod syndicates;
 mod text;
 mod trade;
 mod view;
@@ -71,8 +72,7 @@ pub use relic_planner::{
 pub use reset_checklist::{
     ArchonShardColour, KuvaWeeklySummary, ResetChecklistGroup, ResetChecklistManualRowId,
     ResetChecklistProgress, ResetChecklistRow, ResetChecklistRowId, ResetChecklistRowPart,
-    ResetChecklistStandingPool, ResetChecklistTab, ResetChecklistVendor, VendorKuvaCertainty,
-    VendorWeeklyOffer,
+    ResetChecklistTab, ResetChecklistVendor, VendorKuvaCertainty, VendorWeeklyOffer,
 };
 pub use resources::{
     ResourceQuery, ResourceRow, ResourceScope, ResourceSource, ResourceUse, ResourcesTab,
@@ -90,6 +90,11 @@ pub use stats::{
 };
 pub use store::{
     RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
+};
+pub use syndicates::{
+    SyndicateDailyStanding, SyndicateKind, SyndicateOverview, SyndicatePledgeRelation,
+    SyndicateProgressMeter, SyndicateRankStanding, SyndicateRankUp, SyndicateRankUpItem,
+    SyndicatesTab,
 };
 pub use text::{counted, thousands};
 pub use trade::{Trade, TradeItem, relic_refinement, traded_set};

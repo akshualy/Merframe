@@ -7,7 +7,7 @@ use wf_worldstate::{
 
 use crate::reset_checklist::ResetChecklistRowPart;
 use crate::reset_checklist::cadence::{Cadence, ResetCadence, WorldCadence};
-use crate::reset_checklist::context::{ResetChecklistContext, ResetChecklistWorld};
+use crate::reset_checklist::context::{ResetChecklistContext, ResetChecklistWorld, left_today};
 use crate::reset_checklist::definitions::ResetChecklistManualRowId;
 use crate::reset_checklist::nightwave::{active_acts, recovered_acts};
 use crate::reset_checklist::syndicate_missions::syndicate_missions;
@@ -241,7 +241,7 @@ fn daily_trade_cap(inventory: &Inventory) -> u32 {
 
 fn remaining_today(context: &ResetChecklistContext, left: Option<u32>, cap: u32) -> Tracked {
     left.map_or_else(Tracked::unknown, |left| {
-        Tracked::remaining(context.left_today(left, cap), cap)
+        Tracked::remaining(left_today(context.synced_today(), left, cap), cap)
     })
 }
 

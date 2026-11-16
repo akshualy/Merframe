@@ -37,7 +37,6 @@ fn every_row_listed() {
     assert_eq!(tab.synced_at, Some(synced_at()));
     assert_eq!(tab.daily.activation, at(1_788_739_200_000));
     assert_eq!(tab.weekly.expiry, at(1_789_344_000_000));
-    assert_eq!(tab.standing.len(), 14);
     assert_eq!(tab.vendors.len(), 11);
 }
 
