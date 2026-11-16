@@ -204,6 +204,8 @@ pub struct Affiliation {
     #[serde(default)]
     pub title: i32,
     #[serde(default)]
+    pub free_favors_earned: Vec<i32>,
+    #[serde(default)]
     pub weekly_missions: Vec<SyndicateWeeklyMission>,
 }
 
@@ -362,6 +364,7 @@ pub struct Inventory {
     pub player_skills: PlayerSkills,
     #[serde(default)]
     pub affiliations: Vec<Affiliation>,
+    pub supported_syndicate: Option<String>,
     #[serde(default)]
     pub challenge_progress: Vec<ChallengeProgress>,
     #[serde(default)]

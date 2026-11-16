@@ -1,0 +1,234 @@
+{
+ "SteelMeridianSyndicate": {
+  "name": "/Lotus/Language/Syndicates/SteelMeridianName",
+  "dailyLimitBin": "STANDING_LIMIT_BIN_NORMAL",
+  "alignments": {
+   "PerrinSyndicate": -1,
+   "NewLokaSyndicate": -0.5,
+   "RedVeilSyndicate": 0.5
+  },
+  "titles": [
+   {
+    "level": 5,
+    "name": "/Lotus/Language/Syndicates/SteelMeridianTitle5",
+    "minStanding": 240000,
+    "maxStanding": 372000,
+    "sacrifice": {
+     "items": [
+      {
+       "ItemCount": 3,
+       "ItemType": "/Lotus/Types/Items/MiscItems/SchismKey"
+      }
+     ],
+     "credits": 500000
+    }
+   },
+   {
+    "level": 4,
+    "name": "/Lotus/Language/Syndicates/SteelMeridianTitle4",
+    "minStanding": 141000,
+    "maxStanding": 240000,
+    "sacrifice": {
+     "items": [
+      {
+       "ItemCount": 2,
+       "ItemType": "/Lotus/Types/Items/MiscItems/SchismKey"
+      }
+     ],
+     "credits": 250000
+    }
+   },
+   {
+    "level": 3,
+    "name": "/Lotus/Language/Syndicates/SteelMeridianTitle3",
+    "minStanding": 71000,
+    "maxStanding": 141000,
+    "sacrifice": {
+     "items": [
+      {
+       "ItemCount": 1,
+       "ItemType": "/Lotus/Types/Items/MiscItems/OrokinCatalyst"
+      }
+     ],
+     "credits": 100000
+    }
+   },
+   {
+    "level": 2,
+    "name": "/Lotus/Language/Syndicates/SteelMeridianTitle2",
+    "minStanding": 27000,
+    "maxStanding": 71000,
+    "sacrifice": {
+     "items": [
+      {
+       "ItemCount": 1,
+       "ItemType": "/Lotus/Types/Items/MiscItems/Forma"
+      }
+     ],
+     "credits": 50000
+    }
+   },
+   {
+    "level": 1,
+    "name": "/Lotus/Language/Syndicates/SteelMeridianTitle1",
+    "minStanding": 5000,
+    "maxStanding": 27000,
+    "sacrifice": {
+     "items": [
+      {
+       "ItemCount": 2,
+       "ItemType": "/Lotus/Types/Items/MiscItems/Morphic"
+      }
+     ],
+     "credits": 30000
+    }
+   },
+   {
+    "level": -1,
+    "name": "/Lotus/Language/Syndicates/SteelMeridianTitleNeg1",
+    "minStanding": -27000,
+    "maxStanding": -5000,
+    "sacrifice": {
+     "items": [
+      {
+       "ItemCount": 1,
+       "ItemType": "/Lotus/Types/Items/MiscItems/Forma"
+      }
+     ],
+     "credits": 50000
+    }
+   },
+   {
+    "level": -2,
+    "name": "/Lotus/Language/Syndicates/SteelMeridianTitleNeg2",
+    "minStanding": -71000,
+    "maxStanding": -27000,
+    "sacrifice": {
+     "items": [
+      {
+       "ItemCount": 1,
+       "ItemType": "/Lotus/Types/Items/MiscItems/OrokinCatalyst"
+      }
+     ],
+     "credits": 100000
+    }
+   }
+  ],
+  "favours": [
+   {
+    "storeItem": "/Lotus/StoreItems/Types/BoosterPacks/RandomSyndicateProjectionPack",
+    "standingCost": 20000,
+    "requiredLevel": 2
+   },
+   {
+    "storeItem": "/Lotus/StoreItems/Upgrades/Mods/Syndicate/DualCleaversMod",
+    "standingCost": 25000,
+    "requiredLevel": 4
+   }
+  ]
+ },
+ "VentKidsSyndicate": {
+  "name": "/Lotus/Language/Syndicates/VentkidsName",
+  "dailyLimitBin": "STANDING_LIMIT_BIN_VENTKIDS",
+  "titles": [
+   {
+    "level": 5,
+    "name": "/Lotus/Language/Syndicates/VentkidsTitle5",
+    "minStanding": 240000,
+    "maxStanding": 372000
+   },
+   {
+    "level": 4,
+    "name": "/Lotus/Language/Syndicates/VentkidsTitle4",
+    "minStanding": 141000,
+    "maxStanding": 240000
+   },
+   {
+    "level": 3,
+    "name": "/Lotus/Language/Syndicates/VentkidsTitle3",
+    "minStanding": 71000,
+    "maxStanding": 141000
+   },
+   {
+    "level": 2,
+    "name": "/Lotus/Language/Syndicates/VentkidsTitle2",
+    "minStanding": 27000,
+    "maxStanding": 71000
+   },
+   {
+    "level": 1,
+    "name": "/Lotus/Language/Syndicates/VentkidsTitle1",
+    "minStanding": 5000,
+    "maxStanding": 27000
+   }
+  ],
+  "favours": [
+   {
+    "storeItem": "/Lotus/StoreItems/Upgrades/Mods/Hoverboard/HBDoubleJumpHeightMod",
+    "standingCost": 7500,
+    "requiredLevel": 2
+   }
+  ]
+ },
+ "LibrarySyndicate": {
+  "name": "/Lotus/Language/Syndicates/LibraryTitle",
+  "dailyLimitBin": "STANDING_LIMIT_BIN_LIBRARY",
+  "favours": [
+   {
+    "storeItem": "/Lotus/StoreItems/Upgrades/Mods/Archwing/Melee/ArchwingMeleeScanOnKillMod",
+    "standingCost": 100000,
+    "requiredLevel": 0
+   }
+  ]
+ },
+ "KahlSyndicate": {
+  "name": "/Lotus/Language/Syndicates/KahlSyndicateName",
+  "dailyLimitBin": "STANDING_LIMIT_BIN_KAHL",
+  "titles": [
+   {
+    "level": 5,
+    "name": "/Lotus/Language/Syndicates/KahlSyndicateTitle5",
+    "minStanding": 4,
+    "maxStanding": 5
+   },
+   {
+    "level": 4,
+    "name": "/Lotus/Language/Syndicates/KahlSyndicateTitle4",
+    "minStanding": 3,
+    "maxStanding": 4
+   },
+   {
+    "level": 3,
+    "name": "/Lotus/Language/Syndicates/KahlSyndicateTitle3",
+    "minStanding": 2,
+    "maxStanding": 3
+   },
+   {
+    "level": 2,
+    "name": "/Lotus/Language/Syndicates/KahlSyndicateTitle2",
+    "minStanding": 1,
+    "maxStanding": 2
+   },
+   {
+    "level": 1,
+    "name": "/Lotus/Language/Syndicates/KahlSyndicateTitle1",
+    "minStanding": 0,
+    "maxStanding": 1
+   }
+  ],
+  "favours": []
+ },
+ "RadioLegionSyndicate": {
+  "name": "/Lotus/Language/Syndicates/RadioLegionTitle",
+  "dailyLimitBin": "STANDING_LIMIT_BIN_NONE",
+  "titles": [
+   {
+    "level": 60,
+    "name": "/Lotus/Language/Syndicates/RadioLegionTitle60",
+    "minStanding": 600000,
+    "maxStanding": 610000
+   }
+  ],
+  "favours": []
+ }
+}

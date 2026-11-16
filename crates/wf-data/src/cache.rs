@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use futures_util::future::{join, try_join_all, try_join3};
+use futures_util::future::{join3, try_join_all, try_join3};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
@@ -9,6 +9,7 @@ use crate::dictionary::Dictionary;
 use crate::error::{DataError, Result};
 use crate::game_data::GameData;
 use crate::nightwave::NightwaveActs;
+use crate::syndicate::parse_syndicates;
 
 const ITEM_CATEGORIES: &[&str] = &[
     "Warframes",
@@ -35,6 +36,7 @@ const ITEM_CATEGORIES: &[&str] = &[
 const RELICS_FILE: &str = "Relics.json";
 const COMPONENTS_FILE: &str = "Components.json";
 const NIGHTWAVE_ACTS_FILE: &str = "ExportNightwave.json";
+const SYNDICATES_FILE: &str = "ExportSyndicates.json";
 const DICTIONARY_FILE: &str = "dict.en.json";
 
 const WFCD_ITEMS: &str = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json";
@@ -90,9 +92,10 @@ pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameD
     meta.record(RELICS_FILE, relics_entry);
     meta.record(COMPONENTS_FILE, components_entry);
 
-    let (dictionary, nightwave_acts) = join(
+    let (dictionary, nightwave_acts, syndicates) = join3(
         fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, DICTIONARY_FILE, client, &meta),
         fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, NIGHTWAVE_ACTS_FILE, client, &meta),
+        fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, SYNDICATES_FILE, client, &meta),
     )
     .await;
     let dictionary = parsed_or_default(
@@ -101,16 +104,21 @@ pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameD
         &mut meta,
         Dictionary::from_json,
     );
+
     let nightwave_acts =
         parsed_or_default(NIGHTWAVE_ACTS_FILE, nightwave_acts, &mut meta, |body| {
             NightwaveActs::from_json(body, &dictionary)
         });
+    let syndicates = parsed_or_default(SYNDICATES_FILE, syndicates, &mut meta, |body| {
+        parse_syndicates(body, &dictionary)
+    });
 
     write_meta(&meta_path, &meta).await?;
 
     Ok(
         GameData::from_json_parts(&item_bodies, &relics_body, &components_body)?
-            .with_nightwave_acts(nightwave_acts),
+            .with_nightwave_acts(nightwave_acts)
+            .with_syndicates(syndicates),
     )
 }
 

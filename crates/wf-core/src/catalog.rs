@@ -241,7 +241,7 @@ pub mod fixtures {
 
     use chrono::{DateTime, Utc};
     use serde_json::{Value, json};
-    use wf_data::{Dictionary, GameData, NightwaveActs};
+    use wf_data::{Dictionary, GameData, NightwaveActs, parse_syndicates};
     use wf_inventory::Inventory;
 
     use super::Catalog;
@@ -258,6 +258,9 @@ pub mod fixtures {
         include_str!("../../wf-data/tests/fixtures/nightwave_acts.json");
     pub const NIGHTWAVE_DICTIONARY: &str =
         include_str!("../../wf-data/tests/fixtures/nightwave_dictionary.json");
+    pub const SYNDICATES: &str = include_str!("../../wf-data/tests/fixtures/syndicates.json");
+    pub const SYNDICATE_DICTIONARY: &str =
+        include_str!("../../wf-data/tests/fixtures/syndicate_dictionary.json");
     pub const UPGRADE_ITEMS: &str = include_str!("../../../fixtures/upgrade_items.json");
     pub const MISC_ITEMS: &str = include_str!("../../../fixtures/misc_items.json");
     pub const WORLD_STATE: &str = include_str!("../../../fixtures/worldState.json");
@@ -387,6 +390,14 @@ pub mod fixtures {
         let data = GameData::from_json(MISC_ITEMS, RELICS, COMPONENTS).unwrap();
 
         Catalog::new(data.with_nightwave_acts(acts))
+    }
+
+    pub fn syndicate_catalog() -> Catalog {
+        let dictionary = Dictionary::from_json(SYNDICATE_DICTIONARY).unwrap();
+        let syndicates = parse_syndicates(SYNDICATES, &dictionary).unwrap();
+        let items = catalog_with(UPGRADE_ITEMS, MASTERY_ITEMS);
+
+        Catalog::new(items.data.with_syndicates(syndicates))
     }
 
     pub fn market_item(slug: &str, name: &str, game_ref: &str, tags: &[&str]) -> wf_market::Item {

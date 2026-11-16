@@ -1,46 +1,38 @@
-use serde::Serialize;
-use wf_inventory::DailyStandingPool;
+use chrono::{DateTime, Utc};
+use wf_inventory::{DailyStandingPool, Inventory};
+use wf_worldstate::ResetWindow;
 
-use crate::reset_checklist::context::ResetChecklistContext;
+use crate::reset_checklist::cadence::ResetCadence;
+use crate::reset_checklist::context::{left_today, synced_at};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-pub struct ResetChecklistStandingPool {
-    pub name: &'static str,
-    pub remaining: u32,
-    pub cap: u32,
+pub(crate) struct DailyStanding {
+    pub(crate) reset: ResetWindow,
+    pub(crate) cap: u32,
+    left: Vec<(DailyStandingPool, u32)>,
 }
 
-fn pool_name(pool: DailyStandingPool) -> &'static str {
-    match pool {
-        DailyStandingPool::Factions => "Faction Syndicates",
-        DailyStandingPool::Cetus => "Ostron",
-        DailyStandingPool::Quills => "The Quills",
-        DailyStandingPool::Solaris => "Solaris United",
-        DailyStandingPool::Ventkids => "Ventkids",
-        DailyStandingPool::Vox => "Vox Solaris",
-        DailyStandingPool::Entrati => "Entrati",
-        DailyStandingPool::Necraloid => "Necraloid",
-        DailyStandingPool::Zariman => "The Holdfasts",
-        DailyStandingPool::Kahl => "Kahl's Garrison",
-        DailyStandingPool::Cavia => "Cavia",
-        DailyStandingPool::Hex => "The Hex",
-        DailyStandingPool::Library => "Cephalon Simaris",
-        DailyStandingPool::Pvp => "Conclave",
-    }
-}
+impl DailyStanding {
+    pub(crate) fn new(inventory: &Inventory, now: DateTime<Utc>) -> Self {
+        let reset = ResetCadence::Daily.window(now);
+        let cap = 16_000 + 500 * inventory.player_level;
+        let synced_today = synced_at(inventory).is_some_and(|synced| reset.contains(synced));
 
-pub(crate) fn standing_pools(context: &ResetChecklistContext) -> Vec<ResetChecklistStandingPool> {
-    let cap = 16_000 + 500 * context.inventory.player_level;
-    context
-        .inventory
-        .daily_standing_remaining()
-        .map(|(pool, remaining)| ResetChecklistStandingPool {
-            name: pool_name(pool),
-            remaining: context.left_today(remaining, cap),
+        Self {
+            reset,
             cap,
-        })
-        .collect()
+            left: inventory
+                .daily_standing_remaining()
+                .map(|(pool, left)| (pool, left_today(synced_today, left, cap)))
+                .collect(),
+        }
+    }
+
+    pub(crate) fn left(&self, pool: DailyStandingPool) -> Option<u32> {
+        self.left
+            .iter()
+            .find(|&&(listed, _)| listed == pool)
+            .map(|&(_, left)| left)
+    }
 }
 
 #[cfg(test)]
@@ -49,29 +41,19 @@ mod tests {
 
     use super::*;
     use crate::catalog::fixtures;
-    use crate::reset_checklist::context::fixtures::{context, synced_at};
+    use crate::reset_checklist::context::fixtures::synced_at;
 
     #[test]
     fn today_and_stale() {
         let inventory = fixtures::inventory();
 
-        let today = standing_pools(&context(&inventory, synced_at()));
-        let tomorrow = standing_pools(&context(&inventory, synced_at() + TimeDelta::days(1)));
+        let today = DailyStanding::new(&inventory, synced_at());
+        let tomorrow = DailyStanding::new(&inventory, synced_at() + TimeDelta::days(1));
 
-        assert_eq!(today.len(), 14);
-        assert_eq!(
-            today[0],
-            ResetChecklistStandingPool {
-                name: "Faction Syndicates",
-                remaining: 21_000,
-                cap: 23_000,
-            }
-        );
-        assert!(
-            today
-                .iter()
-                .any(|pool| pool.name == "Cephalon Simaris" && pool.remaining == 0)
-        );
-        assert!(tomorrow.iter().all(|pool| pool.remaining == 23_000));
+        assert_eq!(today.cap, 23_000);
+        assert_eq!(today.left(DailyStandingPool::Factions), Some(21_000));
+        assert_eq!(today.left(DailyStandingPool::Library), Some(0));
+        assert_eq!(tomorrow.left(DailyStandingPool::Factions), Some(23_000));
+        assert_eq!(tomorrow.left(DailyStandingPool::Library), Some(23_000));
     }
 }

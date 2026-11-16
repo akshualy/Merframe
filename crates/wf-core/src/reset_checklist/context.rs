@@ -42,6 +42,17 @@ impl ResetChecklistWorld {
     }
 }
 
+pub(crate) fn synced_at(inventory: &Inventory) -> Option<DateTime<Utc>> {
+    inventory
+        .last_inventory_sync
+        .seconds()
+        .and_then(|seconds| DateTime::from_timestamp(i64::from(seconds), 0))
+}
+
+pub(crate) fn left_today(synced_today: bool, left: u32, cap: u32) -> u32 {
+    if synced_today { left } else { cap }
+}
+
 #[derive(Default)]
 pub(crate) struct ResetChecklistStored {
     pub(crate) last_mission_won: Option<DateTime<Utc>>,
@@ -75,26 +86,18 @@ impl<'a> ResetChecklistContext<'a> {
             items,
             world,
             now,
-            synced: inventory
-                .last_inventory_sync
-                .seconds()
-                .and_then(|seconds| DateTime::from_timestamp(i64::from(seconds), 0)),
+            synced: synced_at(inventory),
             stored,
             completed_quests: inventory.completed_quests(),
         }
     }
 
     pub(crate) fn synced_within(&self, window: ResetWindow) -> bool {
-        self.synced
-            .is_some_and(|synced| synced >= window.activation && synced < window.expiry)
+        self.synced.is_some_and(|synced| window.contains(synced))
     }
 
     pub(crate) fn synced_today(&self) -> bool {
         self.synced_within(ResetCadence::Daily.window(self.now))
-    }
-
-    pub(crate) fn left_today(&self, left: u32, cap: u32) -> u32 {
-        if self.synced_today() { left } else { cap }
     }
 }
 
@@ -140,6 +143,7 @@ mod tests {
     use chrono::TimeDelta;
 
     use super::fixtures::{context, synced_at};
+    use super::left_today;
     use crate::catalog::fixtures;
 
     #[test]
@@ -151,8 +155,8 @@ mod tests {
 
         assert_eq!(same_day.synced, Some(synced_at()));
         assert!(same_day.synced_today());
-        assert_eq!(same_day.left_today(6, 14), 6);
+        assert_eq!(left_today(same_day.synced_today(), 6, 14), 6);
         assert!(!next_day.synced_today());
-        assert_eq!(next_day.left_today(6, 14), 14);
+        assert_eq!(left_today(next_day.synced_today(), 6, 14), 14);
     }
 }

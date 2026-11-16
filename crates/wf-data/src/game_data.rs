@@ -5,6 +5,7 @@ use crate::item::{Component, Item, ItemRecord, Rarity};
 use crate::nightwave::NightwaveActs;
 use crate::relic::{Refinement, Relic, parse_relics};
 use crate::riven::RivenData;
+use crate::syndicate::Syndicate;
 
 type RelicNameIndex = HashMap<String, usize>;
 type RelicUniqueNameIndex = HashMap<String, (usize, Refinement)>;
@@ -32,6 +33,7 @@ pub struct GameData {
     relic_unique_name_index: RelicUniqueNameIndex,
     riven_data: RivenData,
     nightwave_acts: NightwaveActs,
+    syndicates: Vec<Syndicate>,
 }
 
 impl GameData {
@@ -126,6 +128,7 @@ impl GameData {
             relic_unique_name_index,
             riven_data,
             nightwave_acts: NightwaveActs::default(),
+            syndicates: Vec::new(),
         })
     }
 
@@ -137,6 +140,16 @@ impl GameData {
 
     pub fn nightwave_acts(&self) -> &NightwaveActs {
         &self.nightwave_acts
+    }
+
+    #[must_use]
+    pub fn with_syndicates(mut self, syndicates: Vec<Syndicate>) -> Self {
+        self.syndicates = syndicates;
+        self
+    }
+
+    pub fn syndicates(&self) -> &[Syndicate] {
+        &self.syndicates
     }
 
     pub fn riven_data(&self) -> &RivenData {

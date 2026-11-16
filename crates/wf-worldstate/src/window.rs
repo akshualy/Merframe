@@ -2,6 +2,8 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use wf_mongo::MongoDate;
 
+use crate::resets::ResetWindow;
+
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Window {
@@ -11,7 +13,7 @@ pub struct Window {
 
 impl Window {
     pub fn contains(self, now: DateTime<Utc>) -> bool {
-        now >= self.activation.datetime() && now < self.expiry.datetime()
+        ResetWindow::from(self).contains(now)
     }
 }
 

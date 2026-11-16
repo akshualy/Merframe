@@ -9,6 +9,7 @@ mod misc_item;
 mod nightwave;
 mod relic;
 mod riven;
+mod syndicate;
 
 #[cfg(feature = "fetch")]
 mod cache;
@@ -27,6 +28,11 @@ pub use relic::{Refinement, Relic, RelicDrop, RelicReward, projection_family};
 pub use riven::{
     MAX_RANK, RivenData, RivenStat, RivenType, TraitMultipliers, UpgradeEntry, UpgradeValue,
     rank_multiplier, roll_multiplier, roll_share, trait_multipliers,
+};
+
+pub use syndicate::{
+    Syndicate, SyndicateOffer, SyndicateSacrifice, SyndicateSacrificeItem, SyndicateTitle,
+    parse_syndicates,
 };
 
 #[cfg(feature = "fetch")]

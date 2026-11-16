@@ -4,7 +4,7 @@ use wf_core::{
     ComparedStat, CraftDetails, DeltaRow, FoundryTab, InventoryTab, MasteryOptions,
     MasteryOrdering, MasteryTab, OpeningRow, RelicPlan, RelicPlannerTab, RelicSource,
     ResetChecklistManualRowId, ResetChecklistTab, ResourceQuery, ResourcesTab, RivenComparables,
-    RivensTab, StatsTab, StoredTrade,
+    RivensTab, StatsTab, StoredTrade, SyndicatesTab,
 };
 
 use super::{Shared, compute, missing_inventory, ready, since};
@@ -149,6 +149,12 @@ pub async fn reset_checklist_tab(state: Shared<'_>) -> CommandResult<ResetCheckl
     lock(&state.core)
         .reset_checklist_tab(Utc::now())?
         .ok_or_else(missing_inventory)
+}
+
+#[tauri::command]
+pub async fn syndicates_tab(state: Shared<'_>) -> CommandResult<SyndicatesTab> {
+    let state = ready(&state).await?;
+    compute(state, |core| core.syndicates_tab(Utc::now())).await
 }
 
 #[tauri::command]
