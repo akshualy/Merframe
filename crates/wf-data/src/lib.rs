@@ -1,3 +1,4 @@
+mod dictionary;
 mod embedded;
 mod error;
 mod game_data;
@@ -12,6 +13,7 @@ mod riven;
 #[cfg(feature = "fetch")]
 mod cache;
 
+pub use dictionary::Dictionary;
 pub use error::{DataError, Result};
 pub use game_data::GameData;
 pub use helminth::{base_warframe_name, helminth_ability};
