@@ -1,11 +1,29 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use wf_data::{Syndicate, SyndicateTitle};
+use wf_data::{Item, Syndicate, SyndicateOffer, SyndicateTitle};
 use wf_inventory::DailyStandingPool;
 use wf_worldstate::ResetWindow;
 
+use crate::catalog::is_part;
+use crate::identity::{ItemKind, ItemRecord, market_slug};
 use crate::reset_checklist::DailyStanding;
 use crate::view::View;
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct SyndicateOfferRow {
+    pub name: String,
+    pub search_text: String,
+    pub image_name: Option<String>,
+    pub standing_cost: u32,
+    pub required_rank: i32,
+    pub available: bool,
+    pub owned: bool,
+    pub platinum: Option<f64>,
+    pub platinum_per_thousand: Option<f64>,
+    pub weekly_trades: Option<u32>,
+    pub crafted: bool,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -118,6 +136,7 @@ pub struct SyndicateOverview {
     pub daily: Option<SyndicateDailyStanding>,
     pub meter: Option<SyndicateProgressMeter>,
     pub rank: Option<SyndicateRankStanding>,
+    pub offers: Vec<SyndicateOfferRow>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -130,6 +149,59 @@ pub struct SyndicatesTab {
 
 const NEUTRAL_RANK: &str = "Neutral";
 const SIMARIS_STANDING_CAP: i64 = 125_000;
+
+fn sole_blueprint_product_slug(view: &View, record: &ItemRecord) -> Option<String> {
+    let ItemKind::Part { set, .. } = record.kind else {
+        return None;
+    };
+    let product = view.catalog.item(&view.items[set].unique_name)?;
+    let parts = product
+        .components
+        .iter()
+        .flatten()
+        .filter(|component| is_part(component))
+        .count();
+    let sole_blueprint = record.name == format!("{} Blueprint", product.name) && parts <= 1;
+
+    sole_blueprint.then(|| market_slug(&product.name))
+}
+
+fn offer_row(view: &View, offer: &SyndicateOffer, level: i32) -> SyndicateOfferRow {
+    let record = view.items.resolve(&offer.store_item);
+    let priced = |slug: String| view.prices.plat(&slug).map(|platinum| (slug, platinum));
+    let own = record.market_slug.clone().and_then(priced);
+    let product = own
+        .is_none()
+        .then(|| sole_blueprint_product_slug(view, &record))
+        .flatten()
+        .and_then(priced);
+    let crafted = product.is_some();
+    let (slug, platinum) = own.or(product).unzip();
+
+    SyndicateOfferRow {
+        platinum_per_thousand: platinum
+            .filter(|_| offer.standing_cost > 0)
+            .map(|platinum| platinum * 1000.0 / f64::from(offer.standing_cost)),
+        platinum,
+        weekly_trades: slug.and_then(|slug| view.prices.weekly_trades(&slug)),
+        crafted,
+        owned: view.account.owns(&record.unique_name),
+        name: record.name.clone(),
+        search_text: std::iter::once(record.name.clone())
+            .chain(
+                view.catalog
+                    .item(&record.unique_name)
+                    .into_iter()
+                    .flat_map(Item::offer_search_terms),
+            )
+            .collect::<Vec<_>>()
+            .join(" "),
+        image_name: record.image_name.clone(),
+        standing_cost: offer.standing_cost,
+        required_rank: offer.required_level,
+        available: offer.required_level <= level,
+    }
+}
 
 struct SyndicateRankClimb<'a> {
     level: i32,
@@ -289,6 +361,11 @@ fn syndicate_overview(
                 .zip(standing)
                 .map(|(climb, standing)| rank_up(view, &climb, standing, reached)),
         }),
+        offers: syndicate
+            .offers
+            .iter()
+            .map(|offer| offer_row(view, offer, level))
+            .collect(),
     }
 }
 
@@ -318,10 +395,12 @@ pub(crate) fn tab(view: &View, now: DateTime<Utc>) -> SyndicatesTab {
 #[cfg(test)]
 mod tests {
     use serde_json::{Value, json};
+    use wf_data::{Dictionary, GameData, parse_syndicates};
     use wf_inventory::Inventory;
 
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::{Catalog, fixtures};
+    use crate::prices::FixedPrices;
     use crate::reset_checklist::fixtures::synced_at;
     use crate::view::Fixture;
 
@@ -487,6 +566,130 @@ mod tests {
                 .map(|rank| (rank.level, rank.title, rank.next)),
             Some((3, Some("Fort".to_owned()), None))
         );
+    }
+
+    #[test]
+    fn offers_priced_and_owned() {
+        let fixture = Fixture::new(fixtures::syndicate_catalog(), fixtures::inventory())
+            .with_prices(
+                FixedPrices::new([("justice_blades", 15.0)])
+                    .with_weekly_trades([("justice_blades", 42)]),
+            );
+        let offers = steel_meridian(tab(&fixture.view(), synced_at())).offers;
+        let blades = offers
+            .iter()
+            .find(|offer| offer.name == "Justice Blades")
+            .unwrap();
+        let pack = offers
+            .iter()
+            .find(|offer| offer.name == "Random Syndicate Projection Pack")
+            .unwrap();
+
+        assert_eq!(
+            *blades,
+            SyndicateOfferRow {
+                name: "Justice Blades".to_owned(),
+                search_text: "Justice Blades".to_owned(),
+                image_name: Some("DualCleavers.jpg".to_owned()),
+                standing_cost: 25_000,
+                required_rank: 4,
+                available: true,
+                owned: true,
+                platinum: Some(15.0),
+                platinum_per_thousand: Some(0.6),
+                weekly_trades: Some(42),
+                crafted: false,
+            }
+        );
+        assert!(!pack.owned);
+        assert_eq!(pack.platinum, None);
+    }
+
+    #[test]
+    fn offers_available_from_their_rank() {
+        let available = |title| {
+            steel_meridian_at(title, 0)
+                .offers
+                .into_iter()
+                .filter(|offer| offer.available)
+                .map(|offer| offer.name)
+                .collect::<Vec<_>>()
+        };
+
+        assert_eq!(available(3), ["Random Syndicate Projection Pack"]);
+        assert_eq!(
+            available(4),
+            ["Random Syndicate Projection Pack", "Justice Blades"]
+        );
+    }
+
+    const LENS_BLUEPRINT: &str = "/Lotus/StoreItems/Types/Recipes/Lens/PowerLensOstronBlueprint";
+
+    fn event_fixture(items: &str, store_item: &str, prices: FixedPrices) -> Fixture {
+        let dictionary = Dictionary::from_json(
+            r#"{"/Lotus/Language/Syndicates/EventName":"Operational Supply"}"#,
+        )
+        .unwrap();
+        let export = json!({ "EventSyndicate": {
+            "name": "/Lotus/Language/Syndicates/EventName",
+            "dailyLimitBin": "STANDING_LIMIT_BIN_NONE",
+            "favours": [{
+                "storeItem": store_item,
+                "standingCost": 5000,
+                "requiredLevel": 0,
+            }],
+        }});
+        let data = GameData::from_json(items, fixtures::RELICS, fixtures::COMPONENTS).unwrap();
+        let syndicates = parse_syndicates(&export.to_string(), &dictionary).unwrap();
+
+        Fixture::new(
+            Catalog::new(data.with_syndicates(syndicates)),
+            fixtures::inventory(),
+        )
+        .with_prices(prices)
+    }
+
+    fn lens_fixture(prices: FixedPrices) -> Fixture {
+        event_fixture(fixtures::FOUNDRY_ITEMS, LENS_BLUEPRINT, prices)
+    }
+
+    fn only_offer(fixture: &Fixture) -> SyndicateOfferRow {
+        tab(&fixture.view(), synced_at())
+            .syndicates
+            .remove(0)
+            .offers
+            .remove(0)
+    }
+
+    #[test]
+    fn sole_blueprint_priced_as_its_product() {
+        let crafted = only_offer(&lens_fixture(
+            FixedPrices::new([("eidolon_zenurik_lens", 40.0)])
+                .with_weekly_trades([("eidolon_zenurik_lens", 20)]),
+        ));
+        let traded = only_offer(&lens_fixture(FixedPrices::new([
+            ("eidolon_zenurik_lens", 40.0),
+            ("eidolon_zenurik_lens_blueprint", 12.0),
+        ])));
+
+        assert_eq!(crafted.name, "Eidolon Zenurik Lens Blueprint");
+        assert!(crafted.crafted);
+        assert_eq!(crafted.platinum, Some(40.0));
+        assert_eq!(crafted.platinum_per_thousand, Some(8.0));
+        assert_eq!(crafted.weekly_trades, Some(20));
+        assert!(!traded.crafted);
+        assert_eq!(traded.platinum, Some(12.0));
+    }
+
+    #[test]
+    fn blueprint_with_other_parts_stays_unpriced() {
+        let store_item = fixtures::BRATON_PRIME_BLUEPRINT.replace("/Lotus/", "/Lotus/StoreItems/");
+        let prices = FixedPrices::new([("braton_prime", 90.0), ("braton_prime_set", 90.0)]);
+        let blueprint = only_offer(&event_fixture(fixtures::ITEMS, &store_item, prices));
+
+        assert_eq!(blueprint.name, "Braton Prime Blueprint");
+        assert!(!blueprint.crafted);
+        assert_eq!(blueprint.platinum, None);
     }
 
     #[test]

@@ -14,6 +14,10 @@ pub trait PriceSource {
     fn buy_plat(&self, _market_slug: &str) -> Option<f64> {
         None
     }
+
+    fn weekly_trades(&self, _market_slug: &str) -> Option<u32> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
@@ -158,12 +162,17 @@ impl PriceSource for PriceCache {
     fn buy_plat(&self, market_slug: &str) -> Option<f64> {
         self.quote(market_slug)?.buy
     }
+
+    fn weekly_trades(&self, market_slug: &str) -> Option<u32> {
+        self.entries.get(market_slug)?.volume_7d
+    }
 }
 
 #[cfg(test)]
 #[derive(Debug, Clone, Default)]
 pub struct FixedPrices {
     quotes: HashMap<String, PriceQuote>,
+    weekly_trades: HashMap<String, u32>,
 }
 
 #[cfg(test)]
@@ -186,7 +195,21 @@ impl FixedPrices {
                     )
                 })
                 .collect(),
+            weekly_trades: HashMap::new(),
         }
+    }
+
+    pub fn with_weekly_trades<I, S>(mut self, entries: I) -> Self
+    where
+        I: IntoIterator<Item = (S, u32)>,
+        S: Into<String>,
+    {
+        self.weekly_trades.extend(
+            entries
+                .into_iter()
+                .map(|(slug, trades)| (slug.into(), trades)),
+        );
+        self
     }
 
     pub fn with_max_rank<I, S>(mut self, entries: I) -> Self
@@ -224,6 +247,10 @@ impl PriceSource for FixedPrices {
 
     fn buy_plat(&self, market_slug: &str) -> Option<f64> {
         self.quotes.get(market_slug)?.buy
+    }
+
+    fn weekly_trades(&self, market_slug: &str) -> Option<u32> {
+        self.weekly_trades.get(market_slug).copied()
     }
 }
 

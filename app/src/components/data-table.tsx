@@ -49,6 +49,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   searchValue?: (row: TData) => string;
   initialSearch?: string;
+  onSearchChange?: (search: string) => void;
   initialSorting?: SortingState;
   primarySort?: SortingState;
   toolbar?: ReactNode;
@@ -77,6 +78,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = "Filter",
   searchValue,
   initialSearch = "",
+  onSearchChange,
   initialSorting = [],
   primarySort,
   toolbar,
@@ -152,7 +154,10 @@ export function DataTable<TData, TValue>({
       <div className="flex flex-wrap items-center gap-3">
         <SearchInput
           value={globalFilter}
-          onValueChange={setGlobalFilter}
+          onValueChange={(search) => {
+            setGlobalFilter(search);
+            onSearchChange?.(search);
+          }}
           placeholder={searchPlaceholder}
         />
         {toolbar}

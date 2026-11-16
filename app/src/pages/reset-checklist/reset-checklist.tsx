@@ -38,7 +38,10 @@ const RESET_CHECKLIST_RELOAD_EVENTS: readonly EventName[] = [
   "worldStateUpdated",
 ];
 
-const SYNDICATES_RELOAD_EVENTS: readonly EventName[] = ["inventoryUpdated"];
+const SYNDICATES_RELOAD_EVENTS: readonly EventName[] = [
+  "inventoryUpdated",
+  "pricesUpdated",
+];
 
 const CHECKLIST_TITLES: Record<ResetChecklistGroup, string> = {
   daily: "Daily",

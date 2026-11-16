@@ -92,9 +92,9 @@ pub use store::{
     RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
 };
 pub use syndicates::{
-    SyndicateDailyStanding, SyndicateKind, SyndicateOverview, SyndicatePledgeRelation,
-    SyndicateProgressMeter, SyndicateRankStanding, SyndicateRankUp, SyndicateRankUpItem,
-    SyndicatesTab,
+    SyndicateDailyStanding, SyndicateKind, SyndicateOfferRow, SyndicateOverview,
+    SyndicatePledgeRelation, SyndicateProgressMeter, SyndicateRankStanding, SyndicateRankUp,
+    SyndicateRankUpItem, SyndicatesTab,
 };
 pub use text::{counted, thousands};
 pub use trade::{Trade, TradeItem, relic_refinement, traded_set};
