@@ -52,6 +52,13 @@
         "patch"
       ],
       "matchCurrentVersion": ">=1.0.0"
+    },
+    {
+      "matchPackageNames": [
+        "gdk",
+        "gtk"
+      ],
+      "enabled": false
     }
   ]
 }
