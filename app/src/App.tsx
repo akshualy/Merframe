@@ -3,6 +3,7 @@ import { lazy, Suspense, useCallback, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { useShallow } from "zustand/react/shallow";
 import { AppSidebar } from "@/components/app-sidebar";
+import { DisclosureScreen } from "@/components/disclosure";
 import { EventBridge } from "@/components/event-bridge";
 import { MarketPanel } from "@/components/market-panel";
 import { OverlayWindow } from "@/components/overlay-window";
@@ -108,10 +109,11 @@ function useBoot() {
 
 function MainWindow() {
   const retry = useBoot();
-  const { ready, bootError } = useAppStore(
+  const { ready, bootError, accepted } = useAppStore(
     useShallow((state) => ({
       ready: state.ready,
       bootError: state.bootError,
+      accepted: state.settings?.first_start_disclosure !== "pending",
     })),
   );
   const setItems = useMarketItemsStore((state) => state.setItems);
@@ -128,7 +130,13 @@ function MainWindow() {
   return (
     <>
       <EventBridge />
-      {ready ? <Shell /> : <StartupScreen error={bootError} onRetry={retry} />}
+      {!ready ? (
+        <StartupScreen error={bootError} onRetry={retry} />
+      ) : accepted ? (
+        <Shell />
+      ) : (
+        <DisclosureScreen />
+      )}
       <Toaster />
     </>
   );

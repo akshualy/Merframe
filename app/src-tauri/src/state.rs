@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
-use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{Arc, Mutex, MutexGuard, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::time::{Duration, Instant};
 
 use anyhow::Context;
@@ -185,6 +185,7 @@ pub struct AppState {
     pub http: reqwest::Client,
     pub data_dir: PathBuf,
     pub images: ImageCache,
+    pub runtime_started: Once,
 }
 
 fn anonymous_client(http: &reqwest::Client) -> Client {
@@ -254,10 +255,13 @@ impl AppState {
             .with_context(|| format!("Creating {}", images.dir().display()))?;
 
         let catalog = load_catalog(&data_dir.join("gamedata"), &http).await?;
-        let store =
-            Store::open(&data_dir.join("merframe.sqlite")).context("Opening the local store")?;
+        let store_path = data_dir.join("merframe.sqlite");
+        let first_start = !store_path
+            .try_exists()
+            .context("Checking for the local store")?;
+        let settings = settings::load(app, first_start)?;
+        let store = Store::open(&store_path).context("Opening the local store")?;
 
-        let settings = settings::load(app)?;
         let prices = Arc::new(SharedPrices::default());
 
         let price_source = Arc::clone(&prices) as Arc<dyn PriceSource + Send + Sync>;
@@ -305,6 +309,7 @@ impl AppState {
             http,
             data_dir,
             images,
+            runtime_started: Once::new(),
         })
     }
 

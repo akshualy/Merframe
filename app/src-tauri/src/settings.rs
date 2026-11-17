@@ -151,6 +151,18 @@ pub struct Settings {
     pub event_feed: EventFeedSettings,
     #[serde(flatten)]
     pub reset_checklist: ResetChecklistSettings,
+    #[serde(default)]
+    pub first_start_disclosure: FirstStartDisclosure,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(rename_all = "snake_case")]
+pub enum FirstStartDisclosure {
+    Pending,
+    Accepted,
+    #[default]
+    InstalledBefore,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -469,6 +481,7 @@ impl Default for Settings {
             motion: Motion::default(),
             event_feed: EventFeedSettings::default(),
             reset_checklist: ResetChecklistSettings::default(),
+            first_start_disclosure: FirstStartDisclosure::Pending,
         }
     }
 }
@@ -719,9 +732,21 @@ pub(crate) fn unless_missing<T>(result: std::io::Result<T>) -> std::io::Result<O
     }
 }
 
-pub fn load<R: Runtime>(app: &AppHandle<R>) -> anyhow::Result<Settings> {
-    let settings = stored(app, SETTINGS_KEY, "Stored settings are not readable")?;
-    Ok(settings.unwrap_or_default())
+pub fn load<R: Runtime>(app: &AppHandle<R>, first_start: bool) -> anyhow::Result<Settings> {
+    if let Some(settings) = stored(app, SETTINGS_KEY, "Stored settings are not readable")? {
+        return Ok(settings);
+    }
+
+    if !first_start {
+        return Ok(Settings {
+            first_start_disclosure: FirstStartDisclosure::default(),
+            ..Settings::default()
+        });
+    }
+
+    let settings = Settings::default();
+    save(app, &settings)?;
+    Ok(settings)
 }
 
 pub fn save<R: Runtime>(app: &AppHandle<R>, settings: &Settings) -> anyhow::Result<()> {
@@ -1011,7 +1036,17 @@ mod tests {
     #[test]
     fn empty_document_default() {
         let stored: Settings = serde_json::from_str("{}").unwrap();
-        assert_eq!(stored, Settings::default());
+        assert_eq!(
+            stored,
+            Settings {
+                first_start_disclosure: FirstStartDisclosure::InstalledBefore,
+                ..Settings::default()
+            }
+        );
+        assert_eq!(
+            Settings::default().first_start_disclosure,
+            FirstStartDisclosure::Pending
+        );
     }
 
     #[test]

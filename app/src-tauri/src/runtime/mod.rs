@@ -15,7 +15,7 @@ use crate::market::{MarketPresence, MarketSnapshot};
 use crate::notice::Notice;
 use crate::overlay::{self, OverlayState};
 pub use crate::runtime::market_loop::MarketAutoClose;
-use crate::settings::{self, DiscordMirroredAlert, Settings};
+use crate::settings::{self, DiscordMirroredAlert, FirstStartDisclosure, Settings};
 use crate::state::{AppState, GameStatus, InventorySource, lock, read, write};
 
 mod attach;
@@ -62,7 +62,17 @@ const NOTIFICATION_SOUND: &str = if cfg!(windows) {
     "message-new-instant"
 };
 
-pub fn spawn<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
+pub fn start<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    if read(&state.settings).first_start_disclosure == FirstStartDisclosure::Pending {
+        return;
+    }
+
+    state
+        .runtime_started
+        .call_once(|| spawn(app.clone(), Arc::clone(state)));
+}
+
+fn spawn<R: Runtime>(app: AppHandle<R>, state: Arc<AppState>) {
     tauri::async_runtime::spawn(bootstrap(app.clone(), Arc::clone(&state)));
     tauri::async_runtime::spawn(process_task(app.clone(), Arc::clone(&state)));
     tauri::async_runtime::spawn(log_task(app.clone(), Arc::clone(&state)));

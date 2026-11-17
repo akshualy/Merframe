@@ -127,6 +127,7 @@ pub async fn settings_set<R: Runtime>(
         runtime::emit(&app, AppEvent::WorldStateUpdated);
     }
     overlay::apply_from(&app, &state);
+    runtime::start(&app, &state);
     app.state::<EventFeed>().configure(settings.event_feed);
     if previous.event_feed != settings.event_feed {
         event_feed::publish_reset_checklist(&app, &state);

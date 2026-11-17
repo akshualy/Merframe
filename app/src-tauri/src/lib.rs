@@ -94,7 +94,7 @@ async fn publish_state(handle: tauri::AppHandle) {
                 error!("App state built a second time");
             }
             overlay::apply_from(&handle, &state);
-            runtime::spawn(handle.clone(), state);
+            runtime::start(&handle, &state);
         }
         Err(error) => {
             let message = format!("{error:#}");

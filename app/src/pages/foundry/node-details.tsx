@@ -1,12 +1,12 @@
-import { Archive, ExternalLink } from "lucide-react";
+import { Archive } from "lucide-react";
 import { useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Amount } from "@/components/currency";
+import { ExternalLinkButton } from "@/components/external-link-button";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { openExternal } from "@/lib/bridge";
 import { num, percent } from "@/lib/format";
 import { occurrenceKeys } from "@/lib/keys";
 import { cn } from "@/lib/utils";
@@ -18,15 +18,6 @@ function dropKey(drop: NodeDrop): string {
     return drop.unique_name;
   }
   return drop.kind === "purchase" ? "purchase" : drop.location;
-}
-
-export function WikiButton({ url }: { url: string }) {
-  return (
-    <Button variant="outline" size="sm" onClick={() => openExternal(url)}>
-      Wiki
-      <ExternalLink className="size-3.5" />
-    </Button>
-  );
 }
 
 function DropRow({
@@ -161,7 +152,9 @@ export function NodeDetails({
           {node.market && (
             <MarketButtons market={node.market} onOpen={onListing} />
           )}
-          {node.wiki_url && <WikiButton url={node.wiki_url} />}
+          {node.wiki_url && (
+            <ExternalLinkButton url={node.wiki_url}>Wiki</ExternalLinkButton>
+          )}
         </span>
       </div>
       <DropLocations drops={node.drops} />

@@ -1,34 +1,34 @@
 import { getVersion } from "@tauri-apps/api/app";
 import { check } from "@tauri-apps/plugin-updater";
-import { ExternalLink, FolderOpen, RefreshCw } from "lucide-react";
+import { FolderOpen, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Disclosure, TERMS_LINK } from "@/components/disclosure";
+import {
+  ExternalLinkButton,
+  type ExternalLinkTarget,
+} from "@/components/external-link-button";
 import Merframe from "@/components/icons/merframe";
 import { Page, Section } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { api, openExternal, reportError } from "@/lib/bridge";
+import { api, reportError } from "@/lib/bridge";
 import { ago } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import { useAppStore } from "@/stores/app-store";
 
-interface AboutLink {
-  label: string;
-  url: string;
-}
-
-const PROJECT_LINKS: AboutLink[] = [
+const PROJECT_LINKS: ExternalLinkTarget[] = [
   { label: "yareli.net/merframe", url: "https://yareli.net/merframe" },
   { label: "GitHub", url: "https://github.com/akshualy/Merframe" },
 ];
 
-const LEGAL_LINKS: AboutLink[] = [
+const LEGAL_LINKS: ExternalLinkTarget[] = [
   { label: "Legal Notice", url: "https://yareli.net/impressum" },
   { label: "Privacy", url: "https://yareli.net/privacy" },
-  { label: "Terms", url: "https://yareli.net/terms" },
+  TERMS_LINK,
 ];
 
-const CREDIT_LINKS: AboutLink[] = [
+const CREDIT_LINKS: ExternalLinkTarget[] = [
   { label: "AlecaFrame", url: "https://alecaframe.com" },
   { label: "warframe.market", url: "https://warframe.market" },
   {
@@ -42,15 +42,6 @@ const CREDIT_LINKS: AboutLink[] = [
   { label: "Warframe wiki", url: "https://wiki.warframe.com" },
 ];
 
-function AboutLinkButton({ link }: { link: AboutLink }) {
-  return (
-    <Button variant="outline" size="sm" onClick={() => openExternal(link.url)}>
-      {link.label}
-      <ExternalLink className="size-3.5" />
-    </Button>
-  );
-}
-
 function AboutLinkSection({
   title,
   description,
@@ -58,14 +49,16 @@ function AboutLinkSection({
 }: {
   title: string;
   description: string;
-  links: AboutLink[];
+  links: ExternalLinkTarget[];
 }) {
   return (
     <Section title={title}>
       <p className="text-muted-foreground mb-3 text-sm">{description}</p>
       <div className="flex flex-wrap gap-2">
         {links.map((link) => (
-          <AboutLinkButton key={link.url} link={link} />
+          <ExternalLinkButton key={link.url} url={link.url}>
+            {link.label}
+          </ExternalLinkButton>
         ))}
       </div>
     </Section>
@@ -141,11 +134,17 @@ export function AboutPage() {
                 </Button>
               )}
               {PROJECT_LINKS.map((link) => (
-                <AboutLinkButton key={link.url} link={link} />
+                <ExternalLinkButton key={link.url} url={link.url}>
+                  {link.label}
+                </ExternalLinkButton>
               ))}
             </div>
           </div>
         </div>
+      </Section>
+
+      <Section title="What Merframe Reads">
+        <Disclosure />
       </Section>
 
       <Section title="Diagnostics">
