@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { ExternalLinkButton } from "@/components/external-link-button";
 import { FavouriteStar } from "@/components/favourite-star";
 import { ItemImage } from "@/components/item-image";
 import { EmptyNote } from "@/components/page";
@@ -24,7 +25,7 @@ import type {
   FoundryItem,
   NeededItem,
 } from "@/types";
-import { NodeDetails, WikiButton } from "./node-details";
+import { NodeDetails } from "./node-details";
 
 const EMPTY_SUMMARY: CraftSummary = {
   credits: 0,
@@ -263,7 +264,9 @@ export function FoundryTreeDialog({
                 favourite={item.favourite}
               />
             )}
-            {item?.wiki_url && <WikiButton url={item.wiki_url} />}
+            {item?.wiki_url && (
+              <ExternalLinkButton url={item.wiki_url}>Wiki</ExternalLinkButton>
+            )}
           </DialogTitle>
           {details && details.tree.length > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-3">

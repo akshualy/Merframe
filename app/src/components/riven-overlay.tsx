@@ -1,5 +1,6 @@
-import { Check, ExternalLink } from "lucide-react";
+import { Check } from "lucide-react";
 import { useEffect } from "react";
+import { ExternalLinkButton } from "@/components/external-link-button";
 import { PolarityIcon } from "@/components/game-icon";
 import { GoodRollAttribution, GoodRollBlock } from "@/components/good-roll";
 import { ItemImage, prefetchImages } from "@/components/item-image";
@@ -7,8 +8,6 @@ import { RivenListings } from "@/components/riven-listings";
 import { RivenRollBar } from "@/components/riven-roll-bar";
 import { SplicedMark, SpliceOptions } from "@/components/spliced-mark";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { openExternal } from "@/lib/bridge";
 import { percent } from "@/lib/format";
 import {
   attributeAmount,
@@ -104,15 +103,9 @@ function RivenCard({ riven, compact }: { riven: RivenRow; compact: boolean }) {
         />
       )}
       {slug && !compact && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="self-start"
-          onClick={() => openExternal(rivenAuctionUrl(slug))}
-        >
-          <ExternalLink className="size-3.5" />
+        <ExternalLinkButton url={rivenAuctionUrl(slug)} className="self-start">
           Compare on warframe.market
-        </Button>
+        </ExternalLinkButton>
       )}
     </div>
   );

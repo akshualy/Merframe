@@ -63,6 +63,7 @@ export type * from "./DucateringSettings";
 export type * from "./DucateringState";
 export type * from "./EventFeedSettings";
 export type * from "./EventFeedStatus";
+export type * from "./FirstStartDisclosure";
 export type * from "./Fissure";
 export type * from "./FissureFilter";
 export type * from "./FissureInfo";
