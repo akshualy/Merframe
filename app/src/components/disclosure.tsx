@@ -62,7 +62,10 @@ export function Disclosure() {
         </span>
         . Merframe is a fan project and is not affiliated with Digital Extremes.
       </p>
-      <p>If you are not comfortable with this, you may close the application at any point.</p>
+      <p>
+        If you are not comfortable with this, you may close the application at
+        any point.
+      </p>
     </div>
   );
 }
