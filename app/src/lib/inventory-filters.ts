@@ -5,8 +5,10 @@ import {
   ducats,
   equippedIn,
   hasOrder,
+  INVENTORY_TABS,
   type InventoryEntry,
   type InventoryFlags,
+  type InventoryTabKey,
   rank,
   refinement,
   sellPlat,
@@ -15,17 +17,6 @@ import {
 } from "@/lib/inventory-entries";
 import { REFINEMENTS } from "@/lib/relics";
 import { readStoredJson, writeStoredJson } from "@/lib/storage";
-
-export const INVENTORY_TABS = [
-  "parts",
-  "relics",
-  "mods",
-  "arcanes",
-  "misc",
-  "sets",
-] as const;
-
-export type InventoryTabKey = (typeof INVENTORY_TABS)[number];
 
 export const ORDERINGS = [
   { value: "name", label: "Name" },

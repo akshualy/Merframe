@@ -1,6 +1,5 @@
 import { ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Amount } from "@/components/currency";
+import { useEffect } from "react";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect } from "@/components/filter-select";
 import { ItemCard } from "@/components/inventory-item-card";
@@ -19,21 +18,15 @@ import {
 } from "@/lib/filters";
 import { num } from "@/lib/format";
 import {
-  ducats,
   entryKey,
   type InventoryEntry,
   type InventoryFlags,
-  totalPlat,
+  type InventoryTabKey,
 } from "@/lib/inventory-entries";
 import {
   descending,
-  type InventoryTabKey,
-  keeps,
-  loadFilters,
   ORDERINGS,
   refinementsFor,
-  saveFilters,
-  sortEntries,
   type TabFilters,
   yesNoFiltersFor,
 } from "@/lib/inventory-filters";
@@ -42,50 +35,24 @@ const MIN_PLAT_CHOICES = plainOptions(["5", "10", "15"]);
 
 export function InventoryTabView({
   tab,
-  entries,
+  entryCount,
+  visible,
+  unpriced,
   flags,
+  filters,
+  updateFilters,
 }: {
   tab: InventoryTabKey;
-  entries: InventoryEntry[];
+  entryCount: number;
+  visible: InventoryEntry[];
+  unpriced: number;
   flags: InventoryFlags;
+  filters: TabFilters;
+  updateFilters: (patch: Partial<TabFilters>) => void;
 }) {
-  const [filters, setFilters] = useState<TabFilters>(() => loadFilters(tab));
-
-  const update = (patch: Partial<TabFilters>) => {
-    setFilters((current) => ({ ...current, ...patch }));
-  };
-
-  useEffect(() => {
-    saveFilters(tab, filters);
-  }, [tab, filters]);
-
-  const desc = descending(filters);
-  const sorted = useMemo(
-    () => sortEntries(entries, filters.ordering, desc, tab),
-    [entries, filters.ordering, desc, tab],
-  );
-
-  const visible = useMemo(
-    () => sorted.filter((entry) => keeps(entry, filters, flags)),
-    [sorted, filters, flags],
-  );
-
   const { pageItems: pageEntries, pagination } = usePaged(
     visible,
     JSON.stringify(filters),
-  );
-
-  const selection = useMemo(
-    () =>
-      visible.reduce(
-        (accumulator, entry) => ({
-          ducats: accumulator.ducats + (ducats(entry) ?? 0) * entry.row.count,
-          plat: accumulator.plat + (totalPlat(entry) ?? 0) * entry.row.count,
-          priced: accumulator.priced + (totalPlat(entry) === null ? 0 : 1),
-        }),
-        { ducats: 0, plat: 0, priced: 0 },
-      ),
-    [visible],
   );
 
   useEffect(() => {
@@ -110,7 +77,7 @@ export function InventoryTabView({
       <div className="flex flex-wrap items-center gap-2">
         <SearchInput
           value={filters.search}
-          onValueChange={(search) => update({ search })}
+          onValueChange={(search) => updateFilters({ search })}
           placeholder="Search"
         />
 
@@ -118,7 +85,7 @@ export function InventoryTabView({
           label="Order by"
           value={filters.ordering}
           options={ORDERINGS}
-          onChange={(ordering) => update({ ordering })}
+          onChange={(ordering) => updateFilters({ ordering })}
           className="w-44"
         />
 
@@ -127,7 +94,9 @@ export function InventoryTabView({
           size="icon"
           aria-label={descending(filters) ? "Largest first" : "Smallest first"}
           title={descending(filters) ? "Largest first" : "Smallest first"}
-          onClick={() => update({ preferHighest: !filters.preferHighest })}
+          onClick={() =>
+            updateFilters({ preferHighest: !filters.preferHighest })
+          }
         >
           {descending(filters) ? (
             <ArrowDownWideNarrow className="size-4" />
@@ -137,16 +106,16 @@ export function InventoryTabView({
         </Button>
 
         <span className="text-muted-foreground ml-auto text-xs">
-          {num(visible.length)} of {num(entries.length)} shown
-          {selection.priced < visible.length
-            ? `, ${num(visible.length - selection.priced)} without a price yet`
-            : ""}
+          {num(visible.length)} of {num(entryCount)} shown
+          {unpriced > 0 ? `, ${num(unpriced)} without a price yet` : ""}
         </span>
       </div>
 
       <FilterGrid
         activeFilters={activeFilters}
-        onClear={() => update({ yesNo: {}, minPlat: null, refinement: null })}
+        onClear={() =>
+          updateFilters({ yesNo: {}, minPlat: null, refinement: null })
+        }
       >
         {yesNoFiltersFor(tab).map((group) => (
           <FilterSelect
@@ -155,7 +124,7 @@ export function InventoryTabView({
             value={filters.yesNo[group.key] ?? null}
             options={yesNoOptions(group.yes, group.no)}
             onChange={(mode) =>
-              update({
+              updateFilters({
                 yesNo: withYesNo(filters.yesNo, group.key, mode),
               })
             }
@@ -167,7 +136,7 @@ export function InventoryTabView({
             value={filters.refinement}
             options={plainOptions(refinements)}
             onChange={(value) =>
-              update({
+              updateFilters({
                 refinement: value,
               })
             }
@@ -178,7 +147,7 @@ export function InventoryTabView({
           value={filters.minPlat === null ? null : String(filters.minPlat)}
           options={MIN_PLAT_CHOICES}
           onChange={(value) =>
-            update({ minPlat: value === null ? null : Number(value) })
+            updateFilters({ minPlat: value === null ? null : Number(value) })
           }
         />
       </FilterGrid>
@@ -199,27 +168,6 @@ export function InventoryTabView({
       )}
 
       <Pagination {...pagination} />
-
-      <div className="text-muted-foreground flex items-center justify-end gap-6 text-sm">
-        <span
-          className="flex items-center gap-1"
-          title="Total of the rows shown"
-        >
-          Ducats
-          <Amount currency="ducats" className="text-foreground font-semibold">
-            {num(selection.ducats)}
-          </Amount>
-        </span>
-        <span
-          className="flex items-center gap-1"
-          title="Total of the rows shown"
-        >
-          Platinum
-          <Amount currency="platinum" className="font-semibold">
-            {num(selection.plat)}
-          </Amount>
-        </span>
-      </div>
     </div>
   );
 }

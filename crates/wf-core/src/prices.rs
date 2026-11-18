@@ -18,6 +18,10 @@ pub trait PriceSource {
     fn weekly_trades(&self, _market_slug: &str) -> Option<u32> {
         None
     }
+
+    fn weekly_median(&self, _market_slug: &str) -> Option<f64> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
@@ -36,11 +40,20 @@ impl Prices {
     }
 }
 
+pub(crate) fn traded_or_listed(
+    source: &dyn PriceSource,
+    slug: Option<&str>,
+    listed: Option<f64>,
+) -> Option<f64> {
+    slug.and_then(|slug| source.weekly_median(slug)).or(listed)
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct PriceQuote {
     pub sell: Option<f64>,
     pub sell_max_rank: Option<f64>,
     pub buy: Option<f64>,
+    pub weekly_median: Option<f64>,
 }
 
 impl From<&PriceEntry> for PriceQuote {
@@ -49,6 +62,7 @@ impl From<&PriceEntry> for PriceQuote {
             sell: entry.sell_r0.map(f64::from),
             sell_max_rank: entry.sell_max.map(f64::from),
             buy: entry.buy_r0.map(f64::from),
+            weekly_median: entry.median_7d,
         }
     }
 }
@@ -166,6 +180,10 @@ impl PriceSource for PriceCache {
     fn weekly_trades(&self, market_slug: &str) -> Option<u32> {
         self.entries.get(market_slug)?.volume_7d
     }
+
+    fn weekly_median(&self, market_slug: &str) -> Option<f64> {
+        self.entries.get(market_slug)?.median_7d
+    }
 }
 
 #[cfg(test)]
@@ -212,24 +230,41 @@ impl FixedPrices {
         self
     }
 
-    pub fn with_max_rank<I, S>(mut self, entries: I) -> Self
+    pub fn with_max_rank<I, S>(self, entries: I) -> Self
     where
         I: IntoIterator<Item = (S, f64)>,
         S: Into<String>,
     {
-        for (slug, plat) in entries {
-            self.quotes.entry(slug.into()).or_default().sell_max_rank = Some(plat);
-        }
-        self
+        self.with_quote_field(entries, |quote| &mut quote.sell_max_rank)
     }
 
-    pub fn with_buy<I, S>(mut self, entries: I) -> Self
+    pub fn with_buy<I, S>(self, entries: I) -> Self
+    where
+        I: IntoIterator<Item = (S, f64)>,
+        S: Into<String>,
+    {
+        self.with_quote_field(entries, |quote| &mut quote.buy)
+    }
+
+    pub fn with_weekly_median<I, S>(self, entries: I) -> Self
+    where
+        I: IntoIterator<Item = (S, f64)>,
+        S: Into<String>,
+    {
+        self.with_quote_field(entries, |quote| &mut quote.weekly_median)
+    }
+
+    fn with_quote_field<I, S>(
+        mut self,
+        entries: I,
+        field: fn(&mut PriceQuote) -> &mut Option<f64>,
+    ) -> Self
     where
         I: IntoIterator<Item = (S, f64)>,
         S: Into<String>,
     {
         for (slug, plat) in entries {
-            self.quotes.entry(slug.into()).or_default().buy = Some(plat);
+            *field(self.quotes.entry(slug.into()).or_default()) = Some(plat);
         }
         self
     }
@@ -251,6 +286,10 @@ impl PriceSource for FixedPrices {
 
     fn weekly_trades(&self, market_slug: &str) -> Option<u32> {
         self.weekly_trades.get(market_slug).copied()
+    }
+
+    fn weekly_median(&self, market_slug: &str) -> Option<f64> {
+        self.quotes.get(market_slug)?.weekly_median
     }
 }
 
@@ -320,6 +359,7 @@ mod tests {
                 sell: Some(25.0),
                 sell_max_rank: Some(70.0),
                 buy: Some(15.0),
+                weekly_median: Some(24.0),
             })
         );
     }

@@ -7,7 +7,7 @@ use wf_inventory::{EquipmentItem, Inventory, RivenFingerprint, UpgradeSlot};
 use super::{ItemIndex, ItemSummary, ModHolder, ModRow, UpgradePrices};
 use crate::catalog::{ARCANE_PREFIX, Catalog};
 use crate::identity::{ItemKind, ItemTable, Variant, is_riven};
-use crate::prices::{PriceSource, Prices};
+use crate::prices::{PriceSource, Prices, traded_or_listed};
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -88,7 +88,7 @@ fn upgrade_prices(
     rank: Option<u32>,
     max_rank: Option<u32>,
     wanted: UpgradeKind,
-) -> UpgradePrices {
+) -> (UpgradePrices, Option<f64>) {
     let at_max_rank = slug
         .and_then(|slug| prices.plat_max_rank(slug))
         .filter(|p| *p > 0.0);
@@ -99,7 +99,12 @@ fn upgrade_prices(
     } else {
         quoted.sell
     };
-    UpgradePrices {
+    let worth = if maxed {
+        at_max_rank
+    } else {
+        traded_or_listed(prices, slug, quoted.sell)
+    };
+    let listed = UpgradePrices {
         sell,
         sell_max_rank: if wanted == UpgradeKind::Arcane {
             at_max_rank
@@ -108,7 +113,9 @@ fn upgrade_prices(
         },
         is_floor: rank.is_some_and(|rank| rank > 0) && !maxed && sell.is_some_and(|p| p > 0.0),
         buy: quoted.buy,
-    }
+    };
+
+    (listed, worth)
 }
 
 #[derive(Default)]
@@ -190,6 +197,7 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
                 _ => (None, None),
             };
             let slug = record.market_slug.as_deref();
+            let (prices, worth) = upgrade_prices(prices, slug, rank, max_rank, wanted);
             ModRow {
                 item: index.add_marked(
                     ItemSummary::from(&*record),
@@ -198,7 +206,8 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
                 count,
                 rank,
                 max_rank,
-                prices: upgrade_prices(prices, slug, rank, max_rank, wanted),
+                prices,
+                worth,
                 rarity,
                 equipped_in: equipped_holders(catalog, items, &slots, &references, index),
             }
@@ -328,7 +337,8 @@ mod tests {
         let fixture = upgrade_fixture(
             FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
                 .with_max_rank([("arcane_energize", 240.0)])
-                .with_buy([("arcane_energize", 7.0)]),
+                .with_buy([("arcane_energize", 7.0)])
+                .with_weekly_median([("arcane_energize", 10.0)]),
         );
         let (rows, index) = fixture.rows(arcanes);
 
@@ -343,7 +353,16 @@ mod tests {
             assert_eq!(row.prices.buy, Some(7.0));
             assert_eq!(row.max_rank, Some(5));
         }
-        assert!(energize.iter().any(|row| row.rank == Some(5)));
+        let maxed = energize
+            .iter()
+            .find(|row| row.rank == Some(5))
+            .expect("a maxed Arcane Energize");
+        let unranked = energize
+            .iter()
+            .find(|row| row.rank.unwrap_or(0) == 0)
+            .expect("an unranked Arcane Energize");
+        assert_eq!(maxed.worth, Some(240.0));
+        assert_eq!(unranked.worth, Some(10.0));
 
         let surge = rows
             .iter()
@@ -355,6 +374,7 @@ mod tests {
             "the bulk table carries no max rank sell price for it"
         );
         assert_eq!(surge.prices.buy, None);
+        assert_eq!(surge.worth, Some(9.0));
         assert_eq!(
             surge.max_rank,
             Some(3),
