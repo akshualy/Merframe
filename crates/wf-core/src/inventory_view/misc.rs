@@ -8,6 +8,7 @@ use crate::catalog::{Catalog, RELIC_PREFIX, is_fish};
 use crate::identity::{
     ItemRecord, ItemTable, LEGENDARY_CORE, OPTICOR_VANDAL, OUBLIETTE_KEY, Variant,
 };
+use crate::prices::traded_or_listed;
 use crate::view::View;
 
 const SCULPTURE_SOCKETS: [(&str, u32, u32); 11] = [
@@ -139,16 +140,16 @@ pub(crate) fn misc(view: &View, index: &mut ItemIndex) -> Vec<MiscRow> {
 }
 
 fn record_row(view: &View, index: &mut ItemIndex, record: &ItemRecord, count: i64) -> MiscRow {
+    let slug = record.market_slug.as_deref();
+    let plat = slug.and_then(|slug| view.prices.plat(slug));
     MiscRow {
         item: index.add_marked(
             ItemSummary::from(record),
             view.favourites.contains(&record.unique_name),
         ),
         count,
-        plat: record
-            .market_slug
-            .as_deref()
-            .and_then(|slug| view.prices.plat(slug)),
+        plat,
+        worth: traded_or_listed(view.prices, slug, plat),
         market_subtype: None,
         stars: None,
     }

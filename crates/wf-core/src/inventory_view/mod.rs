@@ -112,6 +112,7 @@ pub struct PartRow {
     pub item: usize,
     pub count: i64,
     pub prices: Prices,
+    pub worth: Option<f64>,
     pub set: SetLink,
     pub status: ItemStatus,
 }
@@ -149,6 +150,7 @@ pub struct ModRow {
     pub rank: Option<u32>,
     pub max_rank: Option<u32>,
     pub prices: UpgradePrices,
+    pub worth: Option<f64>,
     pub rarity: Option<Rarity>,
     pub equipped_in: Vec<usize>,
 }
@@ -161,6 +163,7 @@ pub struct RelicRow {
     pub refinement: Refinement,
     pub count: i64,
     pub plat: Option<f64>,
+    pub worth: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -178,6 +181,7 @@ pub struct MiscRow {
     pub item: usize,
     pub count: i64,
     pub plat: Option<f64>,
+    pub worth: Option<f64>,
     pub market_subtype: Option<String>,
     pub stars: Option<SculptureStars>,
 }
@@ -201,6 +205,7 @@ pub struct SetRow {
     pub complete: bool,
     pub status: ItemStatus,
     pub prices: Prices,
+    pub worth: Option<f64>,
     pub ducats: u32,
     pub components: Vec<SetComponent>,
 }

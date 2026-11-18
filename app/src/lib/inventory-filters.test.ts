@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  entriesExceptSets,
   entriesFor,
   equippedLabel,
   type InventoryEntry,
   inventoryFlags,
   totalPlat,
   vault,
+  worth,
 } from "@/lib/inventory-entries";
 import {
   compareEntries,
@@ -56,6 +58,7 @@ function part(
     item: 0,
     count: 1,
     prices: { sell: extra.plat ?? null, buy: null },
+    worth: extra.plat ?? null,
     set: { item: 1, complete: false },
     status: { built: false, mastered: false },
   };
@@ -78,6 +81,7 @@ function set(name: string, owned: number, total: number): InventoryEntry {
       complete: owned === total,
       status: { built: false, mastered: false },
       prices: { sell: null, buy: null },
+      worth: null,
       ducats: 0,
       components: [],
     },
@@ -97,6 +101,7 @@ function relic(
     refinement,
     count,
     plat: null,
+    worth: null,
   };
   return { kind: "relic", row, item: summary(name, { vault: "vaulted" }) };
 }
@@ -129,6 +134,7 @@ function modRow(
     rank,
     max_rank: 10,
     prices: { sell: 20, sell_max_rank: 90, is_floor: false, buy: null },
+    worth: 20,
     rarity: null,
     equipped_in,
   };
@@ -138,6 +144,7 @@ const misc: MiscRow = {
   item: 4,
   count: 1,
   plat: 3,
+  worth: 3,
   market_subtype: null,
   stars: null,
 };
@@ -159,6 +166,7 @@ const tab: InventoryTab = {
       item: 0,
       count: 2,
       prices: { sell: 8, buy: 5 },
+      worth: 8,
       set: { item: 1, complete: true },
       status: { built: true, mastered: false },
     },
@@ -286,6 +294,46 @@ describe("totalPlat", () => {
     }
     expect(totalPlat(unranked)).toBe(20);
     expect(totalPlat(maxed)).toBe(90);
+  });
+});
+
+describe("worth", () => {
+  it("sums worth by count, without Sets", () => {
+    const priced: InventoryTab = {
+      ...tab,
+      items: tab.items.map((item, index) =>
+        index === 0 ? { ...item, ducats: 45 } : item,
+      ),
+      relics: [
+        {
+          item: 0,
+          tier: "Lith",
+          refinement: "Intact",
+          count: 1,
+          plat: null,
+          worth: null,
+        },
+      ],
+      sets: [
+        {
+          item: 1,
+          owned_parts: 1,
+          total_parts: 1,
+          count: 1,
+          complete: true,
+          status: { built: false, mastered: false },
+          prices: { sell: 100, buy: null },
+          worth: 100,
+          ducats: 45,
+          components: [],
+        },
+      ],
+    };
+    expect(worth(entriesExceptSets(priced))).toEqual({
+      plat: 79,
+      ducats: 90,
+      unpriced: 1,
+    });
   });
 });
 

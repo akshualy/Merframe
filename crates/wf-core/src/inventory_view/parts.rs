@@ -5,7 +5,7 @@ use wf_data::{Component, Item};
 use super::{ItemIndex, ItemSummary, PartRow, SetComponent, SetLink, SetRow};
 use crate::catalog::{Stock, names_a_prime};
 use crate::identity::{ItemKind, ItemRecord, ItemTable, Variant, is_landing_craft_part};
-use crate::prices::Prices;
+use crate::prices::{Prices, traded_or_listed};
 use crate::view::View;
 
 fn is_warframe_part(item_type: &str) -> bool {
@@ -82,10 +82,13 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
             let item = catalog.item(&set.unique_name)?;
             let part = record.held_as(unique_name);
             let favourite = favourites.any([unique_name, &record.unique_name, &set.unique_name]);
+            let slug = part.market_slug.as_deref();
+            let listed = Prices::of(prices, slug);
             Some(PartRow {
                 item: index.add_marked(ItemSummary::from(&*part), favourite),
                 count,
-                prices: Prices::of(prices, part.market_slug.as_deref()),
+                prices: listed,
+                worth: traded_or_listed(prices, slug, listed.sell),
                 set: SetLink {
                     item: index.add(ItemSummary::from(set)),
                     complete: set_is_complete(items, &account.stock, item),
@@ -190,6 +193,8 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
             let complete = owned_parts == parts.len();
             let count = complete_sets(&parts);
             let set = items.variant(&item.unique_name, Variant::Set)?;
+            let slug = set.market_slug.as_deref();
+            let listed = Prices::of(prices, slug);
             Some(SetRow {
                 item: index.add_marked(
                     ItemSummary::from(set),
@@ -200,7 +205,8 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
                 count,
                 complete,
                 status: account.status(item),
-                prices: Prices::of(prices, set.market_slug.as_deref()),
+                prices: listed,
+                worth: traded_or_listed(prices, slug, listed.sell),
                 ducats: set_ducats(&parts),
                 components: parts
                     .iter()

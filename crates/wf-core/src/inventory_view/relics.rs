@@ -2,6 +2,7 @@ use wf_data::{Refinement, projection_family};
 
 use crate::catalog::{VaultStatus, display_name_from_path};
 use crate::identity::ItemKind;
+use crate::prices::traded_or_listed;
 use crate::view::View;
 
 use super::{ItemIndex, ItemSummary, RelicRow};
@@ -81,16 +82,16 @@ pub(crate) fn relics(view: &View, index: &mut ItemIndex) -> Vec<RelicRow> {
                     ducats: None,
                 },
             };
-            let plat = summary
-                .market_slug
-                .as_deref()
-                .and_then(|slug| prices.plat(slug));
+            let slug = summary.market_slug.as_deref();
+            let plat = slug.and_then(|slug| prices.plat(slug));
+            let worth = traded_or_listed(prices, slug, plat);
             Some(RelicRow {
                 item: index.add_marked(summary, favourites.contains(unique_name)),
                 tier,
                 refinement,
                 count,
                 plat,
+                worth,
             })
         })
         .collect();

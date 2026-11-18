@@ -2,4 +2,4 @@
 import type { Rarity } from "./Rarity";
 import type { UpgradePrices } from "./UpgradePrices";
 
-export type ModRow = { item: number, count: number, rank: number | null, max_rank: number | null, prices: UpgradePrices, rarity: Rarity | null, equipped_in: Array<number>, };
+export type ModRow = { item: number, count: number, rank: number | null, max_rank: number | null, prices: UpgradePrices, worth: number | null, rarity: Rarity | null, equipped_in: Array<number>, };

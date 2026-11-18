@@ -1,5 +1,4 @@
 import { itemAt } from "@/lib/arrays";
-import type { InventoryTabKey } from "@/lib/inventory-filters";
 import type {
   InventoryTab,
   ItemSummary,
@@ -12,6 +11,17 @@ import type {
   SetRow,
   VaultStatus,
 } from "@/types";
+
+export const INVENTORY_TABS = [
+  "parts",
+  "relics",
+  "mods",
+  "arcanes",
+  "misc",
+  "sets",
+] as const;
+
+export type InventoryTabKey = (typeof INVENTORY_TABS)[number];
 
 export interface SetPart {
   component: SetComponent;
@@ -214,6 +224,32 @@ export function totalPlat(entry: InventoryEntry): number | null {
   return row.max_rank !== null && row.rank === row.max_rank
     ? (row.prices.sell_max_rank ?? row.prices.sell)
     : row.prices.sell;
+}
+
+export interface InventoryWorth {
+  plat: number;
+  ducats: number;
+  unpriced: number;
+}
+
+export function worth(entries: InventoryEntry[]): InventoryWorth {
+  return entries.reduce(
+    (total, entry) => {
+      const value = entry.row.worth;
+      return {
+        plat: total.plat + (value ?? 0) * entry.row.count,
+        ducats: total.ducats + (ducats(entry) ?? 0) * entry.row.count,
+        unpriced: total.unpriced + (value === null ? 1 : 0),
+      };
+    },
+    { plat: 0, ducats: 0, unpriced: 0 },
+  );
+}
+
+export function entriesExceptSets(data: InventoryTab): InventoryEntry[] {
+  return INVENTORY_TABS.filter((tab) => tab !== "sets").flatMap((tab) =>
+    entriesFor(tab, data),
+  );
 }
 
 export function hasOrder(

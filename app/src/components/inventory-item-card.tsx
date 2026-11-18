@@ -19,13 +19,13 @@ import {
   equippedLabel,
   type InventoryEntry,
   type InventoryFlags,
+  type InventoryTabKey,
   rank,
   refinement,
   type SetEntry,
   sellPlat,
   vault,
 } from "@/lib/inventory-entries";
-import type { InventoryTabKey } from "@/lib/inventory-filters";
 import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/stores/app-store";
