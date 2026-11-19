@@ -20,8 +20,13 @@ export const ARBITRATION_TIERS: ArbitrationTier[] = [
   "B",
   "C",
   "D",
+  "SP",
   "F",
 ];
+
+export function tierName(tier: ArbitrationTier): string {
+  return tier === "SP" ? "Special" : tier;
+}
 
 export const ARBITRATION_LEAD_MINUTES = [0, 5, 10, 15, 30, 60] as const;
 

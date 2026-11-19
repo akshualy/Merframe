@@ -22,6 +22,7 @@ import {
   nodeValues,
   personalMatch,
   slotSearchText,
+  tierName,
 } from "@/lib/arbitrations";
 import { api } from "@/lib/bridge";
 import { type FilterOption, plainOptions } from "@/lib/filters";
@@ -52,7 +53,7 @@ const PERSONAL: FilterOption<ArbitrationPersonalFilter>[] = [
 ];
 
 const TIERS: FilterOption<ArbitrationTier>[] = ARBITRATION_TIERS.map(
-  (tier) => ({ value: tier, label: tier }),
+  (tier) => ({ value: tier, label: tierName(tier) }),
 );
 
 const STATUS_NOTE: Record<ArbitrationForecastStatus, string | null> = {

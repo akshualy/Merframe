@@ -14,6 +14,7 @@ import {
   type ArbitrationDay,
   slotMission,
   slotPlace,
+  tierName,
 } from "@/lib/arbitrations";
 import { secondsUntil, timeOfDay } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ const TIER_VARIANT: Record<ArbitrationTier, "accent" | "secondary" | "muted"> =
     B: "secondary",
     C: "secondary",
     D: "muted",
+    SP: "secondary",
     F: "muted",
   };
 
@@ -35,7 +37,7 @@ export function TierBadge({ tier }: { tier: ArbitrationTier }) {
     <Badge
       variant={TIER_VARIANT[tier]}
       className="w-8 justify-center"
-      title={`Community tier ${tier}`}
+      title={`Community tier ${tierName(tier)}`}
     >
       {tier}
     </Badge>

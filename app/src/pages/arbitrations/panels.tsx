@@ -17,7 +17,7 @@ import type { ArbitrationNode, ArbitrationSlot } from "@/types";
 import { HeroHeading } from "./schedule";
 
 const SOURCE_URL = "https://browse.wf/arbys";
-const TIERS_URL = "https://browse.wf/about";
+const TIERS_URL = "https://discord.gg/Arbitrations";
 
 function MarkRow({
   title,
@@ -182,8 +182,8 @@ export function ForecastSource() {
       Schedule by
       <SourceLink url={SOURCE_URL}>browse.wf</SourceLink>, community tiers by
       the Arbitration Goons via
-      <SourceLink url={TIERS_URL}>browse.wf/about</SourceLink>. A forecast, not
-      a live confirmation from the game.
+      <SourceLink url={TIERS_URL}>discord.gg/Arbitrations</SourceLink>. A
+      forecast, not a live confirmation from the game.
     </Hint>
   );
 }

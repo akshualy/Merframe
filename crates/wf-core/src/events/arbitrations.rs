@@ -4,7 +4,7 @@ use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 use wf_worldstate::{
     ArbitrationForecast, ArbitrationForecastHour, ArbitrationNode, ArbitrationTier,
-    ArbitrationTiers, arbitration_node,
+    arbitration_node,
 };
 
 pub const ARBITRATION_FORECAST_TRUSTED: TimeDelta = TimeDelta::hours(24);
@@ -133,13 +133,12 @@ fn minutes_rounded_up(until: TimeDelta) -> i64 {
 
 pub(crate) struct ArbitrationOutlook<'a> {
     pub forecast: &'a ArbitrationForecast,
-    pub tiers: &'a ArbitrationTiers,
     pub settings: &'a ArbitrationAlertSettings,
 }
 
 impl ArbitrationOutlook<'_> {
     fn slot(&self, hour: ArbitrationForecastHour<'_>) -> ArbitrationSlot {
-        let node = arbitration_node(hour.node_id, self.tiers);
+        let node = arbitration_node(hour.node_id);
         let id = format!("{}:{}", hour.starts.timestamp(), hour.node_id);
         ArbitrationSlot {
             favourite: self.settings.favourite_nodes.contains(&node.node_id),
@@ -166,7 +165,7 @@ impl ArbitrationOutlook<'_> {
             .forecast
             .unique_node_ids()
             .into_iter()
-            .map(|node_id| arbitration_node(node_id, self.tiers))
+            .map(arbitration_node)
             .collect();
         nodes.sort_by(|a, b| a.planet.cmp(&b.planet).then_with(|| a.node.cmp(&b.node)));
         Some(ArbitrationSchedule {
@@ -228,10 +227,6 @@ mod tests {
         ArbitrationForecast::parse(fixtures::ARBITRATIONS).unwrap()
     }
 
-    fn tiers() -> ArbitrationTiers {
-        ArbitrationTiers::parse(fixtures::ARBITRATION_TIERS).unwrap()
-    }
-
     fn set(values: &[&str]) -> BTreeSet<String> {
         values.iter().map(|value| (*value).to_owned()).collect()
     }
@@ -241,10 +236,8 @@ mod tests {
         now_ms: i64,
     ) -> Option<ArbitrationSchedule> {
         let forecast = forecast();
-        let tiers = tiers();
         ArbitrationOutlook {
             forecast: &forecast,
-            tiers: &tiers,
             settings,
         }
         .schedule(at(now_ms))
@@ -255,10 +248,8 @@ mod tests {
         now_ms: i64,
     ) -> Vec<(String, bool, i64, bool)> {
         let forecast = forecast();
-        let tiers = tiers();
         ArbitrationOutlook {
             forecast: &forecast,
-            tiers: &tiers,
             settings,
         }
         .due_alerts(at(now_ms))
@@ -282,7 +273,7 @@ mod tests {
         assert_eq!(schedule.slots[0].id, "1727892000:SolNode64");
         assert_eq!(schedule.slots[0].node.node, "Umbriel");
         assert_eq!(schedule.slots[0].node.planet, Some("Uranus"));
-        assert_eq!(schedule.slots[0].node.tier, ArbitrationTier::S);
+        assert_eq!(schedule.slots[0].node.tier, ArbitrationTier::D);
         assert_eq!(schedule.slots[0].starts, at(FIRST_HOUR_MS + 2 * HOUR_MS));
         assert_eq!(schedule.slots[0].ends, at(FIRST_HOUR_MS + 3 * HOUR_MS));
         assert!(schedule.slots.iter().all(|slot| slot.matches));
@@ -309,7 +300,7 @@ mod tests {
             favourite_nodes: set(&["SolNode64"]),
             reminders: set(&["1727892000:SolNode64"]),
             filter: ArbitrationAlertFilter {
-                tiers: [ArbitrationTier::S].into_iter().collect(),
+                tiers: [ArbitrationTier::D].into_iter().collect(),
                 ..ArbitrationAlertFilter::default()
             },
             ..ArbitrationAlertSettings::default()
@@ -338,7 +329,7 @@ mod tests {
 
     #[test]
     fn filter_groups_are_and_within_or() {
-        let umbriel = arbitration_node("SolNode64", &tiers());
+        let umbriel = arbitration_node("SolNode64");
         let favourites = set(&["SolNode64"]);
         let none = BTreeSet::new();
         let filter = ArbitrationAlertFilter::default();
@@ -375,7 +366,7 @@ mod tests {
         assert!(favourites_only.matches(&umbriel, &favourites));
         assert!(!favourites_only.matches(&umbriel, &none));
 
-        let unknown = arbitration_node("SolNode99999", &tiers());
+        let unknown = arbitration_node("SolNode99999");
         assert!(!planet_and_faction.matches(&unknown, &none));
         let lowest = ArbitrationAlertFilter {
             tiers: [ArbitrationTier::F].into_iter().collect(),
@@ -492,12 +483,11 @@ mod tests {
     #[test]
     fn arbitration_alert_once() {
         let forecast = forecast();
-        let tiers = tiers();
         let fetched_at = at(1_727_884_800_000);
         let starts = at(FIRST_HOUR_MS + 2 * HOUR_MS);
         let mut engine = Engine::new(alert_settings());
 
-        let events = engine.handle_arbitrations(&forecast, &tiers, fetched_at, starts);
+        let events = engine.handle_arbitrations(&forecast, fetched_at, starts);
         assert_eq!(events.len(), 1);
         assert!(matches!(
             &events[0],
@@ -506,7 +496,7 @@ mod tests {
         let again = starts + TimeDelta::minutes(1);
         assert!(
             engine
-                .handle_arbitrations(&forecast, &tiers, fetched_at, again)
+                .handle_arbitrations(&forecast, fetched_at, again)
                 .is_empty()
         );
     }
@@ -514,13 +504,12 @@ mod tests {
     #[test]
     fn stale_forecast_is_silent() {
         let forecast = forecast();
-        let tiers = tiers();
         let starts = at(FIRST_HOUR_MS + 2 * HOUR_MS);
         let fetched_long_ago = starts - TimeDelta::hours(25);
         let mut engine = Engine::new(alert_settings());
         assert!(
             engine
-                .handle_arbitrations(&forecast, &tiers, fetched_long_ago, starts)
+                .handle_arbitrations(&forecast, fetched_long_ago, starts)
                 .is_empty()
         );
     }

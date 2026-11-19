@@ -406,7 +406,7 @@ pub async fn worldstate(state: Shared<'_>) -> CommandResult<WorldStateView> {
 mod tests {
     use chrono::{DateTime, TimeDelta};
     use wf_core::Catalog;
-    use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState};
+    use wf_worldstate::{ArbitrationForecast, WorldState};
 
     use super::*;
     use crate::settings::{NotificationSettings, ToastSettings};
@@ -661,7 +661,7 @@ mod tests {
         assert!(unavailable.schedule.is_none());
         assert!(unavailable.notifications_available);
 
-        core.set_arbitration_forecast(forecast, ArbitrationTiers::default(), fetched_at);
+        core.set_arbitration_forecast(forecast, fetched_at);
         let fresh = ArbitrationDashboard::build(&core, &settings, false, fetched_at);
         assert_eq!(fresh.status, ArbitrationForecastStatus::Fresh);
         assert_eq!(fresh.fetched_at, Some(fetched_at));

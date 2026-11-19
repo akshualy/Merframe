@@ -25,8 +25,8 @@ mod void_trader;
 mod window;
 
 pub use arbitration::{
-    ARBITRATION_FORECAST_URL, ARBITRATION_TIERS_URL, ArbitrationForecast, ArbitrationForecastHour,
-    ArbitrationNode, ArbitrationTier, ArbitrationTiers, arbitration_node,
+    ARBITRATION_FORECAST_URL, ArbitrationForecast, ArbitrationForecastHour, ArbitrationNode,
+    ArbitrationTier, arbitration_node,
 };
 pub use archimedea::{ArchimedeaKind, ArchimedeaWeek};
 pub use archon::{ArchonHunt, ArchonMission};

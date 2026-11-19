@@ -8,7 +8,7 @@ use serde::Serialize;
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
 use wf_market::{RivenData, WeaponAuctions};
-use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState};
+use wf_worldstate::{ArbitrationForecast, WorldState};
 
 use crate::account::Account;
 use crate::arbitration_runs::{
@@ -70,7 +70,6 @@ pub struct StatsTab {
 
 struct LoadedArbitrationForecast {
     forecast: ArbitrationForecast,
-    tiers: ArbitrationTiers,
     fetched_at: DateTime<Utc>,
 }
 
@@ -249,12 +248,10 @@ impl Core {
     pub fn set_arbitration_forecast(
         &mut self,
         forecast: ArbitrationForecast,
-        tiers: ArbitrationTiers,
         fetched_at: DateTime<Utc>,
     ) {
         self.arbitrations = Some(LoadedArbitrationForecast {
             forecast,
-            tiers,
             fetched_at,
         });
     }
@@ -267,7 +264,6 @@ impl Core {
         let loaded = self.arbitrations.as_ref()?;
         ArbitrationOutlook {
             forecast: &loaded.forecast,
-            tiers: &loaded.tiers,
             settings: &self.engine.settings().arbitrations,
         }
         .schedule(now)
@@ -278,7 +274,7 @@ impl Core {
             return Vec::new();
         };
         self.engine
-            .handle_arbitrations(&loaded.forecast, &loaded.tiers, loaded.fetched_at, now)
+            .handle_arbitrations(&loaded.forecast, loaded.fetched_at, now)
     }
 
     pub fn world_reward_alerts(&self, now: DateTime<Utc>) -> Vec<WorldRewardAlert> {

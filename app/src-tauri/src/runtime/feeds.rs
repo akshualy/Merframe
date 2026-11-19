@@ -9,10 +9,7 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, info, warn};
 use wf_core::{Core, CoreEvent};
 use wf_market::{Etagged, PriceTable, RivenData, bulk_prices, bulk_riven_data};
-use wf_worldstate::{
-    ARBITRATION_FORECAST_URL, ARBITRATION_TIERS_URL, ArbitrationForecast, ArbitrationTiers,
-    WorldState, fetch_text,
-};
+use wf_worldstate::{ARBITRATION_FORECAST_URL, ArbitrationForecast, WorldState, fetch_text};
 
 use super::{AppEvent, RIVEN_DATA_KEY, dispatch, emit, emit_status, try_blocking};
 use crate::event_feed;
@@ -24,7 +21,6 @@ const PRICE_INTERVAL: Duration = Duration::from_mins(15);
 const RIVEN_INTERVAL: Duration = Duration::from_hours(24);
 const ARBITRATION_FORECAST_KEY: &str = "arbitration_forecast";
 const ARBITRATION_INTERVAL: TimeDelta = TimeDelta::hours(6);
-const ARBITRATION_TIERS_MAX_AGE: TimeDelta = TimeDelta::days(7);
 const ARBITRATION_RETRY_CAP: Duration = Duration::from_hours(1);
 const ARBITRATION_RETRY_STEPS: u32 = 6;
 
@@ -73,29 +69,19 @@ async fn refresh_world_state<R: Runtime>(
 struct StoredArbitrationForecast {
     schedule: String,
     fetched_at: DateTime<Utc>,
-    tiers: Option<String>,
-    tiers_fetched_at: Option<DateTime<Utc>>,
 }
 
 impl StoredArbitrationForecast {
-    fn load_into(&self, core: &mut Core, now: DateTime<Utc>) -> anyhow::Result<()> {
+    fn load_into(&self, core: &mut Core) -> anyhow::Result<()> {
         let forecast = ArbitrationForecast::parse(&self.schedule)
             .context("Parsing the arbitration forecast")?;
-        let tiers_current = self
-            .tiers_fetched_at
-            .is_some_and(|at| now.signed_duration_since(at) <= ARBITRATION_TIERS_MAX_AGE);
-        let tiers = match self.tiers.as_deref().filter(|_| tiers_current) {
-            Some(text) => ArbitrationTiers::parse(text).context("Parsing the arbitration tiers")?,
-            None => ArbitrationTiers::default(),
-        };
         info!(
             hours = forecast.hours(),
             nodes = forecast.unique_node_ids().len(),
-            tiers = tiers.len(),
             fetched_at = %self.fetched_at,
             "Arbitration forecast loaded"
         );
-        core.set_arbitration_forecast(forecast, tiers, self.fetched_at);
+        core.set_arbitration_forecast(forecast, self.fetched_at);
         Ok(())
     }
 }
@@ -109,7 +95,7 @@ pub(super) async fn arbitration_task<R: Runtime>(app: AppHandle<R>, state: Arc<A
             now.signed_duration_since(stored.fetched_at) >= ARBITRATION_INTERVAL
         });
         if due {
-            match refresh_arbitration_forecast(&app, &state, stored.as_ref()).await {
+            match refresh_arbitration_forecast(&app, &state).await {
                 Ok(fresh) => {
                     failures = 0;
                     stored = Some(fresh);
@@ -161,7 +147,7 @@ async fn stored_arbitration_forecast(state: &Arc<AppState>) -> Option<StoredArbi
             return None;
         }
     };
-    let loaded = stored.load_into(&mut lock(&state.core), Utc::now());
+    let loaded = stored.load_into(&mut lock(&state.core));
     match loaded {
         Ok(()) => Some(stored),
         Err(error) => {
@@ -174,7 +160,6 @@ async fn stored_arbitration_forecast(state: &Arc<AppState>) -> Option<StoredArbi
 async fn refresh_arbitration_forecast<R: Runtime>(
     app: &AppHandle<R>,
     state: &Arc<AppState>,
-    previous: Option<&StoredArbitrationForecast>,
 ) -> anyhow::Result<StoredArbitrationForecast> {
     let schedule = fetch_text(&state.http, ARBITRATION_FORECAST_URL)
         .await
@@ -186,25 +171,13 @@ async fn refresh_arbitration_forecast<R: Runtime>(
         anyhow::bail!("The arbitration forecast does not cover the next hour");
     }
 
-    let fetched_tiers = fetch_text(&state.http, ARBITRATION_TIERS_URL)
-        .await
-        .and_then(|text| ArbitrationTiers::parse(&text).map(|_| text));
-    let tiers = match fetched_tiers {
-        Ok(text) => Some((text, now)),
-        Err(error) => {
-            warn!(%error, "Arbitration tiers not refreshed, keeping the stored ones");
-            previous.and_then(|previous| previous.tiers.clone().zip(previous.tiers_fetched_at))
-        }
-    };
     let stored = StoredArbitrationForecast {
         schedule,
         fetched_at: now,
-        tiers: tiers.as_ref().map(|(text, _)| text.clone()),
-        tiers_fetched_at: tiers.map(|(_, at)| at),
     };
 
     let mut core = lock(&state.core);
-    stored.load_into(&mut core, now)?;
+    stored.load_into(&mut core)?;
     if let Err(error) = core.store().set_setting(ARBITRATION_FORECAST_KEY, &stored) {
         warn!(%error, "Arbitration forecast store write failed");
     }
