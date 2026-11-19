@@ -4,9 +4,10 @@ import type { DucateringProgress } from "./DucateringProgress";
 import type { Motion } from "./Motion";
 import type { NotificationTrigger } from "./NotificationTrigger";
 import type { OverlayKind } from "./OverlayKind";
+import type { OverlayMonitor } from "./OverlayMonitor";
 import type { RecommendationTrigger } from "./RecommendationTrigger";
 import type { RewardTrigger } from "./RewardTrigger";
 import type { RivenTrigger } from "./RivenTrigger";
 import type { TextSize } from "./TextSize";
 
-export type OverlayState = { seq: number, opacity: number, text_size: TextSize, motion: Motion, ducatering_clipboard: boolean, reward: RewardTrigger | null, recommendation: RecommendationTrigger | null, riven: RivenTrigger | null, ducatering: DucateringProgress | null, notification: NotificationTrigger | null, arbitration: ArbitrationRun | null, preview: OverlayKind | null, };
+export type OverlayState = { seq: number, reward: RewardTrigger | null, recommendation: RecommendationTrigger | null, riven: RivenTrigger | null, ducatering: DucateringProgress | null, notification: NotificationTrigger | null, arbitration: ArbitrationRun | null, preview: OverlayKind | null, monitors: Array<OverlayMonitor>, opacity: number, text_size: TextSize, motion: Motion, ducatering_clipboard: boolean, };

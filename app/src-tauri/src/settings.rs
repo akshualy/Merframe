@@ -43,6 +43,13 @@ pub enum OverlayMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct OverlayMonitorOrigin {
+    pub x: i32,
+    pub y: i32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[serde(rename_all = "snake_case")]
 pub enum OverlayPlacement {
     TopLeft,
@@ -389,6 +396,7 @@ pub struct OverlaySettings {
     pub overlay_opacity: u8,
     pub overlay_recommendation_count: u8,
     pub overlay_mode: OverlayMode,
+    pub overlay_monitor: Option<OverlayMonitorOrigin>,
     pub overlay_only_while_game_active: bool,
     pub overlay_account_balance: bool,
     #[serde(flatten)]
@@ -562,6 +570,7 @@ impl Default for OverlaySettings {
             overlay_opacity: OVERLAY_OPACITY_DEFAULT,
             overlay_recommendation_count: RECOMMENDATION_COUNT_DEFAULT,
             overlay_mode: OverlayMode::Auto,
+            overlay_monitor: None,
             overlay_only_while_game_active: true,
             overlay_account_balance: true,
             ducatering: DucateringSettings::default(),

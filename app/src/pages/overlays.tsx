@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { DucateringFilters } from "@/components/ducatering-filters";
 import { SelectField } from "@/components/option-select";
+import { OverlayMonitorSelect } from "@/components/overlay-monitor";
 import {
   ArbitrationLiveSlot,
   DucateringSlot,
@@ -257,6 +258,12 @@ export function OverlaysPage() {
               size="sm"
               className="w-64"
             />
+            <OverlayMonitorSelect
+              monitors={overlays.monitors}
+              chosen={settings.overlay_monitor}
+              disabled={!master}
+              onChange={(chosen) => saveSettings({ overlay_monitor: chosen })}
+            />
             <CommittedSlider
               id="overlay-opacity"
               label="Overlay opacity"
@@ -272,10 +279,6 @@ export function OverlaysPage() {
             />
           </div>
           <div className="text-muted-foreground flex flex-col gap-1 text-sm">
-            <p>
-              &quot;Only while the game is active&quot; hides the overlay
-              windows while Warframe is not the focused window.
-            </p>
             <p>
               {status?.overlay_support.detail ??
                 "The overlay support of this session is not known yet."}
