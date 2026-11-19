@@ -343,6 +343,7 @@ pub struct PriceEntry {
     pub volume_7d: Option<u32>,
     pub median_7d: Option<f64>,
     pub volume_30d: Option<u32>,
+    pub volume_30d_max: Option<u32>,
     pub median_30d: Option<f64>,
     pub volume_90d: Option<u32>,
     pub median_90d: Option<f64>,
@@ -352,6 +353,10 @@ pub struct PriceEntry {
     pub median_prev_7d: Option<f64>,
     pub volume_prev_30d: Option<u32>,
     pub median_prev_30d: Option<f64>,
+    pub mark: Option<f64>,
+    pub mark_max: Option<f64>,
+    pub bid: Option<f64>,
+    pub bid_max: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

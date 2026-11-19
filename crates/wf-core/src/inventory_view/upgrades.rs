@@ -4,10 +4,11 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use wf_data::Item;
 use wf_inventory::{EquipmentItem, Inventory, RivenFingerprint, UpgradeSlot};
 
+use super::valuation::set_liquidation_values;
 use super::{ItemIndex, ItemSummary, ModHolder, ModRow, UpgradePrices};
 use crate::catalog::{ARCANE_PREFIX, Catalog};
 use crate::identity::{ItemKind, ItemTable, Variant, is_riven};
-use crate::prices::{PriceSource, Prices, traded_or_listed};
+use crate::prices::{PriceSource, Prices};
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -82,29 +83,28 @@ fn equipped_holders(
     holders
 }
 
+pub(super) fn ranked_to_max(rank: Option<u32>, max_rank: Option<u32>) -> bool {
+    max_rank.is_some_and(|max_rank| max_rank > 0) && rank == max_rank
+}
+
 fn upgrade_prices(
     prices: &dyn PriceSource,
     slug: Option<&str>,
     rank: Option<u32>,
     max_rank: Option<u32>,
     wanted: UpgradeKind,
-) -> (UpgradePrices, Option<f64>) {
+) -> UpgradePrices {
     let at_max_rank = slug
         .and_then(|slug| prices.plat_max_rank(slug))
         .filter(|p| *p > 0.0);
     let quoted = Prices::of(prices, slug);
-    let maxed = rank.is_some() && rank == max_rank && at_max_rank.is_some();
+    let maxed = ranked_to_max(rank, max_rank) && at_max_rank.is_some();
     let sell = if maxed && wanted == UpgradeKind::Mod {
         at_max_rank
     } else {
         quoted.sell
     };
-    let worth = if maxed {
-        at_max_rank
-    } else {
-        traded_or_listed(prices, slug, quoted.sell)
-    };
-    let listed = UpgradePrices {
+    UpgradePrices {
         sell,
         sell_max_rank: if wanted == UpgradeKind::Arcane {
             at_max_rank
@@ -113,9 +113,7 @@ fn upgrade_prices(
         },
         is_floor: rank.is_some_and(|rank| rank > 0) && !maxed && sell.is_some_and(|p| p > 0.0),
         buy: quoted.buy,
-    };
-
-    (listed, worth)
+    }
 }
 
 #[derive(Default)]
@@ -197,7 +195,6 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
                 _ => (None, None),
             };
             let slug = record.market_slug.as_deref();
-            let (prices, worth) = upgrade_prices(prices, slug, rank, max_rank, wanted);
             ModRow {
                 item: index.add_marked(
                     ItemSummary::from(&*record),
@@ -206,8 +203,8 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
                 count,
                 rank,
                 max_rank,
-                prices,
-                worth,
+                prices: upgrade_prices(prices, slug, rank, max_rank, wanted),
+                liquidation_value: None,
                 rarity,
                 equipped_in: equipped_holders(catalog, items, &slots, &references, index),
             }
@@ -219,6 +216,7 @@ fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<
             .cmp(&index[b.item].name)
             .then(a.rank.cmp(&b.rank))
     });
+    set_liquidation_values(&mut rows, index, view.prices);
     rows
 }
 
@@ -337,8 +335,7 @@ mod tests {
         let fixture = upgrade_fixture(
             FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
                 .with_max_rank([("arcane_energize", 240.0)])
-                .with_buy([("arcane_energize", 7.0)])
-                .with_weekly_median([("arcane_energize", 10.0)]),
+                .with_buy([("arcane_energize", 7.0)]),
         );
         let (rows, index) = fixture.rows(arcanes);
 
@@ -353,16 +350,6 @@ mod tests {
             assert_eq!(row.prices.buy, Some(7.0));
             assert_eq!(row.max_rank, Some(5));
         }
-        let maxed = energize
-            .iter()
-            .find(|row| row.rank == Some(5))
-            .expect("a maxed Arcane Energize");
-        let unranked = energize
-            .iter()
-            .find(|row| row.rank.unwrap_or(0) == 0)
-            .expect("an unranked Arcane Energize");
-        assert_eq!(maxed.worth, Some(240.0));
-        assert_eq!(unranked.worth, Some(10.0));
 
         let surge = rows
             .iter()
@@ -374,7 +361,6 @@ mod tests {
             "the bulk table carries no max rank sell price for it"
         );
         assert_eq!(surge.prices.buy, None);
-        assert_eq!(surge.worth, Some(9.0));
         assert_eq!(
             surge.max_rank,
             Some(3),

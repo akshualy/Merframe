@@ -3,4 +3,4 @@ import type { ItemStatus } from "./ItemStatus";
 import type { Prices } from "./Prices";
 import type { SetLink } from "./SetLink";
 
-export type PartRow = { item: number, count: number, prices: Prices, worth: number | null, set: SetLink, status: ItemStatus, };
+export type PartRow = { item: number, count: number, prices: Prices, liquidation_value: number | null, set: SetLink, status: ItemStatus, };
