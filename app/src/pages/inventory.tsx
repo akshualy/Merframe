@@ -16,9 +16,12 @@ import {
   entriesExceptSets,
   INVENTORY_TABS,
   type InventoryTabKey,
-  worth,
+  inventoryTotals,
 } from "@/lib/inventory-entries";
 import { notify } from "@/lib/toast";
+
+const LIQUIDATION_NOTE =
+  "Copies beyond what a quarter of the last 30 days of trades could absorb count at the buy price, or nothing without a buyer";
 
 const TAB_LABELS: Record<InventoryTabKey, string> = {
   parts: "All Parts",
@@ -42,9 +45,10 @@ export function InventoryPage() {
     tab,
     data,
   );
-  const pageWorth = useMemo(() => worth(visible), [visible]);
-  const accountPlat = useMemo(
-    () => (data ? worth(entriesExceptSets(data)).plat : 0),
+  const pageTotals = useMemo(() => inventoryTotals(visible), [visible]);
+  const accountValue = useMemo(
+    () =>
+      data ? inventoryTotals(entriesExceptSets(data)).liquidationValue : 0,
     [data],
   );
   const showsDucats =
@@ -90,20 +94,24 @@ export function InventoryPage() {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
               <Figure
                 label="This tab"
-                title="Total of the rows shown"
+                title={`Rows shown. ${LIQUIDATION_NOTE}`}
                 value={
                   <span className="flex items-center gap-3">
-                    <Amount currency="platinum">{num(pageWorth.plat)}</Amount>
+                    <Amount currency="platinum">
+                      {num(pageTotals.liquidationValue)}
+                    </Amount>
                     {showsDucats && (
-                      <Amount currency="ducats">{num(pageWorth.ducats)}</Amount>
+                      <Amount currency="ducats">
+                        {num(pageTotals.ducats)}
+                      </Amount>
                     )}
                   </span>
                 }
               />
               <Figure
                 label="Account"
-                title="Every tab but Sets, which holds the same parts"
-                value={<Amount currency="platinum">{num(accountPlat)}</Amount>}
+                title={`Every tab but Sets, which holds the same parts. ${LIQUIDATION_NOTE}`}
+                value={<Amount currency="platinum">{num(accountValue)}</Amount>}
               />
             </div>
           </div>
@@ -114,7 +122,7 @@ export function InventoryPage() {
               tab={tab}
               entryCount={entries.length}
               visible={visible}
-              unpriced={pageWorth.unpriced}
+              unpriced={pageTotals.unpriced}
               flags={flags}
               filters={filters}
               updateFilters={updateFilters}

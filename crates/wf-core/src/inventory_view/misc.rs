@@ -3,12 +3,12 @@ use std::collections::BTreeMap;
 use wf_data::{Item, catch_grade, catch_size};
 use wf_inventory::{EquipmentItem, Inventory};
 
+use super::valuation::set_liquidation_values;
 use super::{ItemIndex, ItemSummary, MiscRow, SculptureStars};
 use crate::catalog::{Catalog, RELIC_PREFIX, is_fish};
 use crate::identity::{
     ItemRecord, ItemTable, LEGENDARY_CORE, OPTICOR_VANDAL, OUBLIETTE_KEY, Variant,
 };
-use crate::prices::traded_or_listed;
 use crate::view::View;
 
 const SCULPTURE_SOCKETS: [(&str, u32, u32); 11] = [
@@ -136,20 +136,22 @@ pub(crate) fn misc(view: &View, index: &mut ItemIndex) -> Vec<MiscRow> {
     rows.extend(pet_print_rows(view, index));
     rows.extend(spare_equipment_rows(view, index));
     rows.sort_by(|a, b| index[a.item].name.cmp(&index[b.item].name));
+    set_liquidation_values(&mut rows, index, view.prices);
     rows
 }
 
 fn record_row(view: &View, index: &mut ItemIndex, record: &ItemRecord, count: i64) -> MiscRow {
-    let slug = record.market_slug.as_deref();
-    let plat = slug.and_then(|slug| view.prices.plat(slug));
     MiscRow {
         item: index.add_marked(
             ItemSummary::from(record),
             view.favourites.contains(&record.unique_name),
         ),
         count,
-        plat,
-        worth: traded_or_listed(view.prices, slug, plat),
+        plat: record
+            .market_slug
+            .as_deref()
+            .and_then(|slug| view.prices.plat(slug)),
+        liquidation_value: None,
         market_subtype: None,
         stars: None,
     }

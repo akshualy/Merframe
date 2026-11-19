@@ -2,9 +2,9 @@ use wf_data::{Refinement, projection_family};
 
 use crate::catalog::{VaultStatus, display_name_from_path};
 use crate::identity::ItemKind;
-use crate::prices::traded_or_listed;
 use crate::view::View;
 
+use super::valuation::set_liquidation_values;
 use super::{ItemIndex, ItemSummary, RelicRow};
 
 const PROJECTION_TIERS: [(&str, &str); 6] = [
@@ -82,16 +82,17 @@ pub(crate) fn relics(view: &View, index: &mut ItemIndex) -> Vec<RelicRow> {
                     ducats: None,
                 },
             };
-            let slug = summary.market_slug.as_deref();
-            let plat = slug.and_then(|slug| prices.plat(slug));
-            let worth = traded_or_listed(prices, slug, plat);
+            let plat = summary
+                .market_slug
+                .as_deref()
+                .and_then(|slug| prices.plat(slug));
             Some(RelicRow {
                 item: index.add_marked(summary, favourites.contains(unique_name)),
                 tier,
                 refinement,
                 count,
                 plat,
-                worth,
+                liquidation_value: None,
             })
         })
         .collect();
@@ -101,6 +102,7 @@ pub(crate) fn relics(view: &View, index: &mut ItemIndex) -> Vec<RelicRow> {
             .cmp(&index[right.item].name)
             .then(left.refinement.cmp(&right.refinement))
     });
+    set_liquidation_values(&mut rows, index, view.prices);
     rows
 }
 

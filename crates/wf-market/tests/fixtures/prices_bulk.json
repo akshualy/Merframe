@@ -103,6 +103,11 @@
       "median_30d": 25.0,
       "volume_90d": 75,
       "median_90d": 26.5,
+      "mark": 24.5,
+      "mark_max": 68.0,
+      "bid": 22.0,
+      "bid_max": 60.0,
+      "volume_30d_max": 4,
       "updated_at": 1757410620
     },
     "vasca_kavat_imprint": {

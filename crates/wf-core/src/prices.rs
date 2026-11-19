@@ -19,8 +19,43 @@ pub trait PriceSource {
         None
     }
 
-    fn weekly_median(&self, _market_slug: &str) -> Option<f64> {
-        None
+    fn liquidity(&self, _market_slug: &str) -> MarketLiquidity {
+        MarketLiquidity::default()
+    }
+
+    fn liquidity_max_rank(&self, _market_slug: &str) -> MarketLiquidity {
+        MarketLiquidity::default()
+    }
+}
+
+const PARTICIPATION_RATE: f64 = 0.25;
+
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub struct MarketLiquidity {
+    pub mark: Option<f64>,
+    pub bid: Option<f64>,
+    pub volume_30d: Option<u32>,
+}
+
+impl MarketLiquidity {
+    pub(crate) fn liquidation_value(
+        self,
+        listing: Option<f64>,
+        count: i64,
+        pooled_copies: i64,
+    ) -> Option<f64> {
+        let held = f64::from(u32::try_from(count).ok()?);
+
+        let Some(mark) = self.mark else {
+            return listing.map(|price| price * held);
+        };
+
+        let pooled_copies = f64::from(u32::try_from(pooled_copies).ok()?);
+        let liquid_share = self.volume_30d.map_or(1.0, |volume| {
+            (PARTICIPATION_RATE * f64::from(volume) / pooled_copies).min(1.0)
+        });
+        let exit_price = self.bid.map_or(0.0, |bid| bid.min(mark));
+        Some(held * (mark * liquid_share + exit_price * (1.0 - liquid_share)))
     }
 }
 
@@ -40,20 +75,13 @@ impl Prices {
     }
 }
 
-pub(crate) fn traded_or_listed(
-    source: &dyn PriceSource,
-    slug: Option<&str>,
-    listed: Option<f64>,
-) -> Option<f64> {
-    slug.and_then(|slug| source.weekly_median(slug)).or(listed)
-}
-
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct PriceQuote {
     pub sell: Option<f64>,
     pub sell_max_rank: Option<f64>,
     pub buy: Option<f64>,
-    pub weekly_median: Option<f64>,
+    pub liquidity: MarketLiquidity,
+    pub liquidity_max_rank: MarketLiquidity,
 }
 
 impl From<&PriceEntry> for PriceQuote {
@@ -62,7 +90,16 @@ impl From<&PriceEntry> for PriceQuote {
             sell: entry.sell_r0.map(f64::from),
             sell_max_rank: entry.sell_max.map(f64::from),
             buy: entry.buy_r0.map(f64::from),
-            weekly_median: entry.median_7d,
+            liquidity: MarketLiquidity {
+                mark: entry.mark,
+                bid: entry.bid,
+                volume_30d: entry.volume_30d,
+            },
+            liquidity_max_rank: MarketLiquidity {
+                mark: entry.mark_max,
+                bid: entry.bid_max,
+                volume_30d: entry.volume_30d_max,
+            },
         }
     }
 }
@@ -181,8 +218,14 @@ impl PriceSource for PriceCache {
         self.entries.get(market_slug)?.volume_7d
     }
 
-    fn weekly_median(&self, market_slug: &str) -> Option<f64> {
-        self.entries.get(market_slug)?.median_7d
+    fn liquidity(&self, market_slug: &str) -> MarketLiquidity {
+        self.quote(market_slug)
+            .map_or_default(|quote| quote.liquidity)
+    }
+
+    fn liquidity_max_rank(&self, market_slug: &str) -> MarketLiquidity {
+        self.quote(market_slug)
+            .map_or_default(|quote| quote.liquidity_max_rank)
     }
 }
 
@@ -235,7 +278,7 @@ impl FixedPrices {
         I: IntoIterator<Item = (S, f64)>,
         S: Into<String>,
     {
-        self.with_quote_field(entries, |quote| &mut quote.sell_max_rank)
+        self.with_quote_field(entries, |quote, plat| quote.sell_max_rank = Some(plat))
     }
 
     pub fn with_buy<I, S>(self, entries: I) -> Self
@@ -243,28 +286,34 @@ impl FixedPrices {
         I: IntoIterator<Item = (S, f64)>,
         S: Into<String>,
     {
-        self.with_quote_field(entries, |quote| &mut quote.buy)
+        self.with_quote_field(entries, |quote, plat| quote.buy = Some(plat))
     }
 
-    pub fn with_weekly_median<I, S>(self, entries: I) -> Self
+    pub fn with_liquidity<I, S>(self, entries: I) -> Self
     where
-        I: IntoIterator<Item = (S, f64)>,
+        I: IntoIterator<Item = (S, MarketLiquidity)>,
         S: Into<String>,
     {
-        self.with_quote_field(entries, |quote| &mut quote.weekly_median)
+        self.with_quote_field(entries, |quote, liquidity| quote.liquidity = liquidity)
     }
 
-    fn with_quote_field<I, S>(
-        mut self,
-        entries: I,
-        field: fn(&mut PriceQuote) -> &mut Option<f64>,
-    ) -> Self
+    pub fn with_liquidity_max_rank<I, S>(self, entries: I) -> Self
     where
-        I: IntoIterator<Item = (S, f64)>,
+        I: IntoIterator<Item = (S, MarketLiquidity)>,
         S: Into<String>,
     {
-        for (slug, plat) in entries {
-            *field(self.quotes.entry(slug.into()).or_default()) = Some(plat);
+        self.with_quote_field(entries, |quote, liquidity| {
+            quote.liquidity_max_rank = liquidity;
+        })
+    }
+
+    fn with_quote_field<I, S, T>(mut self, entries: I, set: fn(&mut PriceQuote, T)) -> Self
+    where
+        I: IntoIterator<Item = (S, T)>,
+        S: Into<String>,
+    {
+        for (slug, value) in entries {
+            set(self.quotes.entry(slug.into()).or_default(), value);
         }
         self
     }
@@ -288,8 +337,16 @@ impl PriceSource for FixedPrices {
         self.weekly_trades.get(market_slug).copied()
     }
 
-    fn weekly_median(&self, market_slug: &str) -> Option<f64> {
-        self.quotes.get(market_slug)?.weekly_median
+    fn liquidity(&self, market_slug: &str) -> MarketLiquidity {
+        self.quotes
+            .get(market_slug)
+            .map_or_default(|quote| quote.liquidity)
+    }
+
+    fn liquidity_max_rank(&self, market_slug: &str) -> MarketLiquidity {
+        self.quotes
+            .get(market_slug)
+            .map_or_default(|quote| quote.liquidity_max_rank)
     }
 }
 
@@ -318,6 +375,56 @@ mod tests {
         assert_eq!(prices.plat_max_rank("primed_continuity"), Some(165.0));
         assert_eq!(prices.plat("braton_prime_stock"), None);
         assert_eq!(prices.buy_plat("braton_prime_stock"), None);
+    }
+
+    #[test]
+    fn liquidation_value() {
+        let liquidity = MarketLiquidity {
+            mark: Some(20.0),
+            bid: Some(5.0),
+            volume_30d: Some(8),
+        };
+
+        assert_eq!(liquidity.liquidation_value(None, 2, 2), Some(40.0));
+        assert_eq!(
+            liquidity.liquidation_value(None, 10, 10),
+            Some(2.0 * 20.0 + 8.0 * 5.0)
+        );
+        assert_eq!(
+            liquidity.liquidation_value(None, 5, 10),
+            Some(20.0 + 4.0 * 5.0)
+        );
+
+        let bid_above_mark = MarketLiquidity {
+            bid: Some(30.0),
+            ..liquidity
+        };
+        assert_eq!(bid_above_mark.liquidation_value(None, 10, 10), Some(200.0));
+
+        let untraded = MarketLiquidity {
+            volume_30d: Some(0),
+            ..liquidity
+        };
+        assert_eq!(untraded.liquidation_value(None, 3, 3), Some(15.0));
+
+        let unbid = MarketLiquidity {
+            bid: None,
+            ..liquidity
+        };
+        assert_eq!(unbid.liquidation_value(None, 10, 10), Some(40.0));
+
+        let unknown_volume = MarketLiquidity {
+            volume_30d: None,
+            ..liquidity
+        };
+        assert_eq!(unknown_volume.liquidation_value(None, 10, 10), Some(200.0));
+
+        let unmarked = MarketLiquidity {
+            mark: None,
+            ..liquidity
+        };
+        assert_eq!(unmarked.liquidation_value(Some(7.0), 10, 10), Some(70.0));
+        assert_eq!(unmarked.liquidation_value(None, 10, 10), None);
     }
 
     #[test]
@@ -359,7 +466,16 @@ mod tests {
                 sell: Some(25.0),
                 sell_max_rank: Some(70.0),
                 buy: Some(15.0),
-                weekly_median: Some(24.0),
+                liquidity: MarketLiquidity {
+                    mark: Some(24.5),
+                    bid: Some(22.0),
+                    volume_30d: Some(20),
+                },
+                liquidity_max_rank: MarketLiquidity {
+                    mark: Some(68.0),
+                    bid: Some(60.0),
+                    volume_30d: Some(4),
+                },
             })
         );
     }

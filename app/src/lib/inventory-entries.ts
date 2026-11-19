@@ -216,33 +216,23 @@ export function equippedIn(entry: InventoryEntry): ModHolder[] {
   return entry.kind === "upgrade" ? entry.holders : [];
 }
 
-export function totalPlat(entry: InventoryEntry): number | null {
-  if (entry.kind !== "upgrade") {
-    return sellPlat(entry);
-  }
-  const { row } = entry;
-  return row.max_rank !== null && row.rank === row.max_rank
-    ? (row.prices.sell_max_rank ?? row.prices.sell)
-    : row.prices.sell;
-}
-
-export interface InventoryWorth {
-  plat: number;
+export interface InventoryTotals {
+  liquidationValue: number;
   ducats: number;
   unpriced: number;
 }
 
-export function worth(entries: InventoryEntry[]): InventoryWorth {
+export function inventoryTotals(entries: InventoryEntry[]): InventoryTotals {
   return entries.reduce(
     (total, entry) => {
-      const value = entry.row.worth;
+      const value = entry.row.liquidation_value;
       return {
-        plat: total.plat + (value ?? 0) * entry.row.count,
+        liquidationValue: total.liquidationValue + (value ?? 0),
         ducats: total.ducats + (ducats(entry) ?? 0) * entry.row.count,
         unpriced: total.unpriced + (value === null ? 1 : 0),
       };
     },
-    { plat: 0, ducats: 0, unpriced: 0 },
+    { liquidationValue: 0, ducats: 0, unpriced: 0 },
   );
 }
 
