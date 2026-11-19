@@ -14,6 +14,7 @@ const IDLE: OverlayState = {
   arbitration: null,
   notification: null,
   preview: null,
+  monitors: [],
 };
 
 interface OverlayStore {

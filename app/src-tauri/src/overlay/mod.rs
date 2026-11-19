@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, Runtime};
 use tracing::{debug, info, warn};
 use wf_core::{DucateringProgress, RewardScreen};
-use wf_log::{DialogButtons, Event as LogEvent, MonitorRect};
+use wf_log::{DialogButtons, Event as LogEvent};
 use wf_worldstate::RelicTier;
 
 use crate::runtime::{self, AppEvent, emit};
@@ -16,6 +16,7 @@ use crate::settings::{OverlayPlacement, Settings};
 use crate::state::{AppState, lock, read};
 
 mod arbitration;
+mod game_screen;
 mod preview;
 mod relic;
 mod riven;
@@ -27,6 +28,7 @@ mod window;
 pub use arbitration::{
     on_arbitration_run_recorded, on_arbitration_run_updated, show_arbitration_run,
 };
+pub use game_screen::OverlayMonitor;
 pub use preview::toggle_preview;
 pub use riven::riven_item_type;
 #[cfg(target_os = "linux")]
@@ -34,13 +36,15 @@ pub use session::adopt_xwayland;
 use session::uses_windows;
 pub use session::{OverlaySupport, probe};
 
+use game_screen::{ScaledBounds, current_screen};
 use relic::scan_recommendation;
 use riven::{arm_station_answer, on_dialog_answer, show_linked_riven, show_station_selection};
 use screens::Screens;
 pub use state::{
-    NotificationTrigger, OverlayState, RecommendationTrigger, RewardTrigger, RivenTrigger,
+    NotificationTrigger, OverlayDisplay, OverlayState, RecommendationTrigger, RewardTrigger,
+    RivenTrigger,
 };
-use window::{open, park, place, retire, reveal, screen_of, window_bounds};
+use window::{open, park, place, retire, reveal, window_bounds};
 
 pub const KINDS: [Kind; 6] = [
     Kind::RelicReward,
@@ -153,7 +157,7 @@ pub struct Overlays {
     notification_id: AtomicU64,
     notification_queue: Mutex<VecDeque<NotificationTrigger>>,
     windows: Mutex<HashMap<&'static str, WindowLife>>,
-    game_monitor: Mutex<Option<MonitorRect>>,
+    placed_screen: Mutex<Option<ScaledBounds>>,
 }
 
 const IDLE_LIFETIME: Duration = Duration::from_secs(300);
@@ -270,8 +274,8 @@ pub fn on_log_event<R: Runtime>(
                 arm_station_answer(state, at);
             }
         }
-        LogEvent::WindowFocus { .. } => follow_game_window(app, state),
-        LogEvent::GameMonitor(rect) => follow_game_monitor(app, state, *rect),
+        LogEvent::WindowFocus { focused: true } => follow_game_screen(app, state),
+        LogEvent::WindowFocus { focused: false } => follow_game_window(app, state),
         LogEvent::DialogAnswered { accepted: true } => on_dialog_answer(app, state, at),
         LogEvent::DialogAnswered { accepted: false } => {
             lock(&state.overlays.screens).cycling.reject_answer();
@@ -364,16 +368,18 @@ pub fn on_inventory_updated<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState
 }
 
 pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    let screen = screen_of(app, *lock(&state.overlays.game_monitor));
-    let (wanted, windowed, only_while_game_active) = {
+    place_overlays(app, state, current_screen(app, state));
+}
+
+fn place_overlays<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, screen: ScaledBounds) {
+    if lock(&state.overlays.placed_screen).replace(screen) != Some(screen) {
+        info!(?screen, "Overlay screen changed");
+    }
+
+    let (display, wanted, windowed, only_while_game_active) = {
         let settings = read(&state.settings);
-        let mut slots = lock(&state.overlays.state);
-        slots.opacity = settings.overlays.overlay_opacity;
-        slots.text_size = settings.text_size;
-        slots.motion = settings.motion;
-        slots.ducatering_clipboard = settings.overlays.ducatering.ducatering_clipboard;
-        drop(slots);
         (
+            OverlayDisplay::from(&*settings),
             KINDS.map(|kind| {
                 (
                     enabled(&settings, kind),
@@ -385,30 +391,31 @@ pub fn apply_from<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
         )
     };
 
-    for (kind, (on, bounds)) in KINDS.into_iter().zip(wanted) {
+    update_slots(app, state, |slots| {
+        let changed = slots.display != display;
+        slots.display = display;
+        changed
+    });
+
+    for (kind, (on, target)) in KINDS.into_iter().zip(wanted) {
         let keep = windowed && on;
         match (app.get_webview_window(kind.label()), keep) {
             (Some(_), false) => {
                 lock(&state.overlays.windows).remove(kind.label());
                 retire(app, kind);
             }
-            (Some(window), true) => place(&window, bounds, screen.scale),
+            (Some(window), true) => place(&window, target),
+            (None, true) if kind.permanent() => open_tracked(app, state, kind, target),
             (None, _) => {}
         }
 
         if !on {
             hide(app, state, kind);
         } else if keep {
-            if kind.permanent() {
-                load(app, state, kind);
-            }
-
             let shows = lock(&state.overlays.state).shows(state, only_while_game_active, kind);
             settle(app, state, kind, shows);
         }
     }
-
-    broadcast(app, state);
 }
 
 fn update_slots<R: Runtime>(
@@ -462,8 +469,17 @@ fn load<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
         return;
     }
 
-    let screen = screen_of(app, *lock(&state.overlays.game_monitor));
-    let bounds = window_bounds(screen, kind, &read(&state.settings));
+    let screen = current_screen(app, state);
+    let target = window_bounds(screen, kind, &read(&state.settings));
+    open_tracked(app, state, kind, target);
+}
+
+fn open_tracked<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &Arc<AppState>,
+    kind: Kind,
+    target: ScaledBounds,
+) {
     lock(&state.overlays.windows).insert(
         kind.label(),
         WindowLife {
@@ -472,7 +488,7 @@ fn load<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
             idle_since: None,
         },
     );
-    open(app, kind, bounds, screen.scale);
+    open(app, kind, target);
 }
 
 fn surface<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
@@ -506,6 +522,7 @@ fn rest<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, kind: Kind) {
         Some(life) if life.idle_since.is_none() => life.idle_since = Some(idle_since),
         _ => return,
     }
+
     let app = app.clone();
     let owned = Arc::clone(state);
     tauri::async_runtime::spawn(async move {
@@ -613,18 +630,13 @@ fn follow_game_window<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     }
 }
 
-fn follow_game_monitor<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, rect: MonitorRect) {
-    if lock(&state.overlays.game_monitor).replace(rect) == Some(rect) {
-        return;
+fn follow_game_screen<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    let screen = current_screen(app, state);
+    if *lock(&state.overlays.placed_screen) == Some(screen) {
+        follow_game_window(app, state);
+    } else {
+        place_overlays(app, state, screen);
     }
-    info!(
-        left = rect.left,
-        top = rect.top,
-        width = rect.width,
-        height = rect.height,
-        "Game monitor read from EE.log"
-    );
-    apply_from(app, state);
 }
 
 fn broadcast<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {

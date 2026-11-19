@@ -11,7 +11,7 @@ mod tap;
 
 pub use dbgwin::{DebugMessage, FRAME_SIZE, line_from_frame, parse_frame};
 pub use error::{LogError, Result};
-pub use event::{DialogButtons, Event, MonitorRect, classify};
+pub use event::{DialogButtons, Event, classify};
 pub use line::{Channel, Level, LogLine, parse_line};
 pub use paths::default_log_path;
 pub use run::is_arbitration_drone;
@@ -25,9 +25,7 @@ pub use dbgwin::DbgWinListener;
 
 #[cfg(test)]
 mod ee_log_fixture_tests {
-    use crate::{
-        DialogButtons, Event, MonitorRect, classify, is_arbitration_drone, parse_line, read_all,
-    };
+    use crate::{DialogButtons, Event, classify, is_arbitration_drone, parse_line, read_all};
 
     pub(crate) fn fixture_path() -> std::path::PathBuf {
         std::path::PathBuf::from(concat!(
@@ -119,27 +117,6 @@ mod ee_log_fixture_tests {
             .iter()
             .filter_map(classify)
             .collect()
-    }
-
-    #[test]
-    fn fixture_game_monitor() {
-        let lines = read_all(&fixture_path()).unwrap();
-        let monitors: Vec<MonitorRect> = lines
-            .iter()
-            .filter_map(|line| match classify(line) {
-                Some(Event::GameMonitor(rect)) => Some(rect),
-                _ => None,
-            })
-            .collect();
-        assert_eq!(
-            monitors,
-            [MonitorRect {
-                left: 0,
-                top: 0,
-                width: 1920,
-                height: 1080,
-            }]
-        );
     }
 
     #[test]

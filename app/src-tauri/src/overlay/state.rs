@@ -1,8 +1,10 @@
 use serde::Serialize;
 use wf_core::{ArbitrationRun, DucateringProgress, RewardScreen, RivenRow};
 
-use super::{Kind, window_shows};
-use crate::settings::{Motion, OVERLAY_OPACITY_DEFAULT, RecommendationRefinement, TextSize};
+use super::{Kind, OverlayMonitor, window_shows};
+use crate::settings::{
+    Motion, OVERLAY_OPACITY_DEFAULT, RecommendationRefinement, Settings, TextSize,
+};
 use crate::state::AppState;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -37,14 +39,32 @@ pub struct NotificationTrigger {
     pub body: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-pub struct OverlayState {
-    pub seq: u64,
+pub struct OverlayDisplay {
     pub opacity: u8,
     pub text_size: TextSize,
     pub motion: Motion,
     pub ducatering_clipboard: bool,
+}
+
+impl From<&Settings> for OverlayDisplay {
+    fn from(settings: &Settings) -> Self {
+        Self {
+            opacity: settings.overlays.overlay_opacity,
+            text_size: settings.text_size,
+            motion: settings.motion,
+            ducatering_clipboard: settings.overlays.ducatering.ducatering_clipboard,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct OverlayState {
+    pub seq: u64,
+    #[serde(flatten)]
+    pub display: OverlayDisplay,
     pub reward: Option<RewardTrigger>,
     pub recommendation: Option<RecommendationTrigger>,
     pub riven: Option<RivenTrigger>,
@@ -52,16 +72,19 @@ pub struct OverlayState {
     pub notification: Option<NotificationTrigger>,
     pub arbitration: Option<Box<ArbitrationRun>>,
     pub preview: Option<Kind>,
+    pub monitors: Vec<OverlayMonitor>,
 }
 
 impl Default for OverlayState {
     fn default() -> Self {
         Self {
             seq: 0,
-            opacity: OVERLAY_OPACITY_DEFAULT,
-            text_size: TextSize::default(),
-            motion: Motion::default(),
-            ducatering_clipboard: true,
+            display: OverlayDisplay {
+                opacity: OVERLAY_OPACITY_DEFAULT,
+                text_size: TextSize::default(),
+                motion: Motion::default(),
+                ducatering_clipboard: true,
+            },
             reward: None,
             recommendation: None,
             riven: None,
@@ -69,6 +92,7 @@ impl Default for OverlayState {
             notification: None,
             arbitration: None,
             preview: None,
+            monitors: Vec::new(),
         }
     }
 }

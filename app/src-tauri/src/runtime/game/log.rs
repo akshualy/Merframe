@@ -95,17 +95,6 @@ async fn replay_log_head<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>, 
     if let Some((event, at)) = clock {
         handle_log_event(app, state, event, at).await;
     }
-    let monitor = lines
-        .iter()
-        .rev()
-        .filter(|line| line.message.starts_with("Monitor Info ("))
-        .find_map(|line| match wf_log::classify(line) {
-            Some(event @ LogEvent::GameMonitor(_)) => Some((event, line.time)),
-            _ => None,
-        });
-    if let Some((event, at)) = monitor {
-        overlay::on_log_event(app, state, &event, at);
-    }
 }
 
 async fn handle_log_event<R: Runtime>(

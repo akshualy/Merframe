@@ -1,59 +1,16 @@
 use std::path::PathBuf;
 
 use tauri::{
-    AppHandle, LogicalPosition, LogicalSize, Manager, PhysicalPosition, Runtime, WebviewUrl,
-    WebviewWindow, WebviewWindowBuilder,
+    AppHandle, Manager, PhysicalPosition, PhysicalSize, Runtime, WebviewUrl, WebviewWindow,
+    WebviewWindowBuilder,
 };
 use tracing::{debug, warn};
-use wf_log::MonitorRect;
 
+use super::game_screen::ScaledBounds;
 use super::{Kind, placement_of};
 use crate::settings::{OverlayPlacement, Settings, TextSize};
 
 const MARGIN: f64 = 20.0;
-
-const DEFAULT_SCREEN: Screen = Screen {
-    x: 0.0,
-    y: 0.0,
-    width: 1920.0,
-    height: 1080.0,
-    scale: 1.0,
-};
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub(super) struct Screen {
-    pub(super) x: f64,
-    pub(super) y: f64,
-    pub(super) width: f64,
-    pub(super) height: f64,
-    pub(super) scale: f64,
-}
-
-impl Screen {
-    fn from_monitor(monitor: &tauri::Monitor) -> Self {
-        let position = monitor.position();
-        let size = monitor.size();
-        Self {
-            x: f64::from(position.x),
-            y: f64::from(position.y),
-            width: f64::from(size.width),
-            height: f64::from(size.height),
-            scale: monitor.scale_factor(),
-        }
-    }
-
-    /// Wine moves the primary monitor to 0,0,
-    /// but the physical position reports the absolute coordinates.
-    fn from_game(rect: MonitorRect, primary_origin: PhysicalPosition<i32>, scale: f64) -> Self {
-        Self {
-            x: f64::from(rect.left + primary_origin.x),
-            y: f64::from(rect.top + primary_origin.y),
-            width: f64::from(rect.width),
-            height: f64::from(rect.height),
-            scale,
-        }
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(super) struct Bounds {
@@ -63,27 +20,37 @@ pub(super) struct Bounds {
     pub(super) y: f64,
 }
 
-pub(super) fn logical(bounds: Bounds, scale: f64) -> Bounds {
-    Bounds {
-        width: bounds.width / scale,
-        height: bounds.height / scale,
-        x: bounds.x / scale,
-        y: bounds.y / scale,
+impl Bounds {
+    pub(super) fn area(self) -> f64 {
+        self.width * self.height
+    }
+
+    pub(super) fn overlap(self, other: Self) -> Option<Self> {
+        let left = self.x.max(other.x);
+        let top = self.y.max(other.y);
+        let right = (self.x + self.width).min(other.x + other.width);
+        let bottom = (self.y + self.height).min(other.y + other.height);
+        (right > left && bottom > top).then_some(Self {
+            width: right - left,
+            height: bottom - top,
+            x: left,
+            y: top,
+        })
     }
 }
 
-pub(super) fn window_bounds(screen: Screen, kind: Kind, settings: &Settings) -> Bounds {
-    let rows = settings.overlays.overlay_recommendation_count;
-    logical(
-        bounds_for(
-            kind,
-            placement_of(settings, kind),
-            rows,
-            settings.text_size,
-            screen,
-        ),
-        screen.scale,
-    )
+pub(super) fn window_bounds(screen: ScaledBounds, kind: Kind, settings: &Settings) -> ScaledBounds {
+    let bounds = bounds_for(
+        kind,
+        placement_of(settings, kind),
+        settings.overlays.overlay_recommendation_count,
+        settings.text_size,
+        screen.bounds,
+    );
+    ScaledBounds {
+        bounds,
+        scale: screen.scale,
+    }
 }
 
 pub(super) fn bounds_for(
@@ -91,7 +58,7 @@ pub(super) fn bounds_for(
     placement: OverlayPlacement,
     rows: u8,
     text_size: TextSize,
-    screen: Screen,
+    screen: Bounds,
 ) -> Bounds {
     let scale = screen.height / 1080.0;
     let text = text_size.factor();
@@ -132,11 +99,19 @@ pub(super) fn bounds_for(
     }
 }
 
-pub(super) fn place<R: Runtime>(window: &WebviewWindow<R>, bounds: Bounds, scale: f64) {
+pub(super) fn place<R: Runtime>(window: &WebviewWindow<R>, target: ScaledBounds) {
+    let Bounds {
+        width,
+        height,
+        x,
+        y,
+    } = target.bounds;
+    let position = PhysicalPosition::new(x, y);
     let placed = window
-        .set_size(LogicalSize::new(bounds.width, bounds.height))
-        .and_then(|()| window.set_position(LogicalPosition::new(bounds.x, bounds.y)))
-        .and_then(|()| window.set_zoom(1.0 / scale));
+        .set_position(position)
+        .and_then(|()| window.set_size(PhysicalSize::new(width, height)))
+        .and_then(|()| window.set_position(position))
+        .and_then(|()| window.set_zoom(1.0 / target.scale));
     if let Err(error) = placed {
         warn!(label = window.label(), %error, "Overlay window resize failed");
     }
@@ -178,38 +153,13 @@ pub(super) fn reveal<R: Runtime>(app: &AppHandle<R>, kind: Kind) {
     }
 }
 
-pub(super) fn screen_of<R: Runtime>(app: &AppHandle<R>, game: Option<MonitorRect>) -> Screen {
-    let primary = app.primary_monitor().ok().flatten();
-    let Some(rect) = game else {
-        return primary
-            .as_ref()
-            .map_or(DEFAULT_SCREEN, Screen::from_monitor);
-    };
-    let primary_origin = primary
-        .as_ref()
-        .map_or(PhysicalPosition::new(0, 0), |monitor| *monitor.position());
-    let screen = Screen::from_game(rect, primary_origin, 1.0);
-    let scale = app
-        .monitor_from_point(
-            screen.x + screen.width / 2.0,
-            screen.y + screen.height / 2.0,
-        )
-        .ok()
-        .flatten()
-        .or(primary)
-        .map_or(1.0, |monitor| monitor.scale_factor());
-    Screen { scale, ..screen }
-}
-
-pub(super) fn open<R: Runtime>(app: &AppHandle<R>, kind: Kind, bounds: Bounds, scale: f64) {
+pub(super) fn open<R: Runtime>(app: &AppHandle<R>, kind: Kind, target: ScaledBounds) {
     let built = WebviewWindowBuilder::new(
         app,
         kind.label(),
         WebviewUrl::App(PathBuf::from(kind.route())),
     )
     .title(kind.title())
-    .inner_size(bounds.width, bounds.height)
-    .position(bounds.x, bounds.y)
     .decorations(false)
     .transparent(true)
     .always_on_top(true)
@@ -221,14 +171,7 @@ pub(super) fn open<R: Runtime>(app: &AppHandle<R>, kind: Kind, bounds: Bounds, s
     .build();
     match built {
         Ok(window) => {
-            if let Err(error) = window.set_zoom(1.0 / scale) {
-                warn!(
-                    label = kind.label(),
-                    scale,
-                    %error,
-                    "Webview zoom to game pixels failed",
-                );
-            }
+            place(&window, target);
 
             #[cfg(target_os = "linux")]
             bypass_window_manager(&window, kind);
@@ -278,12 +221,11 @@ mod tests {
     use super::*;
     use crate::settings::RECOMMENDATION_COUNT_DEFAULT;
 
-    const FULL_HD: Screen = Screen {
+    const FULL_HD: Bounds = Bounds {
         x: 0.0,
         y: 0.0,
         width: 1920.0,
         height: 1080.0,
-        scale: 1.0,
     };
 
     #[test]
@@ -317,111 +259,6 @@ mod tests {
     }
 
     #[test]
-    fn game_pixels_at_every_scale() {
-        for scale in [1.0, 1.25, 1.5, 1.75, 2.0] {
-            let screen = Screen { scale, ..FULL_HD };
-            let physical = bounds_for(
-                Kind::RelicRecommendation,
-                OverlayPlacement::TopRight,
-                RECOMMENDATION_COUNT_DEFAULT,
-                TextSize::Small,
-                screen,
-            );
-            assert_eq!(
-                physical,
-                Bounds {
-                    width: 480.0,
-                    height: 240.0,
-                    x: 1420.0,
-                    y: 20.0,
-                }
-            );
-            let window = super::logical(physical, scale);
-            assert_eq!(window.width * scale, 480.0);
-            assert_eq!(window.x * scale, 1420.0);
-        }
-        assert_eq!(
-            super::logical(
-                bounds_for(
-                    Kind::RelicRecommendation,
-                    OverlayPlacement::TopRight,
-                    RECOMMENDATION_COUNT_DEFAULT,
-                    TextSize::Small,
-                    Screen {
-                        scale: 1.25,
-                        ..FULL_HD
-                    },
-                ),
-                1.25
-            ),
-            Bounds {
-                width: 384.0,
-                height: 192.0,
-                x: 1136.0,
-                y: 16.0,
-            }
-        );
-
-        let compositor_upscales_xwayland = Screen {
-            x: 0.0,
-            y: 0.0,
-            width: 2560.0,
-            height: 1440.0,
-            scale: 1.0,
-        };
-        let physical = bounds_for(
-            Kind::RelicRecommendation,
-            OverlayPlacement::TopRight,
-            RECOMMENDATION_COUNT_DEFAULT,
-            TextSize::Small,
-            compositor_upscales_xwayland,
-        );
-        assert_eq!(
-            physical,
-            Bounds {
-                width: 480.0,
-                height: 240.0,
-                x: 2060.0,
-                y: 20.0,
-            }
-        );
-        assert_eq!(super::logical(physical, 1.0), physical);
-
-        let xwayland_carries_the_scaling_factor = Screen {
-            x: 0.0,
-            y: 0.0,
-            width: 3840.0,
-            height: 2160.0,
-            scale: 2.0,
-        };
-        let physical = bounds_for(
-            Kind::RelicRecommendation,
-            OverlayPlacement::TopRight,
-            RECOMMENDATION_COUNT_DEFAULT,
-            TextSize::Small,
-            xwayland_carries_the_scaling_factor,
-        );
-        assert_eq!(
-            physical,
-            Bounds {
-                width: 480.0,
-                height: 240.0,
-                x: 3340.0,
-                y: 20.0,
-            }
-        );
-        assert_eq!(
-            super::logical(physical, 2.0),
-            Bounds {
-                width: 240.0,
-                height: 120.0,
-                x: 1670.0,
-                y: 10.0,
-            }
-        );
-    }
-
-    #[test]
     fn reward_band_per_resolution() {
         let full = bounds_for(
             Kind::RelicReward,
@@ -445,12 +282,11 @@ mod tests {
             OverlayPlacement::Centre,
             RECOMMENDATION_COUNT_DEFAULT,
             TextSize::Small,
-            Screen {
+            Bounds {
                 x: 0.0,
                 y: 0.0,
                 width: 2560.0,
                 height: 1440.0,
-                scale: 1.0,
             },
         );
         assert_eq!(tall.width, 1333.0);
@@ -533,12 +369,11 @@ mod tests {
                 OverlayPlacement::TopLeft,
                 RECOMMENDATION_COUNT_DEFAULT,
                 TextSize::Small,
-                Screen {
+                Bounds {
                     x: 0.0,
                     y: 0.0,
                     width: 1280.0,
                     height: 800.0,
-                    scale: 1.0,
                 }
             )
             .height,
@@ -605,12 +440,11 @@ mod tests {
 
     #[test]
     fn larger_screen() {
-        let screen = Screen {
+        let screen = Bounds {
             x: 0.0,
             y: 0.0,
             width: 2560.0,
             height: 1440.0,
-            scale: 1.0,
         };
         assert_eq!(
             bounds_for(
@@ -646,12 +480,11 @@ mod tests {
 
     #[test]
     fn game_monitor_origin_moves_the_window() {
-        let second_monitor = Screen {
+        let second_monitor = Bounds {
             x: 1920.0,
             y: -360.0,
             width: 2560.0,
             height: 1440.0,
-            scale: 1.0,
         };
         let top_left = bounds_for(
             Kind::Riven,
@@ -678,55 +511,5 @@ mod tests {
             second_monitor,
         );
         assert_eq!((centre.x, centre.y), (2519.0, 480.0));
-        let scaled = super::logical(top_left, 2.0);
-        assert_eq!((scaled.x, scaled.y), (970.0, -170.0));
-    }
-
-    #[test]
-    fn game_rectangle_becomes_the_screen() {
-        let rect = MonitorRect {
-            left: 1920,
-            top: 0,
-            width: 1920,
-            height: 1080,
-        };
-        assert_eq!(
-            Screen::from_game(rect, PhysicalPosition::new(0, 0), 1.25),
-            Screen {
-                x: 1920.0,
-                y: 0.0,
-                scale: 1.25,
-                ..FULL_HD
-            }
-        );
-    }
-
-    #[test]
-    fn game_rectangle_offset_by_primary() {
-        let middle_of_three = MonitorRect {
-            left: 0,
-            top: 0,
-            width: 2560,
-            height: 1440,
-        };
-        let primary = PhysicalPosition::new(2560, -360);
-        assert_eq!(
-            Screen::from_game(middle_of_three, primary, 1.0),
-            Screen {
-                x: 2560.0,
-                y: -360.0,
-                width: 2560.0,
-                height: 1440.0,
-                scale: 1.0,
-            }
-        );
-
-        let left_of_primary = MonitorRect {
-            left: -2560,
-            top: 0,
-            width: 2560,
-            height: 1440,
-        };
-        assert_eq!(Screen::from_game(left_of_primary, primary, 1.0).x, 0.0);
     }
 }

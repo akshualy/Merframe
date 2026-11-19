@@ -2729,6 +2729,7 @@ dependencies = [
  "wf-scan",
  "wf-worldstate",
  "windows-sys 0.60.2",
+ "x11rb",
 ]
 
 [[package]]

@@ -51,6 +51,7 @@ wf-worldstate = { workspace = true, features = ["fetch"] }
 gdk = { workspace = true }
 gtk = { workspace = true }
 notify-rust = { workspace = true }
+x11rb = { workspace = true }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { workspace = true }
