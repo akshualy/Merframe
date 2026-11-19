@@ -12,6 +12,7 @@ import {
   nodeValues,
   slotMission,
   slotPlace,
+  tierName,
 } from "@/lib/arbitrations";
 import { api } from "@/lib/bridge";
 import { toggled } from "@/lib/filters";
@@ -20,6 +21,7 @@ import type {
   ArbitrationAlertFilter,
   ArbitrationAlertSettings,
   ArbitrationNode,
+  ArbitrationTier,
   Settings,
 } from "@/types";
 import { CheckboxRow, type PatchAlerts, SwitchRow } from "./row";
@@ -67,11 +69,13 @@ function ChipRow({
   options,
   chosen,
   onChange,
+  optionLabel = (option) => option,
 }: {
   label: string;
   options: string[];
   chosen: string[];
   onChange: (next: string[]) => void;
+  optionLabel?: (option: string) => string;
 }) {
   const shown = [...new Set([...options, ...chosen])];
   return (
@@ -84,7 +88,7 @@ function ChipRow({
             checked={chosen.includes(option)}
             onChange={(checked) => onChange(toggled(chosen, option, checked))}
           >
-            {option}
+            {optionLabel(option)}
           </CheckboxRow>
         ))}
       </div>
@@ -194,6 +198,7 @@ export function ArbitrationAlertSettingsSection({
         <ChipRow
           label="Community tiers"
           options={ARBITRATION_TIERS}
+          optionLabel={(tier) => tierName(tier as ArbitrationTier)}
           chosen={filter.tiers}
           onChange={(tiers) =>
             patchFilter({

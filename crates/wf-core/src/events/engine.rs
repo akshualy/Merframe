@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use chrono::{DateTime, TimeDelta, Utc};
 use wf_inventory::Inventory;
 use wf_log::Event as LogEvent;
-use wf_worldstate::{ArbitrationForecast, ArbitrationTiers, WorldState, node_info};
+use wf_worldstate::{ArbitrationForecast, WorldState, node_info};
 
 use super::alerts::{AlertSettings, fissure_planet};
 use super::arbitrations::{ARBITRATION_FORECAST_TRUSTED, ArbitrationOutlook};
@@ -187,7 +187,6 @@ impl Engine {
     pub fn handle_arbitrations(
         &mut self,
         forecast: &ArbitrationForecast,
-        tiers: &ArbitrationTiers,
         fetched_at: DateTime<Utc>,
         now: DateTime<Utc>,
     ) -> Vec<CoreEvent> {
@@ -197,7 +196,6 @@ impl Engine {
 
         let outlook = ArbitrationOutlook {
             forecast,
-            tiers,
             settings: &self.settings.arbitrations,
         };
         outlook

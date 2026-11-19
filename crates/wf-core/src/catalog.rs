@@ -265,7 +265,6 @@ pub mod fixtures {
     pub const MISC_ITEMS: &str = include_str!("../../../fixtures/misc_items.json");
     pub const WORLD_STATE: &str = include_str!("../../../fixtures/worldState.json");
     pub const ARBITRATIONS: &str = include_str!("../../../fixtures/arbitrations.txt");
-    pub const ARBITRATION_TIERS: &str = include_str!("../../../fixtures/arbitration_tiers.js");
     pub const MY_AUCTIONS: &str = include_str!("../../wf-market/tests/fixtures/auctions_my.json");
 
     pub const BRATON_PRIME: &str = "/Lotus/Weapons/Tenno/Rifle/BratonPrime";

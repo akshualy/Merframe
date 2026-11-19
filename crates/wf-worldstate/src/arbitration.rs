@@ -1,17 +1,15 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
 use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Result, WorldStateError};
-use crate::nodes::{node_and_planet, node_info};
+use crate::nodes::{node_and_planet, node_info, node_name};
 
 pub const ARBITRATION_FORECAST_URL: &str = "https://browse.wf/arbys.txt";
-pub const ARBITRATION_TIERS_URL: &str = "https://browse.wf/supplemental-data/arbyTiers.js";
 
 const HOUR_SECS: i64 = 3600;
 const SHORTEST_FORECAST_HOURS: usize = 24;
-const TIERS_TABLE_START: &str = "window.arbyTiers";
 
 fn forecast_error(line: usize, reason: &'static str) -> WorldStateError {
     WorldStateError::Forecast { line, reason }
@@ -140,20 +138,20 @@ pub enum ArbitrationTier {
     B,
     C,
     D,
+    #[serde(rename = "SP")]
+    Special,
     F,
 }
 
 impl ArbitrationTier {
-    fn parse(letter: &str) -> Option<Self> {
-        Some(match letter {
-            "S" => Self::S,
-            "A" => Self::A,
-            "B" => Self::B,
-            "C" => Self::C,
-            "D" => Self::D,
-            "F" => Self::F,
-            _ => return None,
-        })
+    pub fn of(node_id: &str) -> Self {
+        node_name(node_id)
+            .and_then(|name| {
+                ARBITRATION_TIER_NODE_NAMES
+                    .into_iter()
+                    .find(|(_, names)| names.contains(&name))
+            })
+            .map_or(Self::F, |(tier, _)| tier)
     }
 
     pub fn label(self) -> &'static str {
@@ -163,58 +161,92 @@ impl ArbitrationTier {
             Self::B => "B",
             Self::C => "C",
             Self::D => "D",
+            Self::Special => "Special",
             Self::F => "F",
         }
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct ArbitrationTiers(BTreeMap<String, ArbitrationTier>);
-
-impl ArbitrationTiers {
-    pub fn parse(script: &str) -> Result<Self> {
-        let body = script
-            .split_once(TIERS_TABLE_START)
-            .and_then(|(_, rest)| rest.split_once('{'))
-            .and_then(|(_, rest)| rest.split_once('}'))
-            .map(|(body, _)| body)
-            .ok_or(WorldStateError::Tiers("no tier table"))?;
-        let mut tiers = BTreeMap::new();
-        for entry in body
-            .split(',')
-            .map(str::trim)
-            .filter(|entry| !entry.is_empty())
-        {
-            let (node_id, tier) = entry
-                .split_once(':')
-                .ok_or(WorldStateError::Tiers("an entry has no colon"))?;
-            let node_id = node_id.trim();
-            let tier = ArbitrationTier::parse(tier.trim().trim_matches('"'))
-                .ok_or(WorldStateError::Tiers("an entry has an unknown tier"))?;
-            if !is_node_id(node_id) {
-                return Err(WorldStateError::Tiers("an entry has an unknown node id"));
-            }
-            tiers.insert(node_id.to_owned(), tier);
-        }
-
-        if tiers.is_empty() {
-            return Err(WorldStateError::Tiers("the tier table is empty"));
-        }
-        Ok(Self(tiers))
-    }
-
-    pub fn of(&self, node_id: &str) -> ArbitrationTier {
-        self.0.get(node_id).copied().unwrap_or(ArbitrationTier::F)
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-}
+const ARBITRATION_TIER_NODE_NAMES: [(ArbitrationTier, &[&str]); 6] = [
+    (
+        ArbitrationTier::S,
+        &[
+            "Tyana Pass (Mars)",
+            "Alator (Mars)",
+            "Callisto (Jupiter)",
+            "Cytherean (Venus)",
+            "Xini (Eris)",
+            "Munio (Deimos)",
+        ],
+    ),
+    (
+        ArbitrationTier::A,
+        &[
+            "Sinai (Jupiter)",
+            "Seimeni (Ceres)",
+            "Casta (Ceres)",
+            "Cinxia (Ceres)",
+        ],
+    ),
+    (
+        ArbitrationTier::B,
+        &[
+            "Spear (Mars)",
+            "Kadesh (Mars)",
+            "Akkad (Eris)",
+            "Kala-azar (Eris)",
+            "Coba (Earth)",
+            "Lith (Earth)",
+            "Sechura (Pluto)",
+            "Larzac (Europa)",
+            "Belenus (Void)",
+            "Taranis (Void)",
+            "Hyf (Deimos)",
+            "Oestrus (Eris)",
+        ],
+    ),
+    (
+        ArbitrationTier::C,
+        &[
+            "Hydron (Sedna)",
+            "Helene (Saturn)",
+            "Ose (Europa)",
+            "Mithra (Void)",
+            "Paimon (Europa)",
+            "Tessera (Venus)",
+            "Odin (Mercury)",
+            "Io (Jupiter)",
+            "Stephano (Uranus)",
+            "Gulliver (Phobos)",
+            "Romula (Venus)",
+            "Proteus (Neptune)",
+            "Outer Terminus (Pluto)",
+        ],
+    ),
+    (
+        ArbitrationTier::D,
+        &[
+            "Umbriel (Uranus)",
+            "Cerberus (Pluto)",
+            "Gaia (Earth)",
+            "Stöfler (Lua)",
+            "Lares (Mercury)",
+        ],
+    ),
+    (
+        ArbitrationTier::Special,
+        &[
+            "Terrorem (Deimos)",
+            "Ani (Void)",
+            "Mot (Void)",
+            "Kappa (Sedna)",
+            "Ur (Uranus)",
+            "Laomedeia (Neptune)",
+            "Apollo (Lua)",
+            "Ganymede (Jupiter)",
+        ],
+    ),
+];
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -228,7 +260,7 @@ pub struct ArbitrationNode {
     pub tier: ArbitrationTier,
 }
 
-pub fn arbitration_node(node_id: &str, tiers: &ArbitrationTiers) -> ArbitrationNode {
+pub fn arbitration_node(node_id: &str) -> ArbitrationNode {
     let info = node_info(node_id);
     let (node, planet) = info
         .and_then(|info| node_and_planet(info.value))
@@ -241,22 +273,22 @@ pub fn arbitration_node(node_id: &str, tiers: &ArbitrationTiers) -> ArbitrationN
         planet,
         mission_type: info.map(|info| info.kind).filter(|kind| !kind.is_empty()),
         faction: info.and_then(|info| info.faction),
-        tier: tiers.of(node_id),
+        tier: ArbitrationTier::of(node_id),
     }
 }
 
 #[cfg(test)]
 pub(crate) mod fixtures {
     pub(crate) const FORECAST: &str = include_str!("../../../fixtures/arbitrations.txt");
-    pub(crate) const TIERS: &str = include_str!("../../../fixtures/arbitration_tiers.js");
 }
 
 #[cfg(test)]
 mod tests {
     use std::fmt::Write as _;
 
-    use super::fixtures::{FORECAST, TIERS};
+    use super::fixtures::FORECAST;
     use super::*;
+    use crate::embedded::SOL_NODES;
     use crate::window::fixtures::at;
 
     const FIRST_HOUR_MS: i64 = 1_727_884_800_000;
@@ -344,44 +376,38 @@ mod tests {
     }
 
     #[test]
-    fn fixture_tiers() {
-        let tiers = ArbitrationTiers::parse(TIERS).unwrap();
-        assert_eq!(tiers.len(), 12);
-        assert_eq!(tiers.of("SolNode450"), ArbitrationTier::S);
-        assert_eq!(tiers.of("SolNode412"), ArbitrationTier::C);
-        assert_eq!(tiers.of("SolNode1"), ArbitrationTier::F);
+    fn tiered_node_names_exist() {
+        for (tier, names) in ARBITRATION_TIER_NODE_NAMES {
+            for name in names {
+                let (node_id, _) = SOL_NODES
+                    .iter()
+                    .find(|(_, node)| node.value == *name)
+                    .unwrap_or_else(|| panic!("{name}"));
+                assert_eq!(ArbitrationTier::of(node_id), tier);
+            }
+        }
     }
 
     #[test]
-    fn rejects_broken_tier_tables() {
-        assert!(ArbitrationTiers::parse("var x = 1;").is_err());
-        assert!(ArbitrationTiers::parse("window.arbyTiers = {};").is_err());
-        assert!(ArbitrationTiers::parse("window.arbyTiers = { SolNode1: \"X\" };").is_err());
-        assert!(ArbitrationTiers::parse("window.arbyTiers = { Node1: \"S\" };").is_err());
-        let trailing =
-            ArbitrationTiers::parse("window.arbyTiers = {\n\tSolNode1: \"S\",\n};").unwrap();
-        assert_eq!(trailing.len(), 1);
-    }
-
-    #[test]
-    fn tier_labels() {
-        assert_eq!(ArbitrationTier::S.label(), "S");
-        assert_eq!(ArbitrationTier::F.label(), "F");
-        assert!(ArbitrationTier::S < ArbitrationTier::A);
-        assert_eq!(serde_json::to_string(&ArbitrationTier::S).unwrap(), "\"S\"");
+    fn tier_order_and_wire_name() {
+        assert!(ArbitrationTier::D < ArbitrationTier::Special);
+        assert!(ArbitrationTier::Special < ArbitrationTier::F);
+        assert_eq!(
+            serde_json::to_string(&ArbitrationTier::Special).unwrap(),
+            "\"SP\""
+        );
     }
 
     #[test]
     fn nodes_resolve_from_the_table() {
-        let tiers = ArbitrationTiers::parse(TIERS).unwrap();
-        let umbriel = arbitration_node("SolNode64", &tiers);
+        let umbriel = arbitration_node("SolNode64");
         assert_eq!(umbriel.node, "Umbriel");
         assert_eq!(umbriel.planet, Some("Uranus"));
         assert_eq!(umbriel.mission_type, Some("Interception"));
         assert_eq!(umbriel.faction, Some("Grineer"));
-        assert_eq!(umbriel.tier, ArbitrationTier::S);
+        assert_eq!(umbriel.tier, ArbitrationTier::D);
 
-        let unknown = arbitration_node("SolNode99999", &tiers);
+        let unknown = arbitration_node("SolNode99999");
         assert_eq!(unknown.node, "SolNode99999");
         assert_eq!(unknown.planet, None);
         assert_eq!(unknown.mission_type, None);

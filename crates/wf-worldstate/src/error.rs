@@ -6,8 +6,6 @@ pub enum WorldStateError {
     Forecast { line: usize, reason: &'static str },
     #[error("Arbitration forecast: {0}")]
     ForecastShape(&'static str),
-    #[error("Arbitration tiers: {0}")]
-    Tiers(&'static str),
     #[cfg(feature = "fetch")]
     #[error("WorldState fetch: {0}")]
     Fetch(#[from] reqwest::Error),
