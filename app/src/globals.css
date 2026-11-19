@@ -191,7 +191,15 @@
 html[data-motion="reduced"] *,
 html[data-motion="reduced"] *::before,
 html[data-motion="reduced"] *::after {
-  animation-duration: 0.01ms;
-  animation-iteration-count: 1;
-  transition-duration: 0.01ms;
+  --tw-enter-translate-x: 0;
+  --tw-enter-translate-y: 0;
+  --tw-enter-scale: 1;
+  --tw-enter-rotate: 0;
+  --tw-exit-translate-x: 0;
+  --tw-exit-translate-y: 0;
+  --tw-exit-scale: 1;
+  --tw-exit-rotate: 0;
+  transition-property:
+    color, background-color, border-color, outline-color, fill, stroke, opacity,
+    box-shadow;
 }
