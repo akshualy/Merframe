@@ -84,8 +84,6 @@ pub(crate) fn items(
             .chain(landing_craft)
             .map(|item| {
                 let components = foundry_components(view, item);
-                let pending_here = account.in_foundry(item);
-                let owned = account.built(&item.unique_name) || pending_here;
                 let favourite = favourites.contains(&item.unique_name);
                 let kind = kind_of(item);
                 FoundryItem {
@@ -104,8 +102,8 @@ pub(crate) fn items(
                         }),
                     mastered: item.masterable().then(|| account.mastered(item)),
                     progress: Progress {
-                        owned,
-                        pending: pending_here,
+                        owned: account.built_or_building(item),
+                        pending: account.in_foundry(item),
                         ready_to_build: !components.is_empty()
                             && components.iter().all(|component| component.enough),
                     },
@@ -324,7 +322,7 @@ mod tests {
         let rows = items(&fixture.view(), None, None, now);
         let excalibur = row(&rows, EXCALIBUR);
         assert!(excalibur.progress.pending);
-        assert!(excalibur.progress.owned);
+        assert!(!excalibur.progress.owned);
     }
 
     #[test]

@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use wf_data::Item;
 use wf_inventory::Inventory;
 
-use crate::catalog::{Catalog, Stock};
+use crate::catalog::{Catalog, Stock, own_blueprint};
 use crate::foundry::FoundryStock;
 use crate::inventory_view::ItemStatus;
 
@@ -70,6 +70,10 @@ impl Account {
             .unwrap_or_default()
     }
 
+    pub(crate) fn building(&self, item: &Item) -> i64 {
+        own_blueprint(item).map_or(0, |blueprint| self.pending_builds(blueprint))
+    }
+
     pub(crate) fn in_foundry(&self, item: &Item) -> bool {
         item.components
             .iter()
@@ -81,8 +85,12 @@ impl Account {
         self.affinity_of(&item.unique_name) >= item.affinity_cap()
     }
 
+    pub(crate) fn built_or_building(&self, item: &Item) -> bool {
+        self.built(&item.unique_name) || self.building(item) > 0
+    }
+
     pub(crate) fn holds(&self, item: &Item) -> bool {
-        self.built(&item.unique_name) || self.mastered(item)
+        self.built_or_building(item) || self.mastered(item)
     }
 
     pub(crate) fn status(&self, item: &Item) -> ItemStatus {

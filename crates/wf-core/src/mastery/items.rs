@@ -219,7 +219,7 @@ pub(super) fn items(view: &View, options: MasteryOptions) -> Vec<MasteryItem> {
             kind: kind_of(item),
             group: group_of(item),
             image_name: item.image_name.clone(),
-            owned: account.built(&item.unique_name) || account.in_foundry(item),
+            owned: account.built_or_building(item),
             mastered: affinity >= item.affinity_cap(),
             level: Level {
                 current: current_level,
