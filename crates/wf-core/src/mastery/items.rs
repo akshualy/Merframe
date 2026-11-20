@@ -199,11 +199,6 @@ pub(super) fn items(view: &View, options: MasteryOptions) -> Vec<MasteryItem> {
         ..
     } = *view;
     let inventory = &account.inventory;
-    let pending: HashSet<&str> = inventory
-        .pending_recipes
-        .iter()
-        .map(|recipe| recipe.item_type.as_str())
-        .collect();
     let mut rows: Vec<MasteryItem> = masterable(
         catalog,
         includes_founders(inventory, options.include_founders_items),
@@ -213,9 +208,6 @@ pub(super) fn items(view: &View, options: MasteryOptions) -> Vec<MasteryItem> {
         let current_level = item.mastery_rank_at(affinity);
         let max_level = item.max_mastery_rank();
         let components = components_of(&account.stock, items, item);
-        let pending_in_foundry = components
-            .iter()
-            .any(|component| pending.contains(component.unique_name.as_str()));
         let missing: Vec<&MasteryComponent> = components
             .iter()
             .filter(|component| !component.enough)
@@ -227,7 +219,7 @@ pub(super) fn items(view: &View, options: MasteryOptions) -> Vec<MasteryItem> {
             kind: kind_of(item),
             group: group_of(item),
             image_name: item.image_name.clone(),
-            owned: account.built(&item.unique_name) || pending_in_foundry,
+            owned: account.built(&item.unique_name) || account.in_foundry(item),
             mastered: affinity >= item.affinity_cap(),
             level: Level {
                 current: current_level,
@@ -317,8 +309,8 @@ mod tests {
 
     #[test]
     fn prime_collection_totals() {
-        let account = Account::new(fixtures::inventory());
         let catalog = fixtures::mastery_catalog();
+        let account = Account::new(fixtures::inventory(), &catalog);
         let (owned, total) = prime_ownership(&account, &catalog, MasteryOptions::default());
         assert!(owned <= total);
         let primes: Vec<&Item> = masterable(&catalog, account.inventory.is_founder())
@@ -335,9 +327,12 @@ mod tests {
                 .any(|item| item.category == "Sentinels" || item.name.contains("Kavasa"))
         );
         assert_eq!(u32::try_from(primes.len()).unwrap(), total);
-        let sold = Account::new(fixtures::inventory_with(|value| {
-            fixtures::drop_entries(value, &["Suits"], MASTERED_PRIME_SUIT);
-        }));
+        let sold = Account::new(
+            fixtures::inventory_with(|value| {
+                fixtures::drop_entries(value, &["Suits"], MASTERED_PRIME_SUIT);
+            }),
+            &catalog,
+        );
         assert!(!sold.built(MASTERED_PRIME_SUIT));
         let (still_owned, sold_total) = prime_ownership(&sold, &catalog, MasteryOptions::default());
         assert_eq!(sold_total, total);
@@ -348,11 +343,11 @@ mod tests {
     fn prime_collection_with_founders() {
         let catalog = fixtures::mastery_catalog();
         let plain = prime_ownership(
-            &Account::new(fixtures::inventory()),
+            &Account::new(fixtures::inventory(), &catalog),
             &catalog,
             MasteryOptions::default(),
         );
-        let founder = Account::new(fixtures::founder_inventory());
+        let founder = Account::new(fixtures::founder_inventory(), &catalog);
         let with_founders = prime_ownership(&founder, &catalog, MasteryOptions::default());
         let without_founders = prime_ownership(&founder, &catalog, excluding_founders());
         assert_eq!(with_founders.1 - plain.1, 3);

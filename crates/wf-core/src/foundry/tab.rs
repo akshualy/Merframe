@@ -78,26 +78,13 @@ pub(crate) fn items(
     let crafts_into = crafting_parents(catalog);
     let subsumed = subsumed_warframes(inventory, catalog);
     let shards = inventory.archon_shard_index();
-    let pending: HashSet<&str> = inventory
-        .pending_recipes
-        .iter()
-        .map(|recipe| {
-            catalog
-                .component_for_stock(&recipe.item_type)
-                .map_or(recipe.item_type.as_str(), |(_, component)| {
-                    component.unique_name.as_str()
-                })
-        })
-        .collect();
     let landing_craft = catalog.items().filter(|item| item.is_landing_craft());
     let mut rows: Vec<FoundryItem> =
         masterable(catalog, includes_founders(inventory, include_founders))
             .chain(landing_craft)
             .map(|item| {
                 let components = foundry_components(view, item);
-                let pending_here = components
-                    .iter()
-                    .any(|component| pending.contains(component.unique_name.as_str()));
+                let pending_here = account.in_foundry(item);
                 let owned = account.built(&item.unique_name) || pending_here;
                 let favourite = favourites.contains(&item.unique_name);
                 let kind = kind_of(item);

@@ -309,17 +309,20 @@ mod tests {
         );
         assert!(braton_set(&fixture).status.mastered);
 
-        fixture.account = Account::new(inventory_with(|value| {
-            for entry in entries(value, "XPInfo") {
-                if entry["ItemType"] == BRATON_PRIME {
-                    entry["XP"] = json!(1_000);
+        fixture.account = Account::new(
+            inventory_with(|value| {
+                for entry in entries(value, "XPInfo") {
+                    if entry["ItemType"] == BRATON_PRIME {
+                        entry["XP"] = json!(1_000);
+                    }
                 }
-            }
 
-            for (item_type, count) in PRIME_PARTS {
-                push_counted(value, "MiscItems", item_type, count);
-            }
-        }));
+                for (item_type, count) in PRIME_PARTS {
+                    push_counted(value, "MiscItems", item_type, count);
+                }
+            }),
+            &fixture.catalog,
+        );
         let (rows, index) = fixture.rows(parts);
         for row in &rows {
             assert_eq!(

@@ -71,7 +71,6 @@ pub struct AccountBalance {
 struct Holdings<'a> {
     account: &'a Account,
     missing: HashSet<String>,
-    building: HashSet<&'a str>,
 }
 
 impl<'a> Holdings<'a> {
@@ -82,12 +81,6 @@ impl<'a> Holdings<'a> {
                 .iter()
                 .map(|part| part_identity(&part.unique_name).to_owned())
                 .collect(),
-            building: account
-                .inventory
-                .pending_recipes
-                .iter()
-                .map(|recipe| recipe.item_type.as_str())
-                .collect(),
         }
     }
 
@@ -96,18 +89,9 @@ impl<'a> Holdings<'a> {
             owned: self.account.stock.count(unique_name),
             needed: parent.map_or(1, |(_, component)| component.item_count),
             needed_for_set: self.missing.contains(part_identity(unique_name)),
-            parent_owned: parent.is_some_and(|(item, _)| self.built_or_building(item)),
+            parent_owned: parent
+                .is_some_and(|(item, _)| self.account.holds(item) || self.account.in_foundry(item)),
         }
-    }
-
-    fn built_or_building(&self, item: &Item) -> bool {
-        self.account.holds(item)
-            || item
-                .components
-                .as_deref()
-                .unwrap_or_default()
-                .iter()
-                .any(|component| self.building.contains(component.unique_name.as_str()))
     }
 }
 
@@ -233,21 +217,29 @@ mod tests {
         "/Lotus/StoreItems/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
 
     fn rank(
-        account: Option<&Account>,
+        inventory: Option<Inventory>,
         catalog: &Catalog,
         prices: &dyn PriceSource,
         favourites: &Favourites,
         rewards: &[&str],
     ) -> RewardScreen {
         let items = ItemTable::build(catalog);
+        let account = inventory.map(|inventory| Account::new(inventory, catalog));
         let rewards: Vec<ItemSummary> =
             rewards.iter().map(|reward| items.summary(reward)).collect();
-        recommend(account, catalog, &items, prices, favourites, &rewards)
+        recommend(
+            account.as_ref(),
+            catalog,
+            &items,
+            prices,
+            favourites,
+            &rewards,
+        )
     }
 
     fn screen(inventory: Inventory, rewards: &[&str]) -> RewardScreen {
         rank(
-            Some(&Account::new(inventory)),
+            Some(inventory),
             &fixtures::catalog(),
             &prices(),
             &Favourites::default(),
@@ -258,7 +250,7 @@ mod tests {
     #[test]
     fn kavasa_prime_band() {
         let screen = rank(
-            Some(&Account::new(fixtures::inventory())),
+            Some(fixtures::inventory()),
             &fixtures::with_skins(fixtures::ITEMS),
             &prices(),
             &Favourites::default(),
@@ -324,7 +316,7 @@ mod tests {
             .into_iter()
             .collect();
         let ranked = rank(
-            Some(&Account::new(fixtures::inventory())),
+            Some(fixtures::inventory()),
             &fixtures::catalog(),
             &prices(),
             &starred,
@@ -343,10 +335,10 @@ mod tests {
     fn blueprint_reward_keeps_its_own_name() {
         let starred: Favourites = [TRINITY_PRIME_SYSTEMS_BLUEPRINT].into_iter().collect();
         let ranked = rank(
-            Some(&Account::new(fixtures::inventory_owning(&[(
+            Some(fixtures::inventory_owning(&[(
                 TRINITY_PRIME_SYSTEMS_BLUEPRINT,
                 2,
-            )]))),
+            )])),
             &fixtures::catalog(),
             &prices(),
             &starred,
@@ -478,7 +470,7 @@ mod tests {
     fn starred_component() {
         let starred: Favourites = [TRINITY_PRIME_SYSTEMS].into_iter().collect();
         let ranked = rank(
-            Some(&Account::new(fixtures::inventory())),
+            Some(fixtures::inventory()),
             &fixtures::catalog(),
             &prices(),
             &starred,
@@ -544,7 +536,7 @@ mod tests {
     fn unpriced_rewards_all_best() {
         let unpriced = FixedPrices::new([("nothing_this_relic_drops", 1.0)]);
         let ranked = rank(
-            Some(&Account::new(fixtures::inventory())),
+            Some(fixtures::inventory()),
             &fixtures::catalog(),
             &unpriced,
             &Favourites::default(),
