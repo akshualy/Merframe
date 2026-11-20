@@ -200,6 +200,7 @@ export type * from "./SaleSafety";
 export type * from "./SaleSafetyKeep";
 export type * from "./SaleSafetyReason";
 export type * from "./SaleSafetyReservation";
+export type * from "./SaleSafetySettings";
 export type * from "./SaleSafetyState";
 export type * from "./ScannedKioskItem";
 export type * from "./SculptureStars";
