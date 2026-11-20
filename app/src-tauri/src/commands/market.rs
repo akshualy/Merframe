@@ -139,12 +139,11 @@ pub async fn market_my_orders(state: Shared<'_>) -> CommandResult<MarketOrders> 
     let state = ready(&state).await?;
 
     let orders = state.market().orders_my().await?;
-    let rows = market::order_rows(&state, &orders)
-        .await
-        .ok_or_else(unlisted_items)?;
+    state.listings.remember(&state.core, Some(&orders), None);
 
-    state.listings.remember(&state.core, Some(&rows), None);
-    Ok(rows)
+    market::order_rows(&state, &orders)
+        .await
+        .ok_or_else(unlisted_items)
 }
 
 #[tauri::command]

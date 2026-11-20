@@ -349,7 +349,7 @@ pub fn order_row(
 
 #[derive(Debug, Default, Clone)]
 pub struct OwnListings {
-    pub orders: MarketOrders,
+    pub orders: Option<Vec<Order>>,
     pub auctions: Vec<Auction>,
 }
 
@@ -366,26 +366,35 @@ impl Listings {
     pub fn remember(
         &self,
         core: &Mutex<Core>,
-        orders: Option<&MarketOrders>,
+        orders: Option<&[Order]>,
         auctions: Option<&[Auction]>,
     ) {
         let mut own = write(&self.own);
         if let Some(orders) = orders {
-            own.orders = orders.clone();
+            own.orders = Some(orders.to_vec());
         }
         if let Some(auctions) = auctions {
             own.auctions = auctions.to_vec();
         }
 
-        let listings = MarketListings::new(&own.auctions).with_orders(
-            own.orders
-                .rows
-                .iter()
-                .map(|row| (row.item_id.as_str(), row.order_type, row.quantity)),
-        );
+        let auctions_only = MarketListings::new(&own.auctions);
+        let listings = match &own.orders {
+            Some(orders) => auctions_only.with_orders(
+                orders
+                    .iter()
+                    .map(|order| (order.item_id.as_str(), order.order_type, order.quantity)),
+            ),
+            None => auctions_only,
+        };
+
         drop(own);
 
         lock(core).set_market_listings(listings);
+    }
+
+    pub fn forget(&self, core: &Mutex<Core>) {
+        *write(&self.own) = OwnListings::default();
+        lock(core).set_market_listings(MarketListings::default());
     }
 }
 
@@ -418,13 +427,14 @@ pub(crate) async fn market_snapshot(
     orders: Option<&[Order]>,
     auctions: Option<Vec<Auction>>,
 ) -> MarketSnapshot {
+    state
+        .listings
+        .remember(&state.core, orders, auctions.as_deref());
+
     let orders = match orders {
         Some(orders) => order_rows(state, orders).await,
         None => None,
     };
-    state
-        .listings
-        .remember(&state.core, orders.as_ref(), auctions.as_deref());
 
     MarketSnapshot {
         orders,
@@ -1018,17 +1028,17 @@ mod tests {
             include_str!("../../../crates/wf-market/tests/fixtures/auctions_my.json");
         let auctions = wf_market::parse_v1_auctions(AUCTIONS).unwrap();
         let listings = Listings::default();
-        assert!(listings.current().orders.rows.is_empty());
+        assert!(listings.current().orders.is_none());
         assert!(listings.current().auctions.is_empty());
 
         let market = Market::new();
-        let orders = MarketOrders {
-            items: vec![market.summary("braton_prime_barrel")],
-            rows: vec![market.sell("braton_prime_barrel", 1)],
-        };
+        let orders = [order("braton_prime_barrel", 1, None)];
         let core = Mutex::new(market.core);
         listings.remember(&core, Some(&orders), Some(&auctions));
-        assert_eq!(listings.current().orders.rows.len(), 1);
+        assert_eq!(
+            listings.current().orders.map(|orders| orders.len()),
+            Some(1)
+        );
         assert_eq!(listings.current().auctions.len(), 2);
         let locked = lock(&core);
         assert!(
@@ -1039,14 +1049,17 @@ mod tests {
         );
         drop(locked);
 
-        listings.remember(&core, Some(&MarketOrders::default()), None);
+        listings.remember(&core, Some(&[]), None);
         let own = listings.current();
-        assert!(own.orders.rows.is_empty());
+        assert_eq!(own.orders.map(|orders| orders.len()), Some(0));
         assert_eq!(
             own.auctions.len(),
             2,
             "an order refresh leaves the riven auctions alone"
         );
+
+        listings.forget(&core);
+        assert!(listings.current().orders.is_none());
     }
 
     #[test]

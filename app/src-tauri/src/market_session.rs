@@ -4,7 +4,7 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
 use wf_market::{Client, UserStatus};
 
-use crate::market::{MarketOrders, MarketPresence, MarketPresenceChoice, MarketPresencePause};
+use crate::market::{MarketPresence, MarketPresenceChoice, MarketPresencePause};
 use crate::runtime::{AppEvent, emit, update_status};
 use crate::settings::{self, MarketAccount};
 use crate::state::{AppState, write};
@@ -65,9 +65,7 @@ pub fn clear<R: Runtime>(app: &AppHandle<R>, state: &AppState) -> anyhow::Result
     let token_removed = settings::set_token(app, None);
     drop(market);
 
-    state
-        .listings
-        .remember(&state.core, Some(&MarketOrders::default()), Some(&[]));
+    state.listings.forget(&state.core);
 
     update_status(app, state, |status| {
         status.market_account = None;
