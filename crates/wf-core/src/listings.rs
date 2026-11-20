@@ -81,6 +81,10 @@ impl MarketListings {
             .collect()
     }
 
+    pub(crate) fn selling(&self) -> Option<&HashMap<String, u32>> {
+        self.orders.as_ref().map(|orders| &orders.selling)
+    }
+
     pub fn lists_riven(&self, name: &str, weapon_slug: &str, mastery: u32, rerolls: u32) -> bool {
         self.rivens.contains(&ListedRiven {
             name: squashed(name),

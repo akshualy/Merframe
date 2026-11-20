@@ -126,9 +126,11 @@ impl Stock {
     }
 
     pub fn count(&self, unique_name: &str) -> i64 {
-        resolve_count(unique_name, |item_type| {
-            self.counts.get(item_type).copied().unwrap_or(0)
-        })
+        resolve_count(unique_name, |item_type| self.exact(item_type))
+    }
+
+    pub(crate) fn exact(&self, unique_name: &str) -> i64 {
+        self.counts.get(unique_name).copied().unwrap_or(0)
     }
 }
 
@@ -284,8 +286,12 @@ pub mod fixtures {
     pub const TRINITY_PRIME: &str = "/Lotus/Powersuits/Trinity/TrinityPrime";
     pub const TRINITY_PRIME_BLUEPRINT: &str =
         "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeBlueprint";
+    pub const TRINITY_PRIME_CHASSIS: &str =
+        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeChassisComponent";
     pub const TRINITY_PRIME_CHASSIS_BLUEPRINT: &str =
         "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeChassisBlueprint";
+    pub const TRINITY_PRIME_HELMET_BLUEPRINT: &str =
+        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeHelmetBlueprint";
     pub const TRINITY_PRIME_SYSTEMS: &str =
         "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent";
     pub const TRINITY_PRIME_SYSTEMS_BLUEPRINT: &str =

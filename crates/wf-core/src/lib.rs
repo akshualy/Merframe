@@ -21,6 +21,7 @@ mod reset_checklist;
 mod resources;
 mod resurgence;
 mod rivens;
+mod sale_safety;
 mod stats;
 mod store;
 mod syndicates;
@@ -83,6 +84,10 @@ pub use rivens::{
     RivenRow, RivensTab, StatMatch, VeiledGroup, VeiledRiven, display_name as riven_display_name,
     fingerprint_weapon as riven_fingerprint_weapon, kept_roll as riven_kept_roll,
     listing_payload as riven_listing_payload, listing_update as riven_listing_update,
+};
+pub use sale_safety::{
+    MarketItemSaleSafety, SaleSafety, SaleSafetyCheck, SaleSafetyKeep, SaleSafetyReason,
+    SaleSafetyReservation, SaleSafetyRule, SaleSafetyState,
 };
 pub use stats::{
     DailyCount, DeltaRow, OpeningRow, StatsSummary, daily_counts, daily_series, day_span,

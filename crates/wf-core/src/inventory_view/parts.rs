@@ -33,7 +33,7 @@ fn is_weapon_part(item_type: &str) -> bool {
         && (item_type.contains("/SentinelRecipes/") || item_type.contains("/Weapons/"))
 }
 
-pub(super) fn is_part_stock(item_type: &str) -> bool {
+pub(crate) fn is_part_stock(item_type: &str) -> bool {
     let assembly = is_warframe_part(item_type)
         || item_type.contains("/Lotus/Types/Recipes/ArchwingRecipes/")
         || is_landing_craft_part(item_type);

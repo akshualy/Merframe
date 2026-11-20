@@ -39,6 +39,7 @@ use crate::reset_checklist::{
 };
 use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
+use crate::sale_safety::{SaleSafetyCheck, SaleSafetyRule};
 use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
 use crate::store::{Snapshot, StatPoint, Store, TimeRange};
 use crate::syndicates::{self, SyndicatesTab};
@@ -546,6 +547,10 @@ impl Core {
 
     pub fn inventory_tab(&self) -> Option<InventoryTab> {
         Some(inventory_view::tab(&self.view()?))
+    }
+
+    pub fn sale_safety(&self, rule: SaleSafetyRule) -> Option<SaleSafetyCheck<'_>> {
+        Some(SaleSafetyCheck::new(&self.view()?, rule))
     }
 
     pub fn foundry_tab(
