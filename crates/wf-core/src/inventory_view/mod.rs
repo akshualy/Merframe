@@ -18,7 +18,7 @@ mod upgrades;
 mod valuation;
 
 pub(crate) use misc::{misc, spare_weapons};
-pub(crate) use parts::{complete_sets, held_parts, parts, sets};
+pub(crate) use parts::{held_part_counts, held_parts, owned_sets, parts, sets};
 pub(crate) use relics::relics;
 pub(crate) use upgrades::{UpgradeKind, arcanes, mods, upgrade_kind};
 

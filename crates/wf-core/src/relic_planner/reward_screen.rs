@@ -226,7 +226,7 @@ mod tests {
         rewards: &[&str],
     ) -> RewardScreen {
         let items = ItemTable::build(catalog);
-        let account = inventory.map(|inventory| Account::new(inventory, catalog));
+        let account = inventory.map(|inventory| Account::new(inventory, catalog, &items));
         let rewards: Vec<ItemSummary> =
             rewards.iter().map(|reward| items.summary(reward)).collect();
         recommend(

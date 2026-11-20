@@ -1,11 +1,15 @@
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use wf_data::{Component, Item};
+use wf_inventory::Inventory;
 
 use super::valuation::set_liquidation_values;
 use super::{ItemIndex, ItemSummary, PartRow, SetComponent, SetLink, SetRow};
-use crate::catalog::{Stock, names_a_prime};
-use crate::identity::{ItemKind, ItemRecord, ItemTable, Variant, is_landing_craft_part};
+use crate::account::Account;
+use crate::catalog::names_a_prime;
+use crate::identity::{
+    ItemKind, ItemRecord, ItemRef, ItemTable, Variant, is_landing_craft_part, traded_as,
+};
 use crate::prices::Prices;
 use crate::view::View;
 
@@ -39,6 +43,54 @@ pub(super) fn is_part_stock(item_type: &str) -> bool {
     is_weapon_part(item_type) || item_type.contains("/Archwing/Primary/")
 }
 
+struct HeldPartForm<'a> {
+    record: &'a ItemRecord,
+    set: ItemRef,
+    held_as: &'a str,
+    count: i64,
+}
+
+fn held_part_forms<'a>(inventory: &'a Inventory, items: &'a ItemTable) -> Vec<HeldPartForm<'a>> {
+    let building: HashSet<&str> = inventory
+        .pending_recipes
+        .iter()
+        .map(|recipe| recipe.item_type.as_str())
+        .collect();
+    let mut counted: BTreeMap<&str, i64> = BTreeMap::new();
+    for entry in inventory.misc_items.iter().chain(&inventory.recipes) {
+        *counted.entry(entry.item_type.as_str()).or_insert(0) += entry.item_count;
+    }
+
+    counted
+        .into_iter()
+        .filter_map(|(held_as, held)| {
+            let record = items.lookup(held_as)?;
+            let ItemKind::Part { set, .. } = record.kind else {
+                return None;
+            };
+            if held_as == record.unique_name && traded_as(held_as) != held_as {
+                return None;
+            }
+
+            let count = held - i64::from(building.contains(held_as));
+            (count > 0).then_some(HeldPartForm {
+                record,
+                set,
+                held_as,
+                count,
+            })
+        })
+        .collect()
+}
+
+pub(crate) fn held_part_counts(inventory: &Inventory, items: &ItemTable) -> HashMap<String, i64> {
+    let mut counts = HashMap::new();
+    for form in held_part_forms(inventory, items) {
+        *counts.entry(form.record.unique_name.clone()).or_default() += form.count;
+    }
+    counts
+}
+
 pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
     let View {
         account,
@@ -48,53 +100,33 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
         favourites,
         ..
     } = *view;
-    let inventory = &account.inventory;
-    let building: HashSet<&str> = inventory
-        .pending_recipes
-        .iter()
-        .map(|recipe| recipe.item_type.as_str())
-        .collect();
-    let mut counted: BTreeMap<&str, i64> = BTreeMap::new();
-    for entry in inventory.misc_items.iter().chain(&inventory.recipes) {
-        if is_part_stock(&entry.item_type) {
-            *counted.entry(entry.item_type.as_str()).or_insert(0) += entry.item_count;
-        }
-    }
-    let mut rows: Vec<PartRow> = counted
+    let mut rows: Vec<PartRow> = held_part_forms(&account.inventory, items)
         .into_iter()
-        .filter_map(|(unique_name, held)| {
-            let record = items.lookup(unique_name)?;
-            let ItemKind::Part { set, .. } = record.kind else {
-                return None;
-            };
-            if !record.tradable() {
-                return None;
-            }
-
-            let mut count = held;
-            if building.contains(unique_name) {
-                count -= 1;
-            }
-            if count <= 0 {
-                return None;
-            }
-
-            let set = &items[set];
-            let item = catalog.item(&set.unique_name)?;
-            let part = record.held_as(unique_name);
-            let favourite = favourites.any([unique_name, &record.unique_name, &set.unique_name]);
-            Some(PartRow {
-                item: index.add_marked(ItemSummary::from(&*part), favourite),
-                count,
-                prices: Prices::of(prices, part.market_slug.as_deref()),
-                liquidation_value: None,
-                set: SetLink {
-                    item: index.add(ItemSummary::from(set)),
-                    complete: set_is_complete(items, &account.stock, item),
-                },
-                status: account.status(item),
-            })
-        })
+        .filter(|form| is_part_stock(form.held_as) && form.record.tradable())
+        .filter_map(
+            |HeldPartForm {
+                 record,
+                 set,
+                 held_as,
+                 count,
+             }| {
+                let set = &items[set];
+                let item = catalog.item(&set.unique_name)?;
+                let part = record.held_as(held_as);
+                let favourite = favourites.any([held_as, &record.unique_name, &set.unique_name]);
+                Some(PartRow {
+                    item: index.add_marked(ItemSummary::from(&*part), favourite),
+                    count,
+                    prices: Prices::of(prices, part.market_slug.as_deref()),
+                    liquidation_value: None,
+                    set: SetLink {
+                        item: index.add(ItemSummary::from(set)),
+                        complete: owned_sets(&held_parts(items, item, account)) > 0,
+                    },
+                    status: account.status(item),
+                })
+            },
+        )
         .collect();
     rows.sort_by(|a, b| index[a.item].name.cmp(&index[b.item].name));
     set_liquidation_values(&mut rows, index, view.prices);
@@ -112,17 +144,10 @@ fn set_parts<'a>(items: &'a ItemTable, item: &'a Item) -> impl Iterator<Item = &
     })
 }
 
-fn set_is_complete(items: &ItemTable, stock: &Stock, item: &Item) -> bool {
-    let mut parts = set_parts(items, item).peekable();
-    parts.peek().is_some()
-        && parts
-            .all(|component| stock.count(&component.unique_name) >= i64::from(component.item_count))
-}
-
 pub(crate) struct HeldPart<'a> {
-    record: &'a ItemRecord,
+    pub(crate) record: &'a ItemRecord,
     owned: i64,
-    required: i64,
+    pub(crate) required: i64,
 }
 
 impl HeldPart<'_> {
@@ -134,28 +159,35 @@ impl HeldPart<'_> {
 pub(crate) fn held_parts<'a>(
     items: &'a ItemTable,
     item: &'a Item,
-    stock: &Stock,
+    account: &Account,
 ) -> Vec<HeldPart<'a>> {
-    set_parts(items, item)
+    let parts: Vec<HeldPart> = set_parts(items, item)
         .filter_map(|component| {
+            let record = items.part(item, component)?;
             Some(HeldPart {
-                record: items.part(item, component)?,
-                owned: stock.count(&component.unique_name),
+                record,
+                owned: account.part_copies(&record.unique_name),
                 required: i64::from(component.item_count),
             })
         })
-        .collect()
+        .collect();
+    if parts.len() <= 1 {
+        return Vec::new();
+    }
+
+    parts
 }
 
-pub(crate) fn complete_sets(parts: &[HeldPart]) -> i64 {
-    if !parts.iter().all(HeldPart::enough) {
-        return 0;
-    }
-    parts
-        .iter()
-        .map(|part| part.owned / part.required.max(1))
+pub(crate) fn complete_sets(copies_and_required: impl IntoIterator<Item = (i64, i64)>) -> i64 {
+    copies_and_required
+        .into_iter()
+        .map(|(copies, required)| copies.max(0) / required.max(1))
         .min()
         .unwrap_or(0)
+}
+
+pub(crate) fn owned_sets(parts: &[HeldPart]) -> i64 {
+    complete_sets(parts.iter().map(|part| (part.owned, part.required)))
 }
 
 fn set_ducats(parts: &[HeldPart]) -> u32 {
@@ -182,16 +214,13 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
     let mut rows: Vec<SetRow> = catalog
         .items()
         .filter_map(|item| {
-            let parts = held_parts(items, item, &account.stock);
-            if parts.len() <= 1 {
-                return None;
-            }
+            let parts = held_parts(items, item, account);
             let owned_parts = parts.iter().filter(|part| part.enough()).count();
             if owned_parts == 0 {
                 return None;
             }
             let complete = owned_parts == parts.len();
-            let count = complete_sets(&parts);
+            let count = owned_sets(&parts);
             let set = items.variant(&item.unique_name, Variant::Set)?;
             Some(SetRow {
                 item: index.add_marked(
@@ -229,7 +258,6 @@ mod tests {
 
     use super::super::tests::{holding, priced};
     use super::*;
-    use crate::account::Account;
     use crate::catalog::Catalog;
     use crate::catalog::fixtures::{
         self, BRATON_PRIME, BRATON_PRIME_BARREL, BRATON_PRIME_STOCK, FERRITE, PRIME_PARTS,
@@ -322,6 +350,7 @@ mod tests {
                 }
             }),
             &fixture.catalog,
+            &fixture.items,
         );
         let (rows, index) = fixture.rows(parts);
         for row in &rows {

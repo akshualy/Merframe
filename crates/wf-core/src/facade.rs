@@ -210,7 +210,7 @@ impl Core {
     fn adopt_inventory(&mut self, inventory: Inventory) {
         self.arbitration_recorder
             .keep_latest_booster_expiries(&inventory.boosters);
-        self.account = Some(Account::new(inventory, &self.catalog));
+        self.account = Some(Account::new(inventory, &self.catalog, &self.items));
     }
 
     pub fn ingest_inventory(&mut self, json: &str, now: DateTime<Utc>) -> Result<Vec<CoreEvent>> {

@@ -6,7 +6,7 @@ use wf_inventory::{CountedItem, EquipmentItem, RivenFingerprint};
 
 use crate::catalog::{RECIPE_PREFIX, display_name_from_path, is_fish};
 use crate::identity::{ItemKind, ItemRecord, is_riven, traded_as};
-use crate::inventory_view::{UpgradeKind, complete_sets, held_parts, spare_weapons, upgrade_kind};
+use crate::inventory_view::{UpgradeKind, held_parts, owned_sets, spare_weapons, upgrade_kind};
 use crate::view::View;
 
 fn counted(items: &[CountedItem], unique_name: &str) -> i64 {
@@ -84,11 +84,8 @@ impl<'a> View<'a> {
         let Some(item) = self.catalog.item(unique_name) else {
             return 0;
         };
-        let parts = held_parts(self.items, item, &self.account.stock);
-        if parts.len() <= 1 {
-            return 0;
-        }
-        complete_sets(&parts)
+
+        owned_sets(&held_parts(self.items, item, self.account))
     }
 
     fn upgrade_name(&self, unique_name: &str) -> Cow<'a, str> {

@@ -5,7 +5,8 @@ use wf_inventory::Inventory;
 
 use crate::catalog::{Catalog, Stock, own_blueprint};
 use crate::foundry::FoundryStock;
-use crate::inventory_view::ItemStatus;
+use crate::identity::ItemTable;
+use crate::inventory_view::{ItemStatus, held_part_counts};
 
 pub(crate) struct Account {
     pub(crate) inventory: Inventory,
@@ -15,6 +16,7 @@ pub(crate) struct Account {
     built: HashSet<String>,
     owned: HashSet<String>,
     pending_builds: HashMap<String, i64>,
+    part_copies: HashMap<String, i64>,
 }
 
 fn pending_builds(inventory: &Inventory, catalog: &Catalog) -> HashMap<String, i64> {
@@ -31,7 +33,7 @@ fn pending_builds(inventory: &Inventory, catalog: &Catalog) -> HashMap<String, i
 }
 
 impl Account {
-    pub(crate) fn new(inventory: Inventory, catalog: &Catalog) -> Self {
+    pub(crate) fn new(inventory: Inventory, catalog: &Catalog, items: &ItemTable) -> Self {
         Self {
             stock: Stock::new(&inventory),
             foundry: FoundryStock::new(&inventory),
@@ -47,6 +49,7 @@ impl Account {
                 .collect(),
             owned: inventory.held_item_types().map(str::to_owned).collect(),
             pending_builds: pending_builds(&inventory, catalog),
+            part_copies: held_part_counts(&inventory, items),
             inventory,
         }
     }
@@ -68,6 +71,10 @@ impl Account {
             .get(component)
             .copied()
             .unwrap_or_default()
+    }
+
+    pub(crate) fn part_copies(&self, part: &str) -> i64 {
+        self.part_copies.get(part).copied().unwrap_or_default()
     }
 
     pub(crate) fn building(&self, item: &Item) -> i64 {
@@ -120,7 +127,7 @@ mod tests {
             .find(|entry| entry.item_type == LOKI_PRIME)
             .unwrap()
             .xp;
-        let account = Account::new(inventory, &catalog);
+        let account = Account::new(inventory, &catalog, &ItemTable::build(&catalog));
         assert_eq!(account.affinity_of(LOKI_PRIME), xp);
         assert!(account.built(LOKI_PRIME));
         assert!(account.mastered(loki));
@@ -134,7 +141,11 @@ mod tests {
     fn sold_but_mastered_is_held() {
         let catalog = fixtures::mastery_catalog();
         let loki = catalog.item(LOKI_PRIME).unwrap();
-        let account = Account::new(fixtures::inventory_stocked(&[], &[]), &catalog);
+        let account = Account::new(
+            fixtures::inventory_stocked(&[], &[]),
+            &catalog,
+            &ItemTable::build(&catalog),
+        );
         assert!(!account.built(LOKI_PRIME));
         assert!(account.mastered(loki));
         assert!(account.holds(loki));
@@ -143,6 +154,7 @@ mod tests {
         let fresh = Account::new(
             fixtures::inventory_stocked(&[("Suits", LOKI_PRIME)], &[]),
             &catalog,
+            &ItemTable::build(&catalog),
         );
         assert!(fresh.built(LOKI_PRIME));
     }

@@ -147,6 +147,7 @@ pub(super) fn mastery_xp(account: &Account, catalog: &Catalog) -> MasteryXp {
 mod tests {
     use super::*;
     use crate::catalog::fixtures;
+    use crate::identity::ItemTable;
 
     #[test]
     fn rank_thresholds() {
@@ -161,7 +162,7 @@ mod tests {
     #[test]
     fn fixture_xp_breakdown() {
         let catalog = fixtures::mastery_catalog();
-        let account = Account::new(fixtures::inventory(), &catalog);
+        let account = Account::new(fixtures::inventory(), &catalog, &ItemTable::build(&catalog));
         let inventory = &account.inventory;
         let breakdown = mastery_xp(&account, &catalog);
 
