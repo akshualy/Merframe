@@ -377,12 +377,11 @@ impl Listings {
             own.auctions = auctions.to_vec();
         }
 
-        let listings = MarketListings::new(
+        let listings = MarketListings::new(&own.auctions).with_orders(
             own.orders
                 .rows
                 .iter()
-                .map(|row| (row.item_id.as_str(), row.order_type)),
-            &own.auctions,
+                .map(|row| (row.item_id.as_str(), row.order_type, row.quantity)),
         );
         drop(own);
 
