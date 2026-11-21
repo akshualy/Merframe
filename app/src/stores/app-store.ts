@@ -61,3 +61,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 export function useSettings(): Settings {
   return started(useAppStore((state) => state.settings));
 }
+
+export function useMarketSignedIn(): boolean {
+  return useAppStore((state) => state.status?.market_account != null);
+}

@@ -7,6 +7,7 @@ import type {
   ModRow,
   PartRow,
   RelicRow,
+  SaleSafety,
   SetComponent,
   SetRow,
   VaultStatus,
@@ -210,6 +211,14 @@ export function vault(entry: InventoryEntry): VaultStatus | null {
   return entry.kind === "upgrade" || entry.kind === "misc"
     ? null
     : entry.item.vault;
+}
+
+function saleRow(entry: InventoryEntry): PartRow | SetRow | null {
+  return entry.kind === "part" || entry.kind === "set" ? entry.row : null;
+}
+
+export function saleSafety(entry: InventoryEntry): SaleSafety | null {
+  return saleRow(entry)?.sale ?? null;
 }
 
 export function equippedIn(entry: InventoryEntry): ModHolder[] {
