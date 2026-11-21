@@ -40,6 +40,14 @@ const STATES: Record<SaleSafetyKind, { tone: string; icon: LucideIcon }> = {
   over_listed: { tone: "text-warning", icon: TriangleAlert },
 };
 
+export type ListedSaleSafetyKind = Exclude<SaleSafetyKind, "nothing_to_list">;
+
+export const SALE_SAFETY_FILTERS: FilterOption<ListedSaleSafetyKind>[] = [
+  { value: "over_listed", label: "Too many listed" },
+  { value: "more_to_list", label: "More safe to list" },
+  { value: "all_listed", label: "All listed" },
+];
+
 const REASONS: Record<SaleSafetyReason, string> = {
   mastery: "you haven't mastered it",
   ownership: "you don't own one",
