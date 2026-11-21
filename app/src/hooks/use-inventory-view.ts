@@ -40,14 +40,15 @@ export function useInventoryView(
   const flags = useMemo(() => inventoryFlags(data), [data]);
 
   const desc = descending(filters);
+  const listable = filters.yesNo.safeToList === "yes";
   const sorted = useMemo(
-    () => sortEntries(entries, filters.ordering, desc, tab),
-    [entries, filters.ordering, desc, tab],
+    () => sortEntries(entries, filters.ordering, desc, tab, listable),
+    [entries, filters.ordering, desc, tab, listable],
   );
   const visible = useMemo(
     () => sorted.filter((entry) => keeps(entry, filters, flags)),
     [sorted, filters, flags],
   );
 
-  return { entries, flags, filters, updateFilters, visible };
+  return { entries, flags, filters, updateFilters, visible, listable };
 }

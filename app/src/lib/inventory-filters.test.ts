@@ -60,16 +60,24 @@ function summary(name: string, extra: Partial<ItemSummary> = {}): ItemSummary {
 
 function part(
   name: string,
-  extra: { plat?: number | null; ducats?: number | null } = {},
+  extra: {
+    plat?: number | null;
+    ducats?: number | null;
+    count?: number;
+    safe?: number;
+  } = {},
 ): InventoryEntry {
   const row: PartRow = {
     item: 0,
-    count: 1,
+    count: extra.count ?? 1,
     prices: { sell: extra.plat ?? null, buy: null },
     liquidation_value: extra.plat ?? null,
     set: { item: 1, complete: false },
     status: { built: false, mastered: false },
-    sale: unreserved,
+    sale: {
+      ...unreserved,
+      state: { kind: "more_to_list", more: extra.safe ?? 1 },
+    },
     listable_value: null,
   };
   return {
@@ -370,6 +378,7 @@ describe("sortEntries", () => {
       "name",
       false,
       "parts",
+      false,
     ).map((entry) => entry.item.name);
     expect(sorted).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
@@ -385,19 +394,19 @@ describe("compareEntries", () => {
 
   it("name ascending", () => {
     expect(
-      compareEntries(alternox, kompressa, "name", false, "parts"),
+      compareEntries(alternox, kompressa, "name", false, "parts", false),
     ).toBeLessThan(0);
   });
 
   it("plat descending", () => {
     expect(
-      compareEntries(alternox, kompressa, "plat", true, "parts"),
+      compareEntries(alternox, kompressa, "plat", true, "parts", false),
     ).toBeLessThan(0);
   });
 
   it("ducats per plat treats unpriced parts as nearly free", () => {
     expect(
-      compareEntries(unpriced, alternox, "ducatsPerPlat", true, "parts"),
+      compareEntries(unpriced, alternox, "ducatsPerPlat", true, "parts", false),
     ).toBeLessThan(0);
   });
 
@@ -405,10 +414,10 @@ describe("compareEntries", () => {
     const half = set("Kompressa Prime Set", 1, 2);
     const full = set("Alternox Prime Set", 2, 2);
     expect(
-      compareEntries(half, full, "setProgress", true, "sets"),
+      compareEntries(half, full, "setProgress", true, "sets", false),
     ).toBeGreaterThan(0);
     expect(
-      compareEntries(half, full, "setProgress", false, "parts"),
+      compareEntries(half, full, "setProgress", false, "parts", false),
     ).toBeGreaterThan(0);
   });
 
@@ -416,14 +425,27 @@ describe("compareEntries", () => {
     const intact = relic("Lith G12", "Intact");
     const radiant = relic("Lith G12", "Radiant");
     expect(
-      compareEntries(intact, radiant, "refinement", false, "relics"),
+      compareEntries(intact, radiant, "refinement", false, "relics", false),
     ).toBeLessThan(0);
   });
 
   it("ties break on the name", () => {
     const a = relic("Axi A20", "Intact", 6);
     const b = relic("Lith B11", "Intact", 6);
-    expect(compareEntries(a, b, "count", true, "relics")).toBeLessThan(0);
+    expect(compareEntries(a, b, "count", true, "relics", false)).toBeLessThan(
+      0,
+    );
+  });
+
+  it("count under the safe to list filter", () => {
+    const many = part("Alternox Prime Blueprint", { count: 5, safe: 1 });
+    const few = part("Kompressa Prime Receiver", { count: 2, safe: 2 });
+    expect(
+      compareEntries(many, few, "count", true, "parts", false),
+    ).toBeLessThan(0);
+    expect(
+      compareEntries(few, many, "count", true, "parts", true),
+    ).toBeLessThan(0);
   });
 });
 
