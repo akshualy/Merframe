@@ -10,6 +10,7 @@ use crate::catalog::fixtures::{
 };
 use crate::identity::Variant;
 use crate::inventory_view::tab;
+use crate::prices::FixedPrices;
 use crate::view::Fixture;
 
 const BRONCO: &str = "/Lotus/Weapons/Tenno/Pistol/BroncoPrime";
@@ -220,6 +221,17 @@ fn favourite_keeps_parts_until_built() {
 }
 
 #[test]
+fn recipe_count_reserves_every_copy() {
+    let fixture = holding(weapons(), &[BRONCO], &[(AKBRONCO_LINK, 3)], &[BRONCO], &[])
+        .with_prices(FixedPrices::new([("akbronco_prime_link", 10.0)]));
+    let tab = tab(&fixture.view(), UNMASTERED);
+    let link = &tab.parts[0];
+    assert_eq!(link.sale.reserved, 2);
+    assert_eq!(link.sale.state, SaleSafetyState::MoreToList { more: 1 });
+    assert_eq!(link.listable_value, Some(10.0));
+}
+
+#[test]
 fn pending_own_blueprint_frees_parts() {
     let chassis = &[(TRINITY_PRIME_CHASSIS_BLUEPRINT, 1)];
     let own = holding(
@@ -397,5 +409,5 @@ fn sets_count_tradable_forms() {
     let view = fixture.view();
     let record = fixture.items.variant(TRINITY_PRIME, Variant::Set).unwrap();
     assert_eq!(view.market_owned(record, &record.name, None, None), 0);
-    assert!(tab(&view).sets.iter().all(|row| !row.complete));
+    assert!(tab(&view, NOTHING).sets.iter().all(|row| !row.complete));
 }

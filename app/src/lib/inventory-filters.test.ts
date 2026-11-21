@@ -25,7 +25,16 @@ import type {
   ModRow,
   PartRow,
   RelicRow,
+  SaleSafety,
 } from "@/types";
+
+const unreserved: SaleSafety = {
+  reserved: 0,
+  reserved_for: [],
+  listed: null,
+  listed_as_parts: 0,
+  state: { kind: "more_to_list", more: 1 },
+};
 
 const filters: TabFilters = {
   search: "",
@@ -60,6 +69,8 @@ function part(
     liquidation_value: extra.plat ?? null,
     set: { item: 1, complete: false },
     status: { built: false, mastered: false },
+    sale: unreserved,
+    listable_value: null,
   };
   return {
     kind: "part",
@@ -83,6 +94,8 @@ function set(name: string, owned: number, total: number): InventoryEntry {
       liquidation_value: null,
       ducats: 0,
       components: [],
+      sale: null,
+      listable_value: null,
     },
     item: summary(name),
     parts: [],
@@ -168,6 +181,8 @@ const tab: InventoryTab = {
       liquidation_value: 16,
       set: { item: 1, complete: true },
       status: { built: true, mastered: false },
+      sale: unreserved,
+      listable_value: null,
     },
   ],
   mods: [modRow(2, 0, 1), modRow(2, 10, 1, [1, 0])],
@@ -314,6 +329,8 @@ describe("inventoryTotals", () => {
           liquidation_value: 100,
           ducats: 45,
           components: [],
+          sale: null,
+          listable_value: null,
         },
       ],
     };

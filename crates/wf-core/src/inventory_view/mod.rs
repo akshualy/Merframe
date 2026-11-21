@@ -9,6 +9,7 @@ use wf_market::OrderType;
 use crate::catalog::VaultStatus;
 use crate::identity::ItemRecord;
 use crate::prices::Prices;
+use crate::sale_safety::{SaleSafety, SaleSafetyCheck, SaleSafetyRule};
 use crate::view::View;
 
 mod misc;
@@ -16,6 +17,8 @@ mod parts;
 mod relics;
 mod upgrades;
 mod valuation;
+
+use valuation::set_liquidation_values_of;
 
 pub(crate) use misc::{misc, spare_weapons};
 pub(crate) use parts::{
@@ -118,6 +121,8 @@ pub struct PartRow {
     pub liquidation_value: Option<f64>,
     pub set: SetLink,
     pub status: ItemStatus,
+    pub sale: SaleSafety,
+    pub listable_value: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
@@ -211,6 +216,8 @@ pub struct SetRow {
     pub liquidation_value: Option<f64>,
     pub ducats: u32,
     pub components: Vec<SetComponent>,
+    pub sale: Option<SaleSafety>,
+    pub listable_value: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -229,14 +236,31 @@ pub struct InventoryTab {
     pub sets: Vec<SetRow>,
 }
 
-pub(crate) fn tab(view: &View) -> InventoryTab {
+pub(crate) fn tab(view: &View, rule: SaleSafetyRule) -> InventoryTab {
     let mut index = ItemIndex::default();
-    let parts = parts(view, &mut index);
+    let sale_safety = SaleSafetyCheck::new(view, rule);
+    let mut parts = parts(view, &mut index);
+    sale_safety.mark_parts(&mut parts, &index);
+    set_liquidation_values_of(
+        &mut parts,
+        &index,
+        view.prices,
+        |row| row.sale.listable(),
+        |row, value| row.listable_value = value,
+    );
     let mods = mods(view, &mut index);
     let arcanes = arcanes(view, &mut index);
     let relics = relics(view, &mut index);
     let misc = misc(view, &mut index);
-    let sets = sets(view, &mut index);
+    let mut sets = sets(view, &mut index);
+    sale_safety.mark_sets(&mut sets, &index);
+    set_liquidation_values_of(
+        &mut sets,
+        &index,
+        view.prices,
+        |row| row.sale.as_ref().map_or(0, SaleSafety::listable),
+        |row, value| row.listable_value = value,
+    );
     let sold = view.listings.listed_slugs(OrderType::Sell, view.items);
     let bought = view.listings.listed_slugs(OrderType::Buy, view.items);
     let mut selling = Vec::new();
@@ -341,7 +365,7 @@ mod tests {
     #[test]
     fn one_entry_per_item() {
         let fixture = priced(fixtures::catalog(), fixtures::inventory());
-        let tab = tab(&fixture.view());
+        let tab = tab(&fixture.view(), SaleSafetyRule::default());
         assert!(!tab.misc.is_empty());
         let distinct: std::collections::HashSet<&ItemSummary> = tab.items.iter().collect();
         assert_eq!(distinct.len(), tab.items.len());
@@ -398,7 +422,7 @@ mod tests {
                 &["set"],
             ),
         ]);
-        let tab = tab(&fixture.view());
+        let tab = tab(&fixture.view(), SaleSafetyRule::default());
         let slugs = |items: &[usize]| -> Vec<Option<&str>> {
             items
                 .iter()
@@ -412,7 +436,7 @@ mod tests {
     #[test]
     fn favourites_across_tab() {
         let mut fixture = holding(&PRIME_PARTS);
-        let plain = tab(&fixture.view());
+        let plain = tab(&fixture.view(), SaleSafetyRule::default());
         assert!(!plain.mods.is_empty());
         assert!(!plain.arcanes.is_empty());
         assert!(plain.favourites.is_empty());
@@ -427,7 +451,7 @@ mod tests {
         ]
         .into_iter()
         .collect();
-        let marked = tab(&fixture.view());
+        let marked = tab(&fixture.view(), SaleSafetyRule::default());
         let favourite = |item: usize| marked.favourites.contains(&item);
         assert!(favourite(marked.parts[0].item));
         assert!(favourite(marked.mods[0].item));

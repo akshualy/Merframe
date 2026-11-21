@@ -20,31 +20,42 @@ pub(crate) fn set_liquidation_values<H: InventoryHolding>(
     index: &ItemIndex,
     prices: &dyn PriceSource,
 ) {
+    set_liquidation_values_of(holdings, index, prices, H::count, H::set_liquidation_value);
+}
+
+pub(crate) fn set_liquidation_values_of<H: InventoryHolding>(
+    holdings: &mut [H],
+    index: &ItemIndex,
+    prices: &dyn PriceSource,
+    copies: impl Fn(&H) -> i64,
+    set_value: impl Fn(&mut H, Option<f64>),
+) {
     let mut pooled_copies: HashMap<(&str, bool), i64> = HashMap::new();
     for holding in holdings.iter() {
         if let Some(slug) = index[holding.item()].market_slug.as_deref() {
             *pooled_copies
                 .entry((slug, holding.at_max_rank()))
-                .or_default() += holding.count();
+                .or_default() += copies(holding);
         }
     }
 
     for holding in holdings {
+        let count = copies(holding);
         let value = index[holding.item()]
             .market_slug
             .as_deref()
-            .and_then(|slug| row_liquidation_value(&*holding, slug, &pooled_copies, prices));
-        holding.set_liquidation_value(value);
+            .and_then(|slug| row_liquidation_value(&*holding, count, slug, &pooled_copies, prices));
+        set_value(holding, value);
     }
 }
 
 fn row_liquidation_value(
     holding: &impl InventoryHolding,
+    count: i64,
     slug: &str,
     pooled_copies: &HashMap<(&str, bool), i64>,
     prices: &dyn PriceSource,
 ) -> Option<f64> {
-    let count = holding.count();
     let unranked_pool = pooled_copies.get(&(slug, false)).copied().unwrap_or(0);
 
     if !holding.at_max_rank() {

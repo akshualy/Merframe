@@ -6,7 +6,7 @@ use wf_data::Item;
 
 use crate::catalog::own_blueprint;
 use crate::identity::{ItemKind, ItemRecord, ItemTable, held_names};
-use crate::inventory_view::{complete_sets, held_parts, is_part_stock};
+use crate::inventory_view::{ItemIndex, PartRow, SetRow, complete_sets, held_parts, is_part_stock};
 use crate::listings::MarketListings;
 use crate::view::View;
 
@@ -81,6 +81,17 @@ pub struct SaleSafety {
     pub listed: Option<i64>,
     pub listed_as_parts: i64,
     pub state: SaleSafetyState,
+}
+
+impl SaleSafety {
+    pub(crate) fn listable(&self) -> i64 {
+        match self.state {
+            SaleSafetyState::MoreToList { more } => more,
+            SaleSafetyState::NothingToList
+            | SaleSafetyState::AllListed
+            | SaleSafetyState::OverListed { .. } => 0,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -455,6 +466,28 @@ impl<'a> SaleSafetyCheck<'a> {
                 self.set_safety(self.recipes.view.catalog.item(&record.unique_name)?)
             }
             _ => None,
+        }
+    }
+
+    pub(crate) fn mark_parts(&self, rows: &mut [PartRow], index: &ItemIndex) {
+        let items = self.recipes.view.items;
+        for row in rows {
+            row.sale = items
+                .lookup(&index[row.item].unique_name)
+                .and_then(|record| self.market_item(record))
+                .map_or_default(|checked| checked.safety);
+        }
+    }
+
+    pub(crate) fn mark_sets(&self, rows: &mut [SetRow], index: &ItemIndex) {
+        for row in rows {
+            row.sale = self
+                .recipes
+                .view
+                .catalog
+                .item(&index[row.item].unique_name)
+                .and_then(|item| self.set_safety(item))
+                .map(|checked| checked.safety);
         }
     }
 }

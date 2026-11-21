@@ -11,6 +11,7 @@ use crate::identity::{
     ItemKind, ItemRecord, ItemRef, ItemTable, Variant, is_landing_craft_part, traded_as,
 };
 use crate::prices::Prices;
+use crate::sale_safety::SaleSafety;
 use crate::view::View;
 
 fn is_warframe_part(item_type: &str) -> bool {
@@ -124,6 +125,8 @@ pub(crate) fn parts(view: &View, index: &mut ItemIndex) -> Vec<PartRow> {
                         complete: owned_sets(&held_parts(items, item, account)) > 0,
                     },
                     status: account.status(item),
+                    sale: SaleSafety::default(),
+                    listable_value: None,
                 })
             },
         )
@@ -235,6 +238,8 @@ pub(crate) fn sets(view: &View, index: &mut ItemIndex) -> Vec<SetRow> {
                 prices: Prices::of(prices, set.market_slug.as_deref()),
                 liquidation_value: None,
                 ducats: set_ducats(&parts),
+                sale: None,
+                listable_value: None,
                 components: parts
                     .iter()
                     .map(|part| SetComponent {
@@ -266,6 +271,7 @@ mod tests {
     use crate::identity::blueprint_of;
     use crate::inventory_view::tab;
     use crate::listings::MarketListings;
+    use crate::sale_safety::SaleSafetyRule;
     use crate::view::Fixture;
     use wf_market::OrderType;
 
@@ -576,7 +582,7 @@ mod tests {
                 &["component", "blueprint"],
             ),
         ]);
-        let listed = tab(&fixture.view());
+        let listed = tab(&fixture.view(), SaleSafetyRule::default());
         let ordered: Vec<(Option<&str>, bool, bool)> = listed
             .parts
             .iter()
@@ -598,7 +604,7 @@ mod tests {
             "orders follow the item id"
         );
         fixture.listings = MarketListings::default();
-        let unlisted = tab(&fixture.view());
+        let unlisted = tab(&fixture.view(), SaleSafetyRule::default());
         assert!(
             unlisted.selling.is_empty() && unlisted.buying.is_empty(),
             "without a market session no row claims an order"
@@ -621,7 +627,7 @@ mod tests {
             BRATON_PRIME,
             &["set"],
         )]);
-        let listed = tab(&fixture.view());
+        let listed = tab(&fixture.view(), SaleSafetyRule::default());
 
         assert_eq!(listed.parts.len(), 2, "only the two stocked parts survive");
         for row in &listed.parts {

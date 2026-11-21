@@ -43,6 +43,7 @@ import type {
   ResourcesTab,
   RivenComparables,
   RivensTab,
+  SaleSafetySettings,
   Settings,
   StatsTab,
   StoredTrade,
@@ -110,7 +111,8 @@ function since(sinceMs?: number): Args {
 }
 
 export const api = {
-  inventoryTab: () => call<InventoryTab>("inventory_tab"),
+  inventoryTab: (saleSafety: SaleSafetySettings) =>
+    call<InventoryTab>("inventory_tab", { saleSafety }),
   foundryTab: () => call<FoundryTab>("foundry_tab"),
   craftTree: (uniqueName: string) =>
     call<CraftDetails>("craft_tree", { uniqueName }),

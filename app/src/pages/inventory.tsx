@@ -4,6 +4,7 @@ import { Amount } from "@/components/currency";
 import { Figure } from "@/components/figure";
 import { InventoryTabView } from "@/components/inventory-tab-view";
 import { Page, Section } from "@/components/page";
+import { useSaleSafetySettings } from "@/components/sale-safety";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
@@ -33,9 +34,11 @@ const TAB_LABELS: Record<InventoryTabKey, string> = {
 };
 
 export function InventoryPage() {
+  const saleSafety = useSaleSafetySettings();
+  const load = useCallback(() => api.inventoryTab(saleSafety), [saleSafety]);
   const { data, error, loading } = useAsyncData(
-    "inventory_tab",
-    api.inventoryTab,
+    `inventory_tab:${JSON.stringify(saleSafety)}`,
+    load,
     ["inventoryUpdated", "pricesUpdated", "favouriteUpdated", "marketUpdated"],
   );
   const [exporting, setExporting] = useState(false);
