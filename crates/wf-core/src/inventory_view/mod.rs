@@ -376,13 +376,10 @@ mod tests {
     #[test]
     fn orders_mark_items() {
         let fixture = Fixture {
-            listings: MarketListings::new(
-                [
-                    ("braton_prime_barrel", OrderType::Sell),
-                    ("braton_prime_set", OrderType::Buy),
-                ],
-                &[],
-            ),
+            listings: MarketListings::new(&[]).with_orders([
+                ("braton_prime_barrel", OrderType::Sell, 1),
+                ("braton_prime_set", OrderType::Buy, 1),
+            ]),
             ..holding(&PRIME_PARTS)
         }
         .with_market(&[

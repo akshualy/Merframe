@@ -211,7 +211,6 @@ mod tests {
     use crate::rivens::grading::{perfectness, roll_grade};
     use crate::rivens::listing::{ListingChoices, listing_payload};
     use crate::rivens::support::*;
-    use wf_market::OrderType;
 
     #[test]
     fn listed_riven_marked() {
@@ -231,10 +230,9 @@ mod tests {
         auction.item.mastery_level = listed.rank_required.unwrap();
         auction.item.re_rolls = listed.rerolls;
 
-        let marked = fixture.grader().rows(
-            &inventory,
-            &MarketListings::new(Vec::<(String, OrderType)>::new(), &auctions),
-        );
+        let marked = fixture
+            .grader()
+            .rows(&inventory, &MarketListings::new(&auctions));
         let mine = marked
             .iter()
             .find(|row| row.item_id == listed.item_id)

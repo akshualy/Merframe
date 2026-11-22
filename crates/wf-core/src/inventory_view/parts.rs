@@ -524,13 +524,10 @@ mod tests {
     #[test]
     fn order_placed() {
         let mut fixture = Fixture {
-            listings: MarketListings::new(
-                [
-                    ("braton_prime_barrel", OrderType::Sell),
-                    ("trinity_prime_systems", OrderType::Buy),
-                ],
-                &[],
-            ),
+            listings: MarketListings::new(&[]).with_orders([
+                ("braton_prime_barrel", OrderType::Sell, 1),
+                ("trinity_prime_systems", OrderType::Buy, 1),
+            ]),
             ..holding(&[
                 (BRATON_PRIME_BARREL, 3),
                 (TRINITY_PRIME_SYSTEMS_BLUEPRINT, 1),
@@ -582,7 +579,11 @@ mod tests {
     #[test]
     fn set_order_reaches_every_part() {
         let fixture = Fixture {
-            listings: MarketListings::new([("braton_prime_set", OrderType::Sell)], &[]),
+            listings: MarketListings::new(&[]).with_orders([(
+                "braton_prime_set",
+                OrderType::Sell,
+                1,
+            )]),
             ..holding(&[(BRATON_PRIME_BARREL, 3), (BRATON_PRIME_STOCK, 1)])
         }
         .with_market(&[fixtures::market_item(

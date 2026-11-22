@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use wf_market::{Auction, OrderType};
 
@@ -13,9 +13,14 @@ struct ListedRiven {
 }
 
 #[derive(Debug, Default)]
+struct MarketListedQuantities {
+    selling: HashMap<String, u32>,
+    buying: HashMap<String, u32>,
+}
+
+#[derive(Debug, Default)]
 pub struct MarketListings {
-    selling: HashSet<String>,
-    buying: HashSet<String>,
+    orders: Option<MarketListedQuantities>,
     rivens: HashSet<ListedRiven>,
 }
 
@@ -27,21 +32,9 @@ fn squashed(text: &str) -> String {
 }
 
 impl MarketListings {
-    pub fn new<S: Into<String>, I: IntoIterator<Item = (S, OrderType)>>(
-        orders: I,
-        auctions: &[Auction],
-    ) -> Self {
-        let mut selling = HashSet::new();
-        let mut buying = HashSet::new();
-        for (item_id, order_type) in orders {
-            match order_type {
-                OrderType::Sell => selling.insert(item_id.into()),
-                OrderType::Buy => buying.insert(item_id.into()),
-            };
-        }
+    pub fn new(auctions: &[Auction]) -> Self {
         Self {
-            selling,
-            buying,
+            orders: None,
             rivens: auctions
                 .iter()
                 .map(|auction| ListedRiven {
@@ -54,13 +47,36 @@ impl MarketListings {
         }
     }
 
+    #[must_use]
+    pub fn with_orders<S: Into<String>>(
+        self,
+        orders: impl IntoIterator<Item = (S, OrderType, u32)>,
+    ) -> Self {
+        let mut listed = MarketListedQuantities::default();
+        for (item_id, order_type, quantity) in orders {
+            let side = match order_type {
+                OrderType::Sell => &mut listed.selling,
+                OrderType::Buy => &mut listed.buying,
+            };
+            *side.entry(item_id.into()).or_default() += quantity;
+        }
+        Self {
+            orders: Some(listed),
+            ..self
+        }
+    }
+
     pub fn listed_slugs<'a>(&self, side: OrderType, items: &'a ItemTable) -> HashSet<&'a str> {
-        let item_ids = match side {
-            OrderType::Sell => &self.selling,
-            OrderType::Buy => &self.buying,
+        let Some(orders) = &self.orders else {
+            return HashSet::new();
         };
-        item_ids
-            .iter()
+
+        let quantities = match side {
+            OrderType::Sell => &orders.selling,
+            OrderType::Buy => &orders.buying,
+        };
+        quantities
+            .keys()
             .filter_map(|item_id| items.by_market_id(item_id)?.market_slug.as_deref())
             .collect()
     }
@@ -108,16 +124,13 @@ mod tests {
             ),
         ];
         items.index_market(&listed);
-        let listings = MarketListings::new(
-            [
-                ("trinity_prime_systems", OrderType::Sell),
-                ("braton_prime_set", OrderType::Buy),
-                ("braton_prime_barrel", OrderType::Sell),
-                ("braton_prime_barrel", OrderType::Buy),
-                ("unknown", OrderType::Sell),
-            ],
-            &[],
-        );
+        let listings = MarketListings::new(&[]).with_orders([
+            ("trinity_prime_systems", OrderType::Sell, 1),
+            ("braton_prime_set", OrderType::Buy, 1),
+            ("braton_prime_barrel", OrderType::Sell, 1),
+            ("braton_prime_barrel", OrderType::Buy, 1),
+            ("unknown", OrderType::Sell, 1),
+        ]);
         let sorted = |side| {
             let mut slugs: Vec<&str> = listings.listed_slugs(side, &items).into_iter().collect();
             slugs.sort_unstable();
@@ -135,7 +148,7 @@ mod tests {
 
     #[test]
     fn lists_riven() {
-        let listings = MarketListings::new(Vec::<(String, OrderType)>::new(), &auctions());
+        let listings = MarketListings::new(&auctions());
         assert!(listings.lists_riven("Acri-vexicak", "okina", 12, 86));
         assert!(listings.lists_riven("Acri-Vexicak ", "Okina", 12, 86));
         assert!(
