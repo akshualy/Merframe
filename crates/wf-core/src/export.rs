@@ -39,13 +39,14 @@ fn write<T: Serialize>(dir: &Path, name: &str, value: &T) -> Result<()> {
 mod tests {
     use super::*;
     use crate::catalog::fixtures;
+    use crate::sale_safety::SaleSafetyRule;
     use crate::view::Fixture;
     use crate::{foundry, inventory_view, rivens};
 
     #[test]
     fn one_file_per_tab() {
         let fixture = Fixture::new(fixtures::catalog(), fixtures::inventory());
-        let inventory_tab = inventory_view::tab(&fixture.view());
+        let inventory_tab = inventory_view::tab(&fixture.view(), SaleSafetyRule::default());
         let rivens_tab = rivens::Grader::new(&fixture.catalog, &fixture.items, None)
             .tab(&fixture.account.inventory, &fixture.listings);
         let now = fixtures::at(1_788_807_069_000);

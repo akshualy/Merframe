@@ -39,6 +39,7 @@ use crate::reset_checklist::{
 };
 use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
+use crate::sale_safety::{SaleSafetyCheck, SaleSafetyRule};
 use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
 use crate::store::{Snapshot, StatPoint, Store, TimeRange};
 use crate::syndicates::{self, SyndicatesTab};
@@ -210,7 +211,7 @@ impl Core {
     fn adopt_inventory(&mut self, inventory: Inventory) {
         self.arbitration_recorder
             .keep_latest_booster_expiries(&inventory.boosters);
-        self.account = Some(Account::new(inventory, &self.catalog));
+        self.account = Some(Account::new(inventory, &self.catalog, &self.items));
     }
 
     pub fn ingest_inventory(&mut self, json: &str, now: DateTime<Utc>) -> Result<Vec<CoreEvent>> {
@@ -544,8 +545,12 @@ impl Core {
         })
     }
 
-    pub fn inventory_tab(&self) -> Option<InventoryTab> {
-        Some(inventory_view::tab(&self.view()?))
+    pub fn inventory_tab(&self, rule: SaleSafetyRule) -> Option<InventoryTab> {
+        Some(inventory_view::tab(&self.view()?, rule))
+    }
+
+    pub fn sale_safety(&self, rule: SaleSafetyRule) -> Option<SaleSafetyCheck<'_>> {
+        Some(SaleSafetyCheck::new(&self.view()?, rule))
     }
 
     pub fn foundry_tab(
@@ -802,10 +807,10 @@ impl Core {
         ))
     }
 
-    pub fn export(&self, dir: &Path, now: DateTime<Utc>) -> Result<()> {
+    pub fn export(&self, dir: &Path, rule: SaleSafetyRule, now: DateTime<Utc>) -> Result<()> {
         let (Some(document), Some(inventory), Some(rivens), Some(foundry)) = (
             self.store.cached_inventory()?,
-            self.inventory_tab(),
+            self.inventory_tab(rule),
             self.rivens_tab(),
             self.foundry_tab(None, now),
         ) else {
@@ -986,7 +991,7 @@ mod tests {
         assert_eq!(snapshot.last_sync_oid, "6a9eeb1f000000000000c001");
         assert_eq!(reader.latest_snapshot(), Some(&snapshot));
         assert!(reader.inventory().is_some());
-        assert!(reader.inventory_tab().is_some());
+        assert!(reader.inventory_tab(SaleSafetyRule::default()).is_some());
         let stats = reader.stats_tab(TimeRange::all(), Utc::now()).unwrap();
         assert_eq!(stats.series.len(), 1);
         assert!(reader.stats_deltas(TimeRange::all()).unwrap().is_empty());
@@ -1046,10 +1051,10 @@ mod tests {
     #[test]
     fn tabs_after_ingest() {
         let mut core = core();
-        assert!(core.inventory_tab().is_none());
+        assert!(core.inventory_tab(SaleSafetyRule::default()).is_none());
         core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
             .unwrap();
-        assert!(core.inventory_tab().is_some());
+        assert!(core.inventory_tab(SaleSafetyRule::default()).is_some());
         assert!(core.foundry_tab(None, at(1_000_000)).is_some());
         assert_eq!(
             core.mastery_tab(MasteryOptions::default()).unwrap().rank,
@@ -1188,7 +1193,7 @@ mod tests {
 
         assert!(core.toggle_favourite(relic).unwrap());
         assert!(core.favourites.contains(relic));
-        let tab = core.inventory_tab().unwrap();
+        let tab = core.inventory_tab(SaleSafetyRule::default()).unwrap();
         let starred = tab
             .relics
             .iter()
@@ -1206,7 +1211,12 @@ mod tests {
 
         assert!(!core.toggle_favourite(relic).unwrap());
         assert!(core.favourites.is_empty());
-        assert!(core.inventory_tab().unwrap().favourites.is_empty());
+        assert!(
+            core.inventory_tab(SaleSafetyRule::default())
+                .unwrap()
+                .favourites
+                .is_empty()
+        );
     }
 
     #[test]
@@ -1408,12 +1418,13 @@ mod tests {
         let mut core = core();
         let root = scratch_dir("wf-core-facade-export");
         let dir = root.join("export");
-        core.export(&dir, at(0)).unwrap();
+        core.export(&dir, SaleSafetyRule::default(), at(0)).unwrap();
         assert!(!dir.exists());
 
         core.ingest_inventory(fixtures::INVENTORY, at(1_000_000))
             .unwrap();
-        core.export(&dir, at(1_000_000)).unwrap();
+        core.export(&dir, SaleSafetyRule::default(), at(1_000_000))
+            .unwrap();
         assert!(dir.join("parts.json").exists());
         assert_eq!(
             std::fs::read_to_string(dir.join("inventory.json")).unwrap(),

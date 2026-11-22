@@ -5,6 +5,8 @@ import { EquippedDialog } from "@/components/equipped-dialog";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { ArcaneImage, ItemImage } from "@/components/item-image";
+import { Meta } from "@/components/meta";
+import { SaleSafetyMark } from "@/components/sale-safety";
 import { Button } from "@/components/ui/button";
 import { Dash } from "@/components/ui/dash";
 import { Hint } from "@/components/ui/hint";
@@ -23,6 +25,7 @@ import {
   rank,
   refinement,
   type SetEntry,
+  saleSafety,
   sellPlat,
   vault,
 } from "@/lib/inventory-entries";
@@ -147,18 +150,6 @@ function ImageTag({
   );
 }
 
-function Meta({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <span className={cn("flex items-center gap-1", className)}>{children}</span>
-  );
-}
-
 const LISTINGS = [
   { flag: "selling", label: "Selling" },
   { flag: "buying", label: "Buying" },
@@ -197,6 +188,7 @@ function ItemCardInner({
   const itemRank = rank(entry);
   const itemRefinement = refinement(entry);
   const itemDucats = ducats(entry);
+  const sale = saleSafety(entry);
   const stars = sculpture
     ? { amber: sculpture.amber_filled, cyan: sculpture.cyan_filled }
     : null;
@@ -300,6 +292,7 @@ function ItemCardInner({
               {label}
             </Meta>
           ))}
+          {sale && <SaleSafetyMark safety={sale} />}
         </div>
         {equipped && (
           <EquippedDialog

@@ -4,7 +4,10 @@ use std::sync::{Arc, Mutex, RwLock};
 use chrono::{DateTime, Duration, Utc};
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
-use wf_core::{Core, ItemRecord, ItemSummary, ItemTable, MarketListings, PriceSource, market_name};
+use wf_core::{
+    Core, ItemRecord, ItemSummary, ItemTable, MarketListings, PriceSource, SaleSafety,
+    SaleSafetyCheck, SaleSafetyRule, market_name,
+};
 use wf_market::{Auction, Item, Order, OrderType, UserStatus};
 
 use crate::settings::MarketSettings;
@@ -222,6 +225,7 @@ pub struct OrderRow {
     pub show_warning: bool,
     pub lowest: Option<Lowest>,
     pub pricing: Option<Pricing>,
+    pub sale: Option<SaleSafety>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
@@ -296,6 +300,7 @@ pub fn order_row(
     item: &Item,
     record: &ItemRecord,
     core: &Core,
+    sale_safety: Option<&SaleSafetyCheck>,
     prices: &dyn PriceSource,
     settings: &MarketSettings,
 ) -> OrderRow {
@@ -326,6 +331,10 @@ pub fn order_row(
         None => prices.plat(&item.slug).map(|plat| Lowest::AtRank { plat }),
     };
     let pricing = Pricing::of(order, lowest, settings);
+    let sale = sale_safety
+        .filter(|_| order.order_type == OrderType::Sell)
+        .and_then(|sale_safety| sale_safety.market_item(record))
+        .map(|checked| checked.safety);
 
     OrderRow {
         id: order.id.clone(),
@@ -344,6 +353,7 @@ pub fn order_row(
         show_warning,
         lowest,
         pricing,
+        sale,
     }
 }
 
@@ -400,9 +410,13 @@ impl Listings {
 
 pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<MarketOrders> {
     let items = market_items(state).await?;
-    let settings = read(&state.settings).market.clone();
-    let core = lock(&state.core);
+    let settings = read(&state.settings);
+    let market = settings.market.clone();
+    let rule = SaleSafetyRule::from(settings.sale_safety);
+    drop(settings);
 
+    let core = lock(&state.core);
+    let sale_safety = core.sale_safety(rule);
     let mut index = IndexSet::new();
     let rows = orders
         .iter()
@@ -411,7 +425,15 @@ pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Marke
             let record = core.items().by_market_id(&order.item_id)?;
             Some(OrderRow {
                 item: index.insert_full(order_summary(item, record)).0,
-                ..order_row(order, item, record, &core, state.prices.as_ref(), &settings)
+                ..order_row(
+                    order,
+                    item,
+                    record,
+                    &core,
+                    sale_safety.as_ref(),
+                    state.prices.as_ref(),
+                    &market,
+                )
             })
         })
         .collect();
@@ -636,6 +658,7 @@ mod tests {
                 item,
                 self.core.items().by_market_id(&item.id).unwrap(),
                 &self.core,
+                self.core.sale_safety(SaleSafetyRule::default()).as_ref(),
                 &TestPrices,
                 settings,
             )
@@ -873,6 +896,7 @@ mod tests {
             &barrel,
             record,
             &core,
+            None,
             &TestPrices,
             &MarketSettings::default(),
         );
@@ -1060,6 +1084,16 @@ mod tests {
 
         listings.forget(&core);
         assert!(listings.current().orders.is_none());
+    }
+
+    #[test]
+    fn sell_orders_get_sale_safety() {
+        let market = Market::new();
+        assert!(market.sell("braton_prime_barrel", 2).sale.is_some());
+
+        let mut wanted = order("braton_prime_barrel", 2, None);
+        wanted.order_type = OrderType::Buy;
+        assert_eq!(market.row(&wanted, true).sale, None);
     }
 
     #[test]

@@ -147,6 +147,7 @@ fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
         commands::market::market_login,
         commands::market::market_logout,
         commands::market::market_my_orders,
+        commands::market::market_sale_safety,
         commands::market::market_post_order,
         commands::market::market_update_order,
         commands::market::market_close_order,

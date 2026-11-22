@@ -54,6 +54,10 @@ impl FoundryStock {
         }
     }
 
+    pub(crate) fn weapon_copies(&self, unique_name: &str) -> Option<i64> {
+        self.weapons.get(unique_name).copied()
+    }
+
     fn held(&self, unique_name: &str) -> i64 {
         if unique_name.contains("Blueprint") {
             return self.recipes.get(unique_name).copied().unwrap_or_default();

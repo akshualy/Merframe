@@ -97,8 +97,11 @@ pub async fn export<R: Runtime>(
     };
 
     let target = dir.clone();
-    tauri::async_runtime::spawn_blocking(move || lock(&state.core).export(&target, Utc::now()))
-        .await??;
+    let sale_safety = read(&state.settings).sale_safety;
+    tauri::async_runtime::spawn_blocking(move || {
+        lock(&state.core).export(&target, sale_safety.into(), Utc::now())
+    })
+    .await??;
     Ok(Some(dir.display().to_string()))
 }
 

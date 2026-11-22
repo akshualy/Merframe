@@ -310,7 +310,7 @@ mod tests {
     #[test]
     fn prime_collection_totals() {
         let catalog = fixtures::mastery_catalog();
-        let account = Account::new(fixtures::inventory(), &catalog);
+        let account = Account::new(fixtures::inventory(), &catalog, &ItemTable::build(&catalog));
         let (owned, total) = prime_ownership(&account, &catalog, MasteryOptions::default());
         assert!(owned <= total);
         let primes: Vec<&Item> = masterable(&catalog, account.inventory.is_founder())
@@ -332,6 +332,7 @@ mod tests {
                 fixtures::drop_entries(value, &["Suits"], MASTERED_PRIME_SUIT);
             }),
             &catalog,
+            &ItemTable::build(&catalog),
         );
         assert!(!sold.built(MASTERED_PRIME_SUIT));
         let (still_owned, sold_total) = prime_ownership(&sold, &catalog, MasteryOptions::default());
@@ -343,11 +344,15 @@ mod tests {
     fn prime_collection_with_founders() {
         let catalog = fixtures::mastery_catalog();
         let plain = prime_ownership(
-            &Account::new(fixtures::inventory(), &catalog),
+            &Account::new(fixtures::inventory(), &catalog, &ItemTable::build(&catalog)),
             &catalog,
             MasteryOptions::default(),
         );
-        let founder = Account::new(fixtures::founder_inventory(), &catalog);
+        let founder = Account::new(
+            fixtures::founder_inventory(),
+            &catalog,
+            &ItemTable::build(&catalog),
+        );
         let with_founders = prime_ownership(&founder, &catalog, MasteryOptions::default());
         let without_founders = prime_ownership(&founder, &catalog, excluding_founders());
         assert_eq!(with_founders.1 - plain.1, 3);

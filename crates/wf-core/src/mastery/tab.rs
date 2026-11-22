@@ -339,7 +339,7 @@ mod tests {
         let unmastered = unmastered_types(&fixture.account, &fixture.catalog);
         assert!(unmastered.contains(FOUNDERS_ITEMS[0]));
         let no_founder = unmastered_types(
-            &Account::new(fixtures::inventory(), &fixture.catalog),
+            &Account::new(fixtures::inventory(), &fixture.catalog, &fixture.items),
             &fixture.catalog,
         );
         assert!(!no_founder.contains(FOUNDERS_ITEMS[0]));
@@ -352,7 +352,7 @@ mod tests {
         assert_eq!(
             breakdown.total(),
             mastery_xp(
-                &Account::new(fixtures::inventory(), &fixture.catalog),
+                &Account::new(fixtures::inventory(), &fixture.catalog, &fixture.items),
                 &fixture.catalog
             )
             .total()

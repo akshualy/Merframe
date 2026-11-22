@@ -5,6 +5,11 @@ import { DataTable } from "@/components/data-table";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect } from "@/components/filter-select";
 import { ItemImage } from "@/components/item-image";
+import {
+  type ListedSaleSafetyKind,
+  SALE_SAFETY_FILTERS,
+  SaleSafetyTooltip,
+} from "@/components/sale-safety";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dash } from "@/components/ui/dash";
@@ -15,7 +20,7 @@ import {
 import { useFilters } from "@/hooks/use-filters";
 import { itemAt } from "@/lib/arrays";
 import { api } from "@/lib/bridge";
-import type { FilterOption, YesNo } from "@/lib/filters";
+import type { FilterOption } from "@/lib/filters";
 import { counted, dateTime, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/stores/app-store";
@@ -43,10 +48,24 @@ const SIDES: { value: OrderType; label: string }[] = [
   { value: "buy", label: "Buy" },
 ];
 
-const MISSING: FilterOption<YesNo>[] = [
-  { value: "yes", label: "Missing items" },
-  { value: "no", label: "Fully stocked" },
+type OrderStock = "missing" | "stocked" | ListedSaleSafetyKind;
+
+const STOCK: FilterOption<OrderStock>[] = [
+  { value: "missing", label: "Missing items" },
+  { value: "stocked", label: "Fully stocked" },
+  ...SALE_SAFETY_FILTERS,
 ];
+
+function stockMatches(order: OrderRow, stock: OrderStock): boolean {
+  switch (stock) {
+    case "missing":
+      return order.show_warning;
+    case "stocked":
+      return !order.show_warning;
+    default:
+      return order.sale?.state.kind === stock;
+  }
+}
 
 const PRICING_MARKS: Record<Pricing, { label: string; tone: string }> = {
   overpriced: { label: "Overpriced", tone: "text-warning" },
@@ -60,7 +79,7 @@ const PRICING: FilterOption<Pricing>[] = (
 interface OrderFilters {
   category: MarketCategory | null;
   side: OrderType | null;
-  missing: YesNo | null;
+  stock: OrderStock | null;
   pricing: Pricing | null;
 }
 
@@ -110,10 +129,10 @@ export function OrdersTable({
   const filters = useFilters<OrderFilters>({
     category: null,
     side: null,
-    missing: null,
+    stock: null,
     pricing: null,
   });
-  const { category, side, missing, pricing } = filters.values;
+  const { category, side, stock, pricing } = filters.values;
 
   const entries = useMemo(
     () => rows.map((order) => ({ order, item: itemAt(items, order.item) })),
@@ -129,10 +148,7 @@ export function OrdersTable({
         if (side && order.order_type !== side) {
           return false;
         }
-        if (missing === "yes" && !order.show_warning) {
-          return false;
-        }
-        if (missing === "no" && order.show_warning) {
+        if (stock && !stockMatches(order, stock)) {
           return false;
         }
         if (pricing && order.pricing !== pricing) {
@@ -140,7 +156,7 @@ export function OrdersTable({
         }
         return true;
       }),
-    [entries, category, side, missing, pricing],
+    [entries, category, side, stock, pricing],
   );
 
   const columns = useMemo<ColumnDef<ListedOrder>[]>(
@@ -231,14 +247,20 @@ export function OrdersTable({
         header: "Owned",
         meta: { numeric: true },
         cell: ({ row }) => {
-          const { owned, show_warning } = row.original.order;
-          return show_warning ? (
-            <Badge variant="warning">
-              <TriangleAlert />
-              {num(owned)}
-            </Badge>
+          const { owned, show_warning, sale } = row.original.order;
+          const value =
+            show_warning || sale?.state.kind === "over_listed" ? (
+              <Badge variant="warning">
+                <TriangleAlert />
+                {num(owned)}
+              </Badge>
+            ) : (
+              num(owned)
+            );
+          return sale ? (
+            <SaleSafetyTooltip safety={sale}>{value}</SaleSafetyTooltip>
           ) : (
-            num(owned)
+            value
           );
         },
       },
@@ -396,7 +418,7 @@ export function OrdersTable({
         tableId="marketOrders"
         columns={columns}
         data={filteredEntries}
-        resetKey={JSON.stringify([category, side, missing, pricing])}
+        resetKey={JSON.stringify([category, side, stock, pricing])}
         searchPlaceholder="Filter orders"
         searchValue={({ item }) => item.name}
         initialSorting={[{ id: "updated_at", desc: true }]}
@@ -441,9 +463,9 @@ export function OrdersTable({
             />
             <FilterSelect
               label="Stock"
-              value={missing}
-              options={MISSING}
-              onChange={(value) => filters.set("missing", value)}
+              value={stock}
+              options={STOCK}
+              onChange={(value) => filters.set("stock", value)}
             />
             {priceCheck && (
               <FilterSelect

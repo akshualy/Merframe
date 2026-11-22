@@ -12,7 +12,7 @@ use tauri_plugin_store::{Store, StoreExt};
 use tracing::warn;
 use wf_core::{
     AlertSettings, DucateringCompleteSets, DucateringFilter, DucateringHidden, MasteryOptions,
-    MasteryOrdering, ResetChecklistRowId,
+    MasteryOrdering, ResetChecklistRowId, SaleSafetyKeep, SaleSafetyRule,
 };
 use wf_market::{OrderType, Reach, Session, TraderStatus, UserStatus};
 
@@ -144,6 +144,8 @@ pub struct Settings {
     pub world_state_interval_minutes: u32,
     #[serde(flatten)]
     pub inventory: InventorySettings,
+    #[serde(flatten)]
+    pub sale_safety: SaleSafetySettings,
     #[serde(flatten)]
     pub overlays: OverlaySettings,
     pub copy_relic_rewards: bool,
@@ -383,6 +385,23 @@ pub struct InventorySettings {
     pub stats_tab_enabled: bool,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(default)]
+pub struct SaleSafetySettings {
+    pub sale_safety_keep: SaleSafetyKeep,
+    pub sale_safety_keep_favourites: bool,
+}
+
+impl From<SaleSafetySettings> for SaleSafetyRule {
+    fn from(settings: SaleSafetySettings) -> Self {
+        Self {
+            keep: settings.sale_safety_keep,
+            keep_favourites: settings.sale_safety_keep_favourites,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[serde(default)]
@@ -479,6 +498,7 @@ impl Default for Settings {
             market: MarketSettings::default(),
             world_state_interval_minutes: 5,
             inventory: InventorySettings::default(),
+            sale_safety: SaleSafetySettings::default(),
             overlays: OverlaySettings::default(),
             copy_relic_rewards: false,
             toasts: ToastSettings::default(),
@@ -952,6 +972,11 @@ mod tests {
         assert_eq!(settings.inventory.include_founders_items, None);
         assert!(settings.inventory.include_forma_ranks);
         assert!(settings.inventory.stats_tab_enabled);
+        assert_eq!(
+            settings.sale_safety.sale_safety_keep,
+            SaleSafetyKeep::Unmastered
+        );
+        assert!(!settings.sale_safety.sale_safety_keep_favourites);
         assert!(settings.toasts.toasts_enabled);
         assert_eq!(settings.toasts.toast_position, ToastPosition::BottomRight);
         assert!(!settings.toasts.toasts_in_game);

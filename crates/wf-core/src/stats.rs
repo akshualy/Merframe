@@ -311,7 +311,7 @@ mod tests {
     #[test]
     fn fixture_summary() {
         let catalog = fixtures::mastery_catalog();
-        let account = Account::new(fixtures::inventory(), &catalog);
+        let account = Account::new(fixtures::inventory(), &catalog, &ItemTable::build(&catalog));
         let series = daily_series(&[
             point(at("2023-11-14T00:00:00Z")),
             point(at("2023-11-14T23:59:59Z")),

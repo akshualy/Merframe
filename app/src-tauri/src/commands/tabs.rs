@@ -10,12 +10,16 @@ use wf_core::{
 use super::{Shared, compute, missing_inventory, ready, since};
 use crate::error::CommandResult;
 use crate::runtime::{self, AppEvent};
+use crate::settings::SaleSafetySettings;
 use crate::state::{lock, read};
 
 #[tauri::command]
-pub async fn inventory_tab(state: Shared<'_>) -> CommandResult<InventoryTab> {
+pub async fn inventory_tab(
+    state: Shared<'_>,
+    sale_safety: SaleSafetySettings,
+) -> CommandResult<InventoryTab> {
     let state = ready(&state).await?;
-    compute(state, wf_core::Core::inventory_tab).await
+    compute(state, move |core| core.inventory_tab(sale_safety.into())).await
 }
 
 #[tauri::command]

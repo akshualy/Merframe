@@ -3,7 +3,9 @@ use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
-use wf_core::{ListingChoices, market_name, riven_listing_payload, riven_listing_update};
+use wf_core::{
+    ListingChoices, MarketItemSaleSafety, market_name, riven_listing_payload, riven_listing_update,
+};
 use wf_market::{
     Auction, CreateOrderRequest, ItemListings, Order, OrderType, UpdateAuctionRequest,
     UpdateOrderRequest, order_rejection,
@@ -15,7 +17,7 @@ use crate::error::{CommandError, CommandResult};
 use crate::market::{self, MarketItems, MarketOrders, MarketPresence, MarketPresenceChoice};
 use crate::market_session;
 use crate::runtime::{self, AppEvent};
-use crate::settings::MarketAccount;
+use crate::settings::{MarketAccount, SaleSafetySettings};
 use crate::state::{AppState, lock, read};
 
 fn unlisted_items() -> CommandError {
@@ -144,6 +146,21 @@ pub async fn market_my_orders(state: Shared<'_>) -> CommandResult<MarketOrders> 
     market::order_rows(&state, &orders)
         .await
         .ok_or_else(unlisted_items)
+}
+
+#[tauri::command]
+pub async fn market_sale_safety(
+    state: Shared<'_>,
+    item_id: String,
+    sale_safety: SaleSafetySettings,
+) -> CommandResult<Option<MarketItemSaleSafety>> {
+    let state = ready(&state).await?;
+
+    let core = lock(&state.core);
+    Ok(core
+        .items()
+        .by_market_id(&item_id)
+        .and_then(|record| core.sale_safety(sale_safety.into())?.market_item(record)))
 }
 
 #[tauri::command]

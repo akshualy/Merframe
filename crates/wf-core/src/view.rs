@@ -32,9 +32,10 @@ pub(crate) struct Fixture {
 #[cfg(test)]
 impl Fixture {
     pub(crate) fn new(catalog: Catalog, inventory: wf_inventory::Inventory) -> Self {
+        let items = ItemTable::build(&catalog);
         Self {
-            account: Account::new(inventory, &catalog),
-            items: ItemTable::build(&catalog),
+            account: Account::new(inventory, &catalog, &items),
+            items,
             catalog,
             prices: FixedPrices::default(),
             favourites: Favourites::default(),

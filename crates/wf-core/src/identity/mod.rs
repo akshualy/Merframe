@@ -18,11 +18,10 @@ use crate::inventory_view::ItemSummary;
 
 pub use listing::market_name;
 pub(crate) use listing::traded_as;
-use naming::held_names;
 pub use naming::market_slug;
 pub(crate) use naming::{
-    ambassador_blueprint, blueprint_of, component_of, is_landing_craft_part, part_identity,
-    part_market_slug, part_tradable,
+    ambassador_blueprint, blueprint_of, component_of, held_names, is_landing_craft_part,
+    part_identity, part_market_slug, part_tradable,
 };
 
 pub(crate) const OUBLIETTE_KEY: &str = "/Lotus/Types/Keys/Nightwave/GlassmakerBossFightKey";

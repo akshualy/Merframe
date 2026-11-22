@@ -9,6 +9,7 @@ import { ItemSearch } from "@/components/item-search";
 import { OrderList } from "@/components/market-order-list";
 import { SelectField } from "@/components/option-select";
 import { EmptyNote } from "@/components/page";
+import { SaleSafetyListing } from "@/components/sale-safety";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -21,7 +22,7 @@ import { marketUrl, num } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/world";
-import { useAppStore } from "@/stores/app-store";
+import { useMarketSignedIn } from "@/stores/app-store";
 import { useMarketItemsStore } from "@/stores/market-items-store";
 import { useMarketListingsStore } from "@/stores/market-listings-store";
 import {
@@ -109,7 +110,7 @@ export function MarketPanel() {
   const items = useMarketItemsStore((state) => state.bySlug);
   const searchable = useMarketItemsStore((state) => state.items);
   const rows = useMarketListingsStore((state) => state.orders.rows);
-  const signedIn = useAppStore((state) => state.status?.market_account) != null;
+  const signedIn = useMarketSignedIn();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<MarketItem | null>(null);
   const [listings, setListings] = useState<ItemListings | null>(null);
@@ -392,6 +393,14 @@ export function MarketPanel() {
                 {existing.visible ? "visible" : "hidden"}
               </Badge>
             </div>
+          )}
+          {side === "sell" && (
+            <SaleSafetyListing
+              key={selected.id}
+              itemId={selected.id}
+              quantity={quantity}
+              onUse={setQuantity}
+            />
           )}
           <div className="grid grid-cols-2 gap-2">
             <NumberField

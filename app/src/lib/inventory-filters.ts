@@ -9,6 +9,7 @@ import {
   type InventoryEntry,
   type InventoryFlags,
   type InventoryTabKey,
+  listableCopies,
   rank,
   refinement,
   sellPlat,
@@ -31,7 +32,7 @@ export const ORDERINGS = [
 export type Ordering = (typeof ORDERINGS)[number]["value"];
 
 const EVERY_TAB: readonly InventoryTabKey[] = INVENTORY_TABS;
-const SET_TABS: readonly InventoryTabKey[] = ["parts", "sets"];
+export const SET_TABS: readonly InventoryTabKey[] = ["parts", "sets"];
 const VAULT_TABS: readonly InventoryTabKey[] = ["parts", "sets", "relics"];
 const RANK_TABS: readonly InventoryTabKey[] = ["mods", "arcanes"];
 const MOD_TABS: readonly InventoryTabKey[] = ["mods"];
@@ -99,6 +100,13 @@ export const YES_NO_FILTERS = [
     yes: "Yes",
     no: "No",
     tabs: EVERY_TAB,
+  },
+  {
+    key: "safeToList",
+    label: "Safe to list",
+    yes: "Yes",
+    no: "No",
+    tabs: SET_TABS,
   },
   {
     key: "favourite",
@@ -209,6 +217,7 @@ const TRAITS: Record<
   ranked: (entry) => Boolean(rank(entry)),
   equipped: (entry) => equippedIn(entry).length > 0,
   orderPlaced: hasOrder,
+  safeToList: (entry) => listableCopies(entry) > 0,
   favourite: (entry, flags) => flags.favourites.has(entry.row.item),
 };
 
@@ -241,6 +250,7 @@ function orderValue(
   entry: InventoryEntry,
   ordering: Ordering,
   tab: InventoryTabKey,
+  listable: boolean,
 ): number | string {
   switch (ordering) {
     case "plat":
@@ -248,7 +258,7 @@ function orderValue(
     case "ducats":
       return ducats(entry) ?? 0;
     case "count":
-      return entry.row.count;
+      return listable ? listableCopies(entry) : entry.row.count;
     case "ducatsPerPlat": {
       if (tab === "sets") {
         return (sellPlat(entry) ?? 0) / (ducats(entry) ?? 0);
@@ -273,9 +283,10 @@ export function compareEntries(
   ordering: Ordering,
   desc: boolean,
   tab: InventoryTabKey,
+  listable: boolean,
 ): number {
-  const a = orderValue(left, ordering, tab);
-  const b = orderValue(right, ordering, tab);
+  const a = orderValue(left, ordering, tab, listable);
+  const b = orderValue(right, ordering, tab, listable);
   let primary = 0;
   if (typeof a === "string" || typeof b === "string") {
     primary = collator.compare(String(a), String(b));
@@ -298,8 +309,9 @@ export function sortEntries(
   ordering: Ordering,
   desc: boolean,
   tab: InventoryTabKey,
+  listable: boolean,
 ): InventoryEntry[] {
   return [...entries].sort((left, right) =>
-    compareEntries(left, right, ordering, desc, tab),
+    compareEntries(left, right, ordering, desc, tab, listable),
   );
 }

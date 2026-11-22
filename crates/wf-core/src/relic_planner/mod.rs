@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn fixture_missing_parts() {
         let catalog = fixtures::catalog();
-        let account = Account::new(fixtures::inventory(), &catalog);
+        let account = Account::new(fixtures::inventory(), &catalog, &ItemTable::build(&catalog));
         let parts = missing(&account, &catalog);
 
         assert_eq!(parts.len(), 8);
@@ -130,13 +130,19 @@ mod tests {
     #[test]
     fn mastery_flag() {
         let catalog = fixtures::catalog();
-        let mastered = missing(&Account::new(fixtures::inventory(), &catalog), &catalog);
+        let mastered = missing(
+            &Account::new(fixtures::inventory(), &catalog, &ItemTable::build(&catalog)),
+            &catalog,
+        );
         assert!(mastered.iter().all(|part| !part.mastery));
 
         let unranked = fixtures::inventory_with(|value| {
             fixtures::drop_entries(value, &["XPInfo"], fixtures::BRATON_PRIME);
         });
-        let unmastered = missing(&Account::new(unranked, &catalog), &catalog);
+        let unmastered = missing(
+            &Account::new(unranked, &catalog, &ItemTable::build(&catalog)),
+            &catalog,
+        );
         let braton: Vec<&MissingPart> = unmastered
             .iter()
             .filter(|part| part.unique_name.contains("BratonPrime"))

@@ -7,6 +7,7 @@ import type {
   ModRow,
   PartRow,
   RelicRow,
+  SaleSafety,
   SetComponent,
   SetRow,
   VaultStatus,
@@ -212,6 +213,19 @@ export function vault(entry: InventoryEntry): VaultStatus | null {
     : entry.item.vault;
 }
 
+function saleRow(entry: InventoryEntry): PartRow | SetRow | null {
+  return entry.kind === "part" || entry.kind === "set" ? entry.row : null;
+}
+
+export function saleSafety(entry: InventoryEntry): SaleSafety | null {
+  return saleRow(entry)?.sale ?? null;
+}
+
+export function listableCopies(entry: InventoryEntry): number {
+  const state = saleSafety(entry)?.state;
+  return state?.kind === "more_to_list" ? state.more : 0;
+}
+
 export function equippedIn(entry: InventoryEntry): ModHolder[] {
   return entry.kind === "upgrade" ? entry.holders : [];
 }
@@ -222,17 +236,37 @@ export interface InventoryTotals {
   unpriced: number;
 }
 
-export function inventoryTotals(entries: InventoryEntry[]): InventoryTotals {
+function totals(
+  entries: InventoryEntry[],
+  value: (entry: InventoryEntry) => number | null,
+  copies: (entry: InventoryEntry) => number,
+): InventoryTotals {
   return entries.reduce(
     (total, entry) => {
-      const value = entry.row.liquidation_value;
+      const worth = value(entry);
       return {
-        liquidationValue: total.liquidationValue + (value ?? 0),
-        ducats: total.ducats + (ducats(entry) ?? 0) * entry.row.count,
-        unpriced: total.unpriced + (value === null ? 1 : 0),
+        liquidationValue: total.liquidationValue + (worth ?? 0),
+        ducats: total.ducats + (ducats(entry) ?? 0) * copies(entry),
+        unpriced: total.unpriced + (worth === null ? 1 : 0),
       };
     },
     { liquidationValue: 0, ducats: 0, unpriced: 0 },
+  );
+}
+
+export function inventoryTotals(entries: InventoryEntry[]): InventoryTotals {
+  return totals(
+    entries,
+    (entry) => entry.row.liquidation_value,
+    (entry) => entry.row.count,
+  );
+}
+
+export function listableTotals(entries: InventoryEntry[]): InventoryTotals {
+  return totals(
+    entries,
+    (entry) => saleRow(entry)?.listable_value ?? null,
+    listableCopies,
   );
 }
 

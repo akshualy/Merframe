@@ -163,6 +163,9 @@ export function MarketPage() {
         0,
       ),
       missing: orders.rows.filter((order) => order.show_warning).length,
+      overListed: orders.rows.filter(
+        (order) => order.sale?.state.kind === "over_listed",
+      ).length,
     };
   }, [orders]);
 
@@ -258,6 +261,16 @@ export function MarketPage() {
               title={
                 totals.missing > 0
                   ? "Sell orders above what the account holds"
+                  : undefined
+              }
+            />
+            <Figure
+              label="Too many listed"
+              value={num(totals.overListed)}
+              tone={totals.overListed > 0 ? "text-warning" : undefined}
+              title={
+                totals.overListed > 0
+                  ? "Sell orders above what's safe to list"
                   : undefined
               }
             />

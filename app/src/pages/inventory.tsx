@@ -4,6 +4,7 @@ import { Amount } from "@/components/currency";
 import { Figure } from "@/components/figure";
 import { InventoryTabView } from "@/components/inventory-tab-view";
 import { Page, Section } from "@/components/page";
+import { useSaleSafetySettings } from "@/components/sale-safety";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
@@ -17,6 +18,7 @@ import {
   INVENTORY_TABS,
   type InventoryTabKey,
   inventoryTotals,
+  listableTotals,
 } from "@/lib/inventory-entries";
 import { notify } from "@/lib/toast";
 
@@ -33,19 +35,25 @@ const TAB_LABELS: Record<InventoryTabKey, string> = {
 };
 
 export function InventoryPage() {
+  const saleSafety = useSaleSafetySettings();
+  const load = useCallback(() => api.inventoryTab(saleSafety), [saleSafety]);
   const { data, error, loading } = useAsyncData(
-    "inventory_tab",
-    api.inventoryTab,
+    `inventory_tab:${JSON.stringify(saleSafety)}`,
+    load,
     ["inventoryUpdated", "pricesUpdated", "favouriteUpdated", "marketUpdated"],
   );
   const [exporting, setExporting] = useState(false);
   const [tab, setTab] = useTabParam<InventoryTabKey>("parts");
 
-  const { entries, flags, filters, updateFilters, visible } = useInventoryView(
-    tab,
-    data,
+  const { entries, flags, filters, updateFilters, visible, listable } =
+    useInventoryView(tab, data);
+  const pageTotals = useMemo(
+    () => (listable ? listableTotals(visible) : inventoryTotals(visible)),
+    [visible, listable],
   );
-  const pageTotals = useMemo(() => inventoryTotals(visible), [visible]);
+  const pageScope = listable
+    ? "Copies safe to list in the rows shown"
+    : "Rows shown";
   const accountValue = useMemo(
     () =>
       data ? inventoryTotals(entriesExceptSets(data)).liquidationValue : 0,
@@ -94,7 +102,7 @@ export function InventoryPage() {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
               <Figure
                 label="This tab"
-                title={`Rows shown. ${LIQUIDATION_NOTE}`}
+                title={`${pageScope}. ${LIQUIDATION_NOTE}`}
                 value={
                   <span className="flex items-center gap-3">
                     <Amount currency="platinum">
