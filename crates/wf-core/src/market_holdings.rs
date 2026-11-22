@@ -47,7 +47,7 @@ impl<'a> View<'a> {
             ItemKind::Imprint => entries(&self.account.inventory.kubrow_pet_prints, |print| {
                 print.dominant_traits.personality == unique_name
             }),
-            ItemKind::Part { .. } => self.blueprints(unique_name),
+            ItemKind::Part { .. } => self.account.part_copies(unique_name),
             ItemKind::Item { .. } | ItemKind::Other if unique_name.starts_with(RECIPE_PREFIX) => {
                 self.blueprints(unique_name)
             }
