@@ -160,9 +160,9 @@ mod tests {
 
     #[test]
     fn fixture_xp_breakdown() {
-        let account = Account::new(fixtures::inventory());
-        let inventory = &account.inventory;
         let catalog = fixtures::mastery_catalog();
+        let account = Account::new(fixtures::inventory(), &catalog);
+        let inventory = &account.inventory;
         let breakdown = mastery_xp(&account, &catalog);
 
         assert_eq!(breakdown.items, 324_000);

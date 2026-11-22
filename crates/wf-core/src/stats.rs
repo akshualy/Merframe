@@ -310,13 +310,14 @@ mod tests {
 
     #[test]
     fn fixture_summary() {
-        let account = Account::new(fixtures::inventory());
+        let catalog = fixtures::mastery_catalog();
+        let account = Account::new(fixtures::inventory(), &catalog);
         let series = daily_series(&[
             point(at("2023-11-14T00:00:00Z")),
             point(at("2023-11-14T23:59:59Z")),
             point(at("2023-11-16T12:00:00Z")),
         ]);
-        let summary = summary(&account, &fixtures::mastery_catalog(), &series);
+        let summary = summary(&account, &catalog, &series);
         assert_eq!(summary.prime_owned, 24);
         assert_eq!(summary.prime_total, 65);
         assert!((summary.prime_percent - 36.0).abs() < f64::EPSILON);

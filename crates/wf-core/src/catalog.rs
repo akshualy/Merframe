@@ -168,6 +168,14 @@ fn builds_from_its_own_blueprint(unique_name: &str) -> bool {
         && !unique_name.ends_with("Component")
 }
 
+pub(crate) fn own_blueprint(item: &Item) -> Option<&str> {
+    item.components
+        .iter()
+        .flatten()
+        .find(|component| component.name == "Blueprint")
+        .map(|component| component.unique_name.as_str())
+}
+
 pub(crate) fn component_image(item: &Item, component: &Component) -> Option<String> {
     match component.image_name.as_deref() {
         Some(image) if image != "blueprint.png" => Some(image.to_owned()),
@@ -273,6 +281,11 @@ pub mod fixtures {
         "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeBarrel";
     pub const BRATON_PRIME_STOCK: &str =
         "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
+    pub const TRINITY_PRIME: &str = "/Lotus/Powersuits/Trinity/TrinityPrime";
+    pub const TRINITY_PRIME_BLUEPRINT: &str =
+        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeBlueprint";
+    pub const TRINITY_PRIME_CHASSIS_BLUEPRINT: &str =
+        "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeChassisBlueprint";
     pub const TRINITY_PRIME_SYSTEMS: &str =
         "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsComponent";
     pub const TRINITY_PRIME_SYSTEMS_BLUEPRINT: &str =
