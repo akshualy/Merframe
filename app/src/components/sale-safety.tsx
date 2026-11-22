@@ -5,15 +5,19 @@ import {
   TagX,
   TriangleAlert,
 } from "lucide-react";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useCallback, useMemo } from "react";
 import { Meta } from "@/components/meta";
 import { SelectField } from "@/components/option-select";
+import { Button } from "@/components/ui/button";
+import { Hint } from "@/components/ui/hint";
 import { SwitchField } from "@/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAsyncData } from "@/hooks/use-async-data";
+import { api } from "@/lib/bridge";
 import type { FilterOption } from "@/lib/filters";
 import { num } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -139,6 +143,60 @@ export function SaleSafetyMark({ safety }: { safety: SaleSafety }) {
       <Icon className="size-3.5" />
       {saleSafetyLabel(safety)}
     </SaleSafetyTooltip>
+  );
+}
+
+export function SaleSafetyListing({
+  itemId,
+  quantity,
+  onUse,
+}: {
+  itemId: string;
+  quantity: string;
+  onUse: (quantity: string) => void;
+}) {
+  const saleSafety = useSaleSafetySettings();
+  const load = useCallback(
+    () => api.marketSaleSafety(itemId, saleSafety),
+    [itemId, saleSafety],
+  );
+  const { data } = useAsyncData(
+    `market_sale_safety:${JSON.stringify([itemId, saleSafety])}`,
+    load,
+    ["inventoryUpdated", "favouriteUpdated", "marketUpdated"],
+  );
+  if (!data) {
+    return null;
+  }
+
+  const { owned, order_limit: limit, safety } = data;
+  const tooMany =
+    safety.listed !== null && Number.parseInt(quantity, 10) > limit;
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-3 text-sm">
+        <SaleSafetyMark safety={safety} />
+        <Hint as="span">{num(owned)} owned</Hint>
+      </div>
+      {tooMany && (
+        <div className="flex items-center gap-2">
+          <Hint className="text-warning flex-1">
+            {limit === 0
+              ? "None of these are safe to list."
+              : `That's more than the ${num(limit)} safe to list.`}
+          </Hint>
+          {limit > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onUse(String(limit))}
+            >
+              Use {num(limit)}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

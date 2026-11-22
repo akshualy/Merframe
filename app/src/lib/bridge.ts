@@ -21,6 +21,7 @@ import type {
   ListingChoices,
   MarketAccount,
   MarketItem,
+  MarketItemSaleSafety,
   MarketMover,
   MarketOrders,
   MarketPresence,
@@ -187,6 +188,11 @@ export const api = {
     call<MarketAccount>("market_login", { email, password }),
   marketLogout: () => call<void>("market_logout"),
   marketMyOrders: () => call<MarketOrders>("market_my_orders"),
+  marketSaleSafety: (itemId: string, saleSafety: SaleSafetySettings) =>
+    call<MarketItemSaleSafety | null>("market_sale_safety", {
+      itemId,
+      saleSafety,
+    }),
   marketPostOrder: (order: NewOrder) =>
     call<Order>("market_post_order", { order }),
   marketUpdateOrder: (id: string, patch: OrderPatch) =>
