@@ -8,11 +8,10 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
 use wf_core::ScannedRewards;
 use wf_mem::MemoryReader;
-use wf_scan::{LuaState, LuaTable};
+use wf_scan::{LuaState, LuaTable, RelicPicker};
 
 use super::core_events;
-use crate::runtime::attach::{Attached, attach_or_warn, read_screen, reattach};
-use crate::runtime::blocking;
+use crate::runtime::attach::{Attached, attach_or_warn, read_screen};
 use crate::state::{AppState, lock};
 
 const REWARD_TICK: Duration = Duration::from_millis(100);
@@ -45,19 +44,29 @@ pub(super) fn watch_relic_picker(state: &Arc<AppState>) {
         state.watching_picker.store(false, Ordering::SeqCst);
     });
     tauri::async_runtime::spawn(async move {
+        let Some(Attached { reader, lua }) = attach_or_warn(
+            &state,
+            "Relic pick not recorded since the picker was not found in memory",
+        )
+        .await
+        else {
+            return;
+        };
+
         let started = Instant::now();
         let mut closed_since = None;
-        let mut attached = None;
+        let mut script = None;
         while started.elapsed() < PICKER_LIFETIME {
-            let owned = Arc::clone(&state);
-            let cached = attached.take();
-            let (picker, kept) =
-                blocking("read relic picker", move || relic_picker(&owned, cached))
-                    .await
-                    .unzip();
-            attached = kept.flatten();
+            let picker = read_screen(
+                "read relic picker",
+                &reader,
+                lua,
+                &mut script,
+                RelicPicker::read,
+            )
+            .await;
             match picker {
-                Some(Picker::Open(pick)) => {
+                Some(RelicPicker::Open(pick)) => {
                     closed_since = None;
                     if let Some(pick) = pick
                         && lock(&state.relic_picks)
@@ -67,7 +76,7 @@ pub(super) fn watch_relic_picker(state: &Arc<AppState>) {
                         debug!(relic_type = pick.relic_type, "Relic selected in the picker");
                     }
                 }
-                Some(Picker::Closed) | None => {
+                Some(RelicPicker::Closed) | None => {
                     let since = *closed_since.get_or_insert_with(Instant::now);
                     if since.elapsed() >= PICKER_GRACE {
                         break;
@@ -77,22 +86,6 @@ pub(super) fn watch_relic_picker(state: &Arc<AppState>) {
             tokio::time::sleep(PICKER_TICK).await;
         }
     });
-}
-
-enum Picker {
-    Closed,
-    Open(Option<wf_scan::RelicPick>),
-}
-
-fn relic_picker(state: &AppState, cached: Option<Attached>) -> (Picker, Option<Attached>) {
-    let Ok(attached) = reattach(state, cached) else {
-        return (Picker::Closed, None);
-    };
-
-    let Attached { reader, lua } = &attached;
-    let open = wf_scan::relic_picker_open(reader.as_ref(), lua)
-        .then(|| wf_scan::relic_pick(reader.as_ref(), lua));
-    (open.map_or(Picker::Closed, Picker::Open), Some(attached))
 }
 
 fn reward_screen(

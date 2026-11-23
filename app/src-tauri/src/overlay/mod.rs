@@ -149,8 +149,8 @@ fn placement_of(settings: &Settings, kind: Kind) -> OverlayPlacement {
 
 #[derive(Default)]
 pub struct Overlays {
-    game: Mutex<Option<runtime::Attached>>,
     station_script: Mutex<Option<wf_scan::LuaTable>>,
+    station_shared: Mutex<Option<wf_scan::LuaTable>>,
     dialog_script: Mutex<Option<wf_scan::LuaTable>>,
     state: Mutex<OverlayState>,
     screens: Mutex<Screens>,
@@ -294,9 +294,8 @@ fn lua_read<T>(
     state: &Arc<AppState>,
     screen: impl FnOnce(&(dyn wf_mem::MemoryReader + 'static), &wf_scan::LuaState) -> Option<T>,
 ) -> Option<T> {
-    let mut game = lock(&state.overlays.game);
-    let attached = match runtime::reattach(state, game.take()) {
-        Ok(attached) => game.insert(attached),
+    let attached = match runtime::attached_game(state) {
+        Ok(attached) => attached,
         Err(_) if read(&state.status).pid.is_none() => {
             debug!("Screen not read, the game is not running");
             return None;

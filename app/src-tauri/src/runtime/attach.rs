@@ -6,8 +6,9 @@ use wf_mem::{MemoryReader, open_pid};
 use wf_scan::{LuaState, LuaTable};
 
 use super::blocking;
-use crate::state::{AppState, read};
+use crate::state::{AppState, lock, read};
 
+#[derive(Clone)]
 pub(crate) struct Attached {
     pub(crate) reader: Arc<dyn MemoryReader>,
     pub(crate) lua: LuaState,
@@ -25,18 +26,20 @@ pub(crate) fn open_game(state: &AppState) -> anyhow::Result<(u32, Box<dyn Memory
     Ok((pid, reader))
 }
 
-pub(super) fn attach(state: &AppState) -> anyhow::Result<Attached> {
+fn attach(state: &AppState) -> anyhow::Result<Attached> {
     let (_, reader) = open_game(state)?;
     let reader: Arc<dyn MemoryReader> = Arc::from(reader);
     let lua = LuaState::locate(reader.as_ref())?.context("The game's Lua state was not found")?;
     Ok(Attached { reader, lua })
 }
 
-pub(crate) fn reattach(state: &AppState, cached: Option<Attached>) -> anyhow::Result<Attached> {
-    match cached.filter(Attached::holds) {
-        Some(attached) => Ok(attached),
-        None => attach(state),
-    }
+pub(crate) fn attached_game(state: &AppState) -> anyhow::Result<Attached> {
+    let mut game = lock(&state.game);
+    let attached = match game.take().filter(Attached::holds) {
+        Some(attached) => attached,
+        None => attach(state)?,
+    };
+    Ok(game.insert(attached).clone())
 }
 
 pub(super) async fn attach_or_warn(
@@ -44,7 +47,7 @@ pub(super) async fn attach_or_warn(
     consequence: &'static str,
 ) -> Option<Attached> {
     let owned = Arc::clone(state);
-    match blocking("attach to the game", move || attach(&owned)).await? {
+    match blocking("attach to the game", move || attached_game(&owned)).await? {
         Ok(attached) => Some(attached),
         Err(error) => {
             warn!(?error, "{consequence}");

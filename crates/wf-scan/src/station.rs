@@ -47,9 +47,13 @@ impl StationRiven {
         reader: &R,
         state: &LuaState,
         script: &mut Option<LuaTable>,
+        shared: &mut Option<LuaTable>,
     ) -> Option<Self> {
         let (shown, offered) = cards(reader, state, script)?;
-        let choice = state.shared(reader)?.field(reader, CHOICE)?.table()?;
+        let choice = state
+            .cached_global_table(reader, CHOICE, shared)?
+            .field(reader, CHOICE)?
+            .table()?;
         Some(Self {
             item_id: choice.text(reader, ITEM_ID)?,
             shown,
@@ -63,6 +67,14 @@ mod tests {
     use super::*;
     use crate::fake::FakeReader;
     use crate::lua::tests::{Heap, read_with};
+
+    fn read(
+        reader: &FakeReader,
+        state: &LuaState,
+        script: &mut Option<LuaTable>,
+    ) -> Option<StationRiven> {
+        StationRiven::read(reader, state, script, &mut None)
+    }
 
     fn choice(heap: &mut Heap) {
         let choice = [
@@ -105,7 +117,7 @@ mod tests {
             ("Choice2", "{\"rerolls\":3,\"buffs\":[]}"),
         ]);
         assert_eq!(
-            read_with(&reader, StationRiven::read),
+            read_with(&reader, read),
             Some(StationRiven {
                 item_id: "67b8145f6fae460f420380bd".to_owned(),
                 shown: "{\"rerolls\":3}".to_owned(),
@@ -117,7 +129,7 @@ mod tests {
     #[test]
     fn selected_riven_uncycled() {
         let reader = station(&[("Choice1", "{\"rerolls\":2}")]);
-        let riven = read_with(&reader, StationRiven::read).unwrap();
+        let riven = read_with(&reader, read).unwrap();
         assert_eq!(riven.shown, "{\"rerolls\":2}");
         assert_eq!(riven.offered, None);
     }
@@ -131,6 +143,6 @@ mod tests {
             heap.shared.push(choice);
             vec![heap.table(&[])]
         });
-        assert_eq!(read_with(&reader, StationRiven::read), None);
+        assert_eq!(read_with(&reader, read), None);
     }
 }

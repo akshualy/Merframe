@@ -1,8 +1,8 @@
 use wf_mem::MemoryReader;
 
+use crate::equip::MANAGER_SCRIPT;
 use crate::lua::{LuaState, LuaTable};
 
-const MANAGER_SCRIPT: &str = "OnConfirmEquipProjection";
 const CATEGORIES: &str = "mUnfilteredCategories";
 const CATEGORY: &str = "Category";
 const ELEMENTS: &str = "mUnfilteredElements";
@@ -58,7 +58,7 @@ fn screen_of<R: MemoryReader + ?Sized>(reader: &R, grid: LuaTable) -> Option<Rel
 
 pub fn relic_screen<R: MemoryReader + ?Sized>(reader: &R, state: &LuaState) -> Option<RelicScreen> {
     state
-        .script(reader, MANAGER_SCRIPT)?
+        .cached_script(reader, MANAGER_SCRIPT, &mut None)?
         .locals(reader)
         .into_iter()
         .find_map(|grid| screen_of(reader, grid))

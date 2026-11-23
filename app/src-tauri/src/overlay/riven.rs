@@ -24,7 +24,12 @@ pub fn riven_item_type(item_path: &str) -> Option<String> {
 
 fn station_read(state: &Arc<AppState>) -> Option<wf_scan::StationRiven> {
     lua_read(state, |reader, lua| {
-        wf_scan::StationRiven::read(reader, lua, &mut lock(&state.overlays.station_script))
+        wf_scan::StationRiven::read(
+            reader,
+            lua,
+            &mut lock(&state.overlays.station_script),
+            &mut lock(&state.overlays.station_shared),
+        )
     })
 }
 

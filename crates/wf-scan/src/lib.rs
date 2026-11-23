@@ -19,7 +19,7 @@ mod fake;
 
 pub use bundle::{RewardTile, reward_screen};
 pub use dialog::DialogRiven;
-pub use equip::{RelicPick, confirmed_relic, relic_pick, relic_picker_open};
+pub use equip::{RelicPick, RelicPicker, confirmed_relic};
 pub use error::{Result, ScanError};
 pub use http::HttpClients;
 pub use inventory::{InventoryBuffer, MissionEndReward};

@@ -39,8 +39,7 @@ const UPVALUE_SLOT: u64 = 8;
 
 const THREAD_FIELDS: usize = 0x100;
 const GLOBAL_STATE_FIELDS: usize = 0x1000;
-const SHARED_KEY_TAG: u32 = 1;
-const SHARED_KEY: u32 = 0x9828_c6d9;
+const ATOM_KEY_TAG: u32 = 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LuaTable(u64);
@@ -228,21 +227,21 @@ impl LuaTable {
         self.text(reader, name).filter(|text| !text.is_empty())
     }
 
-    fn shared<R: MemoryReader + ?Sized>(self, reader: &R) -> Option<LuaTable> {
-        self.find(reader, |key| {
-            key_tag(key) == Some(SHARED_KEY_TAG) && read_u32_le(key, 0) == Some(SHARED_KEY)
-        })?
-        .table()
-    }
-
-    pub fn locals<R: MemoryReader + ?Sized>(self, reader: &R) -> Vec<LuaTable> {
-        let mut tables: Vec<LuaTable> = self
-            .nodes(reader)
+    fn nodes_holding<R: MemoryReader + ?Sized>(self, reader: &R, tag: u32) -> Vec<[u8; NODE]> {
+        self.nodes(reader)
             .unwrap_or_default()
             .as_chunks::<NODE>()
             .0
             .iter()
-            .filter(|node| slot_tag(&node[..NODE_KEY]) == Some(FUNCTION_TAG))
+            .filter(|node| slot_tag(&node[..NODE_KEY]) == Some(tag))
+            .copied()
+            .collect()
+    }
+
+    pub fn locals<R: MemoryReader + ?Sized>(self, reader: &R) -> Vec<LuaTable> {
+        let mut tables: Vec<LuaTable> = self
+            .nodes_holding(reader, FUNCTION_TAG)
+            .iter()
             .filter_map(|node| read_u64_le(node, 0))
             .flat_map(|function| LuaFunction(function).upvalues(reader))
             .filter_map(LuaValue::table)
@@ -292,6 +291,22 @@ impl LuaFunction {
     }
 }
 
+fn cached_owner<R: MemoryReader + ?Sized>(
+    reader: &R,
+    tables: Vec<LuaTable>,
+    owns: &str,
+    cached: &mut Option<LuaTable>,
+) -> Option<LuaTable> {
+    let live =
+        cached.is_some_and(|table| tables.contains(&table) && table.field(reader, owns).is_some());
+    if !live {
+        *cached = tables
+            .into_iter()
+            .find(|table| table.field(reader, owns).is_some());
+    }
+    *cached
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LuaState {
     thread: u64,
@@ -322,19 +337,25 @@ impl LuaState {
         if fields[0] != THREAD_TAG {
             return None;
         }
-        let (globals_field, globals) = words(&fields)
-            .filter(|(_, table)| in_heap(heap, *table))
-            .map(|(offset, table)| (offset, LuaTable(table)))
-            .find(|(_, table)| table.shared(reader).is_some())?;
-        let registry = words(&fields)
-            .filter(|(_, state)| in_heap(heap, *state))
-            .find_map(|(_, state)| Self::registry(reader, state, globals))?;
-        Some(Self {
-            thread,
-            globals_field: globals_field as u64,
-            globals,
-            registry,
-        })
+
+        let pointers: Vec<(usize, u64)> = words(&fields)
+            .filter(|(_, pointer)| in_heap(heap, *pointer))
+            .collect();
+        pointers
+            .iter()
+            .map(|&(offset, table)| (offset, LuaTable(table)))
+            .filter(|(_, table)| table.header(reader).is_some())
+            .find_map(|(globals_field, globals)| {
+                let registry = pointers
+                    .iter()
+                    .find_map(|&(_, state)| Self::registry(reader, state, globals))?;
+                Some(Self {
+                    thread,
+                    globals_field: globals_field as u64,
+                    globals,
+                    registry,
+                })
+            })
     }
 
     fn registry<R: MemoryReader + ?Sized>(
@@ -363,18 +384,25 @@ impl LuaState {
             && reader.read_u64(self.thread + self.globals_field).ok() == Some(self.globals.0)
     }
 
-    pub fn shared<R: MemoryReader + ?Sized>(&self, reader: &R) -> Option<LuaTable> {
-        self.globals.shared(reader)
+    pub fn cached_global_table<R: MemoryReader + ?Sized>(
+        &self,
+        reader: &R,
+        owns: &str,
+        cached: &mut Option<LuaTable>,
+    ) -> Option<LuaTable> {
+        let tables = self
+            .globals
+            .nodes_holding(reader, TABLE_TAG)
+            .iter()
+            .filter(|node| key_tag(&node[NODE_KEY..]) == Some(ATOM_KEY_TAG))
+            .filter_map(|node| read_u64_le(node, 0))
+            .map(LuaTable)
+            .collect();
+        cached_owner(reader, tables, owns, cached)
     }
 
     pub fn global<R: MemoryReader + ?Sized>(&self, reader: &R, name: &str) -> Option<LuaValue> {
         self.globals.field(reader, name)
-    }
-
-    pub fn script<R: MemoryReader + ?Sized>(&self, reader: &R, owns: &str) -> Option<LuaTable> {
-        self.scripts(reader)
-            .into_iter()
-            .find(|script| script.field(reader, owns).is_some())
     }
 
     pub fn cached_script<R: MemoryReader + ?Sized>(
@@ -383,16 +411,7 @@ impl LuaState {
         owns: &str,
         cached: &mut Option<LuaTable>,
     ) -> Option<LuaTable> {
-        let scripts = self.scripts(reader);
-        let live = cached.is_some_and(|script| {
-            scripts.contains(&script) && script.field(reader, owns).is_some()
-        });
-        if !live {
-            *cached = scripts
-                .into_iter()
-                .find(|script| script.field(reader, owns).is_some());
-        }
-        *cached
+        cached_owner(reader, self.scripts(reader), owns, cached)
     }
 
     pub fn scripts<R: MemoryReader + ?Sized>(&self, reader: &R) -> Vec<LuaTable> {
@@ -412,6 +431,7 @@ pub(crate) mod tests {
     const GLOBALS: usize = 0x300;
     const REGISTRY: usize = 0x400;
     const SHARED: usize = 0x500;
+    const SHARED_ATOM: u64 = 0x51;
     pub(crate) const FREE: usize = 0x600;
 
     pub(crate) type Field = (u64, u32, u64, u32);
@@ -572,21 +592,16 @@ pub(crate) mod tests {
                 .map(|script| (script, TABLE_TAG))
                 .collect();
             heap.bytes[THREAD] = THREAD_TAG;
+            heap.put_u64(THREAD + 0x10, address(SHARED));
             heap.put_u64(THREAD + 0x18, address(GLOBAL_STATE));
             heap.put_u64(THREAD + 0x58, address(GLOBALS));
             heap.put_slot(GLOBAL_STATE + 0x90, address(GLOBALS), TABLE_TAG);
             heap.put_slot(GLOBAL_STATE + 0xa0, address(REGISTRY), TABLE_TAG);
-            let shared = (
-                u64::from(SHARED_KEY),
-                SHARED_KEY_TAG,
-                address(SHARED),
-                TABLE_TAG,
-            );
+            let shared = (SHARED_ATOM, ATOM_KEY_TAG, address(SHARED), TABLE_TAG);
             let globals: Vec<Field> = [shared].into_iter().chain(heap.globals.drain(..)).collect();
             heap.table_at(GLOBALS, &globals, &[]);
             heap.table_at(REGISTRY, &[], &scripts);
-            let sortie = heap.text_field("CachedSortieId", "6aac0afe0bb39ae78a6884e0");
-            let shared: Vec<Field> = heap.shared.drain(..).chain([sortie]).collect();
+            let shared = std::mem::take(&mut heap.shared);
             heap.table_at(SHARED, &shared, &[]);
             let mut image = vec![0u8; 0x100];
             image[0x40..0x48].copy_from_slice(&address(THREAD).to_le_bytes());
@@ -607,14 +622,7 @@ pub(crate) mod tests {
     #[test]
     fn state_through_image_pointer() {
         let reader = Heap::with_scripts(|heap| vec![heap.table(&[])]);
-        let state = located(&reader);
-        assert!(state.holds(&reader));
-        let shared = state.shared(&reader).unwrap();
-        assert_eq!(
-            shared.field(&reader, "CachedSortieId"),
-            Some(LuaValue::Text("6aac0afe0bb39ae78a6884e0".to_owned()))
-        );
-        assert_eq!(shared.field(&reader, "Missing"), None);
+        assert!(located(&reader).holds(&reader));
     }
 
     #[test]
