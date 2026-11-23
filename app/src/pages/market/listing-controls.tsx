@@ -9,6 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+export type MarketRefresh = "reload" | "published";
+
+export type RunMarketAction = <T>(
+  promise: Promise<T>,
+  message: string | ((result: T) => string),
+  refresh?: MarketRefresh,
+) => Promise<void>;
+
 export function ListingToolbar({
   noun,
   empty,

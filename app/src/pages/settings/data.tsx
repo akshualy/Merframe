@@ -184,6 +184,17 @@ export function PricesAndData({
             onChange={(percent) => patch({ market_price_tolerance: percent })}
             hint="How far from the lowest price an order can be before it's marked, in percent."
           />
+          <SliderRow
+            id="bulk-pause"
+            label="Pause between bulk changes"
+            value={draft.market_bulk_pause_secs}
+            unit="s"
+            min={0}
+            max={10}
+            step={1}
+            onChange={(seconds) => patch({ market_bulk_pause_secs: seconds })}
+            hint="Waits this long between two order changes when you fix, reprice or remove all orders, on top of warframe.market's own rate limit."
+          />
         </div>
         <div className="flex flex-col gap-2 @3xl:col-span-2">
           <span className="text-sm font-medium">EE.log</span>

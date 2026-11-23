@@ -5,4 +5,4 @@ import type { OrderType } from "./OrderType";
 import type { Pricing } from "./Pricing";
 import type { SaleSafety } from "./SaleSafety";
 
-export type OrderRow = { id: string, order_type: OrderType, item_id: string, item: number, category: MarketCategory, platinum: number, quantity: number, per_trade: number | null, rank: number | null, subtype: string | null, visible: boolean, updated_at: string, owned: number, show_warning: boolean, lowest: Lowest | null, pricing: Pricing | null, sale: SaleSafety | null, };
+export type OrderRow = { id: string, order_type: OrderType, item_id: string, item: number, category: MarketCategory, platinum: number, quantity: number, per_trade: number | null, rank: number | null, subtype: string | null, visible: boolean, updated_at: string, owned: number, show_warning: boolean, lowest: Lowest | null, pricing: Pricing | null, price_to_match: number | null, sale: SaleSafety | null, };

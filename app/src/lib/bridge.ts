@@ -20,9 +20,12 @@ import type {
   ItemListings,
   ListingChoices,
   MarketAccount,
+  MarketBulkOutcome,
   MarketItem,
   MarketItemSaleSafety,
   MarketMover,
+  MarketOrderIssue,
+  MarketOrderRepairScope,
   MarketOrders,
   MarketPresence,
   MarketPresenceChoice,
@@ -204,8 +207,12 @@ export const api = {
   marketPresence: () => call<MarketPresence>("market_presence"),
   marketSetPresence: (choice: MarketPresenceChoice) =>
     call<MarketPresence>("market_set_presence", { choice }),
-  marketRemoveAll: () => call<number>("market_remove_all"),
-  marketFixOrders: (id?: string) => call<number>("market_fix_orders", { id }),
+  marketRemoveAll: () => call<MarketBulkOutcome>("market_remove_all"),
+  marketRepairOrder: (id: string, issue: MarketOrderIssue) =>
+    call<void>("market_repair_order", { id, issue }),
+  marketRepairOrders: (scope: MarketOrderRepairScope) =>
+    call<MarketBulkOutcome>("market_repair_orders", { scope }),
+  marketStopBulkRun: () => call<void>("market_stop_bulk_run"),
   marketSetVisibility: (visible: boolean) =>
     call<number>("market_set_visibility", { visible }),
   marketItems: () => call<MarketItem[]>("market_items"),

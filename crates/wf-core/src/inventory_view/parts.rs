@@ -306,7 +306,7 @@ mod tests {
 
         let barrel = &rows[0];
         assert_eq!(barrel.count, 3);
-        assert_eq!(barrel.prices.sell, Some(8.0));
+        assert_eq!(barrel.prices.sell, Some(8));
         assert_eq!(index[barrel.set.item].name, "Braton Prime");
         assert!(index[barrel.item].prime);
         assert!(index[barrel.item].image_name.is_some());
@@ -453,7 +453,7 @@ mod tests {
         assert_eq!(braton.owned_parts, 2);
         assert!(!braton.complete);
         assert_eq!(braton.count, 0);
-        assert_eq!(braton.prices.sell, Some(45.0));
+        assert_eq!(braton.prices.sell, Some(45));
         assert!(braton.status.built);
         assert_eq!(braton.components.len(), 4);
         assert_eq!(

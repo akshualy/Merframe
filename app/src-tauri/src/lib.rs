@@ -7,6 +7,7 @@ pub mod event_feed;
 mod focus;
 pub mod images;
 pub mod market;
+pub mod market_bulk;
 mod market_session;
 pub mod notice;
 pub mod overlay;
@@ -156,7 +157,9 @@ fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
         commands::market::market_presence,
         commands::market::market_set_presence,
         commands::market::market_remove_all,
-        commands::market::market_fix_orders,
+        commands::market::market_repair_order,
+        commands::market::market_repair_orders,
+        commands::market::market_stop_bulk_run,
         commands::market::market_set_visibility,
         commands::market::market_items,
         commands::market::market_item_orders,

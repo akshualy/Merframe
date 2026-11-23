@@ -247,7 +247,7 @@ mod tests {
         assert_eq!(known.refinement, Refinement::Intact);
         assert_eq!(known.count, 3);
         assert_eq!(index[known.item].vault, Some(VaultStatus::Available));
-        assert_eq!(known.plat, Some(5.0));
+        assert_eq!(known.plat, Some(5));
         assert_eq!(
             index[known.item].market_slug.as_deref(),
             Some("axi_a21_relic")

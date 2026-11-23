@@ -96,7 +96,7 @@ fn upgrade_prices(
 ) -> UpgradePrices {
     let at_max_rank = slug
         .and_then(|slug| prices.plat_max_rank(slug))
-        .filter(|p| *p > 0.0);
+        .filter(|p| *p > 0);
     let quoted = Prices::of(prices, slug);
     let maxed = ranked_to_max(rank, max_rank) && at_max_rank.is_some();
     let sell = if maxed && wanted == UpgradeKind::Mod {
@@ -111,7 +111,7 @@ fn upgrade_prices(
         } else {
             None
         },
-        is_floor: rank.is_some_and(|rank| rank > 0) && !maxed && sell.is_some_and(|p| p > 0.0),
+        is_floor: rank.is_some_and(|rank| rank > 0) && !maxed && sell.is_some_and(|p| p > 0),
         buy: quoted.buy,
     }
 }
@@ -333,9 +333,9 @@ mod tests {
     #[test]
     fn arcane_prices() {
         let fixture = upgrade_fixture(
-            FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
-                .with_max_rank([("arcane_energize", 240.0)])
-                .with_buy([("arcane_energize", 7.0)]),
+            FixedPrices::new([("arcane_energize", 12), ("virtuos_surge", 9)])
+                .with_max_rank([("arcane_energize", 240)])
+                .with_buy([("arcane_energize", 7)]),
         );
         let (rows, index) = fixture.rows(arcanes);
 
@@ -345,9 +345,9 @@ mod tests {
             .collect();
         assert!(!energize.is_empty());
         for row in &energize {
-            assert_eq!(row.prices.sell, Some(12.0));
-            assert_eq!(row.prices.sell_max_rank, Some(240.0));
-            assert_eq!(row.prices.buy, Some(7.0));
+            assert_eq!(row.prices.sell, Some(12));
+            assert_eq!(row.prices.sell_max_rank, Some(240));
+            assert_eq!(row.prices.buy, Some(7));
             assert_eq!(row.max_rank, Some(5));
         }
 
@@ -355,7 +355,7 @@ mod tests {
             .iter()
             .find(|row| index[row.item].market_slug.as_deref() == Some("virtuos_surge"))
             .expect("Virtuos Surge");
-        assert_eq!(surge.prices.sell, Some(9.0));
+        assert_eq!(surge.prices.sell, Some(9));
         assert_eq!(
             surge.prices.sell_max_rank, None,
             "the bulk table carries no max rank sell price for it"
@@ -378,8 +378,8 @@ mod tests {
     #[test]
     fn listed_slug_wins_over_the_derived_one() {
         let mut fixture = upgrade_fixture(FixedPrices::new([
-            ("arcane_energize", 12.0),
-            ("arcane\u{2019}energize", 30.0),
+            ("arcane_energize", 12),
+            ("arcane\u{2019}energize", 30),
         ]));
         let listed: Vec<wf_market::Item> = serde_json::from_str(
             r#"[{"id":"1","slug":"arcane\u2019energize","gameRef":"/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup","tags":[],"i18n":{}}]"#,
@@ -395,7 +395,7 @@ mod tests {
             index[energize.item].market_slug.as_deref(),
             Some("arcane\u{2019}energize")
         );
-        assert_eq!(energize.prices.sell, Some(30.0));
+        assert_eq!(energize.prices.sell, Some(30));
     }
 
     #[test]
@@ -587,8 +587,8 @@ mod tests {
     #[test]
     fn floor_price_marker() {
         let fixture = upgrade_fixture(
-            FixedPrices::new([("arcane_energize", 12.0), ("virtuos_surge", 9.0)])
-                .with_max_rank([("arcane_energize", 240.0)]),
+            FixedPrices::new([("arcane_energize", 12), ("virtuos_surge", 9)])
+                .with_max_rank([("arcane_energize", 240)]),
         );
         let (rows, index) = fixture.rows(arcanes);
 
@@ -625,7 +625,7 @@ mod tests {
     #[test]
     fn maxed_serration_price() {
         let fixture = upgrade_fixture(
-            FixedPrices::new([("serration", 10.0)]).with_max_rank([("serration", 90.0)]),
+            FixedPrices::new([("serration", 10)]).with_max_rank([("serration", 90)]),
         );
         let (rows, index) = fixture.rows(mods);
         let serration: Vec<&ModRow> = rows
@@ -636,18 +636,18 @@ mod tests {
         assert!(serration.iter().all(|row| row.max_rank == Some(10)));
 
         let unranked = serration.iter().find(|row| row.rank.is_none()).unwrap();
-        assert_eq!(unranked.prices.sell, Some(10.0));
+        assert_eq!(unranked.prices.sell, Some(10));
         assert!(!unranked.prices.is_floor);
 
         let middling = serration
             .iter()
             .find(|row| row.rank == Some(5))
             .expect("rank 5");
-        assert_eq!(middling.prices.sell, Some(10.0));
+        assert_eq!(middling.prices.sell, Some(10));
         assert!(middling.prices.is_floor);
 
         let maxed = serration.iter().find(|row| row.rank == Some(10)).unwrap();
-        assert_eq!(maxed.prices.sell, Some(90.0));
+        assert_eq!(maxed.prices.sell, Some(90));
         assert!(!maxed.prices.is_floor);
         assert_eq!(
             maxed.prices.sell_max_rank, None,
@@ -657,7 +657,7 @@ mod tests {
 
     #[test]
     fn maxed_without_max_rank_price() {
-        let fixture = upgrade_fixture(FixedPrices::new([("serration", 10.0)]));
+        let fixture = upgrade_fixture(FixedPrices::new([("serration", 10)]));
         let (rows, index) = fixture.rows(mods);
         let maxed = rows
             .iter()
@@ -665,7 +665,7 @@ mod tests {
                 index[row.item].market_slug.as_deref() == Some("serration") && row.rank == Some(10)
             })
             .unwrap();
-        assert_eq!(maxed.prices.sell, Some(10.0));
+        assert_eq!(maxed.prices.sell, Some(10));
         assert!(maxed.prices.is_floor);
     }
 }

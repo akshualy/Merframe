@@ -572,7 +572,7 @@ mod tests {
     #[test]
     fn faction_weapons_and_imprints() {
         let fixture = Fixture::new(catalog_of(FACTION_ITEMS), fixtures::inventory()).with_prices(
-            FixedPrices::new([("prisma_angstrum", 32.0), ("vasca_kavat_imprint", 15.0)]),
+            FixedPrices::new([("prisma_angstrum", 32), ("vasca_kavat_imprint", 15)]),
         );
         let (rows, index) = fixture.rows(misc);
 
@@ -589,7 +589,7 @@ mod tests {
             index[angstrum[0].item].market_slug.as_deref(),
             Some("prisma_angstrum")
         );
-        assert_eq!(angstrum[0].plat, Some(32.0));
+        assert_eq!(angstrum[0].plat, Some(32));
         assert!(
             !rows.iter().any(|row| index[row.item].name == "Vaykor Hek"),
             "a ranked weapon can no longer be traded"
@@ -610,7 +610,7 @@ mod tests {
             index[vasca.item].market_slug.as_deref(),
             Some("vasca_kavat_imprint")
         );
-        assert_eq!(vasca.plat, Some(15.0));
+        assert_eq!(vasca.plat, Some(15));
         assert_eq!(
             index[vasca.item].image_name.as_deref(),
             Some("vasca-kavat.png")

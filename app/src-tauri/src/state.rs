@@ -20,6 +20,7 @@ use crate::auctions::AuctionCache;
 use crate::focus::GameFocus;
 use crate::images::ImageCache;
 use crate::market::{Listings, MarketItems, MarketPresence};
+use crate::market_bulk::MarketBulkRunState;
 use crate::overlay::{OverlaySupport, Overlays};
 use crate::settings::{self, MarketAccount, Settings};
 
@@ -71,15 +72,15 @@ impl SharedPrices {
 }
 
 impl PriceSource for SharedPrices {
-    fn plat(&self, market_slug: &str) -> Option<f64> {
+    fn plat(&self, market_slug: &str) -> Option<u32> {
         lock(&self.cache).plat(market_slug)
     }
 
-    fn plat_max_rank(&self, market_slug: &str) -> Option<f64> {
+    fn plat_max_rank(&self, market_slug: &str) -> Option<u32> {
         lock(&self.cache).plat_max_rank(market_slug)
     }
 
-    fn buy_plat(&self, market_slug: &str) -> Option<f64> {
+    fn buy_plat(&self, market_slug: &str) -> Option<u32> {
         lock(&self.cache).buy_plat(market_slug)
     }
 
@@ -165,6 +166,7 @@ pub struct AppState {
     pub market_activity: Mutex<Option<Instant>>,
     pub market_presence: RwLock<MarketPresence>,
     pub market_presence_wake: Notify,
+    pub market_bulk_run: watch::Sender<MarketBulkRunState>,
     pub listings: Listings,
     pub prices: Arc<SharedPrices>,
     pub status: RwLock<GameStatus>,
@@ -289,6 +291,7 @@ impl AppState {
                 ..MarketPresence::default()
             }),
             market_presence_wake: Notify::new(),
+            market_bulk_run: watch::Sender::new(MarketBulkRunState::Idle),
             listings: Listings::default(),
             prices,
             status: RwLock::new(status),
@@ -354,17 +357,17 @@ mod tests {
 
         assert_eq!(prices.load(&table, now), 10);
         assert_eq!(prices.checked_at(), Some(now));
-        assert_eq!(prices.plat("arcane_energize"), Some(55.0));
-        assert_eq!(prices.plat_max_rank("arcane_energize"), Some(940.0));
-        assert_eq!(prices.buy_plat("arcane_energize"), Some(40.0));
-        assert_eq!(prices.plat("braton_prime_barrel"), Some(8.0));
+        assert_eq!(prices.plat("arcane_energize"), Some(55));
+        assert_eq!(prices.plat_max_rank("arcane_energize"), Some(940));
+        assert_eq!(prices.buy_plat("arcane_energize"), Some(40));
+        assert_eq!(prices.plat("braton_prime_barrel"), Some(8));
         assert_eq!(prices.plat_max_rank("braton_prime_barrel"), None);
         assert_eq!(prices.plat("nothing_is_traded_here"), None);
 
         let later = now + chrono::TimeDelta::minutes(15);
         prices.checked(later);
         assert_eq!(prices.checked_at(), Some(later));
-        assert_eq!(prices.plat("arcane_energize"), Some(55.0));
+        assert_eq!(prices.plat("arcane_energize"), Some(55));
     }
 
     #[test]

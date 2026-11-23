@@ -430,12 +430,12 @@ mod tests {
         let catalog = fixtures::catalog();
         let items = ItemTable::build(&catalog);
         let (braton_prime, stock_part) = catalog.component(BRATON_PRIME_STOCK).unwrap();
-        let priced = FixedPrices::new([("braton_prime_stock", 12.0)]);
+        let priced = FixedPrices::new([("braton_prime_stock", 12)]);
         assert_eq!(
             node_market(&items, &priced, braton_prime, stock_part),
             Some(NodeMarket {
                 slug: "braton_prime_stock".to_owned(),
-                sell: 12.0,
+                sell: 12,
             })
         );
         assert_eq!(
@@ -445,7 +445,7 @@ mod tests {
 
         let excalibur = catalog.item(EXCALIBUR).unwrap();
         let chassis = &excalibur.components.as_deref().unwrap()[1];
-        let everything = FixedPrices::new([("excalibur_chassis_blueprint", 5.0)]);
+        let everything = FixedPrices::new([("excalibur_chassis_blueprint", 5)]);
         assert_eq!(node_market(&items, &everything, excalibur, chassis), None);
     }
 }

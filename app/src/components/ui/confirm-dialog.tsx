@@ -20,6 +20,7 @@ function ConfirmDialog({
   destructive = false,
   confirmDisabled = false,
   onConfirm,
+  onStop,
   children,
 }: {
   open: boolean;
@@ -31,6 +32,7 @@ function ConfirmDialog({
   destructive?: boolean;
   confirmDisabled?: boolean;
   onConfirm: () => void;
+  onStop?: () => void;
   children?: ReactNode;
 }) {
   return (
@@ -42,15 +44,23 @@ function ConfirmDialog({
         </DialogHeader>
         {children}
         <DialogFooter>
-          <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
-          <Button
-            variant={destructive ? "destructive" : "default"}
-            pending={busy}
-            disabled={confirmDisabled}
-            onClick={onConfirm}
-          >
-            {confirmLabel}
-          </Button>
+          {onStop ? (
+            <Button variant="outline" pending={busy} onClick={onStop}>
+              Stop
+            </Button>
+          ) : (
+            <>
+              <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+              <Button
+                variant={destructive ? "destructive" : "default"}
+                pending={busy}
+                disabled={confirmDisabled}
+                onClick={onConfirm}
+              >
+                {confirmLabel}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </AlertDialogContent>
     </AlertDialog>

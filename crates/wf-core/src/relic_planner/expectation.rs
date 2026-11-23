@@ -124,7 +124,7 @@ pub(super) fn refinement_values(
         let plat_outcomes: Vec<(f64, f64)> = rewards
             .iter()
             .zip(&chances)
-            .map(|(reward, chance)| (reward.plat.unwrap_or_default(), chance / 100.0))
+            .map(|(reward, chance)| (f64::from(reward.plat.unwrap_or_default()), chance / 100.0))
             .collect();
         let ducat_outcomes: Vec<(f64, f64)> = rewards
             .iter()

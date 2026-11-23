@@ -5,13 +5,13 @@ use serde::{Deserialize, Serialize};
 use wf_market::{PriceEntry, PriceTable};
 
 pub trait PriceSource {
-    fn plat(&self, market_slug: &str) -> Option<f64>;
+    fn plat(&self, market_slug: &str) -> Option<u32>;
 
-    fn plat_max_rank(&self, _market_slug: &str) -> Option<f64> {
+    fn plat_max_rank(&self, _market_slug: &str) -> Option<u32> {
         None
     }
 
-    fn buy_plat(&self, _market_slug: &str) -> Option<f64> {
+    fn buy_plat(&self, _market_slug: &str) -> Option<u32> {
         None
     }
 
@@ -40,14 +40,14 @@ pub struct MarketLiquidity {
 impl MarketLiquidity {
     pub(crate) fn liquidation_value(
         self,
-        listing: Option<f64>,
+        listing: Option<u32>,
         count: i64,
         pooled_copies: i64,
     ) -> Option<f64> {
         let held = f64::from(u32::try_from(count).ok()?);
 
         let Some(mark) = self.mark else {
-            return listing.map(|price| price * held);
+            return listing.map(|price| f64::from(price) * held);
         };
 
         let pooled_copies = f64::from(u32::try_from(pooled_copies).ok()?);
@@ -62,8 +62,8 @@ impl MarketLiquidity {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct Prices {
-    pub sell: Option<f64>,
-    pub buy: Option<f64>,
+    pub sell: Option<u32>,
+    pub buy: Option<u32>,
 }
 
 impl Prices {
@@ -77,9 +77,9 @@ impl Prices {
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct PriceQuote {
-    pub sell: Option<f64>,
-    pub sell_max_rank: Option<f64>,
-    pub buy: Option<f64>,
+    pub sell: Option<u32>,
+    pub sell_max_rank: Option<u32>,
+    pub buy: Option<u32>,
     pub liquidity: MarketLiquidity,
     pub liquidity_max_rank: MarketLiquidity,
 }
@@ -87,9 +87,9 @@ pub struct PriceQuote {
 impl From<&PriceEntry> for PriceQuote {
     fn from(entry: &PriceEntry) -> Self {
         Self {
-            sell: entry.sell_r0.map(f64::from),
-            sell_max_rank: entry.sell_max.map(f64::from),
-            buy: entry.buy_r0.map(f64::from),
+            sell: entry.sell_r0,
+            sell_max_rank: entry.sell_max,
+            buy: entry.buy_r0,
             liquidity: MarketLiquidity {
                 mark: entry.mark,
                 bid: entry.bid,
@@ -202,15 +202,15 @@ impl PriceCache {
 }
 
 impl PriceSource for PriceCache {
-    fn plat(&self, market_slug: &str) -> Option<f64> {
+    fn plat(&self, market_slug: &str) -> Option<u32> {
         self.quote(market_slug)?.sell
     }
 
-    fn plat_max_rank(&self, market_slug: &str) -> Option<f64> {
+    fn plat_max_rank(&self, market_slug: &str) -> Option<u32> {
         self.quote(market_slug)?.sell_max_rank
     }
 
-    fn buy_plat(&self, market_slug: &str) -> Option<f64> {
+    fn buy_plat(&self, market_slug: &str) -> Option<u32> {
         self.quote(market_slug)?.buy
     }
 
@@ -240,7 +240,7 @@ pub struct FixedPrices {
 impl FixedPrices {
     pub fn new<I, S>(entries: I) -> Self
     where
-        I: IntoIterator<Item = (S, f64)>,
+        I: IntoIterator<Item = (S, u32)>,
         S: Into<String>,
     {
         Self {
@@ -275,7 +275,7 @@ impl FixedPrices {
 
     pub fn with_max_rank<I, S>(self, entries: I) -> Self
     where
-        I: IntoIterator<Item = (S, f64)>,
+        I: IntoIterator<Item = (S, u32)>,
         S: Into<String>,
     {
         self.with_quote_field(entries, |quote, plat| quote.sell_max_rank = Some(plat))
@@ -283,7 +283,7 @@ impl FixedPrices {
 
     pub fn with_buy<I, S>(self, entries: I) -> Self
     where
-        I: IntoIterator<Item = (S, f64)>,
+        I: IntoIterator<Item = (S, u32)>,
         S: Into<String>,
     {
         self.with_quote_field(entries, |quote, plat| quote.buy = Some(plat))
@@ -321,15 +321,15 @@ impl FixedPrices {
 
 #[cfg(test)]
 impl PriceSource for FixedPrices {
-    fn plat(&self, market_slug: &str) -> Option<f64> {
+    fn plat(&self, market_slug: &str) -> Option<u32> {
         self.quotes.get(market_slug)?.sell
     }
 
-    fn plat_max_rank(&self, market_slug: &str) -> Option<f64> {
+    fn plat_max_rank(&self, market_slug: &str) -> Option<u32> {
         self.quotes.get(market_slug)?.sell_max_rank
     }
 
-    fn buy_plat(&self, market_slug: &str) -> Option<f64> {
+    fn buy_plat(&self, market_slug: &str) -> Option<u32> {
         self.quotes.get(market_slug)?.buy
     }
 
@@ -366,13 +366,13 @@ mod tests {
 
     #[test]
     fn fixed_prices() {
-        let prices = FixedPrices::new([("braton_prime_barrel", 12.0)])
-            .with_max_rank([("primed_continuity", 165.0)])
-            .with_buy([("braton_prime_barrel", 4.0)]);
-        assert_eq!(prices.plat("braton_prime_barrel"), Some(12.0));
-        assert_eq!(prices.buy_plat("braton_prime_barrel"), Some(4.0));
+        let prices = FixedPrices::new([("braton_prime_barrel", 12)])
+            .with_max_rank([("primed_continuity", 165)])
+            .with_buy([("braton_prime_barrel", 4)]);
+        assert_eq!(prices.plat("braton_prime_barrel"), Some(12));
+        assert_eq!(prices.buy_plat("braton_prime_barrel"), Some(4));
         assert_eq!(prices.plat_max_rank("braton_prime_barrel"), None);
-        assert_eq!(prices.plat_max_rank("primed_continuity"), Some(165.0));
+        assert_eq!(prices.plat_max_rank("primed_continuity"), Some(165));
         assert_eq!(prices.plat("braton_prime_stock"), None);
         assert_eq!(prices.buy_plat("braton_prime_stock"), None);
     }
@@ -423,17 +423,17 @@ mod tests {
             mark: None,
             ..liquidity
         };
-        assert_eq!(unmarked.liquidation_value(Some(7.0), 10, 10), Some(70.0));
+        assert_eq!(unmarked.liquidation_value(Some(7), 10, 10), Some(70.0));
         assert_eq!(unmarked.liquidation_value(None, 10, 10), None);
     }
 
     #[test]
     fn prices_of_a_slug() {
-        let source = FixedPrices::new([("braton_prime_barrel", 12.0)])
-            .with_buy([("braton_prime_barrel", 4.0)]);
+        let source =
+            FixedPrices::new([("braton_prime_barrel", 12)]).with_buy([("braton_prime_barrel", 4)]);
         let quoted = Prices::of(&source, Some("braton_prime_barrel"));
-        assert_eq!(quoted.sell, Some(12.0));
-        assert_eq!(quoted.buy, Some(4.0));
+        assert_eq!(quoted.sell, Some(12));
+        assert_eq!(quoted.buy, Some(4));
 
         assert_eq!(Prices::of(&source, None), Prices::default());
     }
@@ -447,8 +447,8 @@ mod tests {
         let loaded = cache.load(&table(), moment());
         assert_eq!(loaded, 10);
         assert_eq!(cache.checked_at(), Some(moment()));
-        assert_eq!(cache.plat("braton_prime_set"), Some(45.0));
-        assert_eq!(cache.buy_plat("braton_prime_set"), Some(30.0));
+        assert_eq!(cache.plat("braton_prime_set"), Some(45));
+        assert_eq!(cache.buy_plat("braton_prime_set"), Some(30));
         assert_eq!(cache.plat_max_rank("braton_prime_set"), None);
         assert_eq!(cache.plat("nothing_is_traded_here"), None);
     }
@@ -457,15 +457,15 @@ mod tests {
     fn ranked_entry() {
         let mut cache = PriceCache::default();
         cache.load(&table(), moment());
-        assert_eq!(cache.plat("arcane_energize"), Some(55.0));
-        assert_eq!(cache.plat_max_rank("arcane_energize"), Some(940.0));
-        assert_eq!(cache.buy_plat("arcane_energize"), Some(40.0));
+        assert_eq!(cache.plat("arcane_energize"), Some(55));
+        assert_eq!(cache.plat_max_rank("arcane_energize"), Some(940));
+        assert_eq!(cache.buy_plat("arcane_energize"), Some(40));
         assert_eq!(
             cache.quote("magus_elevate"),
             Some(PriceQuote {
-                sell: Some(25.0),
-                sell_max_rank: Some(70.0),
-                buy: Some(15.0),
+                sell: Some(25),
+                sell_max_rank: Some(70),
+                buy: Some(15),
                 liquidity: MarketLiquidity {
                     mark: Some(24.5),
                     bid: Some(22.0),
@@ -539,7 +539,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(cache.load(&smaller, later), 1);
-        assert_eq!(cache.plat("arcane_energize"), Some(60.0));
+        assert_eq!(cache.plat("arcane_energize"), Some(60));
         assert_eq!(cache.plat("braton_prime_set"), None);
         assert_eq!(cache.checked_at(), Some(later));
     }
@@ -551,6 +551,6 @@ mod tests {
         let later = moment() + chrono::TimeDelta::minutes(15);
         cache.checked(later);
         assert_eq!(cache.checked_at(), Some(later));
-        assert_eq!(cache.plat("braton_prime_set"), Some(45.0));
+        assert_eq!(cache.plat("braton_prime_set"), Some(45));
     }
 }

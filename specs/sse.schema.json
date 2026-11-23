@@ -1088,17 +1088,19 @@
         },
         "plat": {
           "type": [
-            "number",
+            "integer",
             "null"
           ],
-          "format": "double"
+          "format": "uint32",
+          "minimum": 0
         },
         "set_plat": {
           "type": [
-            "number",
+            "integer",
             "null"
           ],
-          "format": "double"
+          "format": "uint32",
+          "minimum": 0
         }
       },
       "required": [

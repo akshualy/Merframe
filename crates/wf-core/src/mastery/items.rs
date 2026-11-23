@@ -85,25 +85,19 @@ pub(crate) fn masterable(catalog: &Catalog, include_founders: bool) -> impl Iter
         })
 }
 
-#[allow(
-    clippy::cast_precision_loss,
-    clippy::cast_possible_truncation,
-    clippy::cast_sign_loss,
-    reason = "a platinum cost is a small non-negative number"
-)]
 fn market_cost(missing: &[&MasteryComponent], prices: &dyn PriceSource) -> (u64, bool) {
-    let quoted: Vec<(&MasteryComponent, f64)> = missing
+    let quoted: Vec<(&MasteryComponent, u32)> = missing
         .iter()
         .filter_map(|component| {
             let plat = prices.plat(&market_slug(&component.name))?;
-            (plat > 0.0).then_some((*component, plat))
+            (plat > 0).then_some((*component, plat))
         })
         .collect();
     let plat_cost = quoted
         .iter()
         .map(|(component, plat)| {
             let amount = (component.required - component.owned).max(0).unsigned_abs();
-            (plat * amount as f64).round().max(0.0) as u64
+            u64::from(*plat) * amount
         })
         .sum();
     let unpriced_blueprint = missing.iter().any(|component| {
