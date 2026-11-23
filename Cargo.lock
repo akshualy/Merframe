@@ -2728,7 +2728,7 @@ dependencies = [
  "wf-mem",
  "wf-scan",
  "wf-worldstate",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
  "x11rb",
 ]
 
@@ -6181,7 +6181,7 @@ dependencies = [
  "tokio-stream",
  "wf-mem",
  "wf-scan",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6204,7 +6204,7 @@ name = "wf-mem"
 version = "0.9.1"
 dependencies = [
  "thiserror 2.0.21",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
