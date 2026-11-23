@@ -22,6 +22,7 @@ use crate::images::ImageCache;
 use crate::market::{Listings, MarketItems, MarketPresence};
 use crate::market_bulk::MarketBulkRunState;
 use crate::overlay::{OverlaySupport, Overlays};
+use crate::runtime::Attached;
 use crate::settings::{self, MarketAccount, Settings};
 
 pub const DATA_DIR: &str = "Merframe";
@@ -173,6 +174,7 @@ pub struct AppState {
     pub focus: GameFocus,
     pub settings: RwLock<Settings>,
     pub rescan: Notify,
+    pub(crate) game: Mutex<Option<Attached>>,
     pub http_clients: Mutex<Option<QueueSession>>,
     pub capturing: AtomicBool,
     pub relic_picks: Mutex<HashMap<u64, String>>,
@@ -298,6 +300,7 @@ impl AppState {
             focus: GameFocus::default(),
             settings: RwLock::new(settings),
             rescan: Notify::new(),
+            game: Mutex::new(None),
             http_clients: Mutex::new(None),
             capturing: AtomicBool::new(false),
             relic_picks: Mutex::new(HashMap::new()),
