@@ -160,6 +160,7 @@ impl FeedEvent {
             | AppEvent::ArbitrationRunsUpdated
             | AppEvent::ResetChecklistUpdated
             | AppEvent::MarketUpdated(_)
+            | AppEvent::MarketBulkProgress(_)
             | AppEvent::MarketSessionRejected
             | AppEvent::MarketPresence(_)
             | AppEvent::OverlayState(_) => None,

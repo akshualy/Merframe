@@ -25,7 +25,7 @@ pub struct RewardBreakdown {
     pub name: String,
     pub image_name: Option<String>,
     pub rarity: &'static str,
-    pub plat: Option<f64>,
+    pub plat: Option<u32>,
     pub ducats: Option<u32>,
     pub ownership: RewardOwnership,
     pub forma: bool,

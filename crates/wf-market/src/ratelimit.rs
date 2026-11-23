@@ -6,7 +6,7 @@ use tokio::time::Instant;
 
 pub fn shared() -> RateLimiter {
     static SHARED: LazyLock<RateLimiter> =
-        LazyLock::new(|| RateLimiter::new(3, Duration::from_secs(1)));
+        LazyLock::new(|| RateLimiter::new(3, Duration::from_millis(1800)));
     SHARED.clone()
 }
 

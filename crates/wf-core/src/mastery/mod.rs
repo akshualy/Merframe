@@ -192,7 +192,7 @@ mod support {
     use crate::view::Fixture;
 
     pub(super) fn prices() -> FixedPrices {
-        FixedPrices::new([("trinity_prime_systems_blueprint", 14.0)])
+        FixedPrices::new([("trinity_prime_systems_blueprint", 14)])
     }
 
     pub(super) fn fixture(inventory: Inventory) -> Fixture {

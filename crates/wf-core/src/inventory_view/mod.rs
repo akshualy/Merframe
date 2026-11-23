@@ -128,10 +128,10 @@ pub struct PartRow {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct UpgradePrices {
-    pub sell: Option<f64>,
-    pub sell_max_rank: Option<f64>,
+    pub sell: Option<u32>,
+    pub sell_max_rank: Option<u32>,
     pub is_floor: bool,
-    pub buy: Option<f64>,
+    pub buy: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
@@ -170,7 +170,7 @@ pub struct RelicRow {
     pub tier: String,
     pub refinement: Refinement,
     pub count: i64,
-    pub plat: Option<f64>,
+    pub plat: Option<u32>,
     pub liquidation_value: Option<f64>,
 }
 
@@ -188,7 +188,7 @@ pub struct SculptureStars {
 pub struct MiscRow {
     pub item: usize,
     pub count: i64,
-    pub plat: Option<f64>,
+    pub plat: Option<u32>,
     pub liquidation_value: Option<f64>,
     pub market_subtype: Option<String>,
     pub stars: Option<SculptureStars>,
@@ -307,10 +307,10 @@ mod tests {
 
     pub(super) fn prices() -> FixedPrices {
         FixedPrices::new([
-            ("trinity_prime_systems_blueprint", 14.0),
-            ("braton_prime_barrel", 8.0),
-            ("braton_prime_set", 45.0),
-            ("axi_a21_relic", 5.0),
+            ("trinity_prime_systems_blueprint", 14),
+            ("braton_prime_barrel", 8),
+            ("braton_prime_set", 45),
+            ("axi_a21_relic", 5),
         ])
     }
 
@@ -394,7 +394,7 @@ mod tests {
         assert!(
             tab.relics
                 .iter()
-                .any(|row| row.count > 0 && row.plat.is_some_and(|plat| plat >= 5.0))
+                .any(|row| row.count > 0 && row.plat.is_some_and(|plat| plat >= 5))
         );
         assert!(tab.favourites.is_empty());
     }

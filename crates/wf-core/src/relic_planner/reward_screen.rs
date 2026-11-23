@@ -18,8 +18,8 @@ use super::rewards::{RewardOwnership, favourite_part, favourite_reward};
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RankedReward {
     pub item: ItemSummary,
-    pub plat: Option<f64>,
-    pub set_plat: Option<f64>,
+    pub plat: Option<u32>,
+    pub set_plat: Option<u32>,
     pub ownership: Option<RewardOwnership>,
     pub favourite: bool,
     pub best: bool,
@@ -53,7 +53,7 @@ impl RewardScreen {
             .iter()
             .filter_map(|reward| {
                 let name = reward.item.name.trim_end_matches(" Blueprint");
-                Some(format!("[{name}] {}:platinum:", reward.plat?.round()))
+                Some(format!("[{name}] {}:platinum:", reward.plat?))
             })
             .collect::<Vec<_>>()
             .join(" | ")
@@ -95,10 +95,7 @@ impl<'a> Holdings<'a> {
 }
 
 fn mark_best(ranked: &mut [RankedReward]) {
-    let highest = ranked
-        .iter()
-        .filter_map(|entry| entry.plat)
-        .max_by(f64::total_cmp);
+    let highest = ranked.iter().filter_map(|entry| entry.plat).max();
     for entry in ranked {
         entry.best = match (highest, entry.plat) {
             (Some(highest), Some(plat)) => plat >= highest,
@@ -302,8 +299,8 @@ mod tests {
         assert!(!ranked[2].best);
         assert!(!ranked[3].best);
 
-        assert_eq!(ranked[1].plat, Some(100.0));
-        assert_eq!(ranked[3].plat, Some(12.0));
+        assert_eq!(ranked[1].plat, Some(100));
+        assert_eq!(ranked[3].plat, Some(12));
         assert_eq!(ranked[3].item.ducats, Some(15));
         assert!(ranked[3].ownership.unwrap().needed_for_set);
         assert_eq!(ranked[3].ownership.unwrap().owned, 0);
@@ -482,7 +479,7 @@ mod tests {
             &[TRINITY_SYSTEMS_REWARD, FORMA_REWARD],
         )
         .ranked;
-        assert_eq!(ranked[0].set_plat, Some(140.0));
+        assert_eq!(ranked[0].set_plat, Some(140));
         assert_eq!(ranked[1].set_plat, None);
     }
 
@@ -510,7 +507,7 @@ mod tests {
         assert_eq!(screen.account, None);
         let systems = &screen.ranked[0];
         assert_eq!(systems.item.name, "Trinity Prime Systems");
-        assert_eq!(systems.set_plat, Some(140.0));
+        assert_eq!(systems.set_plat, Some(140));
         assert_eq!(systems.ownership, None);
         assert!(!systems.components.is_empty());
         assert!(
@@ -523,7 +520,7 @@ mod tests {
 
     #[test]
     fn unpriced_rewards_all_best() {
-        let unpriced = FixedPrices::new([("nothing_this_relic_drops", 1.0)]);
+        let unpriced = FixedPrices::new([("nothing_this_relic_drops", 1)]);
         let ranked = rank(
             Some(fixtures::inventory()),
             &fixtures::catalog(),

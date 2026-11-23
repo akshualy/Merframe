@@ -25,6 +25,7 @@ import { useAppStore } from "@/stores/app-store";
 import { useMarketListingsStore } from "@/stores/market-listings-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
 import { AuctionsTable } from "./auctions";
+import type { RunMarketAction } from "./listing-controls";
 import { LoginCard } from "./login-card";
 import { OrdersTable } from "./orders";
 import { LiveStatusBadge, PresenceControl } from "./presence";
@@ -104,16 +105,20 @@ export function MarketPage() {
 
   useListen("marketUpdated", () => setError(null));
 
-  const runMarketAction = useCallback(
-    async (promise: Promise<unknown>, message: string) => {
+  const runMarketAction = useCallback<RunMarketAction>(
+    async (promise, message, refresh = "reload") => {
+      let text: string;
       try {
-        await promise;
+        const result = await promise;
+        text = typeof message === "string" ? message : message(result);
       } catch (error) {
         reportError(error);
         return;
       }
-      notify.success(message);
-      reload();
+      notify.success(text);
+      if (refresh === "reload") {
+        reload();
+      }
     },
     [reload],
   );

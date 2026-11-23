@@ -13,7 +13,12 @@ import { capitalize } from "@/lib/world";
 import { ListingDialog, type ListingForm } from "@/pages/rivens/listing-dialog";
 import { useMarketItemsStore } from "@/stores/market-items-store";
 import type { Auction, MarketItem } from "@/types";
-import { ListingToolbar, RowActions, VisibleBadge } from "./listing-controls";
+import {
+  ListingToolbar,
+  RowActions,
+  type RunMarketAction,
+  VisibleBadge,
+} from "./listing-controls";
 
 function titleCase(slug: string): string {
   return slug
@@ -54,10 +59,7 @@ export function AuctionsTable({
   auctions: Auction[];
   onRefresh: () => void;
   onSetVisibility: (visible: boolean) => void;
-  runMarketAction: (
-    promise: Promise<unknown>,
-    message: string,
-  ) => Promise<void>;
+  runMarketAction: RunMarketAction;
 }) {
   const items = useMarketItemsStore((state) => state.bySlug);
   const [editing, setEditing] = useState<Auction | null>(null);

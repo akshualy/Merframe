@@ -7,7 +7,7 @@ use crate::prices::PriceSource;
 pub(crate) trait InventoryHolding {
     fn item(&self) -> usize;
     fn count(&self) -> i64;
-    fn listing(&self) -> Option<f64>;
+    fn listing(&self) -> Option<u32>;
     fn set_liquidation_value(&mut self, value: Option<f64>);
 
     fn at_max_rank(&self) -> bool {
@@ -95,7 +95,7 @@ macro_rules! row_fields {
 impl InventoryHolding for PartRow {
     row_fields!();
 
-    fn listing(&self) -> Option<f64> {
+    fn listing(&self) -> Option<u32> {
         self.prices.sell
     }
 }
@@ -103,7 +103,7 @@ impl InventoryHolding for PartRow {
 impl InventoryHolding for SetRow {
     row_fields!();
 
-    fn listing(&self) -> Option<f64> {
+    fn listing(&self) -> Option<u32> {
         self.prices.sell
     }
 }
@@ -111,7 +111,7 @@ impl InventoryHolding for SetRow {
 impl InventoryHolding for RelicRow {
     row_fields!();
 
-    fn listing(&self) -> Option<f64> {
+    fn listing(&self) -> Option<u32> {
         self.plat
     }
 }
@@ -119,7 +119,7 @@ impl InventoryHolding for RelicRow {
 impl InventoryHolding for MiscRow {
     row_fields!();
 
-    fn listing(&self) -> Option<f64> {
+    fn listing(&self) -> Option<u32> {
         self.plat
     }
 }
@@ -127,7 +127,7 @@ impl InventoryHolding for MiscRow {
 impl InventoryHolding for ModRow {
     row_fields!();
 
-    fn listing(&self) -> Option<f64> {
+    fn listing(&self) -> Option<u32> {
         if self.at_max_rank() {
             self.prices.sell_max_rank.or(self.prices.sell)
         } else {
@@ -185,8 +185,8 @@ mod tests {
             rank,
             max_rank,
             prices: UpgradePrices {
-                sell: Some(12.0),
-                sell_max_rank: Some(240.0),
+                sell: Some(12),
+                sell_max_rank: Some(240),
                 is_floor: false,
                 buy: None,
             },

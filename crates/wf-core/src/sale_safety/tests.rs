@@ -223,7 +223,7 @@ fn favourite_keeps_parts_until_built() {
 #[test]
 fn recipe_count_reserves_every_copy() {
     let fixture = holding(weapons(), &[BRONCO], &[(AKBRONCO_LINK, 3)], &[BRONCO], &[])
-        .with_prices(FixedPrices::new([("akbronco_prime_link", 10.0)]));
+        .with_prices(FixedPrices::new([("akbronco_prime_link", 10)]));
     let tab = tab(&fixture.view(), UNMASTERED);
     let link = &tab.parts[0];
     assert_eq!(link.sale.reserved, 2);

@@ -362,6 +362,7 @@ pub struct MarketSettings {
     pub take_rank_into_account: bool,
     pub market_price_check: bool,
     pub market_price_tolerance: u32,
+    pub market_bulk_pause_secs: u32,
     pub market_trader_status: TraderStatus,
     pub market_trader_locale: Option<String>,
     pub set_part_click: OrderType,
@@ -563,6 +564,7 @@ impl Default for MarketSettings {
             take_rank_into_account: true,
             market_price_check: true,
             market_price_tolerance: 10,
+            market_bulk_pause_secs: 0,
             market_trader_status: TraderStatus::Ingame,
             market_trader_locale: Some("en".to_owned()),
             set_part_click: OrderType::Sell,
@@ -678,6 +680,10 @@ impl Settings {
     pub fn market_poll_interval(&self) -> Duration {
         let minutes = self.market.market_poll_minutes.clamp(2, 60);
         Duration::from_secs(u64::from(minutes) * 60)
+    }
+
+    pub fn market_bulk_pause(&self) -> Duration {
+        Duration::from_secs(u64::from(self.market.market_bulk_pause_secs.min(10)))
     }
 
     pub fn mastery_options(&self, ordering: MasteryOrdering) -> MasteryOptions {
@@ -1485,6 +1491,22 @@ mod tests {
         assert_eq!(interval(2), Duration::from_secs(120));
         assert_eq!(interval(15).as_secs(), 900);
         assert_eq!(interval(600).as_secs(), 3600);
+    }
+
+    #[test]
+    fn market_bulk_pause_clamp() {
+        let pause = |seconds: u32| {
+            Settings {
+                market: MarketSettings {
+                    market_bulk_pause_secs: seconds,
+                    ..MarketSettings::default()
+                },
+                ..Settings::default()
+            }
+            .market_bulk_pause()
+        };
+        assert_eq!(pause(3), Duration::from_secs(3));
+        assert_eq!(pause(600), Duration::from_secs(10));
     }
 
     #[test]

@@ -12,6 +12,7 @@ use wf_core::{ArbitrationAlert, CoreEvent};
 use crate::envelope::CoreEventEnvelope;
 use crate::event_feed::{self, EventFeed};
 use crate::market::{MarketPresence, MarketSnapshot};
+use crate::market_bulk::MarketBulkProgress;
 use crate::notice::Notice;
 use crate::overlay::{self, OverlayState};
 pub use crate::runtime::market_loop::MarketAutoClose;
@@ -48,6 +49,7 @@ pub enum AppEvent {
     FavouriteUpdated,
     ResetChecklistUpdated,
     MarketUpdated(MarketSnapshot),
+    MarketBulkProgress(MarketBulkProgress),
     MarketAutoClosed(MarketAutoClose),
     MarketSessionRejected,
     MarketPresence(MarketPresence),

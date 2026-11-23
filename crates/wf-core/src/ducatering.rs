@@ -49,7 +49,7 @@ pub struct DucateringEntry {
     pub item: ItemSummary,
     pub count: u32,
     pub ducats: u32,
-    pub plat: Option<f64>,
+    pub plat: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -118,7 +118,7 @@ pub(crate) fn entries(
     let expensive_sets: Vec<usize> = match filter.complete_sets {
         DucateringCompleteSets::KeepAbove { plat } => sets(view, &mut index)
             .iter()
-            .filter(|set| set.prices.sell.unwrap_or(0.0) > f64::from(plat))
+            .filter(|set| set.prices.sell.unwrap_or(0) > plat)
             .map(|set| set.item)
             .collect(),
         DucateringCompleteSets::Sell | DucateringCompleteSets::Keep => Vec::new(),
@@ -140,13 +140,13 @@ pub(crate) fn entries(
     };
     let below_ducats_per_plat = |row: &PartRow, ducats: u32| {
         row.prices.sell.is_some_and(|plat| {
-            plat > 0.0 && f64::from(ducats) / plat < f64::from(filter.min_ducats_per_plat)
+            plat > 0 && f64::from(ducats) / f64::from(plat) < f64::from(filter.min_ducats_per_plat)
         })
     };
     let mut entries: Vec<DucateringEntry> = rows
         .iter()
         .filter(|row| row.count > 0)
-        .filter(|row| row.prices.sell.unwrap_or(0.0) <= f64::from(filter.max_plat))
+        .filter(|row| row.prices.sell.unwrap_or(0) <= filter.max_plat)
         .filter(|row| !hidden_set(row))
         .filter(|row| !hide_unmastered || row.status.mastered)
         .filter(|row| !hidden_vaulted(row))
@@ -468,8 +468,8 @@ mod tests {
             ]),
         )
         .with_prices(FixedPrices::new([
-            ("trinity_prime_systems_blueprint", 14.0),
-            ("braton_prime_barrel", 8.0),
+            ("trinity_prime_systems_blueprint", 14),
+            ("braton_prime_barrel", 8),
         ]));
         let filter = DucateringFilter {
             max_plat: 10,
@@ -480,7 +480,7 @@ mod tests {
         assert_eq!(cheap[0].item.name, "Braton Prime Barrel");
         assert_eq!(cheap[0].count, 3);
         assert!(cheap[0].ducats > 0);
-        assert_eq!(cheap[0].plat, Some(8.0));
+        assert_eq!(cheap[0].plat, Some(8));
 
         let all = entries(&fixture.view(), None, NOW, &nothing_hidden());
         assert_eq!(all.len(), 2);
@@ -501,7 +501,7 @@ mod tests {
                 (BRATON_PRIME_BLUEPRINT, 1),
             ]),
         )
-        .with_prices(FixedPrices::new([("braton_prime_set", 45.0)]));
+        .with_prices(FixedPrices::new([("braton_prime_set", 45)]));
         let sets = |complete_sets| DucateringFilter {
             complete_sets,
             ..nothing_hidden()
@@ -564,8 +564,8 @@ mod tests {
             fixtures::inventory_owning(&[(BRATON_PRIME_BARREL, 1), (BRATON_PRIME_STOCK, 1)]),
         )
         .with_prices(FixedPrices::new([
-            ("braton_prime_barrel", 5.0),
-            ("braton_prime_stock", 20.0),
+            ("braton_prime_barrel", 5),
+            ("braton_prime_stock", 20),
         ]));
         let floor = |min_ducats_per_plat| DucateringFilter {
             min_ducats_per_plat,

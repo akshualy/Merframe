@@ -93,14 +93,14 @@ mod tests {
 
     pub(super) fn prices() -> FixedPrices {
         FixedPrices::new([
-            ("styanax_prime_blueprint", 100.0),
-            ("alternox_prime_stock", 10.0),
-            ("voruna_prime_chassis_blueprint", 20.0),
-            ("cedo_prime_barrel", 30.0),
-            ("vadarya_prime_stock", 5.0),
-            ("trinity_prime_systems_blueprint", 12.0),
-            ("braton_prime_stock", 6.0),
-            ("trinity_prime_set", 140.0),
+            ("styanax_prime_blueprint", 100),
+            ("alternox_prime_stock", 10),
+            ("voruna_prime_chassis_blueprint", 20),
+            ("cedo_prime_barrel", 30),
+            ("vadarya_prime_stock", 5),
+            ("trinity_prime_systems_blueprint", 12),
+            ("braton_prime_stock", 6),
+            ("trinity_prime_set", 140),
         ])
     }
 

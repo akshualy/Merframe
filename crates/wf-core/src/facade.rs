@@ -852,7 +852,7 @@ mod tests {
         Core::new(
             store,
             fixtures::catalog(),
-            Arc::new(FixedPrices::new([("styanax_prime_blueprint", 100.0)])),
+            Arc::new(FixedPrices::new([("styanax_prime_blueprint", 100)])),
             AlertSettings::default(),
         )
         .unwrap()

@@ -4,12 +4,14 @@ use std::sync::{Arc, Mutex, RwLock};
 use chrono::{DateTime, Duration, Utc};
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Runtime};
 use wf_core::{
     Core, ItemRecord, ItemSummary, ItemTable, MarketListings, PriceSource, SaleSafety,
     SaleSafetyCheck, SaleSafetyRule, market_name,
 };
 use wf_market::{Auction, Item, Order, OrderType, UserStatus};
 
+use crate::runtime::{self, AppEvent};
 use crate::settings::MarketSettings;
 use crate::state::{AppState, lock, read, write};
 
@@ -225,15 +227,76 @@ pub struct OrderRow {
     pub show_warning: bool,
     pub lowest: Option<Lowest>,
     pub pricing: Option<Pricing>,
+    pub price_to_match: Option<u32>,
     pub sale: Option<SaleSafety>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(rename_all = "snake_case")]
+pub enum MarketOrderRepairScope {
+    Amount,
+    Price,
+    AmountAndPrice,
+}
+
+impl MarketOrderRepairScope {
+    fn includes_amount(self) -> bool {
+        matches!(self, Self::Amount | Self::AmountAndPrice)
+    }
+
+    fn includes_price(self) -> bool {
+        matches!(self, Self::Price | Self::AmountAndPrice)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(rename_all = "snake_case")]
+pub enum MarketOrderIssue {
+    Amount,
+    Price,
+}
+
+impl From<MarketOrderIssue> for MarketOrderRepairScope {
+    fn from(issue: MarketOrderIssue) -> Self {
+        match issue {
+            MarketOrderIssue::Amount => Self::Amount,
+            MarketOrderIssue::Price => Self::Price,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MarketOrderRepair {
+    Delete,
+    Patch {
+        quantity: Option<u32>,
+        platinum: Option<u32>,
+    },
+}
+
+impl OrderRow {
+    pub fn repair(&self, scope: MarketOrderRepairScope) -> Option<MarketOrderRepair> {
+        let quantity = (self.show_warning && scope.includes_amount())
+            .then(|| u32::try_from(self.owned).ok())
+            .flatten();
+        let platinum = self.price_to_match.filter(|_| scope.includes_price());
+
+        match (quantity, platinum) {
+            (Some(0), _) => Some(MarketOrderRepair::Delete),
+            (None, None) => None,
+            (quantity, platinum) => Some(MarketOrderRepair::Patch { quantity, platinum }),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 #[serde(tag = "from", rename_all = "snake_case")]
 pub enum Lowest {
-    AtRank { plat: f64 },
-    RankZero { plat: f64 },
+    AtRank { plat: u32 },
+    RankZero { plat: u32 },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -254,6 +317,7 @@ impl Pricing {
             return None;
         }
 
+        let plat = f64::from(plat);
         let tolerance = plat * f64::from(settings.market_price_tolerance) / 100.0;
         let platinum = f64::from(order.platinum);
         if platinum > plat + tolerance {
@@ -331,6 +395,11 @@ pub fn order_row(
         None => prices.plat(&item.slug).map(|plat| Lowest::AtRank { plat }),
     };
     let pricing = Pricing::of(order, lowest, settings);
+    let price_to_match = match (pricing, lowest) {
+        (Some(_), Some(Lowest::AtRank { plat })) => Some(plat),
+        _ => None,
+    };
+
     let sale = sale_safety
         .filter(|_| order.order_type == OrderType::Sell)
         .and_then(|sale_safety| sale_safety.market_item(record))
@@ -353,6 +422,7 @@ pub fn order_row(
         show_warning,
         lowest,
         pricing,
+        price_to_match,
         sale,
     }
 }
@@ -444,6 +514,18 @@ pub async fn order_rows(state: &Arc<AppState>, orders: &[Order]) -> Option<Marke
     })
 }
 
+pub(crate) async fn publish_orders<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
+    let orders = match state.market().orders_my().await {
+        Ok(orders) => orders,
+        Err(error) => {
+            tracing::warn!(error = %error.brief(), "Order refresh after a write failed");
+            return;
+        }
+    };
+    let snapshot = market_snapshot(state, Some(&orders), None).await;
+    runtime::emit(app, AppEvent::MarketUpdated(snapshot));
+}
+
 pub(crate) async fn market_snapshot(
     state: &Arc<AppState>,
     orders: Option<&[Order]>,
@@ -489,12 +571,12 @@ mod tests {
     struct TestPrices;
 
     impl PriceSource for TestPrices {
-        fn plat(&self, market_slug: &str) -> Option<f64> {
-            (market_slug == "primed_continuity").then_some(120.0)
+        fn plat(&self, market_slug: &str) -> Option<u32> {
+            (market_slug == "primed_continuity").then_some(120)
         }
 
-        fn plat_max_rank(&self, market_slug: &str) -> Option<f64> {
-            (market_slug == "primed_continuity").then_some(320.0)
+        fn plat_max_rank(&self, market_slug: &str) -> Option<u32> {
+            (market_slug == "primed_continuity").then_some(320)
         }
     }
 
@@ -982,12 +1064,12 @@ mod tests {
                 .row(&order("primed_continuity", 1, Some(rank)), true)
                 .lowest
         };
-        assert_eq!(lowest(0), Some(Lowest::AtRank { plat: 120.0 }));
-        assert_eq!(lowest(10), Some(Lowest::AtRank { plat: 320.0 }));
-        assert_eq!(lowest(5), Some(Lowest::RankZero { plat: 120.0 }));
+        assert_eq!(lowest(0), Some(Lowest::AtRank { plat: 120 }));
+        assert_eq!(lowest(10), Some(Lowest::AtRank { plat: 320 }));
+        assert_eq!(lowest(5), Some(Lowest::RankZero { plat: 120 }));
         assert_eq!(
             serde_json::to_value(lowest(5)).unwrap(),
-            json!({ "from": "rank_zero", "plat": 120.0 })
+            json!({ "from": "rank_zero", "plat": 120 })
         );
     }
 
@@ -1005,6 +1087,50 @@ mod tests {
         assert_eq!(pricing(107, 0), Some(Pricing::Underpriced));
         assert_eq!(pricing(400, 10), Some(Pricing::Overpriced));
         assert_eq!(pricing(400, 5), None);
+    }
+
+    #[test]
+    fn matched_price() {
+        let market = Market::new();
+        let price_to_match = |platinum| {
+            let mut wanted = order("primed_continuity", 1, None);
+            wanted.platinum = platinum;
+            market.row(&wanted, true).price_to_match
+        };
+        assert_eq!(price_to_match(133), Some(120));
+        assert_eq!(price_to_match(125), None);
+    }
+
+    #[test]
+    fn order_repair() {
+        use MarketOrderRepairScope::{Amount, AmountAndPrice, Price};
+
+        let market = Market::new();
+        let mut wanted = order("primed_continuity", 1, None);
+        wanted.platinum = 133;
+        let overpriced = market.row(&wanted, true);
+        let short = |owned| OrderRow {
+            show_warning: true,
+            owned,
+            ..overpriced.clone()
+        };
+        let patch = |quantity, platinum| Some(MarketOrderRepair::Patch { quantity, platinum });
+
+        assert_eq!(short(2).repair(AmountAndPrice), patch(Some(2), Some(120)));
+        assert_eq!(short(2).repair(Amount), patch(Some(2), None));
+        assert_eq!(short(2).repair(Price), patch(None, Some(120)));
+        assert_eq!(overpriced.repair(AmountAndPrice), patch(None, Some(120)));
+        assert_eq!(
+            short(0).repair(AmountAndPrice),
+            Some(MarketOrderRepair::Delete)
+        );
+        assert_eq!(short(0).repair(Price), patch(None, Some(120)));
+
+        let unpriced = OrderRow {
+            price_to_match: None,
+            ..overpriced
+        };
+        assert_eq!(unpriced.repair(AmountAndPrice), None);
     }
 
     #[test]

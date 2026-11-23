@@ -102,7 +102,7 @@ export function SliderRow({
   id: string;
   label: string;
   value: number;
-  unit: "min" | "%";
+  unit: "min" | "s" | "%";
   min: number;
   max: number;
   step: number;

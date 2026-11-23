@@ -7,16 +7,19 @@ use wf_core::{
     ListingChoices, MarketItemSaleSafety, market_name, riven_listing_payload, riven_listing_update,
 };
 use wf_market::{
-    Auction, CreateOrderRequest, ItemListings, Order, OrderType, UpdateAuctionRequest,
+    Auction, Client, CreateOrderRequest, ItemListings, Order, OrderType, UpdateAuctionRequest,
     UpdateOrderRequest, order_rejection,
 };
 
 use super::{Shared, ready};
 
 use crate::error::{CommandError, CommandResult};
-use crate::market::{self, MarketItems, MarketOrders, MarketPresence, MarketPresenceChoice};
+use crate::market::{
+    self, MarketItems, MarketOrderIssue, MarketOrderRepair, MarketOrderRepairScope, MarketOrders,
+    MarketPresence, MarketPresenceChoice,
+};
+use crate::market_bulk::{self, MarketBulkOutcome, MarketBulkRun};
 use crate::market_session;
-use crate::runtime::{self, AppEvent};
 use crate::settings::{MarketAccount, SaleSafetySettings};
 use crate::state::{AppState, lock, read};
 
@@ -139,11 +142,14 @@ pub async fn market_item_orders(state: Shared<'_>, slug: String) -> CommandResul
 #[tauri::command]
 pub async fn market_my_orders(state: Shared<'_>) -> CommandResult<MarketOrders> {
     let state = ready(&state).await?;
+    own_order_rows(&state).await
+}
 
+async fn own_order_rows(state: &Arc<AppState>) -> CommandResult<MarketOrders> {
     let orders = state.market().orders_my().await?;
     state.listings.remember(&state.core, Some(&orders), None);
 
-    market::order_rows(&state, &orders)
+    market::order_rows(state, &orders)
         .await
         .ok_or_else(unlisted_items)
 }
@@ -191,7 +197,7 @@ pub async fn market_post_order<R: Runtime>(
             }
         })?;
 
-    publish_orders(&app, &state).await;
+    market::publish_orders(&app, &state).await;
 
     Ok(posted)
 }
@@ -211,21 +217,9 @@ pub async fn market_update_order<R: Runtime>(
         visible: patch.visible,
     };
     let updated = state.market().update_order(&id, &body).await?;
-    publish_orders(&app, &state).await;
+    market::publish_orders(&app, &state).await;
 
     Ok(updated)
-}
-
-async fn publish_orders<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
-    let orders = match state.market().orders_my().await {
-        Ok(orders) => orders,
-        Err(error) => {
-            tracing::warn!(error = %error.brief(), "Order refresh after a write failed");
-            return;
-        }
-    };
-    let snapshot = market::market_snapshot(state, Some(&orders), None).await;
-    runtime::emit(app, AppEvent::MarketUpdated(snapshot));
 }
 
 #[tauri::command]
@@ -240,73 +234,107 @@ pub async fn market_delete_order(state: Shared<'_>, id: String) -> CommandResult
     Ok(state.market().delete_order(&id).await?)
 }
 
-#[tauri::command]
-pub async fn market_fix_orders(state: Shared<'_>, id: Option<String>) -> CommandResult<u32> {
-    let state = ready(&state).await?;
+fn issue_resolved(issue: MarketOrderIssue) -> CommandError {
+    CommandError::from(match issue {
+        MarketOrderIssue::Amount => "This order no longer offers more than the account holds",
+        MarketOrderIssue::Price => "This order is no longer marked as overpriced or underpriced",
+    })
+}
 
-    let client = state.market();
-    let orders = client.orders_my().await?;
-    let listed = market::order_rows(&state, &orders)
-        .await
-        .ok_or_else(unlisted_items)?;
-
-    let wanted = listed
-        .rows
-        .iter()
-        .filter(|row| row.show_warning)
-        .filter(|row| id.as_ref().is_none_or(|wanted| wanted == &row.id));
-    let mut fixed = 0;
-    for row in wanted {
-        let repaired = match u32::try_from(row.owned) {
-            Ok(0) => client.delete_order(&row.id).await.map(|_| ()),
-            Ok(owned) => {
-                let patch = UpdateOrderRequest {
-                    quantity: Some(owned),
-                    ..UpdateOrderRequest::default()
-                };
-                client.update_order(&row.id, &patch).await.map(|_| ())
-            }
-            Err(_) => continue,
-        };
-
-        match repaired {
-            Ok(()) => fixed += 1,
-            Err(error) => {
-                tracing::warn!(
-                    order = row.id,
-                    owned = row.owned,
-                    %error,
-                    "Order quantity fix failed",
-                );
-            }
+async fn repair_order(
+    client: &Client,
+    id: &str,
+    repair: MarketOrderRepair,
+) -> wf_market::Result<Order> {
+    match repair {
+        MarketOrderRepair::Delete => client.delete_order(id).await,
+        MarketOrderRepair::Patch { quantity, platinum } => {
+            let patch = UpdateOrderRequest {
+                quantity,
+                platinum,
+                ..UpdateOrderRequest::default()
+            };
+            client.update_order(id, &patch).await
         }
     }
-
-    Ok(fixed)
 }
 
 #[tauri::command]
-pub async fn market_remove_all(state: Shared<'_>) -> CommandResult<u32> {
+pub async fn market_repair_order<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+    id: String,
+    issue: MarketOrderIssue,
+) -> CommandResult<()> {
     let state = ready(&state).await?;
 
-    let client = state.market();
-    let orders = client.orders_my().await?;
+    let listed = own_order_rows(&state).await?;
+    let repair = listed
+        .rows
+        .iter()
+        .find(|row| row.id == id)
+        .and_then(|row| row.repair(issue.into()))
+        .ok_or_else(|| issue_resolved(issue))?;
+    repair_order(&state.market(), &id, repair).await?;
+    market::publish_orders(&app, &state).await;
 
-    let mut closed = 0;
-    for order in orders {
-        match client.delete_order(&order.id).await {
-            Ok(_) => closed += 1,
-            Err(error) => {
-                tracing::warn!(
-                    order = order.id,
-                    %error,
-                    "Order delete failed",
-                );
-            }
-        }
-    }
+    Ok(())
+}
 
-    Ok(closed)
+#[tauri::command]
+pub async fn market_repair_orders<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+    scope: MarketOrderRepairScope,
+) -> CommandResult<MarketBulkOutcome> {
+    let state = ready(&state).await?;
+    let run = MarketBulkRun::start(&app, &state)?;
+
+    let market = state.market();
+    let listed = own_order_rows(&state).await?;
+    run.write_each(
+        listed
+            .rows
+            .iter()
+            .filter_map(|row| Some((row, row.repair(scope)?)))
+            .collect(),
+        |(row, repair)| repair_order(&market, &row.id, repair),
+        |(row, repair), error| {
+            tracing::warn!(order = row.id, ?repair, %error, "Order repair failed");
+        },
+    )
+    .await
+}
+
+#[tauri::command]
+pub async fn market_remove_all<R: Runtime>(
+    app: AppHandle<R>,
+    state: Shared<'_>,
+) -> CommandResult<MarketBulkOutcome> {
+    let state = ready(&state).await?;
+    let run = MarketBulkRun::start(&app, &state)?;
+
+    let market = state.market();
+    let orders = market.orders_my().await?;
+    run.write_each(
+        orders.iter().collect(),
+        |order: &Order| market.delete_order(&order.id),
+        |order, error| {
+            tracing::warn!(
+                order = order.id,
+                %error,
+                "Order delete failed",
+            );
+        },
+    )
+    .await
+}
+
+#[tauri::command]
+pub async fn market_stop_bulk_run(state: Shared<'_>) -> CommandResult<()> {
+    let state = ready(&state).await?;
+    market_bulk::stop(&state.market_bulk_run);
+    Ok(())
 }
 
 #[tauri::command]

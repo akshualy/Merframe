@@ -19,7 +19,7 @@ pub struct SyndicateOfferRow {
     pub required_rank: i32,
     pub available: bool,
     pub owned: bool,
-    pub platinum: Option<f64>,
+    pub platinum: Option<u32>,
     pub platinum_per_thousand: Option<f64>,
     pub weekly_trades: Option<u32>,
     pub crafted: bool,
@@ -181,7 +181,7 @@ fn offer_row(view: &View, offer: &SyndicateOffer, level: i32) -> SyndicateOfferR
     SyndicateOfferRow {
         platinum_per_thousand: platinum
             .filter(|_| offer.standing_cost > 0)
-            .map(|platinum| platinum * 1000.0 / f64::from(offer.standing_cost)),
+            .map(|platinum| f64::from(platinum) * 1000.0 / f64::from(offer.standing_cost)),
         platinum,
         weekly_trades: slug.and_then(|slug| view.prices.weekly_trades(&slug)),
         crafted,
@@ -572,7 +572,7 @@ mod tests {
     fn offers_priced_and_owned() {
         let fixture = Fixture::new(fixtures::syndicate_catalog(), fixtures::inventory())
             .with_prices(
-                FixedPrices::new([("justice_blades", 15.0)])
+                FixedPrices::new([("justice_blades", 15)])
                     .with_weekly_trades([("justice_blades", 42)]),
             );
         let offers = steel_meridian(tab(&fixture.view(), synced_at())).offers;
@@ -595,7 +595,7 @@ mod tests {
                 required_rank: 4,
                 available: true,
                 owned: true,
-                platinum: Some(15.0),
+                platinum: Some(15),
                 platinum_per_thousand: Some(0.6),
                 weekly_trades: Some(42),
                 crafted: false,
@@ -664,27 +664,27 @@ mod tests {
     #[test]
     fn sole_blueprint_priced_as_its_product() {
         let crafted = only_offer(&lens_fixture(
-            FixedPrices::new([("eidolon_zenurik_lens", 40.0)])
+            FixedPrices::new([("eidolon_zenurik_lens", 40)])
                 .with_weekly_trades([("eidolon_zenurik_lens", 20)]),
         ));
         let traded = only_offer(&lens_fixture(FixedPrices::new([
-            ("eidolon_zenurik_lens", 40.0),
-            ("eidolon_zenurik_lens_blueprint", 12.0),
+            ("eidolon_zenurik_lens", 40),
+            ("eidolon_zenurik_lens_blueprint", 12),
         ])));
 
         assert_eq!(crafted.name, "Eidolon Zenurik Lens Blueprint");
         assert!(crafted.crafted);
-        assert_eq!(crafted.platinum, Some(40.0));
+        assert_eq!(crafted.platinum, Some(40));
         assert_eq!(crafted.platinum_per_thousand, Some(8.0));
         assert_eq!(crafted.weekly_trades, Some(20));
         assert!(!traded.crafted);
-        assert_eq!(traded.platinum, Some(12.0));
+        assert_eq!(traded.platinum, Some(12));
     }
 
     #[test]
     fn blueprint_with_other_parts_stays_unpriced() {
         let store_item = fixtures::BRATON_PRIME_BLUEPRINT.replace("/Lotus/", "/Lotus/StoreItems/");
-        let prices = FixedPrices::new([("braton_prime", 90.0), ("braton_prime_set", 90.0)]);
+        let prices = FixedPrices::new([("braton_prime", 90), ("braton_prime_set", 90)]);
         let blueprint = only_offer(&event_fixture(fixtures::ITEMS, &store_item, prices));
 
         assert_eq!(blueprint.name, "Braton Prime Blueprint");

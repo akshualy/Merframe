@@ -48,7 +48,7 @@ pub enum NodeDrop {
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct NodeMarket {
     pub slug: String,
-    pub sell: f64,
+    pub sell: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

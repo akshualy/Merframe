@@ -11,7 +11,6 @@ import {
   SaleSafetyTooltip,
 } from "@/components/sale-safety";
 import { Badge } from "@/components/ui/badge";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dash } from "@/components/ui/dash";
 import {
   DropdownMenuItem,
@@ -21,7 +20,7 @@ import { useFilters } from "@/hooks/use-filters";
 import { itemAt } from "@/lib/arrays";
 import { api } from "@/lib/bridge";
 import type { FilterOption } from "@/lib/filters";
-import { counted, dateTime, num } from "@/lib/format";
+import { dateTime, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/stores/app-store";
 import type {
@@ -32,7 +31,17 @@ import type {
   OrderType,
   Pricing,
 } from "@/types";
-import { ListingToolbar, RowActions, VisibleBadge } from "./listing-controls";
+import {
+  ListingToolbar,
+  RowActions,
+  type RunMarketAction,
+  VisibleBadge,
+} from "./listing-controls";
+import {
+  type OrderBulkAction,
+  OrderBulkDialog,
+  OrderBulkMenu,
+} from "./order-bulk-dialog";
 
 const CATEGORIES: { value: MarketCategory; label: string }[] = [
   { value: "parts", label: "Parts" },
@@ -121,11 +130,12 @@ export function OrdersTable({
   onCompare: (slug: string, side: OrderType, rank: number | null) => void;
   onRefresh: () => void;
   onSetVisibility: (visible: boolean) => void;
-  runMarketAction: (promise: Promise<unknown>, message: string) => void;
+  runMarketAction: RunMarketAction;
 }) {
   const { items, rows } = orders;
   const priceCheck = useSettings().market_price_check;
-  const [confirming, setConfirming] = useState<"fix" | "remove" | null>(null);
+  const [bulk, setBulk] = useState<OrderBulkAction>("amount");
+  const [confirming, setConfirming] = useState(false);
   const filters = useFilters<OrderFilters>({
     category: null,
     side: null,
@@ -286,8 +296,7 @@ export function OrdersTable({
         cell: ({ row }) => {
           const { order, item } = row.original;
           const slug = item.market_slug;
-          const priceToMatch =
-            priceCheck && order.pricing !== null ? order.lowest : null;
+          const priceToMatch = priceCheck ? order.price_to_match : null;
           return (
             <RowActions label="Order actions">
               {slug && (
@@ -301,8 +310,9 @@ export function OrdersTable({
                 <DropdownMenuItem
                   onSelect={() =>
                     runMarketAction(
-                      api.marketFixOrders(order.id),
+                      api.marketRepairOrder(order.id, "amount"),
                       "Listing matched to the inventory",
+                      "published",
                     )
                   }
                 >
@@ -310,18 +320,17 @@ export function OrdersTable({
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              {priceToMatch && (
+              {priceToMatch !== null && (
                 <DropdownMenuItem
                   onSelect={() =>
                     runMarketAction(
-                      api.marketUpdateOrder(order.id, {
-                        platinum: priceToMatch.plat,
-                      }),
+                      api.marketRepairOrder(order.id, "price"),
                       "Price set to the lowest",
+                      "published",
                     )
                   }
                 >
-                  Set price to the lowest ({num(priceToMatch.plat)})
+                  Set price to the lowest ({num(priceToMatch)})
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
@@ -331,6 +340,7 @@ export function OrdersTable({
                       platinum: Math.max(1, order.platinum - 1),
                     }),
                     "Price lowered by 1",
+                    "published",
                   )
                 }
               >
@@ -343,6 +353,7 @@ export function OrdersTable({
                       visible: !order.visible,
                     }),
                     order.visible ? "Order hidden" : "Order shown",
+                    "published",
                   )
                 }
               >
@@ -378,41 +389,30 @@ export function OrdersTable({
     [onCompare, priceCheck, runMarketAction],
   );
 
-  const missingCount = rows.filter((row) => row.show_warning).length;
+  const bulkCounts: Record<OrderBulkAction, number> = {
+    amount: rows.filter((row) => row.show_warning).length,
+    price: rows.filter((row) => row.price_to_match !== null).length,
+    amount_and_price: rows.filter(
+      (row) => row.show_warning || row.price_to_match !== null,
+    ).length,
+    remove: rows.length,
+  };
 
-  const handleBulk = useCallback(() => {
-    if (confirming === "fix") {
-      runMarketAction(
-        api.marketFixOrders(),
-        "Listings matched to the inventory",
-      );
-    }
-    if (confirming === "remove") {
-      runMarketAction(api.marketRemoveAll(), "All orders deleted");
-    }
-    setConfirming(null);
-  }, [confirming, runMarketAction]);
+  const openBulk = useCallback((action: OrderBulkAction) => {
+    setBulk(action);
+    setConfirming(true);
+  }, []);
+
+  const closeBulk = useCallback(() => setConfirming(false), []);
 
   return (
     <>
-      <ConfirmDialog
-        open={confirming !== null}
-        onOpenChange={(open) => !open && setConfirming(null)}
-        title={
-          confirming === "remove"
-            ? "Delete Every Order"
-            : "Fix the Missing Items"
-        }
-        description={
-          confirming === "remove"
-            ? `${counted(rows.length, "order")} on your warframe.market profile will be deleted, buy orders included. This cannot be undone.`
-            : `${counted(missingCount, "sell order offers", "sell orders offer")} more than the account holds. Each one drops to the number owned, and an order for an item you no longer own is deleted.`
-        }
-        confirmLabel={
-          confirming === "remove" ? "Delete All Orders" : "Fix Missing Items"
-        }
-        destructive={confirming === "remove"}
-        onConfirm={handleBulk}
+      <OrderBulkDialog
+        action={bulk}
+        count={bulkCounts[bulk]}
+        open={confirming}
+        onClose={closeBulk}
+        runMarketAction={runMarketAction}
       />
       <DataTable
         tableId="marketOrders"
@@ -431,20 +431,11 @@ export function OrdersTable({
             onSetVisibility={onSetVisibility}
             onRefresh={onRefresh}
           >
-            <DropdownMenuItem
-              disabled={missingCount === 0}
-              onSelect={() => setConfirming("fix")}
-            >
-              Fix all missing items ({num(missingCount)})
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              disabled={rows.length === 0}
-              variant="destructive"
-              onSelect={() => setConfirming("remove")}
-            >
-              Remove all orders
-            </DropdownMenuItem>
+            <OrderBulkMenu
+              counts={bulkCounts}
+              priceCheck={priceCheck}
+              onSelect={openBulk}
+            />
           </ListingToolbar>
         }
         filters={

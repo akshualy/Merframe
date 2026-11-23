@@ -22,8 +22,8 @@ pub struct DropLocation {
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct RelicMarket {
     pub slug: String,
-    pub sell: Option<f64>,
-    pub buy: Option<f64>,
+    pub sell: Option<u32>,
+    pub buy: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -397,7 +397,7 @@ mod tests {
     #[test]
     fn relic_market_quote() {
         let fixture = Fixture::new(fixtures::catalog(), fixtures::inventory()).with_prices(
-            FixedPrices::new([("axi_a21_relic", 12.0)]).with_buy([("axi_a21_relic", 7.0)]),
+            FixedPrices::new([("axi_a21_relic", 12)]).with_buy([("axi_a21_relic", 7)]),
         );
         let plans = plan(&fixture.view(), &[], 1, true, None);
         let axi = &plans[0];
@@ -405,8 +405,8 @@ mod tests {
             axi.market,
             Some(RelicMarket {
                 slug: "axi_a21_relic".to_owned(),
-                sell: Some(12.0),
-                buy: Some(7.0),
+                sell: Some(12),
+                buy: Some(7),
             })
         );
     }
@@ -485,7 +485,7 @@ mod tests {
     #[test]
     fn pricy_rare_favours_radiant() {
         let fixture = Fixture::new(fixtures::catalog(), fixtures::inventory())
-            .with_prices(FixedPrices::new([("alternox_prime_stock", 1000.0)]));
+            .with_prices(FixedPrices::new([("alternox_prime_stock", 1000)]));
         let plans = plan(&fixture.view(), &[], 1, true, None);
         let axi = &plans[0];
         assert!((axi.values[0].expected_plat - 20.0).abs() < 1e-9);
@@ -543,7 +543,7 @@ mod tests {
     #[test]
     fn plat_per_trace() {
         let pricy = Fixture::new(fixtures::catalog(), fixtures::inventory())
-            .with_prices(FixedPrices::new([("alternox_prime_stock", 1000.0)]));
+            .with_prices(FixedPrices::new([("alternox_prime_stock", 1000)]));
         let plans = plan(&pricy.view(), &[], 1, true, None);
         let axi = &plans[0];
         assert_eq!(
@@ -581,7 +581,7 @@ mod tests {
             .expect("Alternox Prime Stock");
         let alternox = &axi.rewards[stock];
         assert_eq!(alternox.rarity, "Rare");
-        assert_eq!(alternox.plat, Some(10.0));
+        assert_eq!(alternox.plat, Some(10));
         assert!((axi.values[0].chances[stock] - 2.0).abs() < f64::EPSILON);
         assert!((axi.values[0].expected_plat_shares[stock] - 0.2).abs() < 1e-9);
         assert!((axi.values[3].chances[stock] - 10.0).abs() < f64::EPSILON);
@@ -620,8 +620,8 @@ mod tests {
     #[test]
     fn best_refinement() {
         for prices in [
-            FixedPrices::new([("alternox_prime_stock", 1000.0)]),
-            FixedPrices::new([("styanax_prime_blueprint", 400.0)]),
+            FixedPrices::new([("alternox_prime_stock", 1000)]),
+            FixedPrices::new([("styanax_prime_blueprint", 400)]),
         ] {
             let plans = plan(
                 &Fixture::new(fixtures::catalog(), fixtures::inventory())
