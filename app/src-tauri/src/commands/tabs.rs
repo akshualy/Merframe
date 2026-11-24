@@ -1,10 +1,10 @@
 use chrono::Utc;
 use tauri::{AppHandle, Runtime};
 use wf_core::{
-    ComparedStat, CraftDetails, DeltaRow, FoundryTab, InventoryTab, MasteryOptions,
+    ComparedStat, CraftDetails, DeltaRow, FoundryTab, InventoryTab, ItemSummary, MasteryOptions,
     MasteryOrdering, MasteryTab, OpeningRow, RelicPlan, RelicPlannerTab, RelicSource,
     ResetChecklistManualRowId, ResetChecklistTab, ResourceQuery, ResourcesTab, RivenComparables,
-    RivensTab, StatsTab, StoredTrade, SyndicatesTab,
+    RivensTab, StatsItemHistory, StatsTab, StoredTrade, SyndicatesTab,
 };
 
 use super::{Shared, compute, missing_inventory, ready, since};
@@ -127,6 +127,22 @@ pub async fn stats_deltas(
 ) -> CommandResult<Vec<DeltaRow>> {
     let state = ready(&state).await?;
     Ok(lock(&state.core).stats_deltas(since(since_ms))?)
+}
+
+#[tauri::command]
+pub async fn stats_item_history(
+    state: Shared<'_>,
+    item_types: Vec<String>,
+    since_ms: Option<i64>,
+) -> CommandResult<Vec<StatsItemHistory>> {
+    let state = ready(&state).await?;
+    Ok(lock(&state.core).stats_item_history(&item_types, since(since_ms), Utc::now())?)
+}
+
+#[tauri::command]
+pub async fn stats_item_choices(state: Shared<'_>) -> CommandResult<Vec<ItemSummary>> {
+    let state = ready(&state).await?;
+    Ok(lock(&state.core).stats_item_choices())
 }
 
 #[tauri::command]

@@ -127,6 +127,8 @@ fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
         commands::tabs::stats_deltas,
         commands::tabs::stats_openings,
         commands::tabs::stats_trades,
+        commands::tabs::stats_item_history,
+        commands::tabs::stats_item_choices,
         commands::tabs::toggle_favourite,
         commands::tabs::reset_checklist_tab,
         commands::tabs::set_reset_checklist_checked,

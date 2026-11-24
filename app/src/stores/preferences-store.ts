@@ -7,6 +7,7 @@ import type {
   FissurePath,
   ResourceScope,
   ResourceSource,
+  StatsHistoryItem,
   Timeframe,
   TimeframeCard,
 } from "@/types";
@@ -17,6 +18,7 @@ interface PreferencesState {
   era: string;
   fissurePath: FissurePath;
   timeframes: Record<TimeframeCard, Timeframe>;
+  historyItems: StatsHistoryItem[];
   foundryCategory: Category;
   resourceSource: ResourceSource;
   resourceScope: ResourceScope;
@@ -28,6 +30,7 @@ interface PreferencesState {
   setEra: (era: string) => void;
   setFissurePath: (fissurePath: FissurePath) => void;
   setTimeframe: (card: TimeframeCard, timeframe: Timeframe) => void;
+  setHistoryItems: (historyItems: StatsHistoryItem[]) => void;
   setFoundryCategory: (foundryCategory: Category) => void;
   setResourceSource: (resourceSource: ResourceSource) => void;
   setResourceScope: (resourceScope: ResourceScope) => void;
@@ -57,11 +60,18 @@ export const DEFAULT_SQUAD_SIZE = 4;
 
 const DEFAULT_TIMEFRAMES: Record<TimeframeCard, Timeframe> = {
   history: "7",
+  items: "30",
   changes: "today",
   relics: "today",
   trades: "today",
   tradeHistory: "30",
 };
+
+const DEFAULT_HISTORY_ITEMS: StatsHistoryItem[] = [
+  { itemType: "/Lotus/Types/Items/MiscItems/PrimeBucks", colorSlot: 1 },
+  { itemType: "/Lotus/Types/Items/MiscItems/SchismKey", colorSlot: 2 },
+  { itemType: "/Lotus/Types/Items/MiscItems/Kuva", colorSlot: 3 },
+];
 
 const legacySquadSize = readStored("merframe.relicPlanner.squadSize");
 
@@ -76,6 +86,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         "baseline",
       ),
       timeframes: DEFAULT_TIMEFRAMES,
+      historyItems: DEFAULT_HISTORY_ITEMS,
       foundryCategory: legacy<Category>(
         "merframe.foundry.category",
         "warframe",
@@ -93,6 +104,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         set((state) => ({
           timeframes: { ...state.timeframes, [card]: timeframe },
         })),
+      setHistoryItems: (historyItems) => set({ historyItems }),
       setFoundryCategory: (foundryCategory) => set({ foundryCategory }),
       setResourceSource: (resourceSource) => set({ resourceSource }),
       setResourceScope: (resourceScope) => set({ resourceScope }),
@@ -111,6 +123,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         era: state.era,
         fissurePath: state.fissurePath,
         timeframes: state.timeframes,
+        historyItems: state.historyItems,
         foundryCategory: state.foundryCategory,
         resourceSource: state.resourceSource,
         resourceScope: state.resourceScope,

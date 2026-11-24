@@ -4,12 +4,9 @@ use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
 use serde::Serialize;
 
 use crate::account::Account;
-use crate::catalog::Catalog;
 use crate::identity::ItemTable;
-use crate::mastery::{self, MasteryOptions};
+use crate::inventory_view::ItemSummary;
 use crate::store::{RelicOpening, StatPoint, StoredDelta, TimeRange};
-
-pub(crate) const AYA_ITEM: &str = "/Lotus/Types/Items/MiscItems/SchismKey";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -62,14 +59,18 @@ pub struct DailyCount {
     pub count: i64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct StatsItemHistory {
+    pub item: ItemSummary,
+    pub counts: Vec<DailyCount>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct StatsSummary {
     pub account_created: DateTime<Utc>,
     pub snapshot_days: usize,
-    pub prime_owned: u32,
-    pub prime_total: u32,
-    pub prime_percent: f64,
 }
 
 pub fn daily_series(points: &[StatPoint]) -> Vec<StatPoint> {
@@ -121,25 +122,38 @@ pub fn daily_counts(
         .collect()
 }
 
+pub(crate) fn daily_item_counts(
+    current: i64,
+    changes: &[(DateTime<Utc>, i64)],
+    (from, to): (NaiveDate, NaiveDate),
+) -> Vec<DailyCount> {
+    let mut gained: BTreeMap<NaiveDate, i64> = BTreeMap::new();
+    for (at, delta) in changes {
+        *gained.entry(at.date_naive()).or_default() += delta;
+    }
+
+    let mut counts: Vec<DailyCount> = std::iter::successors(Some(to), NaiveDate::pred_opt)
+        .take_while(|day| *day >= from)
+        .scan(current, |later, day| {
+            let count = *later;
+            *later -= gained.get(&day).copied().unwrap_or(0);
+            Some(DailyCount { day, count })
+        })
+        .collect();
+    counts.reverse();
+    counts
+}
+
 pub fn distinct_days(times: impl IntoIterator<Item = DateTime<Utc>>) -> usize {
     let days: BTreeSet<NaiveDate> = times.into_iter().map(|at| at.date_naive()).collect();
     days.len()
 }
 
-pub(crate) fn summary(account: &Account, catalog: &Catalog, series: &[StatPoint]) -> StatsSummary {
-    let (prime_owned, prime_total) =
-        mastery::prime_ownership(account, catalog, MasteryOptions::default());
+pub(crate) fn summary(account: &Account, series: &[StatPoint]) -> StatsSummary {
     StatsSummary {
         account_created: account.inventory.created.datetime(),
         snapshot_days: distinct_days(series.iter().map(|point| point.at)),
-        prime_owned,
-        prime_total,
-        prime_percent: prime_percent(prime_owned, prime_total),
     }
-}
-
-fn prime_percent(owned: u32, total: u32) -> f64 {
-    mastery::percent(u64::from(owned), u64::from(total)).floor()
 }
 
 #[cfg(test)]
@@ -163,8 +177,6 @@ mod tests {
             plat: 0,
             credits: 0,
             endo: 0,
-            ducats: 0,
-            aya: None,
             mr: 0,
         }
     }
@@ -265,6 +277,22 @@ mod tests {
     }
 
     #[test]
+    fn item_counts_walked_back_from_now() {
+        let changes = [
+            (at("2026-03-02T08:00:00Z"), 30),
+            (at("2026-03-03T08:00:00Z"), -25),
+            (at("2026-03-03T20:00:00Z"), 15),
+        ];
+
+        let counts = daily_item_counts(100, &changes, (day("2026-03-01"), day("2026-03-03")));
+
+        assert_eq!(
+            counts.iter().map(|entry| entry.count).collect::<Vec<_>>(),
+            [80, 110, 100]
+        );
+    }
+
+    #[test]
     fn days_played_over_window() {
         let series = daily_series(&[
             plat_point(1, at("2023-11-14T01:00:00Z"), 100),
@@ -317,24 +345,12 @@ mod tests {
             point(at("2023-11-14T23:59:59Z")),
             point(at("2023-11-16T12:00:00Z")),
         ]);
-        let summary = summary(&account, &catalog, &series);
-        assert_eq!(summary.prime_owned, 24);
-        assert_eq!(summary.prime_total, 65);
-        assert!((summary.prime_percent - 36.0).abs() < f64::EPSILON);
+        let summary = summary(&account, &series);
         assert_eq!(summary.snapshot_days, 2);
         assert_eq!(
             summary.account_created.to_rfc3339(),
             "2020-01-15T00:00:00+00:00"
         );
-    }
-
-    #[test]
-    fn prime_percent_floor() {
-        assert!((prime_percent(0, 0) - 0.0).abs() < f64::EPSILON);
-        assert!((prime_percent(1, 3) - 33.0).abs() < f64::EPSILON);
-        assert!((prime_percent(2, 3) - 66.0).abs() < f64::EPSILON);
-        assert!((prime_percent(199, 200) - 99.0).abs() < f64::EPSILON);
-        assert!((prime_percent(200, 200) - 100.0).abs() < f64::EPSILON);
     }
 }
 

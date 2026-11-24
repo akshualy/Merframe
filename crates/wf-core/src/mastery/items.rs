@@ -270,7 +270,7 @@ fn is_prime_collection_item(item: &Item) -> bool {
         && !is_sentinel_weapon(item)
 }
 
-pub(crate) fn prime_ownership(
+pub(super) fn prime_ownership(
     account: &Account,
     catalog: &Catalog,
     options: MasteryOptions,

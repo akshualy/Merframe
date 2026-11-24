@@ -13,6 +13,7 @@ pub(crate) const RECIPE_PREFIX: &str = "/Lotus/Types/Recipes/";
 pub(crate) const ARCANE_PREFIX: &str = "/Lotus/Upgrades/CosmeticEnhancers/";
 pub(crate) const RELIC_PREFIX: &str = wf_inventory::RELIC_PREFIX;
 pub(crate) const DUCATS_ITEM: &str = "/Lotus/Types/Items/MiscItems/PrimeBucks";
+pub(crate) const KUVA_ITEM: &str = "/Lotus/Types/Items/MiscItems/Kuva";
 pub(crate) const REQUIEM_MARKER: &str = "Requiem";
 pub(crate) const FORMA_ITEM: &str = "/Lotus/Types/Items/MiscItems/Forma";
 pub(crate) const FORMA_BLUEPRINT: &str = "/Lotus/Types/Recipes/Components/FormaBlueprint";

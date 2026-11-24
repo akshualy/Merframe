@@ -2,6 +2,12 @@ import type { ReactNode } from "react";
 import { Hint } from "@/components/ui/hint";
 import { cn } from "@/lib/utils";
 
+export function Figures({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end gap-x-6 gap-y-2">{children}</div>
+  );
+}
+
 export function Figure({
   label,
   value,

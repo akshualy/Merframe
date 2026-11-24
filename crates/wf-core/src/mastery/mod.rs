@@ -7,7 +7,7 @@ mod xp;
 
 use serde::{Deserialize, Serialize};
 
-pub(crate) use items::{includes_founders, kind_of, masterable, prime_ownership, unmastered_types};
+pub(crate) use items::{includes_founders, kind_of, masterable, unmastered_types};
 pub(crate) use tab::tab;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -129,6 +129,7 @@ pub struct MasterySummary {
     pub star_steel_junctions: CategoryTotals,
     pub intrinsic_railjack: CategoryTotals,
     pub intrinsic_duviri: CategoryTotals,
+    pub prime_collection: CategoryTotals,
     pub content_percent: f64,
     pub star_percent: f64,
     pub intrinsic_percent: f64,

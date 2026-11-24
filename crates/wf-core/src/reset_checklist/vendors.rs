@@ -12,6 +12,7 @@ use crate::reset_checklist::unlocks::{self, Quest, ResetChecklistRequirement, Sy
 use crate::resources::archon_shard_type;
 
 const AMBER_SHARD_WEEK: i64 = 665;
+pub(super) const TESHIN_MANIFEST: &str = "Hubs/TeshinHardModeVendorManifest";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -108,7 +109,7 @@ pub(super) struct ResetChecklistVendorDefinition {
 
 pub(super) const VENDORS: [ResetChecklistVendorDefinition; 11] = [
     ResetChecklistVendorDefinition {
-        manifest: "Hubs/TeshinHardModeVendorManifest",
+        manifest: TESHIN_MANIFEST,
         requirements: &[ResetChecklistRequirement::SteelPathMissionCompleted],
         name: "Teshin",
         place: Some("The Steel Path Honors"),
@@ -248,14 +249,26 @@ pub(super) fn weekly_purchases<'a>(
     manifest: &'static str,
     now: DateTime<Utc>,
 ) -> impl Iterator<Item = &'a VendorOfferPurchase> {
-    let reset = ResetCadence::Weekly.window(now).expiry;
+    purchases_expiring(
+        inventory,
+        manifest,
+        now,
+        ResetCadence::Weekly.window(now).expiry,
+    )
+}
 
+pub(super) fn purchases_expiring<'a>(
+    inventory: &'a Inventory,
+    manifest: &'static str,
+    now: DateTime<Utc>,
+    expiry: DateTime<Utc>,
+) -> impl Iterator<Item = &'a VendorOfferPurchase> {
     inventory
         .recent_vendor_purchases
         .iter()
         .filter(move |history| history.vendor_type.ends_with(manifest))
         .flat_map(move |history| history.active_purchases(now))
-        .filter(move |purchase| purchase.expiry.datetime() == reset)
+        .filter(move |purchase| purchase.expiry.datetime() == expiry)
 }
 
 pub(crate) fn vendors(context: &ResetChecklistContext) -> Vec<ResetChecklistVendor> {
@@ -426,7 +439,7 @@ mod tests {
         context
             .stored
             .kuva_bought
-            .insert("Hubs/TeshinHardModeVendorManifest".to_owned(), 2);
+            .insert(TESHIN_MANIFEST.to_owned(), 2);
 
         let vendors = vendors(&context);
 

@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::Arc;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveTime, Utc};
 use indexmap::IndexMap;
 use serde::Serialize;
 use wf_inventory::Inventory;
@@ -40,7 +40,7 @@ use crate::reset_checklist::{
 use crate::resources::{self, ResourceQuery, ResourcesTab};
 use crate::rivens::{Grader, RivenRow, RivensTab};
 use crate::sale_safety::{SaleSafetyCheck, SaleSafetyRule};
-use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsSummary};
+use crate::stats::{self, DailyCount, DeltaRow, OpeningRow, StatsItemHistory, StatsSummary};
 use crate::store::{Snapshot, StatPoint, Store, TimeRange};
 use crate::syndicates::{self, SyndicatesTab};
 use crate::trade::{Trade, player_name};
@@ -63,8 +63,6 @@ pub struct StatsTab {
     pub relics_per_day: Vec<DailyCount>,
     pub trades_per_day: Vec<DailyCount>,
     pub days_played: Vec<DailyCount>,
-    pub relics_opened: usize,
-    pub trade_count: usize,
     pub trade_plat: i64,
     pub summary: Option<StatsSummary>,
 }
@@ -206,6 +204,17 @@ impl Core {
         self.latest_snapshot = Some(snapshot.clone());
         self.adopt_inventory(inventory);
         Ok(Some(snapshot))
+    }
+
+    pub fn use_account(&mut self, account_id: &str) -> Result<bool> {
+        let switched = self.store.use_account(account_id)?;
+        if switched {
+            tracing::info!("Account switched");
+            self.account = None;
+            self.latest_snapshot = None;
+        }
+
+        Ok(switched)
     }
 
     fn adopt_inventory(&mut self, inventory: Inventory) {
@@ -783,17 +792,59 @@ impl Core {
         let summary = self
             .account
             .as_ref()
-            .map(|account| stats::summary(account, &self.catalog, &series));
+            .map(|account| stats::summary(account, &series));
         Ok(StatsTab {
             relics_per_day: stats::daily_counts(openings.iter().map(|opening| opening.at), span),
             trades_per_day: stats::daily_counts(trades.iter().map(|trade| trade.at), span),
             days_played: stats::daily_counts(series.iter().map(|point| point.at), span),
             series,
-            relics_opened: openings.len(),
-            trade_count: trades.len(),
             trade_plat: trades.iter().map(|trade| trade.trade.plat).sum(),
             summary,
         })
+    }
+
+    pub fn stats_item_history(
+        &self,
+        item_types: &[String],
+        range: TimeRange,
+        now: DateTime<Utc>,
+    ) -> Result<Vec<StatsItemHistory>> {
+        let Some(account) = &self.account else {
+            return Ok(Vec::new());
+        };
+        let Some(span) = stats::day_span(range, self.store.first_snapshot_at()?, now) else {
+            return Ok(Vec::new());
+        };
+        let since = span.0.and_time(NaiveTime::MIN).and_utc();
+
+        item_types
+            .iter()
+            .map(|item_type| {
+                Ok(StatsItemHistory {
+                    item: ItemSummary::from(&*self.items.resolve(item_type)),
+                    counts: stats::daily_item_counts(
+                        account.inventory.counted(item_type),
+                        &self.store.item_changes(item_type, since)?,
+                        span,
+                    ),
+                })
+            })
+            .collect()
+    }
+
+    pub fn stats_item_choices(&self) -> Vec<ItemSummary> {
+        let Some(account) = &self.account else {
+            return Vec::new();
+        };
+        let mut choices: Vec<ItemSummary> = account
+            .inventory
+            .counted_items()
+            .filter(|item| item.item_count > 0 && self.items.lookup(&item.item_type).is_some())
+            .map(|item| ItemSummary::from(&*self.items.resolve(&item.item_type)))
+            .collect();
+        choices.sort_by(|a, b| a.name.cmp(&b.name));
+        choices.dedup_by(|a, b| a.name == b.name);
+        choices
     }
 
     pub fn stats_deltas(&self, range: TimeRange) -> Result<Vec<DeltaRow>> {
@@ -1086,9 +1137,6 @@ mod tests {
             .summary
             .unwrap();
         assert_eq!(summary.snapshot_days, 1);
-        assert!(summary.prime_owned > 0);
-        assert!(summary.prime_owned <= summary.prime_total);
-        assert!(summary.prime_percent > 0.0);
         assert!(
             core.relics_for(TRINITY_PRIME_SYSTEMS)
                 .is_some_and(|sources| !sources.is_empty())
@@ -1128,6 +1176,51 @@ mod tests {
         assert_eq!(
             row(&core, ResetChecklistRowId::Sortie).progress,
             ResetChecklistProgress::Unknown
+        );
+    }
+
+    #[test]
+    fn item_history_since_first_snapshot() {
+        let mut core = core();
+        let now = at(1_788_800_000_000);
+        let next_day = now + chrono::TimeDelta::days(1);
+        let kuva = "/Lotus/Types/Items/MiscItems/Kuva";
+        let mut gained: serde_json::Value =
+            serde_json::from_str(&synced("6a9eeb1f000000000000c002")).unwrap();
+        fixtures::push_counted(&mut gained, "MiscItems", kuva, 30_000);
+        core.ingest_inventory(fixtures::INVENTORY, now).unwrap();
+        core.ingest_inventory(&gained.to_string(), next_day)
+            .unwrap();
+
+        let history = core
+            .stats_item_history(&[kuva.to_owned()], TimeRange::all(), next_day)
+            .unwrap();
+
+        let counts: Vec<i64> = history[0].counts.iter().map(|day| day.count).collect();
+        assert_eq!(counts, [0, 30_000]);
+    }
+
+    #[test]
+    fn item_choices_are_held_and_named() {
+        let mut core = core();
+        let mut inventory: serde_json::Value = serde_json::from_str(fixtures::INVENTORY).unwrap();
+        fixtures::push_counted(&mut inventory, "MiscItems", "/Lotus/Types/Items/Unknown", 4);
+        fixtures::entries(&mut inventory, "MiscItems")[0]["ItemCount"] = 0.into();
+        let emptied = inventory["MiscItems"][0]["ItemType"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        core.ingest_inventory(&inventory.to_string(), at(1_788_800_000_000))
+            .unwrap();
+
+        let choices = core.stats_item_choices();
+
+        assert!(choices.is_sorted_by(|a, b| a.name < b.name));
+        assert!(choices.iter().all(|item| item.unique_name != emptied));
+        assert!(
+            choices
+                .iter()
+                .all(|item| !item.unique_name.ends_with("/Unknown"))
         );
     }
 
@@ -1355,9 +1448,7 @@ mod tests {
         let stats = core
             .stats_tab(TimeRange::all(), now + chrono::TimeDelta::days(2))
             .unwrap();
-        assert_eq!(stats.trade_count, 1);
         assert_eq!(stats.trade_plat, 90);
-        assert_eq!(stats.relics_opened, 1);
         let openings = core.relic_openings(TimeRange::all()).unwrap();
         assert_eq!(openings.len(), 1);
         assert_eq!(openings[0].relic, "Axi A21");

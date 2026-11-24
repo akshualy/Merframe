@@ -90,8 +90,8 @@ pub use sale_safety::{
     SaleSafetyReservation, SaleSafetyRule, SaleSafetyState,
 };
 pub use stats::{
-    DailyCount, DeltaRow, OpeningRow, StatsSummary, daily_counts, daily_series, day_span,
-    distinct_days,
+    DailyCount, DeltaRow, OpeningRow, StatsItemHistory, StatsSummary, daily_counts, daily_series,
+    day_span, distinct_days,
 };
 pub use store::{
     RelicOpening, Snapshot, SnapshotId, StatPoint, Store, StoredDelta, StoredTrade, TimeRange,
