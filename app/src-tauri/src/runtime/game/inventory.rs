@@ -9,7 +9,7 @@ use tauri::{AppHandle, Runtime};
 use tracing::{debug, warn};
 use wf_core::{CoreEvent, MissionEndReward};
 use wf_mem::MemoryReader;
-use wf_scan::{HttpClients, InventoryBuffer};
+use wf_scan::{HttpClients, SyncedInventory};
 
 use crate::overlay;
 use crate::runtime::attach::open_game;
@@ -152,24 +152,31 @@ fn http_clients(
 fn ingest_window(state: &Arc<AppState>, window: Duration) -> anyhow::Result<Ingested> {
     let (pid, reader) = open_game(state)?;
     let clients = http_clients(state, pid, reader.as_ref())?;
-    let Some(buffer) = clients.await_inventory(reader.as_ref(), window) else {
+    let Some(synced) = clients.await_inventory(reader.as_ref(), window) else {
         debug!(
             window_millis = window.as_millis(),
             "No inventory response passed through the HTTP queue"
         );
         return Ok(Ingested::Unchanged);
     };
-    ingest_buffer(state, &buffer)
+    ingest_synced(state, &synced)
 }
 
-fn ingest_buffer(state: &Arc<AppState>, buffer: &InventoryBuffer) -> anyhow::Result<Ingested> {
+fn ingest_synced(state: &Arc<AppState>, synced: &SyncedInventory) -> anyhow::Result<Ingested> {
+    let buffer = &synced.buffer;
     debug!(
         addr = format!("{:#x}", buffer.addr),
         len = buffer.len,
         last_sync = buffer.last_sync,
         "Inventory document accepted"
     );
-    if let Some(current) = read(&state.status).last_sync_oid.clone()
+    let current = read(&state.status).last_sync_oid.clone();
+    let mut core = lock(&state.core);
+    let switched = core
+        .use_account(&synced.account_id)
+        .context("Switching the account")?;
+    if !switched
+        && let Some(current) = current
         && buffer.last_sync <= current
     {
         debug!(
@@ -180,7 +187,6 @@ fn ingest_buffer(state: &Arc<AppState>, buffer: &InventoryBuffer) -> anyhow::Res
     }
 
     let now = Utc::now();
-    let mut core = lock(&state.core);
     let events = core
         .ingest_inventory(&buffer.json, now)
         .context("Ingesting the inventory")?;

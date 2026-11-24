@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -20,9 +21,11 @@ import {
   changeTone,
   GRID,
   LINE_CURSOR,
+  LINE_MARGIN,
   MARGIN,
   signed,
 } from "@/lib/chart";
+import { dayLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const MAX_DOTS = 12;
@@ -35,17 +38,36 @@ export interface Point {
   change: number | null;
 }
 
+export function dayPoints(
+  days: { day: string; value: number | null }[],
+  withYear: boolean,
+): Point[] {
+  let previous: number | null = null;
+
+  return days.map(({ day, value }) => {
+    const change =
+      value !== null && previous !== null ? value - previous : null;
+    if (value !== null) {
+      previous = value;
+    }
+
+    return { key: day, label: dayLabel(day, withYear), value, change };
+  });
+}
+
 export function LineChart({
   label,
   color,
   points,
   format,
+  control,
   className,
 }: {
   label: string;
   color: string;
   points: Point[];
   format: (value: number) => string;
+  control?: ReactNode;
   className?: string;
 }) {
   const known = points.filter(
@@ -53,6 +75,11 @@ export function LineChart({
   );
   const first = known.at(0);
   const latest = known.at(-1);
+  const values = known.map((point) => point.value);
+  const extremes =
+    values.length === 0
+      ? []
+      : [...new Set([Math.min(...values), Math.max(...values)])];
   const swing = Math.max(
     1,
     ...points.map((point) => Math.abs(point.change ?? 0)),
@@ -71,19 +98,20 @@ export function LineChart({
             </span>
           ) : null
         }
+        control={control}
         value={latest ? format(latest.value) : "-"}
         caption={latest?.label ?? "no snapshots in this window"}
       />
       <div className="h-28">
         <ResponsiveContainer>
-          <Chart data={points} syncId={label} margin={MARGIN}>
-            <CartesianGrid vertical={false} {...GRID} />
+          <Chart data={points} syncId={label} margin={LINE_MARGIN}>
+            <CartesianGrid vertical={false} syncWithTicks {...GRID} />
             <XAxis dataKey="label" scale="band" hide />
             <YAxis
               width={AXIS_WIDTH}
               domain={["dataMin", "dataMax"]}
-              padding={{ top: 4, bottom: 4 }}
-              tickCount={2}
+              ticks={extremes}
+              interval={0}
               tick={AXIS_TICK}
               tickFormatter={(value: number) => COMPACT.format(value)}
               tickLine={false}

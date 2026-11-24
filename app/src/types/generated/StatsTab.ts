@@ -3,4 +3,4 @@ import type { DailyCount } from "./DailyCount";
 import type { StatPoint } from "./StatPoint";
 import type { StatsSummary } from "./StatsSummary";
 
-export type StatsTab = { series: Array<StatPoint>, relics_per_day: Array<DailyCount>, trades_per_day: Array<DailyCount>, days_played: Array<DailyCount>, relics_opened: number, trade_count: number, trade_plat: number, summary: StatsSummary | null, };
+export type StatsTab = { series: Array<StatPoint>, relics_per_day: Array<DailyCount>, trades_per_day: Array<DailyCount>, days_played: Array<DailyCount>, trade_plat: number, summary: StatsSummary | null, };

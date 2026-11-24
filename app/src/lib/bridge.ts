@@ -18,6 +18,7 @@ import type {
   InvasionWeaponPart,
   InventoryTab,
   ItemListings,
+  ItemSummary,
   ListingChoices,
   MarketAccount,
   MarketBulkOutcome,
@@ -49,6 +50,7 @@ import type {
   RivensTab,
   SaleSafetySettings,
   Settings,
+  StatsItemHistory,
   StatsTab,
   StoredTrade,
   SyndicatesTab,
@@ -144,6 +146,12 @@ export const api = {
   rivenComparables: (weaponSlug: string, shown: ComparedStat[]) =>
     call<RivenComparables | null>("riven_comparables", { weaponSlug, shown }),
   statsTab: (sinceMs?: number) => call<StatsTab>("stats_tab", since(sinceMs)),
+  statsItemHistory: (itemTypes: string[], sinceMs?: number) =>
+    call<StatsItemHistory[]>("stats_item_history", {
+      itemTypes,
+      ...since(sinceMs),
+    }),
+  statsItemChoices: () => call<ItemSummary[]>("stats_item_choices"),
   statsDeltas: (sinceMs?: number) =>
     call<DeltaRow[]>("stats_deltas", since(sinceMs)),
   statsOpenings: (sinceMs?: number) =>

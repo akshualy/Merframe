@@ -1,12 +1,18 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { X } from "lucide-react";
+import { useCallback, useMemo } from "react";
 import { type Bar, BarChart } from "@/components/bar-chart";
+import { Amount } from "@/components/currency";
 import { DataTable } from "@/components/data-table";
 import { type Day, DayStrip } from "@/components/day-strip";
-import { LineChart, type Point } from "@/components/line-chart";
-import { Page, Section, Stat } from "@/components/page";
+import { Figure, Figures } from "@/components/figure";
+import { ItemSearch } from "@/components/item-search";
+import { dayPoints, LineChart, type Point } from "@/components/line-chart";
+import { Page, Section } from "@/components/page";
 import { TimeframeTabs, useTimeframeData } from "@/components/timeframe-tabs";
 import { TradesSection } from "@/components/trades-section";
+import { Button } from "@/components/ui/button";
+import { useAsyncData } from "@/hooks/use-async-data";
 import { api } from "@/lib/bridge";
 import { changeTone, signed } from "@/lib/chart";
 import {
@@ -15,10 +21,10 @@ import {
   dayLabel,
   fullDate,
   num,
-  percent,
   spansYears,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import type { DailyCount, DeltaRow, OpeningRow, StatPoint } from "@/types";
 
 const OPENING_COLUMNS: ColumnDef<OpeningRow>[] = [
@@ -52,6 +58,8 @@ const DELTA_COLUMNS: ColumnDef<DeltaRow>[] = [
   },
 ];
 
+const HISTORY_COLOR_SLOTS = [1, 2, 3, 4, 5, 6];
+
 export function StatsPage() {
   const { data, error, loading } = useTimeframeData("history", api.statsTab, [
     "inventoryUpdated",
@@ -64,6 +72,22 @@ export function StatsPage() {
     "inventoryUpdated",
   ]);
   const trades = useTimeframeData("trades", api.statsTrades, ["tradesUpdated"]);
+  const historyItems = usePreferencesStore((state) => state.historyItems);
+  const setHistoryItems = usePreferencesStore((state) => state.setHistoryItems);
+  const loadItemHistory = useCallback(
+    (sinceMs?: number) =>
+      api.statsItemHistory(
+        historyItems.map((chosen) => chosen.itemType),
+        sinceMs,
+      ),
+    [historyItems],
+  );
+  const itemHistory = useTimeframeData("items", loadItemHistory, [
+    "inventoryUpdated",
+  ]);
+  const itemChoices = useAsyncData("statsItemChoices", api.statsItemChoices, [
+    "inventoryUpdated",
+  ]);
 
   const points = data?.series ?? [];
   const summary = data?.summary ?? null;
@@ -74,36 +98,20 @@ export function StatsPage() {
     const byDay = new Map(
       points.map((point) => [point.at.slice(0, 10), point]),
     );
-    const toPoints = (pick: (point: StatPoint) => number | null): Point[] => {
-      let previous: number | null = null;
-      return days.map((entry) => {
-        const point = byDay.get(entry.day);
-        const value = point ? pick(point) : null;
-        const change =
-          value !== null && previous !== null ? value - previous : null;
-        if (value !== null) {
-          previous = value;
-        }
-        return {
-          key: entry.day,
-          label: dayLabel(entry.day, withYear),
-          value,
-          change,
-        };
-      });
-    };
-    const series = [
+    const toPoints = (pick: (point: StatPoint) => number): Point[] =>
+      dayPoints(
+        days.map((entry) => {
+          const point = byDay.get(entry.day);
+          return { day: entry.day, value: point ? pick(point) : null };
+        }),
+        withYear,
+      );
+    return [
       {
         key: "plat",
         label: "Platinum",
         color: "var(--chart-1)",
         points: toPoints((point) => point.plat),
-      },
-      {
-        key: "ducats",
-        label: "Ducats",
-        color: "var(--chart-2)",
-        points: toPoints((point) => point.ducats),
       },
       {
         key: "endo",
@@ -117,18 +125,7 @@ export function StatsPage() {
         color: "var(--chart-4)",
         points: toPoints((point) => point.credits),
       },
-      {
-        key: "aya",
-        label: "Aya",
-        color: "var(--chart-5)",
-        points: toPoints((point) => point.aya),
-      },
     ];
-    return series.filter(
-      (entry) =>
-        entry.key !== "aya" ||
-        entry.points.some((point) => point.value !== null),
-    );
   }, [points, days, withYear]);
 
   const dayBars = useMemo(() => {
@@ -154,7 +151,39 @@ export function StatsPage() {
     [days, withYear],
   );
 
-  const bestRelicDay = Math.max(0, ...dayBars.relics.map((bar) => bar.value));
+  const itemCharts = useMemo(() => {
+    const histories = itemHistory.data ?? [];
+    const itemsWithYear = spansYears(
+      histories.at(0)?.counts.map((entry) => entry.day) ?? [],
+    );
+    return historyItems.flatMap((chosen) => {
+      const history = histories.find(
+        (entry) => entry.item.unique_name === chosen.itemType,
+      );
+      if (!history) {
+        return [];
+      }
+
+      return {
+        ...chosen,
+        name: history.item.name,
+        points: dayPoints(
+          history.counts.map((entry) => ({
+            day: entry.day,
+            value: entry.count,
+          })),
+          itemsWithYear,
+        ),
+      };
+    });
+  }, [itemHistory.data, historyItems]);
+  const freeColorSlot = HISTORY_COLOR_SLOTS.find(
+    (slot) => !historyItems.some((chosen) => chosen.colorSlot === slot),
+  );
+  const addableItems = (itemChoices.data ?? []).filter(
+    (item) =>
+      !historyItems.some((chosen) => chosen.itemType === item.unique_name),
+  );
 
   const firstDay = days.at(0);
   const lastDay = days.at(-1);
@@ -169,44 +198,41 @@ export function StatsPage() {
     <Page
       title="Stats"
       quote="stats"
+      actions={
+        <Figures>
+          <Figure label="Mastery rank" value={num(latestRank)} />
+          <Figure
+            label="Account created"
+            value={summary ? fullDate(summary.account_created) : "-"}
+          />
+        </Figures>
+      }
       loading={loading && !data}
-      error={error ?? deltas.error ?? openings.error ?? trades.error}
+      error={
+        error ??
+        itemHistory.error ??
+        itemChoices.error ??
+        deltas.error ??
+        openings.error ??
+        trades.error
+      }
     >
-      <div className="grid gap-4 @sm:grid-cols-2 @3xl:grid-cols-4">
-        <Stat
-          label="Prime collection"
-          value={summary ? percent(summary.prime_percent / 100, 0) : "-"}
-          hint={
-            summary
-              ? `${num(summary.prime_owned)} of ${counted(summary.prime_total, "Prime item")} owned or mastered`
-              : "Waiting for an inventory read"
-          }
-        />
-        <Stat
-          label="Mastery rank"
-          value={num(latestRank)}
-          hint={
-            summary
-              ? `Account created ${fullDate(summary.account_created)}`
-              : undefined
-          }
-        />
-        <Stat
-          label="Relics opened"
-          value={num(data?.relics_opened ?? 0)}
-          hint={`Best day ${num(bestRelicDay)}`}
-        />
-        <Stat
-          label="Trades"
-          value={num(data?.trade_count ?? 0)}
-          hint={`${num(data?.trade_plat ?? 0)} platinum across them`}
-        />
-      </div>
-
       <Section
         title="History"
-        description={`One point per UTC day. ${counted(playedDays, "day has", "days have")} data out of ${counted(days.length, "day")}, ${windowLabel}.`}
-        action={<TimeframeTabs card="history" />}
+        description={`${num(playedDays)} out of ${counted(days.length, "day")} ${playedDays === 1 ? "has" : "have"} data. ${windowLabel}.`}
+        action={
+          <Figures>
+            <Figure
+              label="Platinum traded"
+              value={
+                <Amount currency="platinum" plain>
+                  {num(data?.trade_plat)}
+                </Amount>
+              }
+            />
+            <TimeframeTabs card="history" />
+          </Figures>
+        }
       >
         <div className="grid gap-6 @lg:grid-cols-2 @5xl:grid-cols-3">
           {metrics.map((metric) => (
@@ -237,6 +263,61 @@ export function StatsPage() {
             format={num}
           />
         </div>
+      </Section>
+
+      <Section
+        title="Item History"
+        description={`Pick up to ${HISTORY_COLOR_SLOTS.length} items.`}
+        action={<TimeframeTabs card="items" />}
+        controls={
+          freeColorSlot !== undefined && (
+            <ItemSearch
+              items={addableItems}
+              placeholder="Add an item"
+              onPick={(item) =>
+                setHistoryItems([
+                  ...historyItems,
+                  { itemType: item.unique_name, colorSlot: freeColorSlot },
+                ])
+              }
+            />
+          )
+        }
+      >
+        {historyItems.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            No items picked. Add one above.
+          </p>
+        ) : (
+          <div className="grid gap-6 @lg:grid-cols-2 @5xl:grid-cols-3">
+            {itemCharts.map((chart) => (
+              <LineChart
+                key={chart.itemType}
+                label={chart.name}
+                color={`var(--chart-${chart.colorSlot})`}
+                points={chart.points}
+                format={num}
+                control={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-6"
+                    aria-label={`Remove ${chart.name}`}
+                    onClick={() =>
+                      setHistoryItems(
+                        historyItems.filter(
+                          (chosen) => chosen.itemType !== chart.itemType,
+                        ),
+                      )
+                    }
+                  >
+                    <X className="size-4" />
+                  </Button>
+                }
+              />
+            ))}
+          </div>
+        )}
       </Section>
 
       <div className="grid gap-4 @5xl:grid-cols-2">

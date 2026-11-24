@@ -219,6 +219,7 @@ export type * from "./Sortie";
 export type * from "./SortieMission";
 export type * from "./StatMatch";
 export type * from "./StatPoint";
+export type * from "./StatsItemHistory";
 export type * from "./StatsSummary";
 export type * from "./StatsTab";
 export type * from "./StoredTrade";

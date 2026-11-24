@@ -4,7 +4,7 @@ import { Activity, FileUp, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ArbitrationRunFigures } from "@/components/arbitration-run-figures";
 import { DataTable } from "@/components/data-table";
-import { Figure } from "@/components/figure";
+import { Figure, Figures } from "@/components/figure";
 import { FilterGrid } from "@/components/filter-grid";
 import { FilterSelect } from "@/components/filter-select";
 import { ErrorNote, Section, Surface, TableSkeleton } from "@/components/page";
@@ -181,7 +181,7 @@ function ArbitrationEarnings({ runs }: { runs: ArbitrationRun[] }) {
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+    <Figures>
       <Figure label="Runs counted" value={num(summary.runs)} />
       <Figure label="Vitus Essence" value={num(summary.vitus)} />
       <Figure
@@ -191,7 +191,7 @@ function ArbitrationEarnings({ runs }: { runs: ArbitrationRun[] }) {
       <Hint as="span">
         Shown runs with Vitus Essence, per hour from their total run time
       </Hint>
-    </div>
+    </Figures>
   );
 }
 

@@ -1,13 +1,19 @@
 use std::collections::{BTreeSet, HashMap};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeDelta, Utc};
 use wf_inventory::Inventory;
+use wf_worldstate::game_week_count;
 
+use crate::catalog::KUVA_ITEM;
+use crate::reset_checklist::cadence::ResetCadence;
 use crate::reset_checklist::vendors::{
-    VENDORS, VendorKuvaCertainty, VendorNamedOffer, weekly_purchases,
+    TESHIN_MANIFEST, VENDORS, VendorKuvaCertainty, VendorNamedOffer, purchases_expiring,
+    weekly_purchases,
 };
 
-const KUVA: &str = "/Lotus/Types/Items/MiscItems/Kuva";
+const TESHIN_ROTATION_WEEKS: i64 = 8;
+const TESHIN_ROTATION_KUVA_WEEK: i64 = 666;
+const TESHIN_ROTATION_KUVA: i64 = 50_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct VendorKuvaBought {
@@ -26,8 +32,12 @@ pub(super) fn kuva_bought_between(
     next: &Inventory,
     now: DateTime<Utc>,
 ) -> Vec<VendorKuvaBought> {
-    let mut unexplained = next.counted(KUVA) - previous.counted(KUVA);
+    let mut unexplained = next.counted(KUVA_ITEM) - previous.counted(KUVA_ITEM);
     let mut estimated = Vec::new();
+
+    if teshin_rotation_kuva_bought(next, now) && !teshin_rotation_kuva_bought(previous, now) {
+        unexplained -= TESHIN_ROTATION_KUVA;
+    }
 
     for vendor in &VENDORS {
         let Some(VendorNamedOffer::Kuva {
@@ -68,6 +78,16 @@ pub(super) fn kuva_bought_between(
     }
 }
 
+fn teshin_rotation_kuva_bought(inventory: &Inventory, now: DateTime<Utc>) -> bool {
+    let offered_again =
+        ResetCadence::Weekly.window(now).activation + TimeDelta::weeks(TESHIN_ROTATION_WEEKS);
+
+    (game_week_count(now) - TESHIN_ROTATION_KUVA_WEEK).rem_euclid(TESHIN_ROTATION_WEEKS) == 0
+        && purchases_expiring(inventory, TESHIN_MANIFEST, now, offered_again)
+            .next()
+            .is_some()
+}
+
 fn kuva_purchase_choices(
     vendors: &[EstimatedVendorPurchases],
     unexplained: i64,
@@ -100,10 +120,9 @@ mod tests {
     use serde_json::{Value, json};
 
     use super::*;
-    use crate::catalog::fixtures;
+    use crate::catalog::fixtures::{self, at};
     use crate::reset_checklist::context::fixtures::synced_at;
 
-    const TESHIN: &str = "Hubs/TeshinHardModeVendorManifest";
     const PALLADINO: &str = "Hubs/IronwakeDondaVendorManifest";
 
     fn bought(manifest: &'static str, bought: u32) -> VendorKuvaBought {
@@ -127,7 +146,13 @@ mod tests {
         others: &[(&str, u32)],
         kuva: i64,
     ) -> Vec<VendorKuvaBought> {
-        let next = fixtures::inventory_with(|value| {
+        let next = inventory_with_purchases(teshin, others, kuva);
+
+        kuva_bought_between(&fixtures::inventory(), &next, synced_at())
+    }
+
+    fn inventory_with_purchases(teshin: &[Value], others: &[(&str, u32)], kuva: i64) -> Inventory {
+        fixtures::inventory_with(|value| {
             let vendors = fixtures::entries(value, "RecentVendorPurchases");
             vendors[0]["PurchaseHistory"] = json!(teshin);
             for (manifest, bought) in others {
@@ -136,10 +161,13 @@ mod tests {
                     "PurchaseHistory": [weekly_purchase(manifest, *bought)]
                 }));
             }
-            fixtures::push_counted(value, "MiscItems", KUVA, kuva);
-        });
+            fixtures::push_counted(value, "MiscItems", KUVA_ITEM, kuva);
+        })
+    }
 
-        kuva_bought_between(&fixtures::inventory(), &next, synced_at())
+    fn expiring(mut purchase: Value, millis: &str) -> Value {
+        purchase["Expiry"]["$date"]["$numberLong"] = json!(millis);
+        purchase
     }
 
     #[test]
@@ -150,14 +178,17 @@ mod tests {
             51_000,
         );
 
-        assert_eq!(purchases, [bought(TESHIN, 3)]);
+        assert_eq!(purchases, [bought(TESHIN_MANIFEST, 3)]);
     }
 
     #[test]
     fn two_estimated_vendors() {
         let purchases = bought_since_fixture(&[teshin_offer(5)], &[(PALLADINO, 1)], 65_000);
 
-        assert_eq!(purchases, [bought(PALLADINO, 1), bought(TESHIN, 3)]);
+        assert_eq!(
+            purchases,
+            [bought(PALLADINO, 1), bought(TESHIN_MANIFEST, 3)]
+        );
     }
 
     #[test]
@@ -166,7 +197,7 @@ mod tests {
 
         assert_eq!(
             bought_since_fixture(&teshin, &[], 10_000),
-            [bought(TESHIN, 1)]
+            [bought(TESHIN_MANIFEST, 1)]
         );
     }
 
@@ -179,8 +210,7 @@ mod tests {
 
     #[test]
     fn purchase_expiring_another_week() {
-        let mut last_week = weekly_purchase("other", 1);
-        last_week["Expiry"]["$date"]["$numberLong"] = json!("1788739200000");
+        let last_week = expiring(weekly_purchase("other", 1), "1788739200000");
         let teshin = [teshin_offer(2), last_week];
 
         assert_eq!(bought_since_fixture(&teshin, &[], 10_000), []);
@@ -189,5 +219,30 @@ mod tests {
     #[test]
     fn gain_with_other_kuva() {
         assert_eq!(bought_since_fixture(&[teshin_offer(5)], &[], 30_650), []);
+    }
+
+    #[test]
+    fn teshin_rotating_kuva() {
+        let kuva_week = at(1_790_000_000_000);
+        let weekly = expiring(teshin_offer(25), "1790553600000");
+        let rotating = |expiry| expiring(weekly_purchase("rotating", 1), expiry);
+        let nothing_bought = fixtures::inventory();
+        let rotating_bought = inventory_with_purchases(&[rotating("1794787200000")], &[], 50_000);
+        let weekly_bought = inventory_with_purchases(std::slice::from_ref(&weekly), &[], 250_000);
+        let both_bought =
+            inventory_with_purchases(&[weekly, rotating("1794787200000")], &[], 300_000);
+        let another_week = [teshin_offer(5), rotating("1793577600000")];
+
+        for previous in [&nothing_bought, &rotating_bought] {
+            assert_eq!(
+                kuva_bought_between(previous, &both_bought, kuva_week),
+                [bought(TESHIN_MANIFEST, 25)]
+            );
+        }
+        assert_eq!(
+            kuva_bought_between(&nothing_bought, &weekly_bought, kuva_week),
+            [bought(TESHIN_MANIFEST, 25)]
+        );
+        assert_eq!(bought_since_fixture(&another_week, &[], 80_000), []);
     }
 }

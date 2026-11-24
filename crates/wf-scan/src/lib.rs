@@ -21,7 +21,7 @@ pub use bundle::{RewardTile, reward_screen};
 pub use dialog::DialogRiven;
 pub use equip::{RelicPick, RelicPicker, confirmed_relic};
 pub use error::{Result, ScanError};
-pub use http::HttpClients;
+pub use http::{HttpClients, SyncedInventory};
 pub use inventory::{InventoryBuffer, MissionEndReward};
 pub use kiosk::{DucatKiosk, KioskItem};
 pub use logbuf::{LogBuffer, find_log_buffer, is_line_head, locate, read_pending};

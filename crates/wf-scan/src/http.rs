@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::thread;
 use std::time::{Duration, Instant};
 
+use memchr::memmem;
 use wf_mem::{GAME_PROCESS, MemoryReader, Region, read_u32_le, read_u64_le};
 
 use crate::Result;
@@ -22,6 +23,9 @@ const MAX_BLOCKS: u64 = 1 << 20;
 const MAX_QUEUED: u64 = 64;
 const QUEUES: usize = 2;
 const DOCUMENT_HEAD: &[u8] = b"{\"";
+const ACCOUNT_PARAMETER: &[u8] = b"accountId=";
+const ACCOUNT_ID_LENGTH: usize = 24;
+const MAX_URL: u64 = 2048;
 const POLL: Duration = Duration::from_millis(1);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,6 +40,12 @@ struct Queue {
 struct Client {
     slot: u64,
     queues: Vec<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SyncedInventory {
+    pub account_id: String,
+    pub buffer: InventoryBuffer,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -123,6 +133,24 @@ fn document<R: MemoryReader + ?Sized>(reader: &R, pointer: u64, length: u64) -> 
     Some(body)
 }
 
+fn request_account_id<R: MemoryReader + ?Sized>(
+    reader: &R,
+    entry_strings: &[(u64, u64)],
+) -> Option<String> {
+    entry_strings
+        .iter()
+        .filter(|&&(_, length)| length <= MAX_URL)
+        .find_map(|&(pointer, length)| {
+            let url = reader.read_vec(pointer, to_usize(length).ok()?).ok()?;
+            let start = memmem::find(&url, ACCOUNT_PARAMETER)? + ACCOUNT_PARAMETER.len();
+            let id = url.get(start..start + ACCOUNT_ID_LENGTH)?;
+
+            id.iter()
+                .all(u8::is_ascii_hexdigit)
+                .then(|| str::from_utf8(id).ok().map(str::to_owned))?
+        })
+}
+
 impl HttpClients {
     pub fn locate<R: MemoryReader + ?Sized>(reader: &R) -> Result<Option<Self>> {
         let regions = reader.regions()?;
@@ -150,8 +178,8 @@ impl HttpClients {
         self.clients.iter().map(|client| client.slot).collect()
     }
 
-    fn bodies<R: MemoryReader + ?Sized>(&self, reader: &R) -> Vec<(u64, u64)> {
-        let mut bodies = Vec::new();
+    fn entry_strings<R: MemoryReader + ?Sized>(&self, reader: &R) -> Vec<Vec<(u64, u64)>> {
+        let mut entries = Vec::new();
         for client in &self.clients {
             let Ok(object) = reader.read_u64(client.slot) else {
                 continue;
@@ -170,11 +198,11 @@ impl HttpClients {
                     let Ok(fields) = reader.read_vec(entry, ENTRY_FIELDS) else {
                         continue;
                     };
-                    bodies.extend(strings(&fields));
+                    entries.push(strings(&fields));
                 }
             }
         }
-        bodies
+        entries
     }
 
     fn idle<R: MemoryReader + ?Sized>(&self, reader: &R) -> bool {
@@ -191,24 +219,41 @@ impl HttpClients {
         &self,
         reader: &R,
         window: Duration,
-    ) -> Option<InventoryBuffer> {
+    ) -> Option<SyncedInventory> {
         let deadline = Instant::now() + window;
         let mut seen = HashSet::new();
         loop {
-            for (pointer, len) in self.bodies(reader) {
-                if !seen.insert((pointer, len)) {
+            for strings in self.entry_strings(reader) {
+                let unseen: Vec<(u64, u64)> = strings
+                    .iter()
+                    .copied()
+                    .filter(|string| seen.insert(*string))
+                    .collect();
+                if unseen.is_empty() {
                     continue;
                 }
-                let Some(body) = document(reader, pointer, len) else {
-                    continue;
-                };
-                tracing::debug!(
-                    ptr = format!("{pointer:#x}"),
-                    len,
-                    "HTTP response body seen in the queue"
-                );
-                if let Some(buffer) = accept(pointer, &body) {
-                    return Some(buffer);
+
+                let account_id = request_account_id(reader, &strings);
+                for (pointer, len) in unseen {
+                    let Some(body) = document(reader, pointer, len) else {
+                        continue;
+                    };
+                    tracing::debug!(
+                        ptr = format!("{pointer:#x}"),
+                        len,
+                        "HTTP response body seen in the queue"
+                    );
+                    let Some(buffer) = accept(pointer, &body) else {
+                        continue;
+                    };
+                    let Some(account_id) = account_id else {
+                        tracing::warn!(
+                            "Inventory response without an account id in its request URL"
+                        );
+                        break;
+                    };
+
+                    return Some(SyncedInventory { account_id, buffer });
                 }
             }
             if Instant::now() >= deadline {
@@ -239,10 +284,13 @@ mod tests {
     const DONE_BLOCKS: [usize; 2] = [0x0340, 0x0380];
     const ENTRIES: [usize; 2] = [0x0400, 0x0600];
     const BODIES: [usize; 2] = [0x1000, 0x8000];
+    const URL_FIELD: usize = 0x18;
+    const URL_TEXT: usize = 0x100;
     const BODY_FIELD: usize = 0x50;
     const PENDING: usize = 0x58;
     const DONE: usize = 0x98;
     const OID: &str = "6a9f2bde000000000000c104";
+    const ACCOUNT_ID: &str = "5f0a1b2c3d4e5f6a7b8c9d0e";
 
     struct Heap(Vec<u8>);
 
@@ -274,8 +322,15 @@ mod tests {
         }
 
         fn entry(&mut self, index: usize, body: &str) {
+            self.entry_requested(index, body, &format!("accountId={ACCOUNT_ID}"));
+        }
+
+        fn entry_requested(&mut self, index: usize, body: &str, query: &str) {
             let at = ENTRIES[index];
             let text = BODIES[index];
+            let url = format!("https://api.example/api/inventory.php?{query}&nonce=1");
+            self.put(at + URL_TEXT, url.as_bytes());
+            self.string(at + URL_FIELD, at + URL_TEXT, url.len());
             self.put(text, body.as_bytes());
             self.string(at + BODY_FIELD, text, body.len());
         }
@@ -334,7 +389,10 @@ mod tests {
     fn completed_queue_inventory() {
         let reader = reader(heap(2));
         let clients = HttpClients::locate(&reader).unwrap().unwrap();
-        let buffer = clients.await_inventory(&reader, Duration::ZERO).unwrap();
+        let synced = clients.await_inventory(&reader, Duration::ZERO).unwrap();
+        let buffer = synced.buffer;
+
+        assert_eq!(synced.account_id, ACCOUNT_ID);
         assert_eq!(buffer.last_sync, OID);
         assert_eq!(buffer.addr, HEAP + u64::try_from(BODIES[0]).unwrap());
         assert_eq!(buffer.len, inventory_json(OID).len());
@@ -348,17 +406,27 @@ mod tests {
             HttpClients::locate(&one)
                 .unwrap()
                 .unwrap()
-                .bodies(&one)
+                .entry_strings(&one)
                 .len(),
             1
         );
         let empty = reader(heap(0));
         let clients = HttpClients::locate(&empty).unwrap().unwrap();
-        assert!(clients.bodies(&empty).is_empty());
+        assert!(clients.entry_strings(&empty).is_empty());
         assert_eq!(
             clients.await_inventory(&empty, Duration::from_millis(3)),
             None
         );
+    }
+
+    #[test]
+    fn inventory_without_account_id() {
+        let mut heap = heap(1);
+        heap.entry_requested(0, &inventory_json(OID), "accountId=5f0a1b2c");
+        let reader = reader(heap);
+        let clients = HttpClients::locate(&reader).unwrap().unwrap();
+
+        assert_eq!(clients.await_inventory(&reader, Duration::ZERO), None);
     }
 
     #[test]
@@ -435,14 +503,14 @@ mod tests {
 
         let mut rejected = heap(2);
         rejected.queue(CLIENT + DONE, DONE_MAP, 1 << 62, u64::MAX - 1, 2);
-        assert!(clients.bodies(&reader(rejected)).is_empty());
+        assert!(clients.entry_strings(&reader(rejected)).is_empty());
 
         let mut absurd = heap(2);
         absurd.queue(CLIENT + DONE, DONE_MAP, 1 << 62, 1 << 63, 1 << 63);
-        assert!(clients.bodies(&reader(absurd)).is_empty());
+        assert!(clients.entry_strings(&reader(absurd)).is_empty());
 
         let mut unmapped = heap(2);
         unmapped.word(CLIENT + DONE, 0);
-        assert!(clients.bodies(&reader(unmapped)).is_empty());
+        assert!(clients.entry_strings(&reader(unmapped)).is_empty());
     }
 }

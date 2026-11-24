@@ -13,15 +13,13 @@ use serde::de::DeserializeOwned;
 use wf_inventory::Inventory;
 
 use crate::arbitration_runs::ArbitrationRun;
-use crate::catalog::DUCATS_ITEM;
 use crate::delta::ItemDelta;
 use crate::error::{CoreError, Result};
 use crate::favourites::Favourites;
 use crate::reset_checklist::{ResetChecklistManualRowId, VendorKuvaBought};
-use crate::stats::AYA_ITEM;
 use crate::trade::Trade;
 
-const MIGRATIONS: [(i64, &str); 4] = [
+const MIGRATIONS: [(i64, &str); 5] = [
     (1, include_str!("sql/0001_init.sql")),
     (2, include_str!("sql/0002_arbitration_runs.sql")),
     (3, include_str!("sql/0003_reset_checklist_ticks.sql")),
@@ -29,8 +27,11 @@ const MIGRATIONS: [(i64, &str); 4] = [
         4,
         include_str!("sql/0004_reset_checklist_kuva_purchases.sql"),
     ),
+    (5, include_str!("sql/0005_accounts_item_history.sql")),
 ];
-const SNAPSHOT_COLUMNS: &str = "id, taken_at, last_sync_oid, plat, credits, endo, ducats, mr";
+const ACCOUNT_SETTING: &str = "account";
+const ACCOUNT_TABLES: [&str; 3] = ["snapshots", "trades", "relic_openings"];
+const SNAPSHOT_COLUMNS: &str = "id, taken_at, last_sync_oid, plat, credits, endo, mr";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
@@ -44,7 +45,6 @@ pub struct Snapshot {
     pub plat: i64,
     pub credits: i64,
     pub endo: i64,
-    pub ducats: i64,
     pub mr: i64,
 }
 
@@ -56,8 +56,6 @@ pub struct StatPoint {
     pub plat: i64,
     pub credits: i64,
     pub endo: i64,
-    pub ducats: i64,
-    pub aya: Option<i64>,
     pub mr: i64,
 }
 
@@ -141,10 +139,35 @@ impl InventoryCache {
             }
         }
     }
+
+    fn of_account(&self, account_id: &str) -> Self {
+        match self {
+            Self::File(path) => {
+                Self::File(path.with_file_name(format!("inventory.{account_id}.json.gz")))
+            }
+            Self::Held(_) => Self::Held(RefCell::new(None)),
+        }
+    }
+
+    fn move_to(&self, cache: &Self) -> Result<()> {
+        let Some(json) = self.read()? else {
+            return Ok(());
+        };
+
+        cache.write(&json)?;
+        match self {
+            Self::File(path) => std::fs::remove_file(path).map_err(CoreError::io(path)),
+            Self::Held(held) => {
+                *held.borrow_mut() = None;
+                Ok(())
+            }
+        }
+    }
 }
 
 pub struct Store {
     connection: Connection,
+    account: Option<String>,
     inventory: InventoryCache,
     raw_inventory: InventoryCache,
 }
@@ -175,13 +198,42 @@ impl Store {
         raw_inventory: InventoryCache,
     ) -> Result<Self> {
         connection.execute_batch("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;")?;
-        let store = Self {
+        let mut store = Self {
             connection,
+            account: None,
             inventory,
             raw_inventory,
         };
         store.migrate()?;
+        if let Some(account_id) = store.setting::<String>(ACCOUNT_SETTING)? {
+            store.inventory = store.inventory.of_account(&account_id);
+            store.account = Some(account_id);
+        }
+
         Ok(store)
+    }
+
+    pub fn use_account(&mut self, account_id: &str) -> Result<bool> {
+        if self.account.as_deref() == Some(account_id) {
+            return Ok(false);
+        }
+
+        let cache = self.inventory.of_account(account_id);
+        let switched = self.account.is_some();
+        if !switched {
+            for table in ACCOUNT_TABLES {
+                self.connection.execute(
+                    &format!("UPDATE {table} SET account = ?1 WHERE account IS NULL"),
+                    params![account_id],
+                )?;
+            }
+            self.inventory.move_to(&cache)?;
+        }
+        self.set_setting(ACCOUNT_SETTING, &account_id)?;
+        self.inventory = cache;
+        self.account = Some(account_id.to_owned());
+
+        Ok(switched)
     }
 
     fn migrate(&self) -> Result<()> {
@@ -242,32 +294,31 @@ impl Store {
             }
         }
         self.connection.execute(
-            "INSERT INTO snapshots (taken_at, last_sync_oid, plat, credits, endo, ducats, aya, mr) \
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            "INSERT INTO snapshots \
+             (taken_at, last_sync_oid, plat, credits, endo, mr, account) \
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             params![
                 at.timestamp_millis(),
                 inventory.last_inventory_sync.as_str(),
                 inventory.premium_credits,
                 inventory.regular_credits,
                 inventory.fusion_points,
-                inventory.counted(DUCATS_ITEM),
-                inventory.counted(AYA_ITEM),
                 i64::from(inventory.player_level),
+                self.account,
             ],
         )?;
         Ok(SnapshotId(self.connection.last_insert_rowid()))
     }
 
     pub fn latest_snapshot(&self) -> Result<Option<Snapshot>> {
-        self.snapshot_where("ORDER BY id DESC LIMIT 1", [])
+        self.snapshot_where(
+            "WHERE account IS ?1 ORDER BY id DESC LIMIT 1",
+            params![self.account],
+        )
     }
 
     pub fn snapshot(&self, id: SnapshotId) -> Result<Option<Snapshot>> {
         self.snapshot_where("WHERE id = ?1", params![id.0])
-    }
-
-    pub fn snapshot_before(&self, id: SnapshotId) -> Result<Option<Snapshot>> {
-        self.snapshot_where("WHERE id < ?1 ORDER BY id DESC LIMIT 1", params![id.0])
     }
 
     fn snapshot_where(&self, filter: &str, params: impl Params) -> Result<Option<Snapshot>> {
@@ -289,7 +340,11 @@ impl Store {
         let mut statement = self.connection.prepare(sql)?;
         statement
             .query_and_then(
-                params![range.from.timestamp_millis(), range.to.timestamp_millis()],
+                params![
+                    range.from.timestamp_millis(),
+                    range.to.timestamp_millis(),
+                    self.account
+                ],
                 read,
             )?
             .collect()
@@ -297,8 +352,8 @@ impl Store {
 
     pub fn stats_series(&self, range: TimeRange) -> Result<Vec<StatPoint>> {
         self.in_range(
-            "SELECT id, taken_at, plat, credits, endo, ducats, aya, mr FROM snapshots \
-             WHERE taken_at >= ?1 AND taken_at <= ?2 ORDER BY taken_at",
+            "SELECT id, taken_at, plat, credits, endo, mr FROM snapshots \
+             WHERE taken_at >= ?1 AND taken_at <= ?2 AND account IS ?3 ORDER BY taken_at",
             range,
             |row| {
                 Ok(StatPoint {
@@ -307,12 +362,37 @@ impl Store {
                     plat: row.get(2)?,
                     credits: row.get(3)?,
                     endo: row.get(4)?,
-                    ducats: row.get(5)?,
-                    aya: row.get(6)?,
-                    mr: row.get(7)?,
+                    mr: row.get(5)?,
                 })
             },
         )
+    }
+
+    pub fn first_snapshot_at(&self) -> Result<Option<DateTime<Utc>>> {
+        let taken_at: Option<i64> = self.connection.query_row(
+            "SELECT MIN(taken_at) FROM snapshots WHERE account IS ?1",
+            params![self.account],
+            |row| row.get(0),
+        )?;
+        taken_at.map(datetime).transpose()
+    }
+
+    pub fn item_changes(
+        &self,
+        item_type: &str,
+        since: DateTime<Utc>,
+    ) -> Result<Vec<(DateTime<Utc>, i64)>> {
+        let mut statement = self.connection.prepare(
+            "SELECT s.taken_at, d.delta FROM deltas d \
+             JOIN snapshots s ON s.id = d.to_snapshot \
+             WHERE d.item_type = ?1 AND s.taken_at >= ?2 AND s.account IS ?3",
+        )?;
+        statement
+            .query_and_then(
+                params![item_type, since.timestamp_millis(), self.account],
+                |row| Ok((datetime(row.get(0)?)?, row.get(1)?)),
+            )?
+            .collect()
     }
 
     pub fn record_deltas(
@@ -345,7 +425,7 @@ impl Store {
         self.in_range(
             "SELECT d.item_type, d.category, SUM(d.delta) AS total FROM deltas d \
              JOIN snapshots s ON s.id = d.to_snapshot \
-             WHERE s.taken_at >= ?1 AND s.taken_at <= ?2 \
+             WHERE s.taken_at >= ?1 AND s.taken_at <= ?2 AND s.account IS ?3 \
              GROUP BY d.item_type, d.category HAVING total != 0 \
              ORDER BY d.category, d.item_type",
             range,
@@ -367,8 +447,15 @@ impl Store {
     ) -> Result<i64> {
         let items_json = serde_json::to_string(trade)?;
         self.connection.execute(
-            "INSERT INTO trades (at, partner, items_json, plat) VALUES (?1, ?2, ?3, ?4)",
-            params![at.timestamp_millis(), partner, items_json, trade.plat],
+            "INSERT INTO trades (at, partner, items_json, plat, account) \
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![
+                at.timestamp_millis(),
+                partner,
+                items_json,
+                trade.plat,
+                self.account
+            ],
         )?;
         Ok(self.connection.last_insert_rowid())
     }
@@ -397,7 +484,7 @@ impl Store {
     pub fn trades(&self, range: TimeRange) -> Result<Vec<StoredTrade>> {
         self.in_range(
             "SELECT id, at, partner, items_json FROM trades \
-             WHERE at >= ?1 AND at <= ?2 ORDER BY at",
+             WHERE at >= ?1 AND at <= ?2 AND account IS ?3 ORDER BY at",
             range,
             |row| {
                 let items_json: String = row.get(3)?;
@@ -419,9 +506,15 @@ impl Store {
         player_count: usize,
     ) -> Result<i64> {
         self.connection.execute(
-            "INSERT INTO relic_openings (at, relic, reward_item, player_count) \
-             VALUES (?1, ?2, ?3, ?4)",
-            params![at.timestamp_millis(), relic, reward_item, player_count],
+            "INSERT INTO relic_openings (at, relic, reward_item, player_count, account) \
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![
+                at.timestamp_millis(),
+                relic,
+                reward_item,
+                player_count,
+                self.account
+            ],
         )?;
         Ok(self.connection.last_insert_rowid())
     }
@@ -429,7 +522,7 @@ impl Store {
     pub fn relic_openings(&self, range: TimeRange) -> Result<Vec<RelicOpening>> {
         self.in_range(
             "SELECT id, at, relic, reward_item, player_count FROM relic_openings \
-             WHERE at >= ?1 AND at <= ?2 ORDER BY at",
+             WHERE at >= ?1 AND at <= ?2 AND account IS ?3 ORDER BY at",
             range,
             |row| {
                 Ok(RelicOpening {
@@ -640,8 +733,7 @@ fn snapshot_from_row(row: &Row<'_>) -> Result<Snapshot> {
         plat: row.get(3)?,
         credits: row.get(4)?,
         endo: row.get(5)?,
-        ducats: row.get(6)?,
-        mr: row.get(7)?,
+        mr: row.get(6)?,
     })
 }
 
@@ -727,7 +819,6 @@ mod tests {
         assert_eq!(latest.plat, 5249);
         assert_eq!(latest.credits, 90_814_797);
         assert_eq!(latest.endo, 189_082);
-        assert_eq!(latest.ducats, 937);
         assert_eq!(latest.mr, 14);
         assert_eq!(latest.taken_at, at(1_000_000));
     }
@@ -790,7 +881,6 @@ mod tests {
 
         let narrowed = store.stats_series(TimeRange::since(at(1_500_000))).unwrap();
         assert_eq!(narrowed.len(), 1);
-        assert_eq!(store.snapshot_before(second).unwrap().unwrap().id, first);
     }
 
     #[test]
@@ -885,6 +975,62 @@ mod tests {
     }
 
     #[test]
+    fn rows_follow_the_account() {
+        let mut store = Store::in_memory().unwrap();
+        let recorded = |store: &Store| {
+            (
+                store.stats_series(TimeRange::all()).unwrap().len(),
+                store.trades(TimeRange::all()).unwrap().len(),
+                store.relic_openings(TimeRange::all()).unwrap().len(),
+                store.cached_inventory().unwrap().is_some(),
+            )
+        };
+        store
+            .record_snapshot(&fixtures::inventory(), at(1_000_000))
+            .unwrap();
+        store
+            .record_trade(at(1_000_000), None, &Trade::default())
+            .unwrap();
+        store
+            .record_relic_opening(at(1_000_000), "Lith K12", "Forma Blueprint", 4)
+            .unwrap();
+        store.cache_inventory(fixtures::INVENTORY).unwrap();
+
+        assert!(!store.use_account("first").unwrap());
+        assert_eq!(recorded(&store), (1, 1, 1, true));
+
+        assert!(store.use_account("second").unwrap());
+        assert_eq!(recorded(&store), (0, 0, 0, false));
+        assert_eq!(store.latest_snapshot().unwrap(), None);
+
+        assert!(store.use_account("first").unwrap());
+        assert_eq!(recorded(&store).0, 1);
+    }
+
+    #[test]
+    fn account_cache_file() {
+        let dir = scratch_dir("wf-core-store-account-cache");
+        let path = dir.join("merframe.sqlite");
+        let mut store = Store::open(&path).unwrap();
+        store.cache_inventory(fixtures::INVENTORY).unwrap();
+
+        store.use_account("first").unwrap();
+        drop(store);
+
+        assert!(!dir.join("inventory.json.gz").exists());
+        assert!(dir.join("inventory.first.json.gz").exists());
+        assert_eq!(
+            Store::open(&path)
+                .unwrap()
+                .cached_inventory()
+                .unwrap()
+                .as_deref(),
+            Some(fixtures::INVENTORY)
+        );
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
     fn trades_and_relic_openings() {
         let store = Store::in_memory().unwrap();
         let trade = Trade {
@@ -926,17 +1072,6 @@ mod tests {
         assert_eq!(openings.len(), 1);
         assert_eq!(openings[0].relic, "Lith K12");
         assert_eq!(openings[0].player_count, 4);
-    }
-
-    #[test]
-    fn aya_in_series() {
-        let store = Store::in_memory().unwrap();
-        store
-            .record_snapshot(&fixtures::inventory(), at(1_000_000))
-            .unwrap();
-        let series = store.stats_series(TimeRange::all()).unwrap();
-        assert_eq!(series[0].aya, Some(11));
-        assert_eq!(series[0].ducats, 937);
     }
 
     #[test]

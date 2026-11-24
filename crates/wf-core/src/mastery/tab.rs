@@ -1,7 +1,5 @@
-use wf_inventory::Inventory;
-
 use super::intrinsics::{intrinsics, row as intrinsic_row};
-use super::items::{includes_founders, items, totals};
+use super::items::{includes_founders, items, prime_ownership, totals};
 use super::routes::level_up_routes;
 use super::star_chart::star_chart;
 use super::xp::{mastery_xp, xp_for_rank};
@@ -112,7 +110,9 @@ fn combined_percent(parts: &[CategoryTotals]) -> f64 {
     percent(current, max)
 }
 
-fn summary(inventory: &Inventory, all: &[MasteryItem]) -> MasterySummary {
+fn summary(view: &View, options: MasteryOptions, all: &[MasteryItem]) -> MasterySummary {
+    let inventory = &view.account.inventory;
+    let (prime_owned, prime_total) = prime_ownership(view.account, view.catalog, options);
     let (star_normal, star_steel, star_junctions, star_steel_junctions) = star_chart(inventory);
     let (intrinsic_railjack, intrinsic_duviri) = intrinsics(inventory);
     let (warframes, weapons, companions) = totals(all);
@@ -134,6 +134,7 @@ fn summary(inventory: &Inventory, all: &[MasteryItem]) -> MasterySummary {
         star_steel_junctions,
         intrinsic_railjack,
         intrinsic_duviri,
+        prime_collection: CategoryTotals::new(prime_owned, prime_total),
     }
 }
 
@@ -163,7 +164,7 @@ pub(crate) fn tab(view: &View, options: MasteryOptions) -> MasteryTab {
     } = *view;
     let inventory = &account.inventory;
     let all = items(view, options);
-    let summary = summary(inventory, &all);
+    let summary = summary(view, options, &all);
     let extras = if options.ordering == MasteryOrdering::Closest {
         unfinished_intrinsics(&summary)
     } else {

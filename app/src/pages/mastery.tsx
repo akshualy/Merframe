@@ -220,31 +220,48 @@ export function MasteryPage() {
       loading={loading && !data}
       error={error ?? saveError}
     >
-      <Surface className="w-fit flex-row items-center gap-6 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <GameIcon name="mastered" size={40} alt="Mastery rank" />
-          <span className="flex flex-col">
-            <span className="text-foreground text-4xl leading-none font-bold tabular-nums">
-              {num(data?.rank)}
-            </span>
-          </span>
-        </div>
-        <div className="flex w-80 flex-col gap-2">
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-foreground text-lg font-semibold tabular-nums">
-              {num(data?.rank_xp_earned)} / {num(data?.rank_xp_span)} XP
-            </span>
-            <span className="text-primary text-lg font-bold tabular-nums">
-              {percent((data?.percent ?? 0) / 100, 2)}
+      <div className="flex flex-wrap gap-4">
+        <Surface className="w-fit flex-row items-center gap-6 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <GameIcon name="mastered" size={40} alt="Mastery rank" />
+            <span className="flex flex-col">
+              <span className="text-foreground text-4xl leading-none font-bold tabular-nums">
+                {num(data?.rank)}
+              </span>
             </span>
           </div>
-          <RankBar
-            percent={data?.percent ?? 0}
-            favouritePercent={data?.favourite_percent ?? 0}
-            favouriteXp={data?.favourite_xp ?? 0}
-          />
-        </div>
-      </Surface>
+          <div className="flex w-80 flex-col gap-2">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-foreground text-lg font-semibold tabular-nums">
+                {num(data?.rank_xp_earned)} / {num(data?.rank_xp_span)} XP
+              </span>
+              <span className="text-primary text-lg font-bold tabular-nums">
+                {percent((data?.percent ?? 0) / 100, 2)}
+              </span>
+            </div>
+            <RankBar
+              percent={data?.percent ?? 0}
+              favouritePercent={data?.favourite_percent ?? 0}
+              favouriteXp={data?.favourite_xp ?? 0}
+            />
+          </div>
+        </Surface>
+        <Surface className="w-fit justify-center gap-2 px-6 py-4">
+          <div className="flex w-80 items-baseline justify-between gap-3">
+            <span className="text-foreground text-lg font-semibold">
+              Prime collection
+            </span>
+            <span className="text-primary text-lg font-bold">
+              {percent((summary?.prime_collection.percent ?? 0) / 100)}
+            </span>
+          </div>
+          <Progress value={summary?.prime_collection.percent ?? 0} />
+          <Hint as="span">
+            {num(summary?.prime_collection.current)} of{" "}
+            {num(summary?.prime_collection.max)} Prime items owned or mastered
+          </Hint>
+        </Surface>
+      </div>
 
       <div className="grid gap-4 @4xl:grid-cols-3">
         <Tile title="Game content" progress={summary?.content_percent ?? 0}>
