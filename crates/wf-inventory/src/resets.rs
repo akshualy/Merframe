@@ -258,10 +258,14 @@ impl Inventory {
             .map(|completion| completion.tag.as_str())
     }
 
-    pub fn search_pulses_spent(&self, now: DateTime<Utc>) -> u32 {
+    pub fn search_pulse_week_running(&self, now: DateTime<Utc>) -> bool {
         self.entrati_vault_count_reset_date
-            .filter(|reset| unexpired(*reset, now))
-            .and(self.entrati_vault_count_last_period)
+            .is_some_and(|reset| unexpired(reset, now))
+    }
+
+    pub fn search_pulses_spent(&self, now: DateTime<Utc>) -> u32 {
+        self.entrati_vault_count_last_period
+            .filter(|_| self.search_pulse_week_running(now))
             .unwrap_or_default()
     }
 
