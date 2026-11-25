@@ -47,9 +47,13 @@ const SHOWN: readonly { value: ShowFilter; label: string }[] = [
   { value: "short", label: "Only shortfalls" },
 ];
 
-const KINDS = CATEGORIES.filter(([key]) => key !== "all").map(
-  ([value, label]) => ({ value, label }),
-);
+const KINDS = [
+  { value: "weapons", label: "Weapons" },
+  ...CATEGORIES.filter(([key]) => key !== "all").map(([value, label]) => ({
+    value,
+    label,
+  })),
+];
 const PRIME = yesNoOptions("Prime", "Normal");
 const OWNED = yesNoOptions("Yes", "No");
 

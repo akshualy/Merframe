@@ -269,12 +269,21 @@ fn selected(item: &FoundryItem, held: &HashSet<&str>, query: &ResourceQuery) -> 
         ResourceScope::Starred => item.favourite,
     };
     in_scope
-        && query.kind.as_deref().is_none_or(|kind| item.kind == kind)
+        && query
+            .kind
+            .as_deref()
+            .is_none_or(|category| in_category(item.kind, category))
         && query
             .prime
             .is_none_or(|prime| item.prime.is_some() == prime)
         && query.owned.is_none_or(|owned| item.progress.owned == owned)
         && (query.source == ResourceSource::Craftable || holds_a_recipe(held, item))
+}
+
+const WEAPON_KINDS: [&str; 5] = ["primary", "secondary", "melee", "modular", "arch"];
+
+fn in_category(kind: &str, category: &str) -> bool {
+    kind == category || (category == "weapons" && WEAPON_KINDS.contains(&kind))
 }
 
 fn holds_a_recipe(held: &HashSet<&str>, item: &FoundryItem) -> bool {
@@ -521,6 +530,23 @@ mod tests {
             ["Excalibur", "Trinity Prime"]
         );
         assert!(names(&filtered(Some("warframe"), Some(true), Some(false))).is_empty());
+    }
+
+    #[test]
+    fn weapons_category_spans_the_weapon_kinds() {
+        let weapons = tab(
+            &Fixture::new(fixtures::foundry_catalog(), fixtures::inventory()).view(),
+            &ResourceQuery {
+                source: ResourceSource::Craftable,
+                scope: ResourceScope::All,
+                kind: Some("weapons".to_owned()),
+                prime: None,
+                owned: None,
+            },
+            None,
+            at(NOW_MS),
+        );
+        assert_eq!(names(&weapons), ["Boar", "Dual Kamas", "Kama", "Skana"]);
     }
 
     #[test]
