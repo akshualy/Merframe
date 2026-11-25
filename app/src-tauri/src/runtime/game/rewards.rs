@@ -14,15 +14,21 @@ use super::core_events;
 use crate::runtime::attach::{Attached, attach_or_warn, read_screen};
 use crate::state::{AppState, lock};
 
-const REWARD_TICK: Duration = Duration::from_millis(100);
+const SCREEN_TICK: Duration = Duration::from_millis(100);
 const REWARD_TICKS: usize = 50;
-const PICKER_TICK: Duration = Duration::from_millis(100);
+const REWARD_PICK_LIFETIME: Duration = Duration::from_secs(60);
+const REWARD_PICK_GRACE: Duration = Duration::from_secs(1);
 const PICKER_LIFETIME: Duration = Duration::from_secs(600);
 const PICKER_GRACE: Duration = Duration::from_secs(2);
 
 pub(super) async fn handle_reward_screen<R: Runtime>(app: &AppHandle<R>, state: &Arc<AppState>) {
     let generation = lock(&state.core).reward_screen_generation();
-    let Some(screen) = scan_reward_screen(state).await else {
+    let Some(attached) = attach_or_warn(state, "Reward screen read from game memory failed").await
+    else {
+        return;
+    };
+
+    let Some(screen) = scan_reward_screen(state, &attached).await else {
         return;
     };
 
@@ -32,6 +38,61 @@ pub(super) async fn handle_reward_screen<R: Runtime>(app: &AppHandle<R>, state: 
     .await;
     if let Err(error) = handled {
         warn!(%error, generation, "Core rejected the scanned rewards");
+        return;
+    }
+
+    let mut last = None;
+    watch_screen(
+        "read reward pick",
+        &attached,
+        REWARD_PICK_LIFETIME,
+        REWARD_PICK_GRACE,
+        wf_scan::picked_relic_reward,
+        |pick| {
+            if last.as_ref() != Some(&pick) {
+                debug!(
+                    item_type = pick.item_type,
+                    count = pick.count,
+                    "Relic reward picked"
+                );
+                lock(&state.core).keep_relic_reward_pick(&pick.item_type, pick.count);
+                last = Some(pick);
+            }
+        },
+    )
+    .await;
+}
+
+async fn watch_screen<T, F>(
+    task: &'static str,
+    attached: &Attached,
+    lifetime: Duration,
+    grace: Duration,
+    read: F,
+    mut seen: impl FnMut(T),
+) where
+    T: Send + 'static,
+    F: Fn(&(dyn MemoryReader + 'static), &LuaState, &mut Option<LuaTable>) -> Option<T>
+        + Copy
+        + Send
+        + 'static,
+{
+    let started = Instant::now();
+    let mut gone_since = None;
+    let mut script = None;
+    while started.elapsed() < lifetime {
+        let screen = read_screen(task, &attached.reader, attached.lua, &mut script, read).await;
+        if let Some(value) = screen.flatten() {
+            gone_since = None;
+            seen(value);
+        } else {
+            let since = *gone_since.get_or_insert_with(Instant::now);
+            if since.elapsed() >= grace {
+                break;
+            }
+        }
+
+        tokio::time::sleep(SCREEN_TICK).await;
     }
 }
 
@@ -44,7 +105,7 @@ pub(super) fn watch_relic_picker(state: &Arc<AppState>) {
         state.watching_picker.store(false, Ordering::SeqCst);
     });
     tauri::async_runtime::spawn(async move {
-        let Some(Attached { reader, lua }) = attach_or_warn(
+        let Some(attached) = attach_or_warn(
             &state,
             "Relic pick not recorded since the picker was not found in memory",
         )
@@ -53,38 +114,26 @@ pub(super) fn watch_relic_picker(state: &Arc<AppState>) {
             return;
         };
 
-        let started = Instant::now();
-        let mut closed_since = None;
-        let mut script = None;
-        while started.elapsed() < PICKER_LIFETIME {
-            let picker = read_screen(
-                "read relic picker",
-                &reader,
-                lua,
-                &mut script,
-                RelicPicker::read,
-            )
-            .await;
-            match picker {
-                Some(RelicPicker::Open(pick)) => {
-                    closed_since = None;
-                    if let Some(pick) = pick
-                        && lock(&state.relic_picks)
-                            .insert(pick.handle, pick.relic_type.clone())
-                            .is_none()
-                    {
-                        debug!(relic_type = pick.relic_type, "Relic selected in the picker");
-                    }
+        watch_screen(
+            "read relic picker",
+            &attached,
+            PICKER_LIFETIME,
+            PICKER_GRACE,
+            |reader, lua, script| match RelicPicker::read(reader, lua, script) {
+                RelicPicker::Open(pick) => Some(pick),
+                RelicPicker::Closed => None,
+            },
+            |pick| {
+                if let Some(pick) = pick
+                    && lock(&state.relic_picks)
+                        .insert(pick.handle, pick.relic_type.clone())
+                        .is_none()
+                {
+                    debug!(relic_type = pick.relic_type, "Relic selected in the picker");
                 }
-                Some(RelicPicker::Closed) | None => {
-                    let since = *closed_since.get_or_insert_with(Instant::now);
-                    if since.elapsed() >= PICKER_GRACE {
-                        break;
-                    }
-                }
-            }
-            tokio::time::sleep(PICKER_TICK).await;
-        }
+            },
+        )
+        .await;
     });
 }
 
@@ -103,17 +152,15 @@ fn reward_screen(
     }
 }
 
-async fn scan_reward_screen(state: &Arc<AppState>) -> Option<ScannedRewards> {
-    let Attached { reader, lua } =
-        attach_or_warn(state, "Reward screen read from game memory failed").await?;
+async fn scan_reward_screen(state: &Arc<AppState>, attached: &Attached) -> Option<ScannedRewards> {
     let mut seen = ScannedRewards::default();
     let mut script = None;
     for _ in 0..REWARD_TICKS {
         let owned = Arc::clone(state);
         let screen = read_screen(
             "read reward screen",
-            &reader,
-            lua,
+            &attached.reader,
+            attached.lua,
             &mut script,
             move |reader, lua, script| reward_screen(&owned, reader, lua, script),
         )
@@ -125,7 +172,7 @@ async fn scan_reward_screen(state: &Arc<AppState>) -> Option<ScannedRewards> {
             return Some(screen);
         }
         seen = screen;
-        tokio::time::sleep(REWARD_TICK).await;
+        tokio::time::sleep(SCREEN_TICK).await;
     }
     debug!("Reward screen held no settled tiles");
     None

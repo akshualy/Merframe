@@ -72,6 +72,16 @@ struct LoadedArbitrationForecast {
     fetched_at: DateTime<Utc>,
 }
 
+struct OpenRelicRewardScreen {
+    relic_type: Option<String>,
+    pick: Option<RelicRewardPick>,
+}
+
+struct RelicRewardPick {
+    item_type: String,
+    count: u32,
+}
+
 pub struct Core {
     store: Store,
     catalog: Catalog,
@@ -87,6 +97,7 @@ pub struct Core {
     synced_vitus: Option<u32>,
     own_relic_reward: Option<String>,
     reward_screen_recorded: bool,
+    open_reward_screen: Option<OpenRelicRewardScreen>,
     favourites: Favourites,
     pending_rerolls: HashMap<String, String>,
     listings: MarketListings,
@@ -121,6 +132,7 @@ impl Core {
             synced_vitus: None,
             own_relic_reward: None,
             reward_screen_recorded: false,
+            open_reward_screen: None,
             favourites,
             pending_rerolls: HashMap::new(),
             listings: MarketListings::default(),
@@ -326,12 +338,18 @@ impl Core {
         now: DateTime<Utc>,
         secs: f64,
     ) -> Result<Vec<CoreEvent>> {
-        if let LogEvent::OwnRelicReward { store_item, .. } = event {
-            self.own_relic_reward = Some(store_item.clone());
+        match event {
+            LogEvent::OwnRelicReward { store_item, .. } => {
+                self.own_relic_reward = Some(store_item.clone());
+            }
+            LogEvent::RelicRewardScreenOpened => {
+                self.reward_screen_recorded = false;
+                self.open_reward_screen = None;
+            }
+            LogEvent::RelicRewardScreenClosed => self.close_reward_screen(),
+            _ => {}
         }
-        if matches!(event, LogEvent::RelicRewardScreenOpened) {
-            self.reward_screen_recorded = false;
-        }
+
         let mut events = self.engine.handle_log_event(event, now);
         events.extend(self.record_arbitration_run(event, now, secs)?);
         self.record(&events, now)?;
@@ -492,6 +510,11 @@ impl Core {
             return Ok(Vec::new());
         }
 
+        self.open_reward_screen = Some(OpenRelicRewardScreen {
+            relic_type: screen.own_relic_type.clone(),
+            pick: None,
+        });
+
         let relic = screen
             .own_relic_type
             .and_then(|relic_type| self.catalog.relic_by_unique_name(&relic_type))
@@ -507,6 +530,36 @@ impl Core {
         }];
         self.record(&events, now)?;
         Ok(events)
+    }
+
+    pub fn keep_relic_reward_pick(&mut self, item_type: &str, count: u32) {
+        if let Some(screen) = &mut self.open_reward_screen {
+            screen.pick = Some(RelicRewardPick {
+                item_type: item_type.to_owned(),
+                count,
+            });
+        }
+    }
+
+    fn close_reward_screen(&mut self) {
+        let Some(OpenRelicRewardScreen {
+            relic_type,
+            pick: Some(pick),
+        }) = self.open_reward_screen.take()
+        else {
+            return;
+        };
+
+        let Some(account) = self.account.take() else {
+            return;
+        };
+
+        let mut inventory = account.inventory;
+        inventory.add_relic_reward(&pick.item_type, i64::from(pick.count));
+        if let Some(relic_type) = relic_type {
+            inventory.spend_relic(&relic_type);
+        }
+        self.adopt_inventory(inventory);
     }
 
     fn record(&mut self, events: &[CoreEvent], now: DateTime<Utc>) -> Result<()> {
@@ -1342,6 +1395,40 @@ mod tests {
             )
             .expect("chat tab");
         assert!(region.is_empty());
+    }
+
+    #[test]
+    fn closed_reward_screen_keeps_pick_and_spends_relic() {
+        const SYSTEMS: &str = "/Lotus/Types/Recipes/WarframeRecipes/TrinityPrimeSystemsBlueprint";
+        const RELIC: &str = "/Lotus/Types/Game/Projections/T1VoidProjectionSevagothPrimeDBronze";
+        let mut core = ingested();
+        let reward = [core.items.summary(SYSTEMS)];
+        let owned = |core: &Core| core.recommend(&reward).ranked[0].ownership.unwrap().owned;
+        let relics = |core: &Core| core.inventory().unwrap().counted(RELIC);
+        let open_and_pick = |core: &mut Core| {
+            let screen = ScannedRewards {
+                own_relic_type: Some(RELIC.to_owned()),
+                rewards: vec![SYSTEMS.to_owned()],
+            };
+            core.handle_log_event(&LogEvent::RelicRewardScreenOpened, at(2_000_000), 1.0)
+                .unwrap();
+            core.handle_reward_screen(at(2_000_000), core.reward_screen_generation(), screen)
+                .unwrap();
+            core.keep_relic_reward_pick(SYSTEMS, 1);
+        };
+        let close = |core: &mut Core| {
+            core.handle_log_event(&LogEvent::RelicRewardScreenClosed, at(2_000_000), 2.0)
+                .unwrap();
+        };
+        let held = relics(&core);
+
+        open_and_pick(&mut core);
+        close(&mut core);
+        assert_eq!(owned(&core), 1);
+        assert_eq!(relics(&core), held - 1);
+
+        close(&mut core);
+        assert_eq!(owned(&core), 1);
     }
 
     #[test]

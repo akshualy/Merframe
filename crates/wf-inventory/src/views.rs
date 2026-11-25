@@ -42,6 +42,39 @@ impl Inventory {
         ]
     }
 
+    pub fn add_relic_reward(&mut self, item_type: &str, count: i64) {
+        let list = if item_type.ends_with("Blueprint") {
+            &mut self.recipes
+        } else {
+            &mut self.misc_items
+        };
+        match list.iter_mut().find(|item| item.item_type == item_type) {
+            Some(item) => item.item_count += count,
+            None => list.push(CountedItem {
+                item_type: item_type.to_owned(),
+                item_count: count,
+                sockets: None,
+            }),
+        }
+    }
+
+    pub fn spend_relic(&mut self, relic_type: &str) {
+        let Some(index) = self
+            .misc_items
+            .iter()
+            .position(|item| item.item_type == relic_type)
+        else {
+            return;
+        };
+
+        let relic = &mut self.misc_items[index];
+        if relic.item_count > 1 {
+            relic.item_count -= 1;
+        } else {
+            self.misc_items.remove(index);
+        }
+    }
+
     pub fn counted_items(&self) -> impl Iterator<Item = &CountedItem> {
         self.counted_categories()
             .into_iter()
@@ -190,7 +223,7 @@ fn max_per_key<'a, T: Ord + Default + Copy>(
 pub(crate) mod tests {
     use std::collections::HashSet;
 
-    use crate::model::Inventory;
+    use crate::model::{CountedItem, Inventory};
     use chrono::Datelike;
 
     const FIXTURE: &str = include_str!("../../../fixtures/inventory.json");
@@ -362,6 +395,36 @@ pub(crate) mod tests {
             Some(0)
         );
         assert_eq!(index.get("/Lotus/Powersuits/Excalibur/Excalibur2"), None);
+    }
+
+    #[test]
+    fn relic_reward_joins_its_list() {
+        const BLUEPRINT: &str = "/Lotus/Types/Recipes/WarframeRecipes/StyanaxPrimeBlueprint";
+        const PART: &str = "/Lotus/Types/Recipes/Weapons/WeaponParts/BratonPrimeStock";
+        let count = |held: &[CountedItem], item_type| {
+            held.iter()
+                .find(|item| item.item_type == item_type)
+                .map(|item| item.item_count)
+        };
+        let mut inv = fixture();
+
+        inv.add_relic_reward(BLUEPRINT, 1);
+        inv.add_relic_reward(BLUEPRINT, 1);
+        inv.add_relic_reward(PART, 2);
+
+        assert_eq!(count(&inv.recipes, BLUEPRINT), Some(2));
+        assert_eq!(count(&inv.misc_items, PART), Some(2));
+    }
+
+    #[test]
+    fn last_spent_relic_leaves_the_list() {
+        const RELIC: &str = "/Lotus/Types/Game/Projections/T1VoidProjectionSevagothPrimeDBronze";
+        let mut inv = fixture();
+        for _ in 0..inv.counted(RELIC) {
+            inv.spend_relic(RELIC);
+        }
+
+        assert!(inv.relics().all(|(relic_type, _)| relic_type != RELIC));
     }
 
     #[test]
