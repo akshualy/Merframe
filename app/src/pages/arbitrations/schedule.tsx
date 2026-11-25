@@ -2,7 +2,7 @@ import { Bell, type LucideIcon, Star, Timer } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { Figure } from "@/components/figure";
-import { GameIcon } from "@/components/game-icon";
+import { LucideSlotGameIcon } from "@/components/game-icon";
 import { MarkToggle } from "@/components/mark-toggle";
 import { EmptyNote, FramedList, Surface } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -121,7 +121,7 @@ export function HeroHeading({
   return (
     <div className="flex items-center gap-2">
       {Icon === "arbitration" ? (
-        <GameIcon name="arbitration" size={16} alt="" />
+        <LucideSlotGameIcon name="arbitration" className="text-primary" />
       ) : (
         <Icon className="text-primary size-4" />
       )}

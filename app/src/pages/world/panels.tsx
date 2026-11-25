@@ -1,19 +1,7 @@
-import {
-  CalendarClock,
-  Check,
-  Gem,
-  InfinityIcon,
-  type LucideIcon,
-  Radio,
-  Tag,
-} from "lucide-react";
+import { CalendarClock, Check, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Amount } from "@/components/currency";
-import {
-  archonIcon,
-  GameIcon,
-  type GameIconName,
-} from "@/components/game-icon";
+import { type GameIconName, LucideSlotGameIcon } from "@/components/game-icon";
 import { EmptyNote, Surface } from "@/components/page";
 import { Hint } from "@/components/ui/hint";
 import { num, secondsUntil } from "@/lib/format";
@@ -88,7 +76,7 @@ export function InfoRow({
 }
 
 export function Panel({
-  icon,
+  icon: Icon,
   glyph,
   title,
   children,
@@ -98,11 +86,10 @@ export function Panel({
   title: string;
   children: ReactNode;
 }) {
-  const Icon = icon;
   return (
     <Surface>
       <div className="flex items-center gap-2 font-semibold">
-        {glyph && <GameIcon name={glyph} size={22} alt="" />}
+        {glyph && <LucideSlotGameIcon name={glyph} className="text-primary" />}
         {Icon && <Icon className="text-primary size-4" />}
         {title}
       </div>
@@ -239,7 +226,7 @@ export function ResurgencePanel({
   now: number;
 }) {
   return (
-    <Panel icon={Gem} title="Prime Resurgence">
+    <Panel glyph="varzia" title="Prime Resurgence">
       {resurgence === null ? (
         <EmptyNote>Varzia is not in the world state yet.</EmptyNote>
       ) : (
@@ -272,7 +259,7 @@ export function DarvoPanel({
   now: number;
 }) {
   return (
-    <Panel icon={Tag} title="Darvo's Deal">
+    <Panel glyph="darvo" title="Darvo's Deal">
       {deals.length === 0 ? (
         <EmptyNote>Darvo is not running a deal right now.</EmptyNote>
       ) : (
@@ -356,7 +343,7 @@ export function CircuitPanel({
   now: number;
 }) {
   return (
-    <Panel icon={InfinityIcon} title="The Circuit">
+    <Panel glyph="duviri" title="The Circuit">
       {circuit === null ? (
         <EmptyNote>
           This week's rotation is not in the world state yet.
@@ -388,7 +375,7 @@ export function NightwavePanel({
   now: number;
 }) {
   return (
-    <Panel icon={Radio} title="Nightwave">
+    <Panel glyph="nightwave" title="Nightwave">
       {nightwave === null ? (
         <EmptyNote>No season is in the world state yet.</EmptyNote>
       ) : (
@@ -457,7 +444,7 @@ export function ArchonPanel({
   now: number;
 }) {
   return (
-    <Panel glyph={hunt ? archonIcon(hunt.boss) : "archon"} title="Archon Hunt">
+    <Panel glyph="archon-hunt" title="Archon Hunt">
       {hunt ? (
         <>
           <InfoRow

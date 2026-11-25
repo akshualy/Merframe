@@ -3,66 +3,7 @@ import { isRelicTier } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import { capitalize } from "@/lib/world";
 
-export type GameIconName =
-  | "day"
-  | "night"
-  | "fass"
-  | "vome"
-  | "warm"
-  | "cold"
-  | "corpus"
-  | "grineer"
-  | "duviri-joy"
-  | "duviri-anger"
-  | "duviri-envy"
-  | "duviri-sorrow"
-  | "duviri-fear"
-  | "baro"
-  | "sortie"
-  | "arbitration"
-  | "archon"
-  | "archon-amar"
-  | "archon-boreal"
-  | "archon-nira"
-  | "archon-shard"
-  | "forma"
-  | "orokin-reactor"
-  | "orokin-catalyst"
-  | "exilus-adapter"
-  | "exilus-weapon-adapter"
-  | "relic"
-  | "relic-lith"
-  | "relic-meso"
-  | "relic-neo"
-  | "relic-axi"
-  | "relic-requiem"
-  | "arcane-common"
-  | "arcane-uncommon"
-  | "arcane-rare"
-  | "arcane-legendary"
-  | "mastered"
-  | "polarity-madurai"
-  | "polarity-vazarin"
-  | "polarity-naramon"
-  | "polarity-zenurik"
-  | "polarity-unairu"
-  | "polarity-penjaga"
-  | "polarity-umbra"
-  | "polarity-any"
-  | "platinum"
-  | "credits"
-  | "ducats";
-
-export type ArcaneRarity = "Common" | "Uncommon" | "Rare" | "Legendary";
-
-export const ARCANE_BACKDROP: Record<ArcaneRarity, GameIconName> = {
-  Common: "arcane-common",
-  Uncommon: "arcane-uncommon",
-  Rare: "arcane-rare",
-  Legendary: "arcane-legendary",
-};
-
-const MONOCHROME: ReadonlySet<GameIconName> = new Set([
+const MONOCHROME_GLYPHS = [
   "day",
   "night",
   "warm",
@@ -70,10 +11,16 @@ const MONOCHROME: ReadonlySet<GameIconName> = new Set([
   "baro",
   "sortie",
   "arbitration",
-  "archon",
-  "archon-amar",
-  "archon-boreal",
-  "archon-nira",
+  "fissure",
+  "invasion",
+  "nightwave",
+  "duviri",
+  "helminth",
+  "riven",
+  "archon-hunt",
+  "darvo",
+  "varzia",
+  "vaulted",
   "archon-shard",
   "relic",
   "relic-lith",
@@ -90,7 +37,46 @@ const MONOCHROME: ReadonlySet<GameIconName> = new Set([
   "polarity-penjaga",
   "polarity-umbra",
   "polarity-any",
-]);
+] as const;
+
+const COLOURED_GLYPHS = [
+  "fass",
+  "vome",
+  "corpus",
+  "grineer",
+  "duviri-joy",
+  "duviri-anger",
+  "duviri-envy",
+  "duviri-sorrow",
+  "duviri-fear",
+  "forma",
+  "orokin-reactor",
+  "orokin-catalyst",
+  "exilus-adapter",
+  "exilus-weapon-adapter",
+  "arcane-common",
+  "arcane-uncommon",
+  "arcane-rare",
+  "arcane-legendary",
+  "platinum",
+  "credits",
+  "ducats",
+] as const;
+
+export type GameIconName =
+  | (typeof MONOCHROME_GLYPHS)[number]
+  | (typeof COLOURED_GLYPHS)[number];
+
+const MONOCHROME: ReadonlySet<GameIconName> = new Set(MONOCHROME_GLYPHS);
+
+export type ArcaneRarity = "Common" | "Uncommon" | "Rare" | "Legendary";
+
+export const ARCANE_BACKDROP: Record<ArcaneRarity, GameIconName> = {
+  Common: "arcane-common",
+  Uncommon: "arcane-uncommon",
+  Rare: "arcane-rare",
+  Legendary: "arcane-legendary",
+};
 
 const CYCLE_STATES: Record<string, GameIconName> = {
   day: "day",
@@ -139,23 +125,12 @@ const POLARITY_ICONS: Record<string, GameIconName> = {
   any: "polarity-any",
 };
 
-const ARCHONS: Record<string, GameIconName> = {
-  AMAR: "archon-amar",
-  BOREAL: "archon-boreal",
-  NIRA: "archon-nira",
-};
-
 export function cycleIcon(state: string): GameIconName | null {
   return CYCLE_STATES[state] ?? null;
 }
 
 export function relicTierIcon(tier: string): GameIconName {
   return TIER_ICONS[tier] ?? "relic";
-}
-
-export function archonIcon(boss: string): GameIconName {
-  const name = boss.replace(/^SORTIE_BOSS_/, "").replace(/^ARCHON_/, "");
-  return ARCHONS[name] ?? "archon";
 }
 
 export function GameIcon({
@@ -171,6 +146,24 @@ export function GameIcon({
   alt?: string;
   title?: string;
 }) {
+  if (MONOCHROME.has(name)) {
+    return (
+      <svg
+        role={alt ? "img" : undefined}
+        aria-label={alt || undefined}
+        aria-hidden={alt === "" || undefined}
+        viewBox="0 0 128 128"
+        width={size}
+        height={size}
+        fill="currentColor"
+        className={cn("shrink-0", className)}
+      >
+        {title && <title>{title}</title>}
+        <use href={`/game/${name}.svg#glyph`} />
+      </svg>
+    );
+  }
+
   return (
     <img
       src={`/game/${name}.png`}
@@ -179,14 +172,20 @@ export function GameIcon({
       width={size}
       height={size}
       draggable={false}
-      className={cn(
-        "shrink-0 object-contain select-none",
-        MONOCHROME.has(name) && "invert dark:invert-0",
-        className,
-      )}
+      className={cn("shrink-0 object-contain select-none", className)}
       style={{ width: size, height: size }}
     />
   );
+}
+
+export function LucideSlotGameIcon({
+  name,
+  className,
+}: {
+  name: GameIconName;
+  className?: string;
+}) {
+  return <GameIcon name={name} size={20} className={cn("-m-0.5", className)} />;
 }
 
 export function RelicTierIcon({ tier, size }: { tier: string; size: number }) {

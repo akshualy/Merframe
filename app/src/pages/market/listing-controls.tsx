@@ -1,4 +1,4 @@
-import { Ellipsis, RefreshCw, Wrench } from "lucide-react";
+import { Ellipsis, RefreshCw, SquareStack } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export function ListingToolbar({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
-            <Wrench className="size-4" />
+            <SquareStack className="size-4" />
             Bulk Actions
           </Button>
         </DropdownMenuTrigger>

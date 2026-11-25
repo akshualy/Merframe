@@ -1,4 +1,3 @@
-import { Gift } from "lucide-react";
 import { ItemImage } from "@/components/item-image";
 import { EmptyNote } from "@/components/page";
 import { secondsUntil } from "@/lib/format";
@@ -21,7 +20,7 @@ export function WorldRewardAlertsPanel({
   now: number;
 }) {
   return (
-    <Panel icon={Gift} title="Rewards on Offer">
+    <Panel glyph="invasion" title="Rewards on Offer">
       {rewards.length === 0 ? (
         <EmptyNote>
           No alert, invasion or event offers one of your chosen rewards right

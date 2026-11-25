@@ -1,8 +1,8 @@
-import { Archive } from "lucide-react";
 import { useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Amount } from "@/components/currency";
 import { ExternalLinkButton } from "@/components/external-link-button";
+import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,9 @@ function DropRow({
         className="hover:bg-secondary/50 flex w-full cursor-pointer items-center gap-2 py-1 text-left text-xs"
       >
         <ItemImage imageName={drop.image_name} size={24} alt={drop.name} />
-        {drop.vaulted && <Archive className="text-vaulted size-3.5 shrink-0" />}
+        {drop.vaulted && (
+          <GameIcon name="vaulted" size={16} className="text-vaulted" />
+        )}
         <span className={cn("flex-1 truncate", drop.vaulted && "text-vaulted")}>
           {drop.name}
         </span>
