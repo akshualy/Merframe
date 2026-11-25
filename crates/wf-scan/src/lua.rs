@@ -553,6 +553,15 @@ pub(crate) mod tests {
             (self.text(name), tag, self.text(text), tag)
         }
 
+        pub(crate) fn flag_field(&mut self, name: &str, flag: bool) -> Field {
+            (
+                self.text(name),
+                u32::from(STRING_TAG),
+                u64::from(flag),
+                BOOLEAN_TAG,
+            )
+        }
+
         pub(crate) fn table_field(&mut self, name: &str, table: u64) -> Field {
             (self.text(name), u32::from(STRING_TAG), table, TABLE_TAG)
         }

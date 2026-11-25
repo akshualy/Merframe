@@ -2,11 +2,11 @@ use wf_mem::MemoryReader;
 
 use crate::lua::{LuaState, LuaTable};
 
-const REWARD_SCRIPT: &str = "OnVoidRewards";
-const ELEMENTS: &str = "mElements";
+pub(crate) const REWARD_SCRIPT: &str = "OnVoidRewards";
+pub(crate) const ELEMENTS: &str = "mElements";
 const CLIP: &str = "mClipName";
 const CLIP_NAME: &str = "RewardList.Item";
-const FULL_NAME: &str = "FullName";
+pub(crate) const FULL_NAME: &str = "FullName";
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RewardTile {
@@ -34,19 +34,29 @@ fn tile<R: MemoryReader + ?Sized>(reader: &R, element: LuaTable) -> Option<Rewar
     })
 }
 
+pub(crate) fn reward_elements<R: MemoryReader + ?Sized>(
+    reader: &R,
+    state: &LuaState,
+    script: &mut Option<LuaTable>,
+) -> Vec<LuaTable> {
+    let Some(script) = state.cached_script(reader, REWARD_SCRIPT, script) else {
+        return Vec::new();
+    };
+    script
+        .locals(reader)
+        .into_iter()
+        .filter_map(|local| local.field(reader, ELEMENTS)?.table())
+        .flat_map(|elements| elements.tables(reader))
+        .collect()
+}
+
 pub fn reward_screen<R: MemoryReader + ?Sized>(
     reader: &R,
     state: &LuaState,
     script: &mut Option<LuaTable>,
 ) -> Vec<RewardTile> {
-    let Some(script) = state.cached_script(reader, REWARD_SCRIPT, script) else {
-        return Vec::new();
-    };
-    let mut tiles: Vec<RewardTile> = script
-        .locals(reader)
+    let mut tiles: Vec<RewardTile> = reward_elements(reader, state, script)
         .into_iter()
-        .filter_map(|local| local.field(reader, ELEMENTS)?.table())
-        .flat_map(|elements| elements.tables(reader))
         .filter_map(|element| tile(reader, element))
         .collect();
     tiles.sort_unstable();

@@ -32,6 +32,7 @@ pub enum Event {
     },
     SquadRewardInfoComplete,
     RelicRewardsShown,
+    RelicRewardScreenClosed,
     RelicSelectScreenLoaded,
     StarChartOpened,
     MissionCleared,
@@ -143,6 +144,7 @@ impl Event {
             Self::SquadRewardInfoReceived { .. } => "SquadRewardInfoReceived",
             Self::SquadRewardInfoComplete => "SquadRewardInfoComplete",
             Self::RelicRewardsShown => "RelicRewardsShown",
+            Self::RelicRewardScreenClosed => "RelicRewardScreenClosed",
             Self::RelicSelectScreenLoaded => "RelicSelectScreenLoaded",
             Self::StarChartOpened => "StarChartOpened",
             Self::MissionCleared => "MissionCleared",
@@ -319,6 +321,9 @@ fn relic_rewards(message: &str) -> Option<Event> {
     }
     if message.ends_with("ProjectionRewardChoice.lua: Got rewards") {
         return Some(Event::RelicRewardsShown);
+    }
+    if message.ends_with("ProjectionRewardChoice.lua: Relic reward screen shut down") {
+        return Some(Event::RelicRewardScreenClosed);
     }
     None
 }
@@ -710,10 +715,16 @@ mod tests {
     }
 
     #[test]
-    fn relic_rewards_shown() {
+    fn relic_rewards_shown_and_closed() {
         assert_eq!(
             classify(&line("ProjectionRewardChoice.lua: Got rewards")),
             Some(Event::RelicRewardsShown)
+        );
+        assert_eq!(
+            classify(&line(
+                "ProjectionRewardChoice.lua: Relic reward screen shut down"
+            )),
+            Some(Event::RelicRewardScreenClosed)
         );
     }
 
