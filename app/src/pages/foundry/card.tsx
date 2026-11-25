@@ -1,8 +1,9 @@
-import { Archive, CheckCircle2, Dna, Hourglass, Star } from "lucide-react";
+import { CircleCheck, Hourglass, Star } from "lucide-react";
 import { memo } from "react";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
+import { Meta } from "@/components/meta";
 import {
   Tooltip,
   TooltipContent,
@@ -103,14 +104,14 @@ function FoundryCardInner({
         <div className="flex items-center justify-center gap-2">
           <span>{item.name}</span>
           {item.mastered && (
-            <GameIcon name="mastered" size={16} alt="Mastered" />
+            <GameIcon name="mastered" size={20} alt="Mastered" />
           )}
           {item.archon_shards !== null && item.archon_shards > 0 && (
             <span
               title={`${counted(item.archon_shards, "Archon Shard")} installed`}
               className="text-muted-foreground flex items-center gap-1 text-xs tabular-nums"
             >
-              <GameIcon name="archon-shard" size={16} alt="Archon Shards" />
+              <GameIcon name="archon-shard" size={20} alt="Archon Shards" />
               {item.archon_shards}
             </span>
           )}
@@ -130,27 +131,24 @@ function FoundryCardInner({
         </div>
         <div className="text-muted-foreground flex min-h-5 flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
           {item.prime && item.prime.vault !== "unknown" && (
-            <span
-              className={cn(
-                "flex items-center gap-1",
-                item.prime.vault === "vaulted" && "text-vaulted",
-              )}
+            <Meta
+              className={cn(item.prime.vault === "vaulted" && "text-vaulted")}
             >
-              <Archive className="size-3.5" />
+              <GameIcon name="vaulted" size={16} />
               {item.prime.vault === "vaulted" ? "Vaulted" : "Unvaulted"}
-            </span>
+            </Meta>
           )}
           {item.progress.pending && (
-            <span className="text-accent flex items-center gap-1">
+            <Meta className="text-accent">
               <Hourglass className="size-3.5" />
               Building
-            </span>
+            </Meta>
           )}
           {item.progress.owned && (
-            <span className="text-primary flex items-center gap-1">
-              <CheckCircle2 className="size-3.5" />
+            <Meta className="text-primary">
+              <CircleCheck className="size-3.5" />
               Owned
-            </span>
+            </Meta>
           )}
           {!item.progress.owned && item.progress.ready_to_build && (
             <span className="text-accent">Ready to build</span>
@@ -159,10 +157,10 @@ function FoundryCardInner({
             <span>MR {item.mastery.required}</span>
           )}
           {item.helminth?.subsumed && (
-            <span className="flex items-center gap-1">
-              <Dna className="size-3.5" />
+            <Meta>
+              <GameIcon name="helminth" size={16} />
               {item.helminth.ability} subsumed
-            </span>
+            </Meta>
           )}
           {item.crafts_into !== null && item.crafts_into.length > 0 && (
             <span title={`Used to craft ${item.crafts_into.join(", ")}`}>

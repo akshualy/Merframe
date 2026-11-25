@@ -1,4 +1,4 @@
-import { LogOut, Mail, Store } from "lucide-react";
+import { LogOut, MessagesSquare, Store } from "lucide-react";
 import {
   type ReactNode,
   useCallback,
@@ -218,7 +218,7 @@ export function MarketPage() {
             variant="outline"
             onClick={() => openExternal(MARKET_CHATS_URL)}
           >
-            <Mail className="size-4" />
+            <MessagesSquare className="size-4" />
             Messages
             {unread > 0 && <Badge variant="accent">{num(unread)}</Badge>}
           </Button>

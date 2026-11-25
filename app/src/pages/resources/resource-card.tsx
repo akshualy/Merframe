@@ -1,4 +1,4 @@
-import { CheckCircle2 } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import { memo } from "react";
 import { ItemImage } from "@/components/item-image";
 import { Progress } from "@/components/ui/progress";
@@ -36,7 +36,7 @@ function ResourceCardInner({
             </span>
           ) : (
             <span className="text-primary flex shrink-0 items-center gap-1 text-xs">
-              <CheckCircle2 className="size-3.5" />
+              <CircleCheck className="size-3.5" />
               Covered
             </span>
           )}

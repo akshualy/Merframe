@@ -1,5 +1,6 @@
-import { Check, Globe, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
+import { LucideSlotGameIcon } from "@/components/game-icon";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import {
   Tooltip,
@@ -74,7 +75,7 @@ export function StatusBar() {
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="text-muted-foreground hidden items-center gap-2 text-sm lg:flex">
-              <Globe className="size-4" />
+              <LucideSlotGameIcon name="fissure" />
               {counted(fissures.length, "fissure")}
               {nextTimer && (
                 <>

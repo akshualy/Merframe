@@ -1,4 +1,4 @@
-import { Archive, CircleCheck, Receipt, ShoppingCart, Tag } from "lucide-react";
+import { CircleCheck, Receipt, ShoppingCart, Tag } from "lucide-react";
 import { memo, type ReactNode } from "react";
 import { Amount } from "@/components/currency";
 import { EquippedDialog } from "@/components/equipped-dialog";
@@ -270,7 +270,7 @@ function ItemCardInner({
           )}
           {vault(entry) === "vaulted" && (
             <Meta className="text-vaulted">
-              <Archive className="size-3.5" />
+              <GameIcon name="vaulted" size={14} />
               Vaulted
             </Meta>
           )}

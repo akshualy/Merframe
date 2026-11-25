@@ -1,4 +1,4 @@
-import { AlertCircle } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Hint } from "@/components/ui/hint";
@@ -217,7 +217,7 @@ export function EmptyPanel({ children }: { children: ReactNode }) {
 export function ErrorNote({ message }: { message: string }) {
   return (
     <div className="text-destructive flex items-center gap-2 text-sm">
-      <AlertCircle className="size-4 shrink-0" />
+      <CircleAlert className="size-4 shrink-0" />
       <span className="min-w-0 wrap-anywhere">{message}</span>
     </div>
   );
