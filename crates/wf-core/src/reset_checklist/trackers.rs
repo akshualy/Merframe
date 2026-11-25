@@ -397,7 +397,7 @@ fn archimedea(context: &ResetChecklistContext, week: &ArchimedeaWeek) -> Tracked
         ArchimedeaKind::Temporal => inventory.echoes_hex_conquest_cache_score_mission,
     };
 
-    Tracked::finished(score > 0 && context.synced_within(week.window))
+    Tracked::finished(score > 0 && inventory.search_pulse_week_running(context.now))
 }
 
 fn clan_vault(inventory: &Inventory, week: &ClanVaultBonusWeek) -> Tracked {

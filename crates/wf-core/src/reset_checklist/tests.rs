@@ -127,7 +127,9 @@ fn circuit_choices() {
 #[test]
 fn archimedea_score() {
     let tab = tab_of(&fixtures::inventory(), synced_at());
-    let stale = Inventory::parse(&fixtures::synced("6a9b5b80000000000000c001")).unwrap();
+    let stale = fixtures::inventory_with(|value| {
+        value["EntratiVaultCountResetDate"] = json!({"$date": {"$numberLong": "1788739200000"}});
+    });
 
     let deep = row(&tab, ResetChecklistRowId::DeepArchimedea);
     let temporal = row(&tab, ResetChecklistRowId::TemporalArchimedea);
