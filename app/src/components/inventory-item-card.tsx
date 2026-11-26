@@ -1,4 +1,4 @@
-import { CircleCheck, Receipt, ShoppingCart, Tag } from "lucide-react";
+import { CircleCheck, Tag } from "lucide-react";
 import { memo, type ReactNode } from "react";
 import { Amount } from "@/components/currency";
 import { EquippedDialog } from "@/components/equipped-dialog";
@@ -6,9 +6,8 @@ import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { ArcaneImage, ItemImage } from "@/components/item-image";
 import { Meta } from "@/components/meta";
+import { RankedPlat } from "@/components/ranked-plat";
 import { SaleSafetyMark } from "@/components/sale-safety";
-import { Button } from "@/components/ui/button";
-import { Dash } from "@/components/ui/dash";
 import { Hint } from "@/components/ui/hint";
 import { Progress } from "@/components/ui/progress";
 import { num } from "@/lib/format";
@@ -33,62 +32,6 @@ import { refinementTone } from "@/lib/relics";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/stores/app-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
-import type { OrderType } from "@/types";
-
-function RankedPlat({
-  side,
-  label,
-  value,
-  floor,
-  tone,
-  onOpen,
-}: {
-  side: OrderType;
-  label?: string;
-  value: number | null;
-  floor?: boolean;
-  tone?: string;
-  onOpen?: () => void;
-}) {
-  const body = (
-    <>
-      <Hint as="span">
-        {label ??
-          (side === "sell" ? (
-            <Receipt className="size-4" />
-          ) : (
-            <ShoppingCart className="size-4" />
-          ))}
-      </Hint>
-      {value === null ? (
-        <Dash />
-      ) : (
-        <Amount
-          currency="platinum"
-          size={14}
-          className={cn("text-xs font-bold", tone)}
-        >
-          {num(value)}
-          {floor ? "+" : ""}
-        </Amount>
-      )}
-    </>
-  );
-  if (onOpen) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-8 max-w-36 basis-20 grow justify-between gap-2 px-3"
-        onClick={onOpen}
-        title={`${side === "buy" ? "Buy" : "Sell"} on warframe.market`}
-      >
-        {body}
-      </Button>
-    );
-  }
-  return <span className="flex items-baseline gap-1 text-xs">{body}</span>;
-}
 
 function SetParts({ set }: { set: SetEntry }) {
   const openListing = useMarketPanelStore((state) => state.openListing);

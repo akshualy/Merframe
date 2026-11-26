@@ -6,6 +6,7 @@ use crate::nightwave::NightwaveActs;
 use crate::relic::{Refinement, Relic, parse_relics};
 use crate::riven::RivenData;
 use crate::syndicate::Syndicate;
+use crate::vosfor_pack::VosforPack;
 
 type RelicNameIndex = HashMap<String, usize>;
 type RelicUniqueNameIndex = HashMap<String, (usize, Refinement)>;
@@ -34,6 +35,7 @@ pub struct GameData {
     riven_data: RivenData,
     nightwave_acts: NightwaveActs,
     syndicates: Vec<Syndicate>,
+    vosfor_packs: Vec<VosforPack>,
 }
 
 impl GameData {
@@ -129,6 +131,7 @@ impl GameData {
             riven_data,
             nightwave_acts: NightwaveActs::default(),
             syndicates: Vec::new(),
+            vosfor_packs: Vec::new(),
         })
     }
 
@@ -150,6 +153,16 @@ impl GameData {
 
     pub fn syndicates(&self) -> &[Syndicate] {
         &self.syndicates
+    }
+
+    #[must_use]
+    pub fn with_vosfor_packs(mut self, vosfor_packs: Vec<VosforPack>) -> Self {
+        self.vosfor_packs = vosfor_packs;
+        self
+    }
+
+    pub fn vosfor_packs(&self) -> &[VosforPack] {
+        &self.vosfor_packs
     }
 
     pub fn riven_data(&self) -> &RivenData {

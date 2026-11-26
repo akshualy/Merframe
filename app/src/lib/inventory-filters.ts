@@ -1,4 +1,4 @@
-import { matchesText, passesYesNo, type YesNo } from "@/lib/filters";
+import { collator, matchesText, passesYesNo, type YesNo } from "@/lib/filters";
 import {
   completion,
   crafted,
@@ -152,8 +152,6 @@ const DEFAULT_FILTERS: TabFilters = {
 };
 
 const UNPRICED_PLAT = 0.0001;
-
-const collator = new Intl.Collator();
 
 export function descending(filters: TabFilters): boolean {
   return filters.ordering === "name"

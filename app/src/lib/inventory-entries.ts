@@ -1,5 +1,7 @@
 import { itemAt } from "@/lib/arrays";
+import { counted } from "@/lib/format";
 import type {
+  ArcaneCollectionRow,
   InventoryTab,
   ItemSummary,
   MiscRow,
@@ -123,6 +125,27 @@ export function entriesFor(
         item: itemAt(items, row.item),
       }));
   }
+}
+
+export interface ArcaneCollectionEntry {
+  row: ArcaneCollectionRow;
+  item: ItemSummary;
+  favourite: boolean;
+}
+
+export function arcaneCollectionEntries(
+  data: InventoryTab,
+): ArcaneCollectionEntry[] {
+  const favourites = new Set(data.favourites);
+  return data.arcane_collection.map((row) => ({
+    row,
+    item: itemAt(data.items, row.item),
+    favourite: favourites.has(row.item),
+  }));
+}
+
+export function missingCopies(row: ArcaneCollectionRow): string {
+  return `${counted(row.remaining, "copy", "copies")} missing`;
 }
 
 export function entryKey(entry: InventoryEntry): string {

@@ -2,6 +2,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/FireProcResist",
   "name": "Arcane Ice",
+  "wikiaUrl": "https://wiki.warframe.com/w/Arcane_Ice",
   "category": "Arcanes",
   "type": "Warframe Arcane",
   "tradable": true,
@@ -19,6 +20,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/InstantShieldOnDamage",
   "name": "Arcane Barrier",
+  "wikiaUrl": "https://wiki.warframe.com/w/Arcane_Barrier",
   "category": "Arcanes",
   "type": "Warframe Arcane",
   "tradable": true,
@@ -36,6 +38,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Defensive/MagneticProcResist",
   "name": "Arcane Nullifier",
+  "wikiaUrl": "https://wiki.warframe.com/w/Arcane_Nullifier",
   "category": "Arcanes",
   "type": "Warframe Arcane",
   "tradable": true,
@@ -53,6 +56,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Offensive/HealCompanionOnSixMeleeKills",
   "name": "Arcane Bodyguard",
+  "wikiaUrl": "https://wiki.warframe.com/w/Arcane_Bodyguard",
   "category": "Arcanes",
   "type": "Warframe Arcane",
   "tradable": true,
@@ -70,6 +74,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Offensive/MeleeDamageForActiveShields",
   "name": "Melee Retaliation",
+  "wikiaUrl": "https://wiki.warframe.com/w/Melee_Retaliation",
   "category": "Arcanes",
   "type": "Melee Arcane",
   "tradable": true,
@@ -87,6 +92,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Offensive/PrimaryHeadshotCritMultOnHeadshot",
   "name": "Primary Blight",
+  "wikiaUrl": "https://wiki.warframe.com/w/Primary_Blight",
   "category": "Arcanes",
   "type": "Primary Arcane",
   "tradable": true,
@@ -104,6 +110,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/OperatorAmps/VoidToElectricDamage",
   "name": "Virtuos Surge",
+  "wikiaUrl": "https://wiki.warframe.com/w/Virtuos_Surge",
   "category": "Arcanes",
   "type": "Amp Arcane",
   "tradable": true,
@@ -119,6 +126,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/GolemArcaneRadialEnergyOnEnergyPickup",
   "name": "Arcane Energize",
+  "wikiaUrl": "https://wiki.warframe.com/w/Arcane_Energize",
   "category": "Arcanes",
   "type": "Warframe Arcane",
   "tradable": true,
@@ -136,6 +144,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Utility/PistolDamageOnReload",
   "name": "Arcane Awakening",
+  "wikiaUrl": "https://wiki.warframe.com/w/Arcane_Awakening",
   "category": "Arcanes",
   "type": "Warframe Arcane",
   "tradable": true,
@@ -153,6 +162,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Zariman/OperatorOnOperatorAbilityIncreaseDamage",
   "name": "Eternal Eradicate",
+  "wikiaUrl": "https://wiki.warframe.com/w/Eternal_Eradicate",
   "category": "Arcanes",
   "type": "Amp Arcane",
   "tradable": true,
@@ -170,6 +180,7 @@
  {
   "uniqueName": "/Lotus/Upgrades/CosmeticEnhancers/Zariman/WarframeOnShieldUptimePowerDuration",
   "name": "Molt Efficiency",
+  "wikiaUrl": "https://wiki.warframe.com/w/Molt_Efficiency",
   "category": "Arcanes",
   "type": "Warframe Arcane",
   "tradable": true,

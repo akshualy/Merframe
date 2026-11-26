@@ -88,6 +88,12 @@ pub(crate) fn unlisted_upgrade(unique_name: &str) -> Option<&'static UnlistedUpg
         .find(|upgrade| upgrade.unique_name == unique_name)
 }
 
+pub(crate) fn vosfor_pack_image(icon: &str) -> Option<String> {
+    let (_, file_name) = icon.rsplit_once('/')?;
+    let place = file_name.strip_suffix("PackIcon.png")?;
+    Some(format!("game/vosfor-pack-{}.png", place.to_lowercase()))
+}
+
 pub(crate) fn is_riven(unique_name: &str) -> bool {
     unique_name.contains(RIVEN_MARKER)
 }

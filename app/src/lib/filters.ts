@@ -4,6 +4,8 @@ export const ANY = "any";
 
 export const NO_FILTER_MATCHES = "Nothing matches these filters.";
 
+export const collator = new Intl.Collator();
+
 export function matchesText(text: string, search: string): boolean {
   return text.toLowerCase().includes(search.trim().toLowerCase());
 }

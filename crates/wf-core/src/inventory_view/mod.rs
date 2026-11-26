@@ -12,6 +12,7 @@ use crate::prices::Prices;
 use crate::sale_safety::{SaleSafety, SaleSafetyCheck, SaleSafetyRule};
 use crate::view::View;
 
+mod arcane_collection;
 mod misc;
 mod parts;
 mod relics;
@@ -20,6 +21,11 @@ mod valuation;
 
 use valuation::set_liquidation_values_of;
 
+pub use arcane_collection::{
+    ArcaneCollectionRow, ArcaneCollectionStatus, ArcaneRankCount, VosforPackCompletion,
+    VosforPackNeededArcane, VosforPackRow,
+};
+use arcane_collection::{arcane_collection, vosfor_packs};
 pub(crate) use misc::{misc, spare_weapons};
 pub(crate) use parts::{
     complete_sets, held_part_counts, held_parts, is_part_stock, owned_sets, parts, sets,
@@ -231,6 +237,8 @@ pub struct InventoryTab {
     pub parts: Vec<PartRow>,
     pub mods: Vec<ModRow>,
     pub arcanes: Vec<ModRow>,
+    pub arcane_collection: Vec<ArcaneCollectionRow>,
+    pub vosfor_packs: Vec<VosforPackRow>,
     pub relics: Vec<RelicRow>,
     pub misc: Vec<MiscRow>,
     pub sets: Vec<SetRow>,
@@ -250,6 +258,12 @@ pub(crate) fn tab(view: &View, rule: SaleSafetyRule) -> InventoryTab {
     );
     let mods = mods(view, &mut index);
     let arcanes = arcanes(view, &mut index);
+    let arcane_collection = arcane_collection(view, &mut index);
+    let vosfor_packs = vosfor_packs(
+        view.catalog.data().vosfor_packs(),
+        &arcane_collection,
+        &index,
+    );
     let relics = relics(view, &mut index);
     let misc = misc(view, &mut index);
     let mut sets = sets(view, &mut index);
@@ -285,6 +299,8 @@ pub(crate) fn tab(view: &View, rule: SaleSafetyRule) -> InventoryTab {
         parts,
         mods,
         arcanes,
+        arcane_collection,
+        vosfor_packs,
         relics,
         misc,
         sets,
@@ -375,6 +391,7 @@ mod tests {
             .flat_map(|row| [row.item, row.set.item])
             .chain(tab.mods.iter().map(|row| row.item))
             .chain(tab.arcanes.iter().map(|row| row.item))
+            .chain(tab.arcane_collection.iter().map(|row| row.item))
             .chain(tab.relics.iter().map(|row| row.item))
             .chain(tab.misc.iter().map(|row| row.item))
             .chain(tab.sets.iter().flat_map(|row| {

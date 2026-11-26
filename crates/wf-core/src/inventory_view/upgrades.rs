@@ -170,6 +170,18 @@ fn count_by_rank(
     counted
 }
 
+pub(super) fn arcane_copies_by_rank(inventory: &Inventory) -> HashMap<&str, BTreeMap<u32, i64>> {
+    let mut held: HashMap<&str, BTreeMap<u32, i64>> = HashMap::new();
+    for ((unique_name, rank), tally) in count_by_rank(inventory, UpgradeKind::Arcane) {
+        *held
+            .entry(unique_name)
+            .or_default()
+            .entry(rank.unwrap_or_default())
+            .or_default() += tally.count;
+    }
+    held
+}
+
 fn upgrade_rows(view: &View, index: &mut ItemIndex, wanted: UpgradeKind) -> Vec<ModRow> {
     let View {
         account,

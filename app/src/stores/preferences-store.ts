@@ -4,6 +4,7 @@ import { ANY } from "@/lib/filters";
 import type { Category } from "@/lib/foundry-filters";
 import { readStored, readStoredJson } from "@/lib/storage";
 import type {
+  ArcanesTabView,
   FissurePath,
   ResourceScope,
   ResourceSource,
@@ -22,6 +23,7 @@ interface PreferencesState {
   foundryCategory: Category;
   resourceSource: ResourceSource;
   resourceScope: ResourceScope;
+  arcaneView: ArcanesTabView;
   hiddenColumns: Record<string, string[]>;
   pageSize: number;
   gridPageSize: number;
@@ -34,6 +36,7 @@ interface PreferencesState {
   setFoundryCategory: (foundryCategory: Category) => void;
   setResourceSource: (resourceSource: ResourceSource) => void;
   setResourceScope: (resourceScope: ResourceScope) => void;
+  setArcaneView: (arcaneView: ArcanesTabView) => void;
   setHiddenColumns: (tableId: string, columns: string[]) => void;
   setPageSize: (pageSize: number) => void;
   setGridPageSize: (gridPageSize: number) => void;
@@ -93,6 +96,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       ),
       resourceSource: "held",
       resourceScope: "mastery",
+      arcaneView: "inventory",
       hiddenColumns: legacyHiddenColumns(),
       pageSize: 50,
       gridPageSize: 48,
@@ -108,6 +112,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       setFoundryCategory: (foundryCategory) => set({ foundryCategory }),
       setResourceSource: (resourceSource) => set({ resourceSource }),
       setResourceScope: (resourceScope) => set({ resourceScope }),
+      setArcaneView: (arcaneView) => set({ arcaneView }),
       setHiddenColumns: (tableId, columns) =>
         set((state) => ({
           hiddenColumns: { ...state.hiddenColumns, [tableId]: columns },
@@ -127,6 +132,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         foundryCategory: state.foundryCategory,
         resourceSource: state.resourceSource,
         resourceScope: state.resourceScope,
+        arcaneView: state.arcaneView,
         hiddenColumns: state.hiddenColumns,
         pageSize: state.pageSize,
         gridPageSize: state.gridPageSize,

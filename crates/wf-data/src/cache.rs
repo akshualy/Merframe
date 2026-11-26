@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use futures_util::future::{join3, try_join_all, try_join3};
+use futures_util::future::{join5, try_join_all, try_join3};
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
@@ -10,6 +10,7 @@ use crate::error::{DataError, Result};
 use crate::game_data::GameData;
 use crate::nightwave::NightwaveActs;
 use crate::syndicate::parse_syndicates;
+use crate::vosfor_pack::parse_vosfor_packs;
 
 const ITEM_CATEGORIES: &[&str] = &[
     "Warframes",
@@ -37,6 +38,8 @@ const RELICS_FILE: &str = "Relics.json";
 const COMPONENTS_FILE: &str = "Components.json";
 const NIGHTWAVE_ACTS_FILE: &str = "ExportNightwave.json";
 const SYNDICATES_FILE: &str = "ExportSyndicates.json";
+const BOOSTER_PACKS_FILE: &str = "ExportBoosterPacks.json";
+const VENDORS_FILE: &str = "ExportVendors.json";
 const DICTIONARY_FILE: &str = "dict.en.json";
 
 const WFCD_ITEMS: &str = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json";
@@ -53,6 +56,8 @@ struct CacheEntry {
     etag: Option<String>,
     last_modified: Option<String>,
 }
+
+type FetchedFile = (String, Option<CacheEntry>);
 
 impl CacheMeta {
     fn record(&mut self, file_name: &str, fresh: Option<CacheEntry>) {
@@ -92,53 +97,65 @@ pub async fn load_or_fetch(dir: &Path, client: &reqwest::Client) -> Result<GameD
     meta.record(RELICS_FILE, relics_entry);
     meta.record(COMPONENTS_FILE, components_entry);
 
-    let (dictionary, nightwave_acts, syndicates) = join3(
+    let (dictionary, nightwave_acts, syndicates, booster_packs, vendors) = join5(
         fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, DICTIONARY_FILE, client, &meta),
         fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, NIGHTWAVE_ACTS_FILE, client, &meta),
         fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, SYNDICATES_FILE, client, &meta),
+        fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, BOOSTER_PACKS_FILE, client, &meta),
+        fetch_or_use_cache(dir, PUBLIC_EXPORT_PLUS, VENDORS_FILE, client, &meta),
     )
     .await;
-    let dictionary = parsed_or_default(
-        DICTIONARY_FILE,
-        dictionary,
-        &mut meta,
-        Dictionary::from_json,
-    );
+    let dictionary = parsed_or_default([(DICTIONARY_FILE, dictionary)], &mut meta, |[body]| {
+        Dictionary::from_json(body)
+    });
 
-    let nightwave_acts =
-        parsed_or_default(NIGHTWAVE_ACTS_FILE, nightwave_acts, &mut meta, |body| {
-            NightwaveActs::from_json(body, &dictionary)
-        });
-    let syndicates = parsed_or_default(SYNDICATES_FILE, syndicates, &mut meta, |body| {
+    let nightwave_acts = parsed_or_default(
+        [(NIGHTWAVE_ACTS_FILE, nightwave_acts)],
+        &mut meta,
+        |[body]| NightwaveActs::from_json(body, &dictionary),
+    );
+    let syndicates = parsed_or_default([(SYNDICATES_FILE, syndicates)], &mut meta, |[body]| {
         parse_syndicates(body, &dictionary)
     });
+    let vosfor_packs = parsed_or_default(
+        [(BOOSTER_PACKS_FILE, booster_packs), (VENDORS_FILE, vendors)],
+        &mut meta,
+        |[booster_packs, vendors]| parse_vosfor_packs(booster_packs, vendors, &dictionary),
+    );
 
     write_meta(&meta_path, &meta).await?;
 
     Ok(
         GameData::from_json_parts(&item_bodies, &relics_body, &components_body)?
             .with_nightwave_acts(nightwave_acts)
-            .with_syndicates(syndicates),
+            .with_syndicates(syndicates)
+            .with_vosfor_packs(vosfor_packs),
     )
 }
 
-fn parsed_or_default<T: Default>(
-    file_name: &str,
-    fetched: Result<(String, Option<CacheEntry>)>,
+fn parsed_or_default<T: Default, const N: usize>(
+    fetched: [(&str, Result<FetchedFile>); N],
     meta: &mut CacheMeta,
-    parse: impl FnOnce(&str) -> Result<T>,
+    parse: impl FnOnce([&str; N]) -> Result<T>,
 ) -> T {
-    let parsed = fetched.and_then(|(body, entry)| Ok((parse(&body)?, entry)));
+    let file_names = fetched.each_ref().map(|(file_name, _)| *file_name);
+    let files: Result<Vec<FetchedFile>> = fetched.into_iter().map(|(_, file)| file).collect();
+    let parsed = files.and_then(|files| {
+        let bodies = std::array::from_fn(|file| files[file].0.as_str());
+        Ok((parse(bodies)?, files))
+    });
     match parsed {
-        Ok((parsed, entry)) => {
-            meta.record(file_name, entry);
+        Ok((parsed, files)) => {
+            for (file_name, (_, entry)) in file_names.into_iter().zip(files) {
+                meta.record(file_name, entry);
+            }
             parsed
         }
         Err(error) => {
             warn!(
-                file = file_name,
+                files = file_names.join(", "),
                 %error,
-                "Loading the game data file failed, everything read from it is missing"
+                "Loading the game data failed, everything read from these files is missing"
             );
             T::default()
         }
@@ -173,7 +190,7 @@ async fn fetch_or_use_cache(
     file_name: &str,
     client: &reqwest::Client,
     meta: &CacheMeta,
-) -> Result<(String, Option<CacheEntry>)> {
+) -> Result<FetchedFile> {
     let file_path: PathBuf = dir.join(file_name);
     match download_fresh(&file_path, source, file_name, client, meta).await {
         Ok(Some((body, entry))) => Ok((body, Some(entry))),
