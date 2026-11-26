@@ -36,6 +36,8 @@ pub enum CoreError {
     SchemaVersion(i64),
     #[error("Stored timestamp {0} ms is out of range")]
     Timestamp(i64),
+    #[error("Relic reward count {0} is out of range")]
+    RelicRewardCount(usize),
 }
 
 impl CoreError {

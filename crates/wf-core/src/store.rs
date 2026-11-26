@@ -107,7 +107,7 @@ pub struct RelicOpening {
     pub at: DateTime<Utc>,
     pub relic: String,
     pub reward_item: String,
-    pub player_count: i64,
+    pub player_count: u8,
 }
 
 enum InventoryCache {
@@ -503,7 +503,7 @@ impl Store {
         at: DateTime<Utc>,
         relic: &str,
         reward_item: &str,
-        player_count: usize,
+        player_count: u8,
     ) -> Result<i64> {
         self.connection.execute(
             "INSERT INTO relic_openings (at, relic, reward_item, player_count, account) \

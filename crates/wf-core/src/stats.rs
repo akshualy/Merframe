@@ -24,7 +24,7 @@ pub struct OpeningRow {
     pub at: DateTime<Utc>,
     pub relic: String,
     pub reward: String,
-    pub player_count: i64,
+    pub player_count: u8,
 }
 
 pub(crate) fn delta_rows(items: &ItemTable, deltas: Vec<StoredDelta>) -> Vec<DeltaRow> {

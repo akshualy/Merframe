@@ -18,7 +18,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"
 reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "gzip", "brotli"] }
 tracing = "0.1"
 memchr = "2"
-rusqlite = { version = "0.37", features = ["bundled"] }
+rusqlite = { version = "0.43", features = ["bundled"] }
 chrono = { version = "0.4", features = ["serde"] }
 ts-rs = { version = "12", features = ["serde-compat", "chrono-impl"] }
 flate2 = "1"
