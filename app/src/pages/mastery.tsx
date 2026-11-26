@@ -4,6 +4,7 @@ import { Amount } from "@/components/currency";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage, prefetchImages } from "@/components/item-image";
+import { MasteryRequirement } from "@/components/mastery-requirement";
 import { OptionTabs } from "@/components/option-tabs";
 import { CardGrid, EmptyNote, Page, Section, Surface } from "@/components/page";
 import { Pagination } from "@/components/pagination";
@@ -369,6 +370,9 @@ export function MasteryPage() {
                       </Badge>
                     )}
                     {item.owned && <Badge variant="secondary">Owned</Badge>}
+                    {!item.owned && (
+                      <MasteryRequirement gate={item.mastery} unmetOnly />
+                    )}
                     {!item.owned && item.acquisition.relic_probability > 0 && (
                       <Badge variant="muted">
                         {percent(item.acquisition.relic_probability, 2)} relics

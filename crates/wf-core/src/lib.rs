@@ -52,7 +52,7 @@ pub use facade::{Core, RelicPlannerTab, StatsTab};
 pub use favourites::Favourites;
 pub use foundry::{
     CraftDetails, CraftNode, CraftSummary, FoundryComponent, FoundryItem, FoundryTab, Helminth,
-    MasteryGate, NeededItem, NodeDrop, OwnedRelic, PendingBuild, Prime, Progress, WorldTimer,
+    NeededItem, NodeDrop, OwnedRelic, PendingBuild, Prime, Progress, WorldTimer,
 };
 pub use identity::{ItemRecord, ItemTable, market_name, market_slug};
 pub use inventory_view::{
@@ -62,8 +62,8 @@ pub use inventory_view::{
 };
 pub use listings::MarketListings;
 pub use mastery::{
-    Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryComponent, MasteryGroup, MasteryItem,
-    MasteryOptions, MasteryOrdering, MasterySummary, MasteryTab, RouteMember,
+    Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryComponent, MasteryGate, MasteryGroup,
+    MasteryItem, MasteryOptions, MasteryOrdering, MasterySummary, MasteryTab, RouteMember,
 };
 pub use prices::{MarketWindow, PriceCache, PriceQuote, PriceSource, Prices, Turnover};
 pub use relic_planner::{

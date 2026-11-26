@@ -4,7 +4,8 @@ use wf_data::{Item, Refinement};
 use wf_inventory::Inventory;
 
 use super::{
-    Acquisition, CategoryTotals, Level, MasteryComponent, MasteryGroup, MasteryItem, MasteryOptions,
+    Acquisition, CategoryTotals, Level, MasteryComponent, MasteryGate, MasteryGroup, MasteryItem,
+    MasteryOptions,
 };
 use crate::account::Account;
 use crate::catalog::{Catalog, Stock, names_a_prime, part_name};
@@ -228,6 +229,7 @@ pub(super) fn items(view: &View, options: MasteryOptions) -> Vec<MasteryItem> {
                 purchasable,
                 relic_probability: 0.0,
             },
+            mastery: MasteryGate::of(item, inventory),
             favourite: favourites.contains(&item.unique_name),
             components,
         }
