@@ -96,7 +96,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       ),
       resourceSource: "held",
       resourceScope: "mastery",
-      arcaneView: "collection",
+      arcaneView: "inventory",
       hiddenColumns: legacyHiddenColumns(),
       pageSize: 50,
       gridPageSize: 48,

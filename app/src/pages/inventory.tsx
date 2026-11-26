@@ -43,9 +43,9 @@ const TAB_LABELS: Record<InventoryTabKey, string> = {
 };
 
 const ARCANE_VIEWS: { value: ArcanesTabView; label: string }[] = [
+  { value: "inventory", label: "Inventory" },
   { value: "collection", label: "Collection" },
   { value: "packs", label: "Vosfor Packs" },
-  { value: "inventory", label: "Inventory" },
 ];
 
 export function InventoryPage() {
