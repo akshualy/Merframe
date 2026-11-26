@@ -1,7 +1,9 @@
 use wf_inventory::Inventory;
 
 use super::routes::rank_route;
-use super::{Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryGroup, MasteryItem};
+use super::{
+    Acquisition, CategoryTotals, Level, LevelUpRoute, MasteryGate, MasteryGroup, MasteryItem,
+};
 
 pub(super) const INTRINSIC_MASTERY_XP: u64 = 1500;
 const INTRINSIC_RANKS_PER_SCHOOL: u32 = 10;
@@ -75,6 +77,10 @@ pub(super) fn row(kind: &'static str, name: &str, image_name: &str) -> MasteryIt
             plat_cost: 0,
             purchasable: false,
             relic_probability: 0.0,
+        },
+        mastery: MasteryGate {
+            required: None,
+            met: true,
         },
         favourite: false,
         components: Vec::new(),

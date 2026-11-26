@@ -7,6 +7,7 @@ use wf_inventory::{ArchonCrystalSlot, Inventory};
 use crate::catalog::{Catalog, Stock};
 use crate::foundry::{self, CraftNode, FoundryItem, farmed_resource, is_blueprint};
 use crate::identity::{ItemTable, part_identity};
+use crate::mastery::MasteryGate;
 use crate::view::View;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
@@ -46,6 +47,7 @@ pub struct ResourceUse {
     pub amount: i64,
     pub favourite: bool,
     pub ready_to_build: bool,
+    pub mastery: MasteryGate,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -132,6 +134,7 @@ pub(crate) fn tab(
                 amount,
                 favourite: item.favourite,
                 ready_to_build: item.progress.ready_to_build,
+                mastery: item.mastery,
             });
         }
         counted += 1;

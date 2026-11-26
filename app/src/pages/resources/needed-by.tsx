@@ -1,5 +1,6 @@
 import { FavouriteStar } from "@/components/favourite-star";
 import { ItemImage } from "@/components/item-image";
+import { MasteryRequirement } from "@/components/mastery-requirement";
 import { Section } from "@/components/page";
 import { counted, num } from "@/lib/format";
 import type { ResourceRow } from "@/types";
@@ -36,12 +37,15 @@ export function NeededBy({
                 alt={use.name}
                 className="bg-transparent"
               />
-              <span className="min-w-0 flex-1 truncate">{use.name}</span>
-              {use.ready_to_build && (
-                <span className="text-accent shrink-0 text-xs">
-                  Ready to build
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate">{use.name}</span>
+                <span className="flex flex-wrap items-center gap-x-2 text-xs empty:hidden">
+                  <MasteryRequirement gate={use.mastery} unmetOnly />
+                  {use.ready_to_build && (
+                    <span className="text-accent">Ready to build</span>
+                  )}
                 </span>
-              )}
+              </span>
               <span className="text-muted-foreground shrink-0 tabular-nums">
                 {num(use.amount)}
               </span>

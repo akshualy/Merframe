@@ -3,6 +3,7 @@ import { memo } from "react";
 import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
+import { MasteryRequirement } from "@/components/mastery-requirement";
 import { Meta } from "@/components/meta";
 import {
   Tooltip,
@@ -153,9 +154,7 @@ function FoundryCardInner({
           {!item.progress.owned && item.progress.ready_to_build && (
             <span className="text-accent">Ready to build</span>
           )}
-          {item.mastery.required !== null && item.mastery.required > 1 && (
-            <span>MR {item.mastery.required}</span>
-          )}
+          <MasteryRequirement gate={item.mastery} />
           {item.helminth?.subsumed && (
             <Meta>
               <GameIcon name="helminth" size={16} />

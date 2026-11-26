@@ -6,6 +6,8 @@ mod tab;
 mod xp;
 
 use serde::{Deserialize, Serialize};
+use wf_data::Item;
+use wf_inventory::Inventory;
 
 pub(crate) use items::{includes_founders, kind_of, masterable, unmastered_types};
 pub(crate) use tab::tab;
@@ -45,6 +47,22 @@ pub enum MasteryGroup {
     Weapons,
     Companions,
     Other,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct MasteryGate {
+    pub required: Option<u32>,
+    pub met: bool,
+}
+
+impl MasteryGate {
+    pub(crate) fn of(item: &Item, inventory: &Inventory) -> Self {
+        Self {
+            required: item.mastery_req,
+            met: inventory.player_level >= item.mastery_req.unwrap_or_default(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -87,6 +105,7 @@ pub struct MasteryItem {
     pub mastered: bool,
     pub level: Level,
     pub acquisition: Acquisition,
+    pub mastery: MasteryGate,
     pub favourite: bool,
     pub components: Vec<MasteryComponent>,
 }

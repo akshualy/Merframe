@@ -2,6 +2,7 @@
 import type { Acquisition } from "./Acquisition";
 import type { Level } from "./Level";
 import type { MasteryComponent } from "./MasteryComponent";
+import type { MasteryGate } from "./MasteryGate";
 import type { MasteryGroup } from "./MasteryGroup";
 
-export type MasteryItem = { unique_name: string, name: string, kind: string, group: MasteryGroup, image_name: string | null, owned: boolean, mastered: boolean, level: Level, acquisition: Acquisition, favourite: boolean, components: Array<MasteryComponent>, };
+export type MasteryItem = { unique_name: string, name: string, kind: string, group: MasteryGroup, image_name: string | null, owned: boolean, mastered: boolean, level: Level, acquisition: Acquisition, mastery: MasteryGate, favourite: boolean, components: Array<MasteryComponent>, };

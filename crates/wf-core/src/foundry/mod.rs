@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 use crate::catalog::VaultStatus;
+use crate::mastery::MasteryGate;
 
 mod acquisition;
 mod stock;
@@ -116,13 +117,6 @@ pub struct Progress {
     pub owned: bool,
     pub pending: bool,
     pub ready_to_build: bool,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
-pub struct MasteryGate {
-    pub required: Option<u32>,
-    pub met: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

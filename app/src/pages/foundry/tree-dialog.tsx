@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { ExternalLinkButton } from "@/components/external-link-button";
 import { FavouriteStar } from "@/components/favourite-star";
 import { ItemImage } from "@/components/item-image";
+import { MasteryRequirement } from "@/components/mastery-requirement";
 import { EmptyNote } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { CheckboxField } from "@/components/ui/checkbox";
@@ -215,7 +216,7 @@ export function FoundryTreeDialog({
 }: {
   item: Pick<
     FoundryItem,
-    "unique_name" | "name" | "image_name" | "wiki_url" | "favourite"
+    "unique_name" | "name" | "image_name" | "wiki_url" | "favourite" | "mastery"
   > | null;
   onClose: () => void;
 }) {
@@ -264,6 +265,7 @@ export function FoundryTreeDialog({
                 favourite={item.favourite}
               />
             )}
+            {item && <MasteryRequirement gate={item.mastery} />}
             {item?.wiki_url && (
               <ExternalLinkButton url={item.wiki_url}>Wiki</ExternalLinkButton>
             )}

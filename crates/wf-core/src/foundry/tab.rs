@@ -7,14 +7,13 @@ use wf_worldstate::WorldState;
 
 use crate::catalog::{Catalog, is_umbra, names_a_prime, part_name};
 use crate::identity::ItemTable;
-use crate::mastery::{includes_founders, kind_of, masterable};
+use crate::mastery::{MasteryGate, includes_founders, kind_of, masterable};
 use crate::resurgence::prime_resurgence;
 use crate::view::View;
 
 use super::acquisition::{owned_relics, wiki_url};
 use super::{
-    FoundryComponent, FoundryItem, FoundryTab, Helminth, MasteryGate, PendingBuild, Prime,
-    Progress, WorldTimer,
+    FoundryComponent, FoundryItem, FoundryTab, Helminth, PendingBuild, Prime, Progress, WorldTimer,
 };
 
 const CRAFTABLE_INTO_KINDS: [&str; 4] = ["primary", "secondary", "melee", "arch"];
@@ -113,10 +112,7 @@ pub(crate) fn items(
                             .cloned()
                             .unwrap_or_default()
                     }),
-                    mastery: MasteryGate {
-                        required: item.mastery_req,
-                        met: inventory.player_level >= item.mastery_req.unwrap_or_default(),
-                    },
+                    mastery: MasteryGate::of(item, inventory),
                     incarnon: INCARNON_KINDS
                         .contains(&kind)
                         .then(|| adapted.contains(item.unique_name.as_str())),
