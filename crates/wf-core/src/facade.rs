@@ -19,7 +19,7 @@ use crate::catalog::{Catalog, REQUIEM_MARKER};
 use crate::comparables::{self, ComparedStat, RivenComparables};
 use crate::delta;
 use crate::ducatering::{self, Ducatering, DucateringFilter};
-use crate::error::Result;
+use crate::error::{CoreError, Result};
 use crate::events::{
     self, ARBITRATION_FORECAST_TRUSTED, AlertSettings, ArbitrationOutlook, ArbitrationSchedule,
     CoreEvent, Engine, ScannedRewards, ScannedTrade, WorldRewardAlert,
@@ -512,8 +512,11 @@ impl Core {
                         && !relic.contains(REQUIEM_MARKER)
                         && !std::mem::replace(&mut self.reward_screen_recorded, true)
                     {
+                        let reward_count = screen.ranked.len();
+                        let player_count = u8::try_from(reward_count)
+                            .map_err(|_| CoreError::RelicRewardCount(reward_count))?;
                         self.store
-                            .record_relic_opening(now, relic, reward, screen.ranked.len())?;
+                            .record_relic_opening(now, relic, reward, player_count)?;
                     }
                 }
                 _ => {}
