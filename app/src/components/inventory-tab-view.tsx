@@ -7,7 +7,6 @@ import { prefetchImages } from "@/components/item-image";
 import { OptionSelect } from "@/components/option-select";
 import { CardGrid, EmptyPanel } from "@/components/page";
 import { Pagination } from "@/components/pagination";
-import { SaleSafetyKeepFields } from "@/components/sale-safety";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
 import { usePaged } from "@/hooks/use-paged";
@@ -28,7 +27,6 @@ import {
   descending,
   ORDERINGS,
   refinementsFor,
-  SET_TABS,
   type TabFilters,
   yesNoFiltersFor,
 } from "@/lib/inventory-filters";
@@ -106,8 +104,6 @@ export function InventoryTabView({
             <ArrowUpNarrowWide className="size-4" />
           )}
         </Button>
-
-        {SET_TABS.includes(tab) && <SaleSafetyKeepFields />}
 
         <span className="text-muted-foreground ml-auto text-xs">
           {num(visible.length)} of {num(entryCount)} shown

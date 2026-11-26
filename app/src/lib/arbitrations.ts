@@ -7,7 +7,7 @@ import type {
 } from "@/types";
 
 export const ARBITRATION_ALERTS_SECTION_ID = "arbitration-alerts";
-export const ARBITRATION_SETTINGS_PATH = `/settings#${ARBITRATION_ALERTS_SECTION_ID}`;
+export const ARBITRATION_SETTINGS_PATH = `/settings?tab=alerts#${ARBITRATION_ALERTS_SECTION_ID}`;
 
 export const ARBITRATION_RELOAD_EVENTS: EventName[] = [
   "worldStateUpdated",

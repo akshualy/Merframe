@@ -32,7 +32,7 @@ export const ORDERINGS = [
 export type Ordering = (typeof ORDERINGS)[number]["value"];
 
 const EVERY_TAB: readonly InventoryTabKey[] = INVENTORY_TABS;
-export const SET_TABS: readonly InventoryTabKey[] = ["parts", "sets"];
+const SET_TABS: readonly InventoryTabKey[] = ["parts", "sets"];
 const VAULT_TABS: readonly InventoryTabKey[] = ["parts", "sets", "relics"];
 const RANK_TABS: readonly InventoryTabKey[] = ["mods", "arcanes"];
 const MOD_TABS: readonly InventoryTabKey[] = ["mods"];
