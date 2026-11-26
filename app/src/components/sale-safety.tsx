@@ -7,10 +7,8 @@ import {
 } from "lucide-react";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { Meta } from "@/components/meta";
-import { SelectField } from "@/components/option-select";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
-import { SwitchField } from "@/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
@@ -21,14 +19,9 @@ import { api } from "@/lib/bridge";
 import type { FilterOption } from "@/lib/filters";
 import { num } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import {
-  useAppStore,
-  useMarketSignedIn,
-  useSettings,
-} from "@/stores/app-store";
+import { useMarketSignedIn, useSettings } from "@/stores/app-store";
 import type {
   SaleSafety,
-  SaleSafetyKeep,
   SaleSafetyReason,
   SaleSafetyReservation,
   SaleSafetySettings,
@@ -57,12 +50,6 @@ const REASONS: Record<SaleSafetyReason, string> = {
   ownership: "you don't own one",
   favourite: "it's a favourite",
 };
-
-const KEEP_OPTIONS: FilterOption<SaleSafetyKeep>[] = [
-  { value: "unmastered", label: "Unbuilt, unmastered items" },
-  { value: "unbuilt", label: "All unbuilt items" },
-  { value: "nothing", label: "Nothing" },
-];
 
 function saleSafetyLabel({ state, listed }: SaleSafety): string {
   switch (state.kind) {
@@ -207,32 +194,5 @@ export function useSaleSafetySettings(): SaleSafetySettings {
   return useMemo(
     () => ({ sale_safety_keep: keep, sale_safety_keep_favourites: favourites }),
     [keep, favourites],
-  );
-}
-
-export function SaleSafetyKeepFields() {
-  const settings = useSettings();
-  const saveSettings = useAppStore((state) => state.saveSettings);
-  return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-      <SelectField
-        id="sale-safety-keep"
-        label="Keep parts for"
-        inline
-        value={settings.sale_safety_keep}
-        options={KEEP_OPTIONS}
-        onChange={(value) => saveSettings({ sale_safety_keep: value })}
-        size="sm"
-        className="w-72"
-      />
-      <SwitchField
-        id="sale-safety-keep-favourites"
-        label="Keep parts for favourites"
-        checked={settings.sale_safety_keep_favourites}
-        onChange={(checked) =>
-          saveSettings({ sale_safety_keep_favourites: checked })
-        }
-      />
-    </div>
   );
 }

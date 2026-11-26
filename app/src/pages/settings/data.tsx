@@ -225,15 +225,6 @@ export function PricesAndData({
               : "EE.log not found on this machine"}
           </Hint>
         </div>
-        <div className="@3xl:col-span-2">
-          <SwitchRow
-            checked={draft.check_for_updates}
-            onChange={(checked) => patch({ check_for_updates: checked })}
-            hint="The About page checks on request either way."
-          >
-            Check for updates on start
-          </SwitchRow>
-        </div>
         <div className="flex flex-col gap-1 @3xl:col-span-2">
           <Hint className={cn(!status?.price_table_at && "italic")}>
             {status?.price_table_at
@@ -261,14 +252,34 @@ export function StatsTabSetting({
   return (
     <Section
       title="Stats"
-      description="The Stats page charts the local history Merframe keeps of your account."
+      description="This page shows charts of all local data Merframe stores for the current account."
     >
       <SwitchRow
         checked={draft.stats_tab_enabled}
         onChange={(checked) => patch({ stats_tab_enabled: checked })}
-        hint="The history keeps recording while the tab is hidden."
+        hint="This just hides the page, the data will still be stored locally."
       >
         Show the Stats tab
+      </SwitchRow>
+    </Section>
+  );
+}
+
+export function UpdateCheckSetting({
+  draft,
+  patch,
+}: {
+  draft: Settings;
+  patch: Patch;
+}) {
+  return (
+    <Section title="Updates">
+      <SwitchRow
+        checked={draft.check_for_updates}
+        onChange={(checked) => patch({ check_for_updates: checked })}
+        hint="You can manually check for updates on the &quot;About&quot; page regardless of this setting."
+      >
+        Check for updates on start
       </SwitchRow>
     </Section>
   );
