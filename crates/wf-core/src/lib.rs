@@ -56,8 +56,9 @@ pub use foundry::{
 };
 pub use identity::{ItemRecord, ItemTable, market_name, market_slug};
 pub use inventory_view::{
-    InventoryTab, ItemStatus, ItemSummary, MiscRow, ModHolder, ModRow, PartRow, RelicRow,
-    SculptureStars, SetComponent, SetLink, SetRow, UpgradePrices,
+    ArcaneCollectionRow, ArcaneCollectionStatus, ArcaneRankCount, InventoryTab, ItemStatus,
+    ItemSummary, MiscRow, ModHolder, ModRow, PartRow, RelicRow, SculptureStars, SetComponent,
+    SetLink, SetRow, UpgradePrices, VosforPackCompletion, VosforPackNeededArcane, VosforPackRow,
 };
 pub use listings::MarketListings;
 pub use mastery::{

@@ -195,6 +195,8 @@ const tab: InventoryTab = {
   ],
   mods: [modRow(2, 0, 1), modRow(2, 10, 1, [1, 0])],
   arcanes: [modRow(3, 0, 1)],
+  arcane_collection: [],
+  vosfor_packs: [],
   relics: [],
   misc: [misc],
   sets: [],

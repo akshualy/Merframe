@@ -125,16 +125,21 @@ export function Stat({
 }
 
 export function CardGrid({
+  wide = false,
   className,
   children,
 }: {
+  wide?: boolean;
   className?: string;
   children: ReactNode;
 }) {
   return (
     <div
       className={cn(
-        "grid gap-3 @sm:grid-cols-2 @5xl:grid-cols-3 @7xl:grid-cols-4",
+        "grid gap-3 @5xl:grid-cols-3",
+        wide
+          ? "@sm:grid-cols-1 @2xl:grid-cols-2"
+          : "@sm:grid-cols-2 @7xl:grid-cols-4",
         className,
       )}
     >

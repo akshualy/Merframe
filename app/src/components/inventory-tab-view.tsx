@@ -159,7 +159,7 @@ export function InventoryTabView({
       {pageEntries.length === 0 ? (
         <EmptyPanel>{NO_FILTER_MATCHES}</EmptyPanel>
       ) : (
-        <CardGrid className="@sm:grid-cols-1 @2xl:grid-cols-2 @6xl:grid-cols-3 @7xl:grid-cols-3">
+        <CardGrid wide>
           {pageEntries.map((entry) => (
             <ItemCard
               key={entryKey(entry)}

@@ -10,6 +10,7 @@ mod nightwave;
 mod relic;
 mod riven;
 mod syndicate;
+mod vosfor_pack;
 
 #[cfg(feature = "fetch")]
 mod cache;
@@ -34,6 +35,7 @@ pub use syndicate::{
     Syndicate, SyndicateOffer, SyndicateSacrifice, SyndicateSacrificeItem, SyndicateTitle,
     parse_syndicates,
 };
+pub use vosfor_pack::{VosforPack, VosforPackArcane, parse_vosfor_packs};
 
 #[cfg(feature = "fetch")]
 pub use cache::load_or_fetch;
