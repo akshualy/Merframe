@@ -83,11 +83,20 @@ pub enum DucateringState {
     Finished,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+pub struct DucateringListValue {
+    pub plat: u32,
+    pub ducats: u32,
+    pub unpriced: usize,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
 pub struct DucateringProgress {
     pub state: DucateringState,
     pub items: Vec<DucateringEntry>,
+    pub list_value: DucateringListValue,
     pub sold: Vec<ScannedKioskItem>,
     pub ducats: u32,
 }
@@ -230,10 +239,23 @@ impl Ducatering {
         }
     }
 
+    fn list_value(&self) -> DucateringListValue {
+        let left = || self.items.iter().filter(|entry| entry.count > 0);
+
+        DucateringListValue {
+            plat: left()
+                .filter_map(|entry| Some(entry.count * entry.plat?))
+                .sum(),
+            ducats: left().map(|entry| entry.count * entry.ducats).sum(),
+            unpriced: left().filter(|entry| entry.plat.is_none()).count(),
+        }
+    }
+
     pub fn progress(&self) -> DucateringProgress {
         DucateringProgress {
             state: self.state(),
             items: self.items.clone(),
+            list_value: self.list_value(),
             sold: self.sold.clone(),
             ducats: self.sold.iter().map(|sale| sale.count * sale.ducats).sum(),
         }
@@ -451,6 +473,36 @@ mod tests {
         run.advance(&kiosk(&[]));
         assert!(run.sold());
         assert_eq!(run.progress().ducats, 3 * 15);
+    }
+
+    #[test]
+    fn list_value_leaves_out_unpriced_and_sold_parts() {
+        let mut run = run(&[(BRATON_PRIME_STOCK, 3), (LINK, 2), (EPITAPH_BARREL, 1)]);
+        let prices = [(15, Some(4)), (45, None), (45, None)];
+        for (entry, (ducats, plat)) in run.items.iter_mut().zip(prices) {
+            entry.ducats = ducats;
+            entry.plat = plat;
+        }
+
+        assert_eq!(
+            run.progress().list_value,
+            DucateringListValue {
+                plat: 12,
+                ducats: 3 * 15 + 3 * 45,
+                unpriced: 2,
+            }
+        );
+
+        run.advance(&kiosk(&[(LINK, "Akbolto Prime Link", 2)]));
+        run.sold();
+        assert_eq!(
+            run.progress().list_value,
+            DucateringListValue {
+                plat: 12,
+                ducats: 3 * 15 + 45,
+                unpriced: 1,
+            }
+        );
     }
 
     #[test]

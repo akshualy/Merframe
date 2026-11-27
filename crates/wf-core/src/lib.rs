@@ -41,7 +41,8 @@ pub use comparables::{ComparableAttribute, ComparableListing, ComparedStat, Rive
 pub use delta::ItemDelta;
 pub use ducatering::{
     Ducatering, DucateringCompleteSets, DucateringEntry, DucateringFilter, DucateringHidden,
-    DucateringProgress, DucateringState, DucateringStep, ScannedKiosk, ScannedKioskItem,
+    DucateringListValue, DucateringProgress, DucateringState, DucateringStep, ScannedKiosk,
+    ScannedKioskItem,
 };
 pub use error::{CoreError, Result};
 pub use events::{
