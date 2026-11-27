@@ -21,9 +21,22 @@ pub fn thousands(value: i64) -> String {
     out
 }
 
+pub(crate) fn contains_word(text: &str, word: &str) -> bool {
+    let text = text.to_lowercase();
+    let word = word.to_lowercase();
+    let boundary = |byte: Option<&u8>| match byte {
+        Some(byte) => !byte.is_ascii_alphanumeric(),
+        None => true,
+    };
+    text.match_indices(&word).any(|(start, found)| {
+        let before = start.checked_sub(1).and_then(|at| text.as_bytes().get(at));
+        boundary(before) && boundary(text.as_bytes().get(start + found.len()))
+    })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{counted, thousands};
+    use super::{contains_word, counted, thousands};
 
     #[test]
     fn counted_words() {
@@ -34,6 +47,13 @@ mod tests {
         assert_eq!(counted(2_i64, "act"), "2 acts");
         assert_eq!(counted(1.0_f64, "second"), "1 second");
         assert_eq!(counted(2.0_f64, "second"), "2 seconds");
+    }
+
+    #[test]
+    fn whole_words_only() {
+        assert!(contains_word("Braton Prime", "Braton"));
+        assert!(contains_word("MK1-Braton", "braton"));
+        assert!(!contains_word("Akbronco Prime", "Bronco"));
     }
 
     #[test]

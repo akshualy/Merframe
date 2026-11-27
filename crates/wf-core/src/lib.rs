@@ -1,6 +1,7 @@
 mod account;
 mod arbitration_runs;
 mod catalog;
+mod circuit;
 mod comparables;
 mod delta;
 mod ducatering;
@@ -29,11 +30,13 @@ mod text;
 mod trade;
 mod view;
 
+pub use account::WorldOfferOwnership;
 pub use arbitration_runs::{
     ArbitrationRun, ArbitrationRunReward, ArbitrationRunSource, ArbitrationRunStatus,
     MissionEndReward, svg_report, text_report,
 };
 pub use catalog::{Catalog, VaultStatus};
+pub use circuit::{CircuitReward, CircuitRotation};
 pub use comparables::{ComparableAttribute, ComparableListing, ComparedStat, RivenComparables};
 pub use delta::ItemDelta;
 pub use ducatering::{

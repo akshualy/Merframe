@@ -1,7 +1,8 @@
-import { CalendarClock, Check, type LucideIcon } from "lucide-react";
+import { CalendarClock, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Amount } from "@/components/currency";
 import { type GameIconName, LucideSlotGameIcon } from "@/components/game-icon";
+import { OwnershipMark } from "@/components/ownership-mark";
 import { EmptyNote, Surface } from "@/components/page";
 import { Hint } from "@/components/ui/hint";
 import { num, secondsUntil } from "@/lib/format";
@@ -13,13 +14,15 @@ import type {
   BaroGroup,
   BaroStatus,
   ChallengeKind,
-  Circuit,
+  CircuitReward,
+  CircuitRotation,
   DarvoDeal,
   NightwaveSeason,
   PrimeResurgence,
   ResetWindow,
   Sortie,
   SortieMission,
+  WorldOfferOwnership,
 } from "@/types";
 
 const CHALLENGE_GROUPS: { value: ChallengeKind; label: string }[] = [
@@ -33,14 +36,15 @@ export function InfoRow({
   hint,
   value,
   strong = false,
-  owned,
+  ownership = null,
 }: {
   label: ReactNode;
   hint?: ReactNode;
   value: ReactNode;
   strong?: boolean;
-  owned?: boolean | null;
+  ownership?: WorldOfferOwnership | null;
 }) {
+  const held = ownership !== null && ownership !== "missing";
   return (
     <div className="flex items-baseline justify-between gap-3 text-sm">
       <span className="flex min-w-0 flex-col">
@@ -48,24 +52,19 @@ export function InfoRow({
           <span
             className={cn(
               "text-muted-foreground line-clamp-2",
-              owned === false && "text-foreground",
+              ownership === "missing" && "text-foreground",
             )}
           >
             {label}
           </span>
-          {owned && (
-            <Check
-              aria-label="Owned"
-              className="text-accent size-3.5 shrink-0"
-            />
-          )}
+          <OwnershipMark ownership={ownership} />
         </span>
         {hint && <Hint as="span">{hint}</Hint>}
       </span>
       <span
         className={cn(
           "text-foreground shrink-0 font-mono tabular-nums",
-          owned && "text-muted-foreground",
+          held && "text-muted-foreground",
           strong && "text-primary font-semibold",
         )}
       >
@@ -198,7 +197,7 @@ export function BaroPanel({
                 <InfoRow
                   key={offer.name}
                   label={offer.name}
-                  owned={offer.owned}
+                  ownership={offer.ownership}
                   value={
                     offer.ducats === null ? (
                       "-"
@@ -241,6 +240,7 @@ export function ResurgencePanel({
               <InfoRow
                 key={offering.name}
                 label={offering.name}
+                ownership={offering.ownership}
                 value={`${num(offering.regal_aya)} Regal Aya`}
               />
             ))}
@@ -335,11 +335,32 @@ export function ResetsPanel({
   );
 }
 
+function CircuitRewards({
+  label,
+  rewards,
+}: {
+  label: string;
+  rewards: CircuitReward[];
+}) {
+  return (
+    <Group label={label}>
+      <span className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+        {rewards.map((reward) => (
+          <span key={reward.name} className="flex items-center gap-1.5">
+            {reward.name}
+            <OwnershipMark ownership={reward.ownership} />
+          </span>
+        ))}
+      </span>
+    </Group>
+  );
+}
+
 export function CircuitPanel({
   circuit,
   now,
 }: {
-  circuit: Circuit | null;
+  circuit: CircuitRotation | null;
   now: number;
 }) {
   return (
@@ -355,12 +376,8 @@ export function CircuitPanel({
             value={timeLeft(secondsUntil(circuit.rotates, now))}
             strong
           />
-          <Group label="Normal">
-            <span className="text-sm">{circuit.normal.join(", ")}</span>
-          </Group>
-          <Group label="Steel Path">
-            <span className="text-sm">{circuit.hard.join(", ")}</span>
-          </Group>
+          <CircuitRewards label="Normal" rewards={circuit.normal} />
+          <CircuitRewards label="Steel Path" rewards={circuit.hard} />
         </>
       )}
     </Panel>

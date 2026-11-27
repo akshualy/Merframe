@@ -1,15 +1,15 @@
-use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use wf_core::{
-    ARBITRATION_FORECAST_TRUSTED, ArbitrationSchedule, Catalog, Core, ItemTable, WorldRewardAlert,
+    ARBITRATION_FORECAST_TRUSTED, ArbitrationSchedule, CircuitRotation, Core, ItemTable,
+    WorldOfferOwnership, WorldRewardAlert,
 };
 use wf_data::store_item_to_type;
 use wf_worldstate::{
-    ArchonHunt, BaroStatus, Circuit, DailyDeal, Fissure, MarketSale, NightwaveSeason, ResetWindow,
-    Sortie, Timer, Varzia, daily_reset_window, weekly_reset_window,
+    ArchonHunt, BaroStatus, DailyDeal, Fissure, MarketSale, NightwaveSeason, ResetWindow, Sortie,
+    Timer, Varzia, daily_reset_window, weekly_reset_window,
 };
 
 use super::{Shared, ready};
@@ -28,7 +28,7 @@ pub struct WorldStateView {
     pub timers: Vec<Timer>,
     pub daily_deals: Vec<DarvoDeal>,
     pub market_sales: Vec<MarketOffer>,
-    pub circuit: Option<Circuit>,
+    pub circuit: Option<CircuitRotation>,
     pub prime_resurgence: Option<PrimeResurgence>,
     pub nightwave: Option<NightwaveSeason>,
     pub world_reward_alerts: Vec<WorldRewardAlert>,
@@ -107,7 +107,7 @@ pub struct BaroOffer {
     pub name: String,
     pub ducats: Option<u32>,
     pub credits: Option<u32>,
-    pub owned: Option<bool>,
+    pub ownership: Option<WorldOfferOwnership>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -137,7 +137,7 @@ pub struct MarketOffer {
     pub platinum: u32,
     pub credits: u32,
     pub ends: DateTime<Utc>,
-    pub owned: Option<bool>,
+    pub ownership: Option<WorldOfferOwnership>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -145,6 +145,7 @@ pub struct MarketOffer {
 pub struct ResurgenceOffering {
     pub name: String,
     pub regal_aya: u32,
+    pub ownership: Option<WorldOfferOwnership>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -154,30 +155,6 @@ pub struct PrimeResurgence {
     pub node_name: Option<&'static str>,
     pub ends: DateTime<Utc>,
     pub offerings: Vec<ResurgenceOffering>,
-}
-
-fn named_circuit(catalog: &Catalog, circuit: &Circuit) -> Circuit {
-    let by_squashed_name: HashMap<String, &str> = catalog
-        .items()
-        .map(|item| {
-            let squashed = item.name.replace(' ', "").replace('&', "And");
-            (squashed, item.name.as_str())
-        })
-        .collect();
-    let named = |choices: &[String]| -> Vec<String> {
-        choices
-            .iter()
-            .map(|choice| match by_squashed_name.get(choice) {
-                Some(name) => (*name).to_owned(),
-                None => choice.clone(),
-            })
-            .collect()
-    };
-    Circuit {
-        rotates: circuit.rotates,
-        normal: named(&circuit.normal),
-        hard: named(&circuit.hard),
-    }
 }
 
 fn baro_group_of(item: Option<&wf_data::Item>) -> &'static str {
@@ -236,7 +213,7 @@ fn baro_manifest(core: &Core, baro: Option<&BaroStatus>) -> Vec<BaroGroup> {
                 name: baro_offer_name(core.items(), &item_type),
                 ducats: offer.ducats,
                 credits: offer.credits,
-                owned: core.owns(&item_type),
+                ownership: core.world_offer_ownership(&item_type),
             });
         }
     }
@@ -273,9 +250,9 @@ fn market_offers(core: &Core, sales: Vec<MarketSale>) -> Vec<MarketOffer> {
     let mut offers: Vec<MarketOffer> = sales
         .into_iter()
         .filter_map(|sale| {
-            let owned = match sale.package_name {
+            let ownership = match sale.package_name {
                 Some(_) => None,
-                None => core.owns(&sale.type_name),
+                None => core.world_offer_ownership(&sale.type_name),
             };
             let name = sale
                 .package_name
@@ -286,7 +263,7 @@ fn market_offers(core: &Core, sales: Vec<MarketSale>) -> Vec<MarketOffer> {
                 platinum: sale.platinum,
                 credits: sale.credits,
                 ends: sale.ends,
-                owned,
+                ownership,
             })
         })
         .collect();
@@ -302,6 +279,7 @@ fn prime_resurgence(core: &Core, varzia: Varzia) -> PrimeResurgence {
             Some(ResurgenceOffering {
                 name: export_item_name(core, &item.item_type)?,
                 regal_aya: item.regal_aya,
+                ownership: core.world_offer_ownership(&store_item_to_type(&item.item_type)),
             })
         })
         .collect();
@@ -346,9 +324,7 @@ impl WorldStateView {
             timers: world.timers(now),
             daily_deals: darvo_deals(core.items(), world.daily_deals(now)),
             market_sales: market_offers(core, world.market_sales(now)),
-            circuit: world
-                .circuit(now)
-                .map(|circuit| named_circuit(core.catalog(), &circuit)),
+            circuit: core.circuit(now),
             prime_resurgence: world
                 .varzia(now)
                 .map(|varzia| prime_resurgence(core, varzia)),
@@ -504,17 +480,17 @@ mod tests {
         let mut core = core_at(catalog, SALES, now);
         core.ingest_inventory(INVENTORY, now).unwrap();
         let view = WorldStateView::build(&core, now, None);
-        let offers: Vec<(&str, u32, Option<bool>)> = view
+        let offers: Vec<(&str, u32, Option<WorldOfferOwnership>)> = view
             .market_sales
             .iter()
-            .map(|offer| (offer.name.as_str(), offer.discount_percent, offer.owned))
+            .map(|offer| (offer.name.as_str(), offer.discount_percent, offer.ownership))
             .collect();
         assert_eq!(
             offers,
             vec![
-                ("Jackal Sigil", 0, Some(true)),
+                ("Jackal Sigil", 0, Some(WorldOfferOwnership::Owned)),
                 ("Quaro Armor Collection", 20, None),
-                ("Mortos Binds", 20, Some(false)),
+                ("Mortos Binds", 20, Some(WorldOfferOwnership::Missing)),
             ]
         );
         assert_eq!(view.market_sales[0].credits, 1);
@@ -610,7 +586,7 @@ mod tests {
         );
         assert_eq!(view.baro_manifest[1].items[0].ducats, Some(550));
         assert_eq!(view.baro_manifest[1].items[0].credits, Some(250_000));
-        assert_eq!(view.baro_manifest[1].items[0].owned, None);
+        assert_eq!(view.baro_manifest[1].items[0].ownership, None);
     }
 
     #[test]
@@ -629,12 +605,42 @@ mod tests {
         let mut core = core_at(empty_catalog(), PRESENT, now);
         core.ingest_inventory(INVENTORY, now).unwrap();
         let view = WorldStateView::build(&core, now, None);
-        let owned: Vec<Option<bool>> = view.baro_manifest[0]
+        let ownership: Vec<Option<WorldOfferOwnership>> = view.baro_manifest[0]
             .items
             .iter()
-            .map(|offer| offer.owned)
+            .map(|offer| offer.ownership)
             .collect();
-        assert_eq!(owned, vec![Some(true), Some(false)]);
+        assert_eq!(
+            ownership,
+            vec![
+                Some(WorldOfferOwnership::Owned),
+                Some(WorldOfferOwnership::Missing)
+            ]
+        );
+    }
+
+    #[test]
+    fn prime_resurgence_offerings_owned() {
+        const CATALOG: &str = r#"[
+            {"uniqueName":"/Lotus/Powersuits/Loki/LokiPrime","name":"Loki Prime",
+             "category":"Warframes","type":"Warframe","tradable":false,"masterable":true}
+        ]"#;
+        const TRADING: &str = r#"{"PrimeVaultTraders":[{
+            "Activation":{"$date":{"$numberLong":"1788800000000"}},
+            "Expiry":{"$date":{"$numberLong":"1788900000000"}},
+            "Node":"TradeHUB1",
+            "Manifest":[
+              {"ItemType":"/Lotus/StoreItems/Powersuits/Loki/LokiPrime","PrimePrice":3}
+            ]}]}"#;
+
+        let catalog = Catalog::from_json(CATALOG, "[]", "[]").unwrap();
+        let now = DateTime::from_timestamp_millis(1_788_850_000_000).unwrap();
+        let mut core = core_at(catalog, TRADING, now);
+        core.ingest_inventory(INVENTORY, now).unwrap();
+        let view = WorldStateView::build(&core, now, None);
+        let offering = &view.prime_resurgence.unwrap().offerings[0];
+        assert_eq!(offering.name, "Loki Prime");
+        assert_eq!(offering.ownership, Some(WorldOfferOwnership::Mastered));
     }
 
     #[test]

@@ -5,6 +5,7 @@ import { GameIcon } from "@/components/game-icon";
 import { ItemImage } from "@/components/item-image";
 import { MasteryRequirement } from "@/components/mastery-requirement";
 import { Meta } from "@/components/meta";
+import { OwnershipMark } from "@/components/ownership-mark";
 import {
   Tooltip,
   TooltipContent,
@@ -104,9 +105,7 @@ function FoundryCardInner({
       >
         <div className="flex items-center justify-center gap-2">
           <span>{item.name}</span>
-          {item.mastered && (
-            <GameIcon name="mastered" size={20} alt="Mastered" />
-          )}
+          {item.mastered && <OwnershipMark ownership="mastered" />}
           {item.archon_shards !== null && item.archon_shards > 0 && (
             <span
               title={`${counted(item.archon_shards, "Archon Shard")} installed`}
