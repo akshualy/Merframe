@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Amount } from "@/components/currency";
+import { Amount, PlatinumAndDucats } from "@/components/currency";
 import { ItemImage } from "@/components/item-image";
 import { Progress } from "@/components/ui/progress";
 import { counted, num } from "@/lib/format";
@@ -61,7 +61,7 @@ export function DucateringOverlay({
   clipboard: boolean;
   compact?: boolean;
 }) {
-  const { state, items, sold, ducats } = progress;
+  const { state, items, list_value, sold, ducats } = progress;
   const done = state.state === "finished" ? items.length : state.position;
   const current = state.state === "searching" ? items[state.position] : null;
   const soldCount = sold.reduce((sum, sale) => sum + sale.count, 0);
@@ -75,11 +75,28 @@ export function DucateringOverlay({
   }, [done]);
   return (
     <div className="flex flex-col gap-3">
-      {compact && (
-        <div className="flex flex-col">
-          <span className="font-semibold">{title}</span>
-          {description && (
-            <span className="text-muted-foreground text-xs">{description}</span>
+      {(compact || items.length > 0) && (
+        <div className="flex items-start gap-3">
+          {compact && (
+            <div className="flex min-w-0 flex-col">
+              <span className="font-semibold">{title}</span>
+              {description && (
+                <span className="text-muted-foreground text-xs">
+                  {description}
+                </span>
+              )}
+            </div>
+          )}
+          {items.length > 0 && (
+            <span className="ml-auto flex shrink-0 flex-col items-end text-sm">
+              <span className="flex items-center gap-2">
+                Total:
+                <PlatinumAndDucats
+                  platinum={list_value.plat}
+                  ducats={list_value.ducats}
+                />
+              </span>
+            </span>
           )}
         </div>
       )}

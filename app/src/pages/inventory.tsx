@@ -4,7 +4,7 @@ import {
   ARCANE_STATUS_LABELS,
   ArcaneCollectionView,
 } from "@/components/arcane-collection-view";
-import { Amount } from "@/components/currency";
+import { Amount, PlatinumAndDucats } from "@/components/currency";
 import { Figure } from "@/components/figure";
 import { InventoryTabView } from "@/components/inventory-tab-view";
 import { OptionTabs } from "@/components/option-tabs";
@@ -145,16 +145,10 @@ export function InventoryPage() {
                   label="This tab"
                   title={`${pageScope}. ${LIQUIDATION_NOTE}`}
                   value={
-                    <span className="flex items-center gap-3">
-                      <Amount currency="platinum">
-                        {num(pageTotals.liquidationValue)}
-                      </Amount>
-                      {showsDucats && (
-                        <Amount currency="ducats">
-                          {num(pageTotals.ducats)}
-                        </Amount>
-                      )}
-                    </span>
+                    <PlatinumAndDucats
+                      platinum={pageTotals.liquidationValue}
+                      ducats={showsDucats ? pageTotals.ducats : null}
+                    />
                   }
                 />
               )}

@@ -62,6 +62,7 @@ export type * from "./DropLocation";
 export type * from "./DucateringCompleteSets";
 export type * from "./DucateringEntry";
 export type * from "./DucateringHidden";
+export type * from "./DucateringListValue";
 export type * from "./DucateringProgress";
 export type * from "./DucateringSettings";
 export type * from "./DucateringState";
