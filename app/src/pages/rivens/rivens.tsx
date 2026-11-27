@@ -7,9 +7,15 @@ import { prefetchImages } from "@/components/item-image";
 import { EmptyPanel, Page, Section } from "@/components/page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsyncData } from "@/hooks/use-async-data";
+import { useFilters } from "@/hooks/use-filters";
 import { useTabParam } from "@/hooks/use-tab-param";
 import { api } from "@/lib/bridge";
-import { plainOptions } from "@/lib/filters";
+import {
+  failsYesNo,
+  plainOptions,
+  type YesNo,
+  yesNoOptions,
+} from "@/lib/filters";
 import { num } from "@/lib/format";
 import { attributeLabel } from "@/lib/rivens";
 import type { RivenRow } from "@/types";
@@ -17,6 +23,21 @@ import { rivenColumns } from "./columns";
 import { RivenDetails } from "./details";
 import { RivenListingDialog } from "./listing-dialog";
 import { VeiledChallenge } from "./veiled";
+
+interface RivenStashFilters {
+  weaponClass: string | null;
+  listed: YesNo | null;
+  rerolled: YesNo | null;
+}
+
+const NO_STASH_FILTERS: RivenStashFilters = {
+  weaponClass: null,
+  listed: null,
+  rerolled: null,
+};
+
+const LISTED_OPTIONS = yesNoOptions("Listed", "Not listed");
+const REROLLED_OPTIONS = yesNoOptions("Rerolled", "Not rerolled");
 
 export function RivensPage() {
   const { data, error, loading } = useAsyncData("rivens_tab", api.rivensTab, [
@@ -27,7 +48,8 @@ export function RivensPage() {
   ]);
   const [tab, setTab] = useTabParam<"unveiled" | "veiled">("unveiled");
   const [listing, setListing] = useState<RivenRow | null>(null);
-  const [weaponClass, setWeaponClass] = useState<string | null>(null);
+  const filters = useFilters(NO_STASH_FILTERS);
+  const { weaponClass, listed, rerolled } = filters.values;
 
   useEffect(() => {
     if (!data) {
@@ -54,9 +76,12 @@ export function RivensPage() {
   const unveiled = useMemo(
     () =>
       (data?.unveiled ?? []).filter(
-        (row) => weaponClass === null || row.weapon_class === weaponClass,
+        (row) =>
+          (weaponClass === null || row.weapon_class === weaponClass) &&
+          (listed === null || !failsYesNo(listed, row.listed_in_wfm)) &&
+          (rerolled === null || !failsYesNo(rerolled, row.rerolls > 0)),
       ),
-    [data?.unveiled, weaponClass],
+    [data?.unveiled, weaponClass, listed, rerolled],
   );
 
   const veiledCount = (data?.veiled ?? []).reduce(
@@ -89,7 +114,7 @@ export function RivensPage() {
               tableId="rivens"
               columns={columns}
               data={unveiled}
-              resetKey={weaponClass ?? ""}
+              resetKey={JSON.stringify(filters.values)}
               searchPlaceholder="Filter rivens"
               searchValue={(row) =>
                 [
@@ -101,19 +126,31 @@ export function RivensPage() {
               initialSorting={[{ id: "grade", desc: true }]}
               rowKey={(row) => row.item_id}
               filters={
-                classes.length > 1 && (
-                  <FilterGrid
-                    activeFilters={weaponClass === null ? 0 : 1}
-                    onClear={() => setWeaponClass(null)}
-                  >
+                <FilterGrid
+                  activeFilters={filters.active}
+                  onClear={filters.clear}
+                >
+                  {classes.length > 1 && (
                     <FilterSelect
                       label="Weapon class"
                       value={weaponClass}
                       options={plainOptions(classes)}
-                      onChange={setWeaponClass}
+                      onChange={(value) => filters.set("weaponClass", value)}
                     />
-                  </FilterGrid>
-                )
+                  )}
+                  <FilterSelect
+                    label="Listed on warframe.market"
+                    value={listed}
+                    options={LISTED_OPTIONS}
+                    onChange={(value) => filters.set("listed", value)}
+                  />
+                  <FilterSelect
+                    label="Rerolled"
+                    value={rerolled}
+                    options={REROLLED_OPTIONS}
+                    onChange={(value) => filters.set("rerolled", value)}
+                  />
+                </FilterGrid>
               }
               renderSubRow={(row) => <RivenDetails riven={row} />}
             />

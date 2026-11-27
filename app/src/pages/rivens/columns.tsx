@@ -8,11 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 import { num, percent } from "@/lib/format";
-import { attributeText, gradeClasses, gradeVariant } from "@/lib/rivens";
+import {
+  attributeText,
+  gradeClasses,
+  gradeVariant,
+  MAX_RIVEN_RANK,
+} from "@/lib/rivens";
 import { cn } from "@/lib/utils";
 import type { RivenRow } from "@/types";
-
-export const MAX_RIVEN_RANK = 8;
 
 export function rivenColumns(
   onList: (riven: RivenRow) => void,

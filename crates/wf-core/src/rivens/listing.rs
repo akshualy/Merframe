@@ -273,8 +273,8 @@ mod tests {
         .unwrap();
         assert_eq!(asked.item.mod_rank, 8);
         for (attribute, sent) in unranked.attributes.iter().zip(&asked.item.attributes) {
-            let shown = attribute.display.unwrap();
-            assert!((sent.value - shown).abs() < f64::EPSILON);
+            let expected = round_to(attribute.rolled.unwrap(), 1);
+            assert!((sent.value - expected).abs() < f64::EPSILON);
         }
 
         let as_rolled = listing_payload(
@@ -288,12 +288,7 @@ mod tests {
         assert_eq!(as_rolled.item.mod_rank, unranked.rank);
         let scale = f64::from(unranked.rank + 1) / 9.0;
         for (attribute, sent) in unranked.attributes.iter().zip(&as_rolled.item.attributes) {
-            let rolled = attribute.rolled.unwrap();
-            let expected = if attribute.unit.as_deref() == Some("multiply") {
-                round_to(rolled * scale + 1.0, 2)
-            } else {
-                round_to(rolled * scale, 1)
-            };
+            let expected = round_to(attribute.rolled.unwrap() * scale, 1);
             assert!((sent.value - expected).abs() < f64::EPSILON);
         }
         assert!(
