@@ -37,10 +37,7 @@ export function FoundryQueue({ builds }: { builds: PendingBuild[] }) {
               />
               <span className="text-sm font-medium">{build.name}</span>
               <span
-                className={cn(
-                  "font-mono text-xs tabular-nums",
-                  done ? "text-primary" : "text-accent",
-                )}
+                className={cn("text-xs", done ? "text-primary" : "text-accent")}
               >
                 {done ? "ready" : countdown(remaining)}
               </span>

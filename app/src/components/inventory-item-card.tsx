@@ -166,10 +166,8 @@ function ItemCardInner({
           <ImageTag className="top-1 right-1">x{num(row.count)}</ImageTag>
         )}
         {itemDucats ? (
-          <ImageTag className="bottom-1 left-1/2 -translate-x-1/2">
-            <Amount currency="ducats" size={14}>
-              {num(itemDucats)}
-            </Amount>
+          <ImageTag className="bottom-1 left-1/2 w-max -translate-x-1/2">
+            <Amount currency="ducats">{num(itemDucats)}</Amount>
           </ImageTag>
         ) : null}
       </div>

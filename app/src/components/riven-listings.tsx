@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GameIcon } from "@/components/game-icon";
+import { Amount } from "@/components/currency";
 import { Hint } from "@/components/ui/hint";
 import { api, logError } from "@/lib/bridge";
 import { num, percent } from "@/lib/format";
@@ -41,21 +41,10 @@ function Listing({ listing }: { listing: ComparableListing }) {
   return (
     <div className="flex w-24 flex-col gap-0.5 rounded-md border px-1 py-1 text-xs">
       <div className="flex items-center justify-between gap-1">
-        <span className="flex items-center gap-0.5 tabular-nums font-medium">
+        <Amount currency="platinum" plain className="font-medium">
           {num(listing.price)}
-          <GameIcon
-            name="platinum"
-            size={12}
-            alt="Platinum"
-            className="-translate-y-0.5"
-          />
-        </span>
-        <span
-          className={cn(
-            "tabular-nums",
-            exact ? "text-accent" : "text-muted-foreground",
-          )}
-        >
+        </Amount>
+        <span className={exact ? "text-accent" : "text-muted-foreground"}>
           {percent(listing.similarity, 0)}
         </span>
       </div>
@@ -68,12 +57,7 @@ function Listing({ listing }: { listing: ComparableListing }) {
             attribute.shared ? "text-foreground" : "text-muted-foreground",
           )}
         >
-          <span
-            className={cn(
-              "tabular-nums",
-              !attribute.positive && "text-warning",
-            )}
-          >
+          <span className={attribute.positive ? undefined : "text-warning"}>
             {attributeAmount(attribute.unit, attribute.value)}
           </span>
           {attribute.abbr ?? attribute.name}

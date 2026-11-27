@@ -102,10 +102,7 @@ export function rivenColumns(
                 </Badge>
                 <SplicedMark attribute={attribute} />
                 <span
-                  className={cn(
-                    "font-mono text-xs",
-                    gradeClasses(attribute.grade).text,
-                  )}
+                  className={cn("text-xs", gradeClasses(attribute.grade).text)}
                 >
                   {attribute.grade}
                 </span>

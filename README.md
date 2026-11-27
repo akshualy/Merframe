@@ -144,8 +144,10 @@ Merframe stands on the work of others. Thank you to:
 - Digital Extremes for Warframe, its public worldState and a content policy that lets fan projects exist.
 - [ChickenDrawsDogs](https://x.com/ChickenDraws) for their awesome `Dog Days "Hang Loose" Poster` drawing, which is the header image.
 - [Tauri](https://tauri.app), [React](https://react.dev), [shadcn/ui](https://ui.shadcn.com), [Radix UI](https://www.radix-ui.com), [Tailwind CSS](https://tailwindcss.com) and [Lucide](https://lucide.dev), which the app is built with.
+- [Hanken Grotesk](https://github.com/marcologous/hanken-grotesk) by Hanken Design Co., the font for the app.
 
 ## License
 
 Merframe is free software under the GNU General Public License, version 3 or (at your option) any later version. The full text is in [`LICENSE`](LICENSE). It comes without any warranty.
 The game artwork is excluded, see [Notice](#notice).
+The bundled Hanken Grotesk font is under the [SIL Open Font License 1.1](https://openfontlicense.org).

@@ -36,29 +36,23 @@ function CycleRow({
 }) {
   return (
     <li className="flex items-center gap-3 text-sm">
-      <span className={cn(COLUMN.index, "text-muted-foreground font-mono")}>
+      <span className={cn(COLUMN.index, "text-muted-foreground")}>
         {cycle.index}
       </span>
-      <span className={cn(COLUMN.reached, "font-mono")}>
-        {elapsedText(cycle.at_secs)}
-      </span>
+      <span className={COLUMN.reached}>{elapsedText(cycle.at_secs)}</span>
       <span className="flex flex-1 items-center gap-2">
         {share === null ? (
           <span className="flex-1" />
         ) : (
           <Progress value={share * 100} aria-hidden="true" />
         )}
-        <span className={cn(COLUMN.length, "font-mono")}>
+        <span className={COLUMN.length}>
           {cycle.duration_secs === null
             ? "-"
             : elapsedText(cycle.duration_secs)}
         </span>
       </span>
-      {counted && (
-        <span className={cn(COLUMN.drones, "font-mono")}>
-          {num(cycle.drones)}
-        </span>
-      )}
+      {counted && <span className={COLUMN.drones}>{num(cycle.drones)}</span>}
     </li>
   );
 }

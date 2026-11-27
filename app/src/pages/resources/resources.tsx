@@ -166,11 +166,7 @@ export function ResourcesPage() {
         <Stat label="Items to build" value={num(data?.items)} />
         <Stat
           label="Credits needed"
-          value={
-            <Amount currency="credits" size={20}>
-              {num(data?.credits)}
-            </Amount>
-          }
+          value={<Amount currency="credits">{num(data?.credits)}</Amount>}
         />
       </div>
 

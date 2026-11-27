@@ -63,7 +63,7 @@ export function InfoRow({
       </span>
       <span
         className={cn(
-          "text-foreground shrink-0 font-mono tabular-nums",
+          "text-foreground shrink-0",
           held && "text-muted-foreground",
           strong && "text-primary font-semibold",
         )}

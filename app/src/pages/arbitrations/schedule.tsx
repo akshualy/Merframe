@@ -302,7 +302,7 @@ function SlotRow({
         started && "bg-secondary/40",
       )}
     >
-      <span className="flex w-24 shrink-0 flex-col font-mono text-sm">
+      <span className="flex w-24 shrink-0 flex-col text-sm">
         <span className="font-semibold">{timeOfDay(slot.starts)}</span>
         {started ? (
           <Hint as="span" className="text-accent">
