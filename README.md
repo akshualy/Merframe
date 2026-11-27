@@ -7,9 +7,11 @@ Merframe is an open-source alternative to AlecaFrame that runs natively on Linux
 Merframe displays information about:
  - World timers, fissures, alerts, invasions and events
  - Daily and weekly reset trackers
+ - Syndicate standing and offers
  - Arbitrations
  - Foundry
  - Inventory
+ - Arcane collection and Vosfor packs
  - Relics
  - Rivens
  - Mastery
@@ -24,7 +26,7 @@ Notifications for fissures, rewards, Arbitrations, cycle timers, trades and new 
 
 You can create scripts or allow other programs on your PC to listen to Merframe events through the [Event Feed](https://github.com/akshualy/Merframe/wiki/Event-Feed-for-other-applications). This is off by default.
 
-Big Warframe script updates (usually big content drops) will break the overlays until Merframe is updated as well. Changes in data structures from content we get from Warframe Community Developers (WFCD) may break the app. Please create an issue if either of these go unnoticed for a day.
+Big Warframe script updates (usually big content drops) may break the overlays until Merframe is updated as well. Changes in data structures from content we get from Warframe Community Developers (WFCD) may break the app. Please create an issue if either of these go unnoticed for a day.
 
 You can download the latest release on the [releases page](https://github.com/akshualy/Merframe/releases), or on the [official Merframe website](https://yareli.net/merframe).
 
@@ -61,7 +63,7 @@ Due to how GitHub serves files, you must set the execution permission yourself: 
 
 The app will offer you a self-installing update when one is available. You may disable this in settings or at any update offer.
 
-Package details, the Arch package and how updates work are on the [Installing and Updating Wiki page](https://github.com/akshualy/Merframe/wiki/Installing-and-Updating).
+Package details, the Arch package and how updates work are on the [Installing and Updating Wiki page](https://github.com/akshualy/Merframe/wiki/Installing-&-Updating).
 
 ## Running the app from source
 
@@ -90,6 +92,8 @@ Running the app from cargo is not supported as that will not start the Vite serv
 When a Rust type sent to the front end changes, run `pnpm types` in `app/` to regenerate `app/src/types/generated/` and its `index.ts`.
 `pnpm types:check` fails when this needs to be done. The generated files are committed so that `pnpm build` doesn't need cargo.
 
+When a type for the Event Feed changes or gets added, run `cargo generate-sse-spec` to regenerate `specs/sse.schema.json`.
+
 Diagnostics: `RUST_LOG=merframe_lib=debug,wf_scan=debug pnpm tauri dev`.
 App data: `~/.local/share/Merframe/` on Linux, `%APPDATA%\Merframe\` on Windows.
 App data holds the SQLite store, the last inventory as `inventory.json.gz`, WFCD image/data cache, settings, and `merframe.log`.
@@ -100,7 +104,7 @@ The warframe.market session token (allows acting as you) is stored in your opera
 If saving to the keyring fails, Merframe falls back to a plaintext `market_token` file in the app data directory.
 The token does not contain your password.
 Logging out removes the saved token from the keyring and deletes the fallback file.
-You can also use **Forget Login** in the **Danger Zone** at the bottom of Settings.
+You can also use **Forget Login** in the **Danger Zone** at the bottom of the General tab in Settings.
 
 Merframe is not sending any of your personal data anywhere outside your PC.
 All third party calls are item-specific lookups and carry no information outside your IP (since the request is coming from your PC).
@@ -108,10 +112,12 @@ All third party calls are item-specific lookups and carry no information outside
 Services Merframe talks to:
 - `api.warframe.com`: the public world state, polled every 5 to 10 minutes.
 - `api.warframe.market`: orders and riven auctions. Prices work without a login, only listing items needs one. While you are logged in, your unread message count is retrieved alongside your orders.
+- `ws.warframe.market`: your warframe.market status (in game, online, invisible), only while you are logged in.
 - `browse.wf`: the Arbitration forecast, fetched every 6 hours.
 - `api.merframe.net`: a price cache run by me, so that Merframe does not ask warframe.market for every item separately. The app fetches this every 15 minutes by default and only downloads it when it changed. The cache itself checks Prime parts and sets every 30 minutes, other items with orders every 4 hours, the rest daily, and refreshes trade volumes and the 90-day history once a day. A price in Merframe is for Prime items at most about half an hour old, for anything else likely a couple hours.
-- `raw.githubusercontent.com`: item data from WFCD's `warframe-items` and the Nightwave acts from `warframe-public-export-plus`.
+- `raw.githubusercontent.com`: item data from WFCD's `warframe-items`, and the Nightwave acts, syndicates, vendors and item names from `warframe-public-export-plus`.
 - `cdn.warframestat.us`: item images, downloaded once and kept in the app data directory.
+- `github.com`: the update check on start, and the update itself if you use the in-app updater.
 - A Discord webhook, only if you set one up under notifications. It receives the alert types you pick there.
 
 ## How does Merframe work?
@@ -131,7 +137,7 @@ Memory holds way more than the game shows to a user. Merframe strives to only di
 
 Merframe reads the memory of the running game through `/proc/<pid>/mem`.
 With `kernel.yama.ptrace_scope` at 0 or 1, the default of most distributions, this works without any setup.
-If Merframe has an error at the tope saying `Reading process <pid> is not permitted`, your system is at scope 2 or 3. The [Memory permissions on Linux Wiki page](https://github.com/akshualy/Merframe/wiki/Memory-permissions-on-Linux) has more detail on what to do in these cases.
+If Merframe has an error at the top saying `Reading process <pid> is not permitted`, your system is at scope 2 or 3. The [Memory permissions on Linux Wiki page](https://github.com/akshualy/Merframe/wiki/Memory-permissions-on-Linux) has more detail on what to do in these cases.
 
 ## Credits
 
@@ -139,7 +145,7 @@ Merframe stands on the work of others. Thank you to:
 - [AlecaFrame](https://alecaframe.com/), whose feature set Merframe re-creates for Linux and Windows. No AlecaFrame code is used.
 - [warframe.market](https://warframe.market) for the trading platform and its public API.
 - The [Warframe Community Developers](https://github.com/WFCD): item data from [`warframe-items`](https://github.com/WFCD/warframe-items), the node and sortie tables from [`warframe-worldstate-data`](https://github.com/WFCD/warframe-worldstate-data), the world cycle arithmetic documented by [`warframe-worldstate-parser`](https://github.com/WFCD/warframe-worldstate-parser), and the item images served from `cdn.warframestat.us`.
-- [calamity-inc](https://github.com/calamity-inc) for [`warframe-public-export-plus`](https://github.com/calamity-inc/warframe-public-export-plus), the source of the Nightwave acts and their required counts.
+- [calamity-inc](https://github.com/calamity-inc) for [`warframe-public-export-plus`](https://github.com/calamity-inc/warframe-public-export-plus), the source of the Nightwave acts, syndicates and vendor offers.
 - The editors of the [Warframe wiki](https://wiki.warframe.com), the source of the Helminth ability table and of the items the exports do not carry.
 - Digital Extremes for Warframe, its public worldState and a content policy that lets fan projects exist.
 - [ChickenDrawsDogs](https://x.com/ChickenDraws) for their awesome `Dog Days "Hang Loose" Poster` drawing, which is the header image.
