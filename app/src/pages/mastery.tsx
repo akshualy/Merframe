@@ -380,7 +380,7 @@ export function MasteryPage() {
                     )}
                     {!item.owned && (
                       <Badge variant="accent">
-                        <Amount currency="platinum" plain size={14}>
+                        <Amount currency="platinum" plain>
                           {num(item.acquisition.plat_cost)}
                         </Amount>
                       </Badge>

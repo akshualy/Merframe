@@ -9,13 +9,7 @@ export function Countdown({
   className?: string;
 }) {
   return (
-    <span
-      className={cn(
-        "font-mono font-semibold",
-        countdownTone(seconds),
-        className,
-      )}
-    >
+    <span className={cn("font-semibold", countdownTone(seconds), className)}>
       {timeLeft(seconds)}
     </span>
   );

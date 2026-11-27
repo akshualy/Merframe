@@ -22,10 +22,19 @@ export function RankedPlat({
   floor?: boolean;
   tone?: string;
   className?: string;
-  onOpen?: () => void;
+  onOpen: () => void;
 }) {
-  const body = (
-    <>
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className={cn(
+        "h-8 max-w-36 basis-20 grow justify-between gap-1.5 px-2.5",
+        className,
+      )}
+      onClick={onOpen}
+      title={`${side === "buy" ? "Buy" : "Sell"} on warframe.market`}
+    >
       <Hint as="span">
         {label ??
           (side === "sell" ? (
@@ -37,32 +46,11 @@ export function RankedPlat({
       {value === null ? (
         <Dash />
       ) : (
-        <Amount
-          currency="platinum"
-          size={14}
-          className={cn("text-xs font-bold", tone)}
-        >
+        <Amount currency="platinum" className={cn("text-sm font-bold", tone)}>
           {num(value)}
           {floor ? "+" : ""}
         </Amount>
       )}
-    </>
+    </Button>
   );
-  if (onOpen) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className={cn(
-          "h-8 max-w-36 basis-20 grow justify-between gap-2 px-3",
-          className,
-        )}
-        onClick={onOpen}
-        title={`${side === "buy" ? "Buy" : "Sell"} on warframe.market`}
-      >
-        {body}
-      </Button>
-    );
-  }
-  return <span className="flex items-baseline gap-1 text-xs">{body}</span>;
 }

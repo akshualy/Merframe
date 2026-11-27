@@ -23,7 +23,7 @@ function FissureRow({ fissure, now }: { fissure: Fissure; now: number }) {
       {fissure.is_storm && <Badge variant="secondary">Void Storm</Badge>}
       <span
         className={cn(
-          "w-20 shrink-0 text-right font-mono text-sm",
+          "w-20 shrink-0 text-right text-sm",
           countdownTone(remaining),
         )}
       >

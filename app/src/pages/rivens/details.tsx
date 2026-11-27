@@ -33,7 +33,7 @@ export function RivenDetails({ riven }: { riven: RivenRow }) {
               <SplicedMark attribute={attribute} />
               <span
                 className={cn(
-                  "ml-auto shrink-0 font-mono text-xs font-normal",
+                  "ml-auto shrink-0 text-xs font-normal",
                   gradeClasses(attribute.grade).text,
                 )}
               >

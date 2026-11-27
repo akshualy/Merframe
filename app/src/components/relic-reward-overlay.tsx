@@ -120,7 +120,7 @@ function RewardTile({
       {reward.set_plat !== null && (
         <span className="flex items-center gap-1.5 text-xs">
           <span className="text-muted-foreground">Set</span>
-          <Amount currency="platinum" size={14} className="font-medium">
+          <Amount currency="platinum" className="font-medium">
             {num(reward.set_plat)}
           </Amount>
         </span>
@@ -159,15 +159,13 @@ export function RelicRewardOverlay({
         <div className="text-muted-foreground flex items-center justify-end gap-4 text-xs">
           <span className="flex items-center gap-1">
             Platinum
-            <Amount currency="platinum" size={14} className="font-medium">
+            <Amount currency="platinum" className="font-medium">
               {num(screen.account.plat)}
             </Amount>
           </span>
           <span className="flex items-center gap-1">
             Ducats
-            <Amount currency="ducats" size={14}>
-              {num(screen.account.ducats)}
-            </Amount>
+            <Amount currency="ducats">{num(screen.account.ducats)}</Amount>
           </span>
         </div>
       )}

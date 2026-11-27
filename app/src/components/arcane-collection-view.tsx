@@ -135,9 +135,7 @@ function ArcaneCollectionCardInner({
               className="flex items-center gap-1"
               title="What the missing copies cost at the current price of an unranked one"
             >
-              <Amount currency="platinum" size={14}>
-                {num(row.finish_cost)}
-              </Amount>
+              <Amount currency="platinum">{num(row.finish_cost)}</Amount>
               to finish
             </Hint>
           )}

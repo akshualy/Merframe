@@ -22,9 +22,7 @@ export function Figure({
   return (
     <span className="flex flex-col" title={title}>
       <Hint as="span">{label}</Hint>
-      <span className={cn("font-mono text-base font-semibold", className)}>
-        {value}
-      </span>
+      <span className={cn("text-base font-semibold", className)}>{value}</span>
     </span>
   );
 }

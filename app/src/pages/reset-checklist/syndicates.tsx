@@ -88,7 +88,7 @@ function SyndicateRankUpRequirements({ next }: { next: SyndicateRankUp }) {
           <li>{rankUpStandingText(next)}</li>
           {next.credits > 0 && (
             <li className="flex">
-              <Amount currency="credits" size={12} plain>
+              <Amount currency="credits" plain>
                 {num(next.credits)}
               </Amount>
             </li>

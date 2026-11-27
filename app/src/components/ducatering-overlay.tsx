@@ -43,15 +43,11 @@ function copy(
   return COPY[state];
 }
 
-function Prices({ entry, size }: { entry: DucateringEntry; size: number }) {
+function Prices({ entry }: { entry: DucateringEntry }) {
   return (
     <span className="flex shrink-0 flex-col items-end text-xs">
-      <Amount currency="platinum" size={size}>
-        {num(entry.plat)}
-      </Amount>
-      <Amount currency="ducats" size={size}>
-        {num(entry.ducats)}
-      </Amount>
+      <Amount currency="platinum">{num(entry.plat)}</Amount>
+      <Amount currency="ducats">{num(entry.ducats)}</Amount>
     </span>
   );
 }
@@ -109,7 +105,7 @@ export function DucateringOverlay({
               </Amount>
             </span>
           </span>
-          <Prices entry={current} size={14} />
+          <Prices entry={current} />
         </div>
       )}
       {items.length > 0 && <Progress value={(done / items.length) * 100} />}
@@ -133,16 +129,14 @@ export function DucateringOverlay({
             <span className="min-w-0 flex-1 truncate text-sm">
               {num(entry.count)}x {entry.item.name}
             </span>
-            <Prices entry={entry} size={12} />
+            <Prices entry={entry} />
           </li>
         ))}
       </ul>
       {soldCount > 0 && (
         <div className="text-muted-foreground flex items-center justify-end gap-1 text-xs">
           <span>Sold {counted(soldCount, "item")}</span> for
-          <Amount currency="ducats" size={14}>
-            {num(ducats)}
-          </Amount>
+          <Amount currency="ducats">{num(ducats)}</Amount>
         </div>
       )}
     </div>

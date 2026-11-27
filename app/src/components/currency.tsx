@@ -12,28 +12,20 @@ const CURRENCIES: Record<Currency, { label: string; tone?: string }> = {
 
 export function Amount({
   currency,
-  size = 16,
   plain = false,
   className,
   children,
 }: {
   currency: Currency;
-  size?: number;
   plain?: boolean;
   className?: string;
   children: ReactNode;
 }) {
   const { label, tone } = CURRENCIES[currency];
   return (
-    <span
-      className={cn(
-        "flex items-center gap-0.5 tabular-nums",
-        !plain && tone,
-        className,
-      )}
-    >
+    <span className={cn("flex items-center gap-1", !plain && tone, className)}>
       {children}
-      <GameIcon name={currency} size={size} alt={label} />
+      <GameIcon name={currency} size="1.15em" alt={label} />
     </span>
   );
 }

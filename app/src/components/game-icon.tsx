@@ -141,7 +141,7 @@ export function GameIcon({
   title,
 }: {
   name: GameIconName;
-  size?: number;
+  size?: number | string;
   className?: string;
   alt?: string;
   title?: string;
@@ -169,8 +169,6 @@ export function GameIcon({
       src={`/game/${name}.png`}
       alt={alt}
       title={title}
-      width={size}
-      height={size}
       draggable={false}
       className={cn("shrink-0 object-contain select-none", className)}
       style={{ width: size, height: size }}
