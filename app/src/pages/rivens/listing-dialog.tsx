@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import { SwitchField } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +18,7 @@ import { api, reportError } from "@/lib/bridge";
 import { counted } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import type { ListingChoices, RivenRow } from "@/types";
-import { MAX_RIVEN_RANK } from "./columns";
+import { RivenRankSlider } from "./rank-slider";
 
 export interface ListingForm {
   direct: boolean;
@@ -193,18 +192,12 @@ export function ListingDialog({
           )}
 
           {rankEditable && (
-            <Field id="rank" label={`Mod rank ${form.rank}`}>
-              <Slider
-                id="rank"
-                min={0}
-                max={MAX_RIVEN_RANK}
-                step={1}
-                value={[form.rank]}
-                onValueChange={([rank = form.rank]) =>
-                  setForm({ ...form, rank })
-                }
-              />
-            </Field>
+            <RivenRankSlider
+              id="rank"
+              label={`Mod rank ${form.rank}`}
+              rank={form.rank}
+              onRankChange={(rank) => setForm({ ...form, rank })}
+            />
           )}
 
           <Field id="note" label="Note">

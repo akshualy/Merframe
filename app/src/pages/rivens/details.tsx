@@ -1,20 +1,33 @@
+import { useState } from "react";
 import { GoodRollBlock } from "@/components/good-roll";
 import { RivenListings } from "@/components/riven-listings";
 import { RivenRollBar } from "@/components/riven-roll-bar";
 import { SplicedMark, SpliceOptions } from "@/components/spliced-mark";
 import { Hint } from "@/components/ui/hint";
 import {
-  attributeAmount,
+  attributeAmountAtRank,
   attributeLabel,
   attributeValue,
   gradeClasses,
+  MAX_RIVEN_RANK,
 } from "@/lib/rivens";
 import { cn } from "@/lib/utils";
 import type { RivenRow } from "@/types";
+import { RivenRankSlider } from "./rank-slider";
 
 export function RivenDetails({ riven }: { riven: RivenRow }) {
+  const [rank, setRank] = useState(MAX_RIVEN_RANK);
+
   return (
     <div className="flex flex-col gap-2 py-2">
+      <div className="max-w-xs">
+        <RivenRankSlider
+          id={`rank-${riven.item_id}`}
+          label={`Stats at rank ${rank}`}
+          rank={rank}
+          onRankChange={setRank}
+        />
+      </div>
       <div className="grid gap-2 @sm:grid-cols-2 @3xl:grid-cols-4">
         {riven.attributes.map((attribute) => (
           <div
@@ -26,7 +39,7 @@ export function RivenDetails({ riven }: { riven: RivenRow }) {
           >
             <span className="flex items-center gap-2 text-sm font-medium">
               <span className="shrink-0">
-                {attributeValue(attribute) ??
+                {attributeValue(attribute, rank) ??
                   `roll x${attribute.multiplier.toFixed(3)}`}
               </span>
               <span className="truncate">{attributeLabel(attribute)}</span>
@@ -43,8 +56,12 @@ export function RivenDetails({ riven }: { riven: RivenRow }) {
             <RivenRollBar attribute={attribute} className="mt-1" />
             {attribute.min !== null && attribute.max !== null && (
               <Hint as="span" className="flex justify-between">
-                <span>{attributeAmount(attribute.unit, attribute.min)}</span>
-                <span>{attributeAmount(attribute.unit, attribute.max)}</span>
+                <span>
+                  {attributeAmountAtRank(attribute.unit, attribute.min, rank)}
+                </span>
+                <span>
+                  {attributeAmountAtRank(attribute.unit, attribute.max, rank)}
+                </span>
               </Hint>
             )}
           </div>

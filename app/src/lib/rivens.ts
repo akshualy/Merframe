@@ -1,6 +1,8 @@
 import { percent } from "@/lib/format";
 import type { AttributeGrade } from "@/types";
 
+export const MAX_RIVEN_RANK = 8;
+
 export function gradeVariant(grade: string) {
   if (grade === "S") {
     return "default";
@@ -33,10 +35,26 @@ export function attributeAmount(unit: string | null, value: number): string {
   return `${sign}${shown.toFixed(1)}${suffix}`;
 }
 
-export function attributeValue(attribute: AttributeGrade): string | null {
+export function attributeAmountAtRank(
+  unit: string | null,
+  maxRankValue: number,
+  rank: number,
+): string {
+  const scale = (rank + 1) / (MAX_RIVEN_RANK + 1);
+
+  return attributeAmount(
+    unit,
+    unit === "multiply" ? 1 + (maxRankValue - 1) * scale : maxRankValue * scale,
+  );
+}
+
+export function attributeValue(
+  attribute: AttributeGrade,
+  rank = MAX_RIVEN_RANK,
+): string | null {
   return attribute.display === null
     ? null
-    : attributeAmount(attribute.unit, attribute.display);
+    : attributeAmountAtRank(attribute.unit, attribute.display, rank);
 }
 
 export function attributeLabel(attribute: AttributeGrade): string {

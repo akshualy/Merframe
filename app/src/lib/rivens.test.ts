@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   attributeAmount,
+  attributeAmountAtRank,
   attributeLabel,
   attributeText,
   attributeValue,
@@ -23,7 +24,6 @@ function attribute(patch: Partial<AttributeGrade>): AttributeGrade {
     percentile: 0.5,
     grade: "B",
     multiplier: 1,
-    rolled: 5,
     display: 5,
     min: 4.1,
     max: 5,
@@ -38,7 +38,6 @@ const initialCombo = attribute({
   tag: "WeaponMeleeComboInitialBonusMod",
   name: "Initial combo",
   value: 2.2,
-  rolled: 2.2,
   display: 2.2,
   min: 1,
   max: 3,
@@ -93,6 +92,18 @@ describe("attributeAmount", () => {
   it("no sign on a rounded zero", () => {
     expect(attributeAmount("percent", 0.04)).toBe("0.0%");
     expect(attributeAmount("percent", -0.04)).toBe("0.0%");
+  });
+});
+
+describe("attributeAmountAtRank", () => {
+  it("scales linearly from rank 0 to rank 8", () => {
+    expect(attributeAmountAtRank("percent", 90, 0)).toBe("+10.0%");
+    expect(attributeAmountAtRank("percent", -45, 3)).toBe("-20.0%");
+  });
+
+  it("scales only the bonus of a damage multiplier", () => {
+    expect(attributeAmountAtRank("multiply", 1.45, 0)).toBe("x1.05");
+    expect(attributeAmountAtRank("multiply", 0.55, 0)).toBe("x0.95");
   });
 });
 

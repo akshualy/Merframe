@@ -50,6 +50,7 @@ pub struct AttributeGrade {
     pub percentile: f64,
     pub grade: &'static str,
     pub multiplier: f64,
+    #[serde(skip)]
     pub rolled: Option<f64>,
     pub display: Option<f64>,
     pub min: Option<f64>,
@@ -128,7 +129,7 @@ impl Roll<'_> {
         let rolled = base.map(|base| base * multiplier);
         let displayed = |factor: f64| {
             base.zip(modifier)
-                .map(|(base, modifier)| display_value(base * factor, modifier.multiplier_display()))
+                .map(|(base, modifier)| shown_value(base * factor, modifier.multiplier_display()))
         };
         let percentile = roll_share(multiplier, curse);
         AttributeGrade {
@@ -174,12 +175,17 @@ fn letter(percentile: f64) -> &'static str {
     }
 }
 
-pub(super) fn display_value(rolled: f64, multiplier_display: bool) -> f64 {
+fn shown_value(rolled: f64, multiplier_display: bool) -> f64 {
     if multiplier_display {
-        round_to(rolled + 1.0, 2)
+        rolled + 1.0
     } else {
-        round_to(rolled, 1)
+        rolled
     }
+}
+
+pub(super) fn display_value(rolled: f64, multiplier_display: bool) -> f64 {
+    let places = if multiplier_display { 2 } else { 1 };
+    round_to(shown_value(rolled, multiplier_display), places)
 }
 
 pub(super) fn round_to(value: f64, places: i32) -> f64 {
@@ -396,9 +402,9 @@ mod tests {
             .expect("slash roll");
         let rolled = slash.rolled.unwrap();
         assert!((rolled - 108.74).abs() < 0.01, "{rolled}");
-        assert_eq!(slash.min, Some(91.1));
-        assert_eq!(slash.max, Some(111.4));
-        assert_eq!(slash.display, Some(108.7));
+        let (min, max) = (slash.min.unwrap(), slash.max.unwrap());
+        assert!((min - 91.13).abs() < 0.01, "{min}");
+        assert!((max - 111.38).abs() < 0.01, "{max}");
         assert_eq!(slash.slug.as_deref(), Some("slash_damage"));
         assert_eq!(slash.name.as_deref(), Some("Slash"));
         assert_eq!(slash.unit.as_deref(), Some("percent"));
@@ -421,7 +427,8 @@ mod tests {
         );
         assert!(rolled < 0.0 && min < 0.0 && max < 0.0);
         assert!(min < max, "the worst case is the more negative one");
-        assert_eq!((min, max), (-37.1, -30.4));
+        assert!((min + 37.12).abs() < 0.01, "{min}");
+        assert!((max + 30.37).abs() < 0.01, "{max}");
         assert!((reload.percentile - (1.0 - (reload.multiplier - 0.9) * 5.0)).abs() < 1e-12);
     }
 
@@ -437,8 +444,8 @@ mod tests {
         let rolled = faction.rolled.unwrap();
         let display = faction.display.unwrap();
         assert!(rolled.abs() < 1.0, "{rolled}");
-        assert!(display > 1.0, "{display}");
-        assert!((display - round_to(rolled + 1.0, 2)).abs() < f64::EPSILON);
+        assert!((display - (rolled + 1.0)).abs() < f64::EPSILON);
+        assert!((display_value(0.4549, true) - 1.45).abs() < f64::EPSILON);
     }
 
     #[test]
