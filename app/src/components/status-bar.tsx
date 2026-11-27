@@ -66,7 +66,10 @@ export function StatusBar() {
       </span>
 
       {status?.last_scan_error && (
-        <span className="text-destructive max-w-96 truncate text-sm">
+        <span
+          className="text-destructive max-w-96 truncate text-sm"
+          title={status.last_scan_error}
+        >
           {status.last_scan_error}
         </span>
       )}
