@@ -17,7 +17,12 @@ import { Hint } from "@/components/ui/hint";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLatestAttempt } from "@/hooks/use-latest-attempt";
-import { api, openExternal, reportError } from "@/lib/bridge";
+import {
+  api,
+  MARKET_ORDER_MAX_QUANTITY,
+  openExternal,
+  reportError,
+} from "@/lib/bridge";
 import { marketUrl, num } from "@/lib/format";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -92,6 +97,12 @@ function orderAmounts(platinum: string, quantity: string) {
   }
   if (!Number.isFinite(count) || count <= 0) {
     toast.error("A quantity of at least 1 is required");
+    return null;
+  }
+  if (count > MARKET_ORDER_MAX_QUANTITY) {
+    toast.error(
+      `warframe.market takes a quantity of ${num(MARKET_ORDER_MAX_QUANTITY)} at most`,
+    );
     return null;
   }
 

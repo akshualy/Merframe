@@ -116,6 +116,8 @@ function since(sinceMs?: number): Args {
   return { sinceMs: sinceMs ?? null };
 }
 
+export const MARKET_ORDER_MAX_QUANTITY = 9999;
+
 export const api = {
   inventoryTab: (saleSafety: SaleSafetySettings) =>
     call<InventoryTab>("inventory_tab", { saleSafety }),

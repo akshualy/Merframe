@@ -11,6 +11,7 @@ import { Amount } from "@/components/currency";
 import { Page, Section, Stat } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLatestAttempt } from "@/hooks/use-latest-attempt";
@@ -24,6 +25,8 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
 import { useMarketListingsStore } from "@/stores/market-listings-store";
 import { useMarketPanelStore } from "@/stores/market-panel-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
+import type { OrderRow, OrderType } from "@/types";
 import { AuctionsTable } from "./auctions";
 import type { RunMarketAction } from "./listing-controls";
 import { LoginCard } from "./login-card";
@@ -33,6 +36,17 @@ import { LiveStatusBadge, PresenceControl } from "./presence";
 type MarketTab = "orders" | "auctions";
 
 const ACTIVE_POLL_MS = 60_000;
+
+function orderSideTotals(rows: OrderRow[], side: OrderType) {
+  const sideOrders = rows.filter((order) => order.order_type === side);
+  return {
+    count: sideOrders.length,
+    value: sideOrders.reduce(
+      (total, order) => total + order.platinum * order.quantity,
+      0,
+    ),
+  };
+}
 
 export function MarketPage() {
   const status = useAppStore((state) => state.status);
@@ -47,6 +61,12 @@ export function MarketPage() {
   );
   const openListing = useMarketPanelStore((state) => state.openListing);
   const showPanel = useMarketPanelStore((state) => state.show);
+  const marketTotalsWithHiddenOrders = usePreferencesStore(
+    (state) => state.marketTotalsWithHiddenOrders,
+  );
+  const setMarketTotalsWithHiddenOrders = usePreferencesStore(
+    (state) => state.setMarketTotalsWithHiddenOrders,
+  );
   const [tab, setTab] = useTabParam<MarketTab>("orders");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -159,20 +179,18 @@ export function MarketPage() {
   }, [cancel]);
 
   const totals = useMemo(() => {
-    const sell = orders.rows.filter((order) => order.order_type === "sell");
+    const totalled = marketTotalsWithHiddenOrders
+      ? orders.rows
+      : orders.rows.filter((order) => order.visible);
     return {
-      sell: sell.length,
-      buy: orders.rows.length - sell.length,
-      plat: sell.reduce(
-        (total, order) => total + order.platinum * order.quantity,
-        0,
-      ),
+      sell: orderSideTotals(totalled, "sell"),
+      buy: orderSideTotals(totalled, "buy"),
       missing: orders.rows.filter((order) => order.show_warning).length,
       overListed: orders.rows.filter(
         (order) => order.sale?.state.kind === "over_listed",
       ).length,
     };
-  }, [orders]);
+  }, [orders, marketTotalsWithHiddenOrders]);
 
   if (!account) {
     return (
@@ -194,6 +212,9 @@ export function MarketPage() {
     );
   }
 
+  const included = marketTotalsWithHiddenOrders
+    ? "visible and hidden"
+    : "visible";
   const openAuctions = auctions.filter((auction) => !auction.closed).length;
   const unread = status?.market_unread ?? 0;
   const tradesLeft = status?.trades_remaining ?? null;
@@ -247,39 +268,67 @@ export function MarketPage() {
         title="My Listings"
         description={refreshedAt ? `Refreshed ${ago(refreshedAt)}` : undefined}
         action={
-          <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
-            <Figure label="Sell orders" value={num(totals.sell)} />
-            <Figure label="Buy orders" value={num(totals.buy)} />
-            <Figure label="Open auctions" value={num(openAuctions)} />
-            <Figure
-              label="Listed value"
-              value={
-                <Amount currency="platinum" plain>
-                  {num(totals.plat)}
-                </Amount>
-              }
-            />
-            <Figure
-              label="Missing items"
-              value={num(totals.missing)}
-              tone={totals.missing > 0 ? "text-warning" : undefined}
-              title={
-                totals.missing > 0
-                  ? "Sell orders above what the account holds"
-                  : undefined
-              }
-            />
-            <Figure
-              label="Too many listed"
-              value={num(totals.overListed)}
-              tone={totals.overListed > 0 ? "text-warning" : undefined}
-              title={
-                totals.overListed > 0
-                  ? "Sell orders above what's safe to list"
-                  : undefined
-              }
-            />
-          </dl>
+          <div className="flex flex-col items-end gap-2">
+            <dl className="flex flex-wrap items-center justify-end gap-x-5 gap-y-1 text-sm">
+              <MarketListingFigure
+                label="Sell orders"
+                value={num(totals.sell.count)}
+              />
+              <MarketListingFigure
+                label="Buy orders"
+                value={num(totals.buy.count)}
+              />
+              <MarketListingFigure
+                label="Open auctions"
+                value={num(openAuctions)}
+              />
+              <MarketListingFigure
+                label="Sell value"
+                value={
+                  <Amount currency="platinum" plain>
+                    {num(totals.sell.value)}
+                  </Amount>
+                }
+                title={`Price x Quantity of your ${included} sell orders`}
+              />
+              <MarketListingFigure
+                label="Buy value"
+                value={
+                  <Amount currency="platinum" plain>
+                    {num(totals.buy.value)}
+                  </Amount>
+                }
+                title={`Price x Quantity of your ${included} buy orders`}
+              />
+              <MarketListingFigure
+                label="Missing items"
+                value={num(totals.missing)}
+                tone={totals.missing > 0 ? "text-warning" : undefined}
+                title={
+                  totals.missing > 0
+                    ? "Sell orders with quantities above what you have"
+                    : undefined
+                }
+              />
+              <MarketListingFigure
+                label="Too many listed"
+                value={num(totals.overListed)}
+                tone={totals.overListed > 0 ? "text-warning" : undefined}
+                title={
+                  totals.overListed > 0
+                    ? "Sell orders above what's safe to list"
+                    : undefined
+                }
+              />
+            </dl>
+            <CheckboxField
+              id="marketTotalsWithHiddenOrders"
+              checked={marketTotalsWithHiddenOrders}
+              onChange={setMarketTotalsWithHiddenOrders}
+            >
+              Include hidden orders in these values
+            </CheckboxField>
+          </div>
         }
       >
         {loading && orders.rows.length === 0 && auctions.length === 0 ? (
@@ -320,7 +369,7 @@ export function MarketPage() {
   );
 }
 
-function Figure({
+function MarketListingFigure({
   label,
   value,
   tone,
@@ -334,7 +383,7 @@ function Figure({
   return (
     <div className="flex items-baseline gap-1.5" title={title}>
       <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className={cn("font-semibold tabular-nums", tone)}>{value}</dd>
+      <dd className={cn("font-semibold", tone)}>{value}</dd>
     </div>
   );
 }

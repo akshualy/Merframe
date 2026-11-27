@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useFilters } from "@/hooks/use-filters";
 import { itemAt } from "@/lib/arrays";
-import { api } from "@/lib/bridge";
+import { api, MARKET_ORDER_MAX_QUANTITY } from "@/lib/bridge";
 import type { FilterOption } from "@/lib/filters";
 import { dateTime, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ import type {
   ItemSummary,
   MarketCategory,
   MarketOrders,
+  OrderPatch,
   OrderRow,
   OrderType,
   Pricing,
@@ -297,6 +298,13 @@ export function OrdersTable({
           const { order, item } = row.original;
           const slug = item.market_slug;
           const priceToMatch = priceCheck ? order.price_to_match : null;
+          const updateOrder = (patch: OrderPatch, message: string) =>
+            runMarketAction(
+              api.marketUpdateOrder(order.id, patch),
+              message,
+              "published",
+            );
+
           return (
             <RowActions label="Order actions">
               {slug && (
@@ -335,12 +343,9 @@ export function OrdersTable({
               )}
               <DropdownMenuItem
                 onSelect={() =>
-                  runMarketAction(
-                    api.marketUpdateOrder(order.id, {
-                      platinum: Math.max(1, order.platinum - 1),
-                    }),
+                  updateOrder(
+                    { platinum: Math.max(1, order.platinum - 1) },
                     "Price lowered by 1",
-                    "published",
                   )
                 }
               >
@@ -348,16 +353,24 @@ export function OrdersTable({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() =>
-                  runMarketAction(
-                    api.marketUpdateOrder(order.id, {
-                      visible: !order.visible,
-                    }),
+                  updateOrder(
+                    { visible: !order.visible },
                     order.visible ? "Order hidden" : "Order shown",
-                    "published",
                   )
                 }
               >
                 {order.visible ? "Hide order" : "Show order"}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={order.quantity >= MARKET_ORDER_MAX_QUANTITY}
+                onSelect={() =>
+                  updateOrder(
+                    { quantity: order.quantity + 1 },
+                    "Quantity raised by 1",
+                  )
+                }
+              >
+                Raise quantity by 1
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() =>
@@ -367,7 +380,9 @@ export function OrdersTable({
                   )
                 }
               >
-                Mark one as sold
+                {order.order_type === "sell"
+                  ? "Mark one as sold"
+                  : "Mark one as bought"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
