@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use serde::Serialize;
 use wf_data::Item;
 use wf_inventory::Inventory;
 
@@ -7,6 +8,16 @@ use crate::catalog::{Catalog, Stock, own_blueprint};
 use crate::foundry::FoundryStock;
 use crate::identity::ItemTable;
 use crate::inventory_view::{ItemStatus, held_part_counts};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[serde(rename_all = "snake_case")]
+pub enum WorldOfferOwnership {
+    Missing,
+    Owned,
+    Mastered,
+    InFoundry,
+}
 
 pub(crate) struct Account {
     pub(crate) inventory: Inventory,
@@ -106,11 +117,31 @@ impl Account {
             mastered: self.mastered(item),
         }
     }
+
+    pub(crate) fn world_offer_ownership(
+        &self,
+        unique_name: &str,
+        catalog: &Catalog,
+    ) -> WorldOfferOwnership {
+        let item = catalog.item(unique_name);
+        if item.is_some_and(|item| self.in_foundry(item)) {
+            WorldOfferOwnership::InFoundry
+        } else if item.is_some_and(|item| self.mastered(item)) {
+            WorldOfferOwnership::Mastered
+        } else if self.owns(unique_name) {
+            WorldOfferOwnership::Owned
+        } else {
+            WorldOfferOwnership::Missing
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::{Value, json};
+
+    use crate::catalog::fixtures::{EXCALIBUR, drop_entries, entries, inventory_with};
     use crate::catalog::{FORMA_BLUEPRINT, fixtures};
 
     const LOKI_PRIME: &str = "/Lotus/Powersuits/Loki/LokiPrime";
@@ -157,5 +188,43 @@ mod tests {
             &ItemTable::build(&catalog),
         );
         assert!(fresh.built(LOKI_PRIME));
+    }
+
+    fn unranked(value: &mut Value) {
+        value["XPInfo"] = json!([]);
+        drop_entries(value, &["Suits"], EXCALIBUR);
+    }
+
+    fn excalibur_ownership(edit: impl FnOnce(&mut Value)) -> WorldOfferOwnership {
+        let catalog = fixtures::catalog();
+        let account = Account::new(inventory_with(edit), &catalog, &ItemTable::build(&catalog));
+        account.world_offer_ownership(EXCALIBUR, &catalog)
+    }
+
+    #[test]
+    fn world_offer_ownership_ladder() {
+        assert_eq!(excalibur_ownership(|_| {}), WorldOfferOwnership::Mastered);
+        assert_eq!(excalibur_ownership(unranked), WorldOfferOwnership::Missing);
+        assert_eq!(
+            excalibur_ownership(|value| {
+                unranked(value);
+                entries(value, "Suits").push(json!({
+                    "ItemType": EXCALIBUR,
+                    "ItemId": { "$oid": "00000000000000000000beef" },
+                    "XP": 0,
+                }));
+            }),
+            WorldOfferOwnership::Owned
+        );
+        assert_eq!(
+            excalibur_ownership(|value| {
+                entries(value, "PendingRecipes").push(json!({
+                    "ItemType": "/Lotus/Types/Recipes/WarframeRecipes/ExcaliburHelmetBlueprint",
+                    "CompletionDate": { "$date": { "$numberLong": "1787000100000" } },
+                    "ItemId": { "$oid": "0123456789abcdef01234567" }
+                }));
+            }),
+            WorldOfferOwnership::InFoundry
+        );
     }
 }

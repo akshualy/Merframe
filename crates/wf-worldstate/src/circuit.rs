@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use serde::Serialize;
 
 use crate::window::Window;
 
@@ -21,8 +20,7 @@ pub struct EndlessXpWeek {
     pub category_choices: Vec<CategoryChoices>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[cfg_attr(feature = "bindings", derive(ts_rs::TS), ts(export))]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Circuit {
     pub rotates: DateTime<Utc>,
     pub normal: Vec<String>,

@@ -2,7 +2,7 @@
 import type { ArchonHunt } from "./ArchonHunt";
 import type { BaroGroup } from "./BaroGroup";
 import type { BaroStatus } from "./BaroStatus";
-import type { Circuit } from "./Circuit";
+import type { CircuitRotation } from "./CircuitRotation";
 import type { DarvoDeal } from "./DarvoDeal";
 import type { Fissure } from "./Fissure";
 import type { MarketOffer } from "./MarketOffer";
@@ -13,4 +13,4 @@ import type { Sortie } from "./Sortie";
 import type { Timer } from "./Timer";
 import type { WorldRewardAlert } from "./WorldRewardAlert";
 
-export type WorldStateView = { fissures: Array<Fissure>, baro: BaroStatus | null, baro_manifest: Array<BaroGroup>, sortie: Sortie | null, archon_hunt: ArchonHunt | null, timers: Array<Timer>, daily_deals: Array<DarvoDeal>, market_sales: Array<MarketOffer>, circuit: Circuit | null, prime_resurgence: PrimeResurgence | null, nightwave: NightwaveSeason | null, world_reward_alerts: Array<WorldRewardAlert>, daily_reset: ResetWindow, weekly_reset: ResetWindow, fetched_at: string | null, };
+export type WorldStateView = { fissures: Array<Fissure>, baro: BaroStatus | null, baro_manifest: Array<BaroGroup>, sortie: Sortie | null, archon_hunt: ArchonHunt | null, timers: Array<Timer>, daily_deals: Array<DarvoDeal>, market_sales: Array<MarketOffer>, circuit: CircuitRotation | null, prime_resurgence: PrimeResurgence | null, nightwave: NightwaveSeason | null, world_reward_alerts: Array<WorldRewardAlert>, daily_reset: ResetWindow, weekly_reset: ResetWindow, fetched_at: string | null, };

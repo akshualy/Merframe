@@ -10,12 +10,13 @@ use wf_log::Event as LogEvent;
 use wf_market::{RivenData, WeaponAuctions};
 use wf_worldstate::{ArbitrationForecast, WorldState};
 
-use crate::account::Account;
+use crate::account::{Account, WorldOfferOwnership};
 use crate::arbitration_runs::{
     ArbitrationRun, ArbitrationRunRecorder, ArbitrationRunReward, ArbitrationRunSource,
     ArbitrationRunUpdate, MissionEndReward, VITUS_ESSENCE,
 };
 use crate::catalog::{Catalog, REQUIEM_MARKER};
+use crate::circuit::{CircuitRotation, circuit_rotation};
 use crate::comparables::{self, ComparedStat, RivenComparables};
 use crate::delta;
 use crate::ducatering::{self, Ducatering, DucateringFilter};
@@ -190,10 +191,19 @@ impl Core {
         self.account.as_ref().map(|account| &account.inventory)
     }
 
-    pub fn owns(&self, unique_name: &str) -> Option<bool> {
+    pub fn world_offer_ownership(&self, unique_name: &str) -> Option<WorldOfferOwnership> {
         self.account
             .as_ref()
-            .map(|account| account.owns(unique_name))
+            .map(|account| account.world_offer_ownership(unique_name, &self.catalog))
+    }
+
+    pub fn circuit(&self, now: DateTime<Utc>) -> Option<CircuitRotation> {
+        let circuit = self.world.as_ref()?.circuit(now)?;
+        Some(circuit_rotation(
+            circuit,
+            &self.catalog,
+            self.account.as_ref(),
+        ))
     }
 
     pub fn latest_snapshot(&self) -> Option<&Snapshot> {

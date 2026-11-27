@@ -6,6 +6,7 @@ import { FavouriteStar } from "@/components/favourite-star";
 import { GameIcon, relicTierIcon } from "@/components/game-icon";
 import { ArcaneImage, ItemImage } from "@/components/item-image";
 import { Meta } from "@/components/meta";
+import { OwnershipMark } from "@/components/ownership-mark";
 import { RankedPlat } from "@/components/ranked-plat";
 import { SaleSafetyMark } from "@/components/sale-safety";
 import { Hint } from "@/components/ui/hint";
@@ -186,9 +187,7 @@ function ItemCardInner({
                 R{itemRank}
               </span>
             )}
-            {set?.row.status.mastered && (
-              <GameIcon name="mastered" size={16} alt="Mastered" />
-            )}
+            {set?.row.status.mastered && <OwnershipMark ownership="mastered" />}
           </span>
           <span className="-mt-1 -mr-1 flex shrink-0 items-center">
             <FavouriteStar

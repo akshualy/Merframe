@@ -6,19 +6,7 @@ use super::grading::compat_path;
 use super::tab::weapon_class;
 use super::{Grader, RivenRow};
 use crate::catalog::Catalog;
-
-fn contains_word(text: &str, word: &str) -> bool {
-    let text = text.to_lowercase();
-    let word = word.to_lowercase();
-    let boundary = |byte: Option<&u8>| match byte {
-        Some(byte) => !byte.is_ascii_alphanumeric(),
-        None => true,
-    };
-    text.match_indices(&word).any(|(start, found)| {
-        let before = start.checked_sub(1).and_then(|at| text.as_bytes().get(at));
-        boundary(before) && boundary(text.as_bytes().get(start + found.len()))
-    })
-}
+use crate::text::contains_word;
 
 pub(super) fn family_named<'a>(name: &str, table: &'a RivenTable) -> Option<&'a RivenWeapon> {
     table
@@ -287,9 +275,6 @@ mod tests {
     #[test]
     fn variant_family_matching() {
         let table = riven_table();
-        assert!(contains_word("Braton Prime", "Braton"));
-        assert!(contains_word("MK1-Braton", "braton"));
-        assert!(!contains_word("Akbronco Prime", "Bronco"));
         assert_eq!(
             family_named("Secura Dual Cestra", &table).map(|weapon| weapon.name.as_str()),
             Some("Dual Cestra")

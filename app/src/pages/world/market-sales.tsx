@@ -26,7 +26,7 @@ function MarketOffers({
           <InfoRow
             key={offer.name}
             label={offer.name}
-            owned={offer.owned}
+            ownership={offer.ownership}
             hint={
               offer.discount_percent > 0
                 ? `-${offer.discount_percent}%, ${left}`
